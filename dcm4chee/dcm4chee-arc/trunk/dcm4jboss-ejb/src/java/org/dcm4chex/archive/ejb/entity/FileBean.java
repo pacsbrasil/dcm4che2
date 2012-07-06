@@ -42,6 +42,7 @@ package org.dcm4chex.archive.ejb.entity;
 import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import javax.ejb.CreateException;
 import javax.ejb.EntityBean;
@@ -49,6 +50,7 @@ import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
 
 import org.apache.log4j.Logger;
+import org.dcm4chex.archive.common.FileStatus;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
@@ -126,12 +128,12 @@ import org.dcm4chex.archive.ejb.interfaces.MD5;
  *             transaction-type="Supports"
  *
  * @jboss.query 
- *      signature="java.util.Collection ejbSelectGeneric(java.lang.String jbossQl, java.lang.Object[] args)"
+ *      signature="java.util.Set ejbSelectGeneric(java.lang.String jbossQl, java.lang.Object[] args)"
  *  dynamic="true"
  *  strategy="on-load"
  *  page-size="20"
  *  eager-load-group="*"
- *
+ *  
  * @jboss.query 
  *      signature="java.sql.Timestamp ejbSelectGenericTime(java.lang.String jbossQl, java.lang.Object[] args)"
  *  dynamic="true"
@@ -360,9 +362,9 @@ public abstract class FileBean implements EntityBean {
      * @ejb.select query=""
      *  transaction-type="Supports"
      */ 
-    public abstract Collection ejbSelectGeneric(String jbossQl, Object[] args)
+    public abstract Set ejbSelectGeneric(String jbossQl, Object[] args)
                 throws FinderException;
-
+    
     /**
      * @ejb.select query=""
      *  transaction-type="Supports"
@@ -409,5 +411,15 @@ public abstract class FileBean implements EntityBean {
         return ejbSelectGenericTime(jbossQl.toString(), args);
     }
 
+    /**    
+     * @ejb.home-method
+     */
+    public Set ejbHomeSelectTarFilenamesToMigrate(String dirPath, boolean lastPksFirst, int limit) throws FinderException {
+        StringBuilder jbossQl = new StringBuilder()
+        .append("SELECT DISTINCT SUBSTRING(f.filePath, 1, LOCATE('!',f.filePath)) FROM File f WHERE f.fileSystem.directoryPath = ?1 AND f.fileStatus >= 0")
+        .append(" AND f.fileStatus <> ").append(FileStatus.MIGRATED).append(" ORDER BY f.pk ")
+        .append(lastPksFirst ? "DESC" : "ASC").append(" LIMIT ?2");
+        return ejbSelectGeneric(jbossQl.toString(), new Object[]{dirPath, limit});
+    }
 
 }

@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mbean PUBLIC
+   "-//JBoss//DTD JBOSS XMBEAN 1.1//EN"
+   "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
+
+<mbean>
+   <description><![CDATA[Migrate a HSM Filesystem to another HSM Filesystem.<br />
+   		Mapped HSMModule (<i>service=FileCopyHSMModule,type=Mapped</i>) must be configured for 
+   		the file system specific HSM modules.
+   ]]></description>
+   <descriptors>
+      <persistence persistPolicy="OnUpdate"/>
+      <persistence-manager value="org.jboss.mx.persistence.DelegatingPersistenceManager" />
+   </descriptors>
+
+   <class>org.dcm4chex.archive.hsm.HSMMigrateService</class>
+
+   <constructor>
+      <description>The default constructor</description>
+      <name>HSMMigrateService</name>
+   </constructor>
+
+   <!-- Attributes -->
+   <attribute access="read-write"
+      getMethod="getSourceFileSystem"
+      setMethod="setSourceFileSystem">
+      <description><![CDATA[Directory/Mount Pointsof the source File System. <br />
+        NONE = disable this service.]]>
+      </description>
+      <name>SourceFileSystem</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getTargetFileSystem"
+      setMethod="setTargetFileSystem">
+      <description><![CDATA[Directory/Mount Point of the target File System. <br />
+        NONE = disable this service.]]>
+      </description>
+      <name>TargetFileSystem</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getTargetFileStatus"
+      setMethod="setTargetFileStatus">
+      <description>File status of created files in target file system.
+      Enumerated values: DEFAULT, TO_ARCHIVE, ARCHIVED, QUERY_HSM_FAILED
+      </description>
+      <name>TargetFileStatus</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="TO_ARCHIVE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isVerifyTar"
+      setMethod="setVerifyTar">
+      <description><![CDATA[Enables verification of tar files.<br />
+         If enabled the tar file is verified by <br />
+         1) checking MD5 sums of the tar content.<br />
+         2) check if tar file contains the file.<br />
+         Only applicable if filesystem is a tar filesystem!
+      ]]></description>
+      <name>VerifyTar</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true"/>
+      </descriptors>
+   </attribute>
+   
+   <attribute access="read-write"
+      getMethod="getTaskInterval"
+      setMethod="setTaskInterval">
+      <description><![CDATA[Interval in which migration task.
+         <br>Format: 
+		 <br><i>interval</i>!<i>from</i>-<i>to</i> or NEVER
+         <br><i>interval</i> = ##m (in minutes), ##h (in hours).
+         <br><i>from</i> = start hour (0-23) when no file status check should be performed
+         <br><i>to</i> = end hour (0-23) when no file status check should be performed
+         <br>NEVER = disable migration of HSM file systems
+         <br>Example:<br>1h!9-17 means every hour,
+         synchronize file status, except between the hours of 9:00am and 5:00pm.
+         By setting this type of TaskInterval, you can perform HSM migration outside of peak hours.
+         ]]>
+      </description>
+      <name>TaskInterval</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NEVER"/>
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write"
+      getMethod="isLastPksFirst"
+      setMethod="setLastPksFirst">
+      <description>Migrate newer files first.
+      </description>
+      <name>LastFilesFirst</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-only"
+      getMethod="getLastMigratedFilePk">
+      <description>Primary key of last migrated file.
+      </description>
+      <name>LastMigratedFilePk</name>
+      <type>long</type>
+   </attribute>
+
+   <attribute access="read-write"
+      getMethod="getLimitNumberOfFilesPerTask"
+      setMethod="setLimitNumberOfFilesPerTask">
+      <description>Maximum number of files which are migrated in one task.
+      </description>
+      <name>NumberOfFilesPerTask</name>
+      <type>int</type>
+      <descriptors>
+         <value value="1000"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getFailedRetryIntervalls"
+      setMethod="setFailedRetryIntervalls">
+      <description><![CDATA[Number and interval of retries made for failed migration tasks.
+      <br>Format:
+      <br>Comma separated list of <i>number</i>x<i>interval</i> pairs.
+      <br>The interval can be specified in seconds (##s),
+      minutes (##m), hours (##h) or days (##d).
+      <br>Example: 
+      <br>5x1m,10x10m means retry a total of 5 times, one minute
+      apart for each retry; then retry a total of 10 times, 10 minutes 
+      apart for each retry.]]>
+      </description>
+      <name>FailedRetryIntervals</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="12x30m,24x1h,7x1d" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getStatusRetryIntervalls"
+      setMethod="setStatusRetryIntervalls">
+      <description><![CDATA[Number and interval of retries made for file status queries.
+      <br>Format:
+      <br>Comma separated list of <i>number</i>x<i>interval</i> pairs.
+      <br>The interval can be specified in seconds (##s),
+      minutes (##m), hours (##h) or days (##d).
+      <br>Example: 
+      <br>5x1m,10x10m means retry a total of 5 times, one minute
+      apart for each retry; then retry a total of 10 times, 10 minutes 
+      apart for each retry.]]>
+      </description>
+      <name>StatusRetryIntervals</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="5x2m,6x10m,24x1h,7x1d" />
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-only"
+      getMethod="isRunning">
+      <description>Current state if migration task is running. Used to avoid concurrency!
+      </description>
+      <name>isRunning</name>
+      <type>boolean</type>
+   </attribute>
+
+   <attribute access="read-write"
+      getMethod="getTimerIDHSMMigrate"
+      setMethod="setTimerIDHSMMigrate">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>TimerIDHSMMigrate</name>
+      <type>java.lang.String</type>
+   </attribute>
+   
+   <attribute access="read-write"
+      getMethod="getQueueName"
+      setMethod="setQueueName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>QueueName</name>
+      <type>java.lang.String</type>
+   </attribute>
+
+   <attribute access="read-write"
+      getMethod="getHSMModuleServicename"
+      setMethod="setHSMModuleServicename">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>HSMModuleServicename</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getSchedulerServiceName"
+      setMethod="setSchedulerServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>SchedulerServiceName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getJmsServiceName"
+      setMethod="setJmsServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>JMSServiceName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>   
+
+   &defaultAttributes;
+
+   <!-- Operations -->
+   &defaultOperations;
+
+   <operation impact="ACTION">
+      <description><![CDATA[Start a migration task.<br />
+      	Return number of migrated files or <br />
+      	-1 if migration is already running (Timer)<br />
+      	-2 if all files are already migrated (assumed that no new files are added to the source filesystem).
+      ]]></description>
+      <name>migrate</name>
+      <return-type>int</return-type>
+   </operation>
+
+</mbean>
+    

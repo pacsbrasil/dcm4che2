@@ -1069,6 +1069,66 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
     /**
      * @ejb.interface-method
      */
+    public Collection findTarFilenamesToMigrate(String dirPath, boolean lastPksFirst, int limit) throws FinderException {
+        return fileHome.selectTarFilenamesToMigrate(dirPath, lastPksFirst, limit);
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public int migrateFilesOfTarFile(String fsId, String tarFilename, String newFsId, String newTarFilename, int newFileStatus) throws FinderException, CreateException {
+        Collection<FileLocal> c = fileHome.findFilesOfTarFile(fsId, tarFilename+"%");
+        if (log.isDebugEnabled())
+            log.debug("Found "+c.size()+" files to migrate for tar file "+tarFilename);
+        FileSystemLocal newFS = this.fileSystemHome.findByDirectoryPath(newFsId);
+        if (!newTarFilename.endsWith("!"))
+            newTarFilename += "!";
+        FileLocal f1;
+        boolean sameTarFN = tarFilename.equals(newTarFilename);
+        String newPath;
+        int pos;
+        int count = 0;
+        for (FileLocal f : c) {
+            if (f.getFileStatus() == FileStatus.MD5_CHECK_FAILED) {
+                log.warn("Skip migration of file with status MD%_CHECK_FAILED:"+f);
+                continue;
+            }
+            newPath = f.getFilePath();
+            if (!sameTarFN) {
+            } else {
+                pos = newPath.indexOf('!');
+                newPath = newPath.substring(++pos);
+                newPath = newTarFilename+newPath;
+            }
+            fileHome.create(newPath, f.getFileTsuid(), f.getFileSize(), f.getFileMd5(), 
+                    newFileStatus, f.getInstance(), newFS);
+            f.setFileStatus(FileStatus.MIGRATED);
+            count++;
+        }
+        return count;
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public void setFilestatusOfFilesOfTarFile(String fsId, String tarFilename, int fileStatus) throws FinderException, CreateException {
+        Collection<FileLocal> c = fileHome.findFilesOfTarFile(fsId, tarFilename+"%");
+        for (FileLocal f : c) {
+            f.setFileStatus(fileStatus);
+        }
+    }
+    
+    /**
+     * @ejb.interface-method
+     */
+    public FileDTO[] getFilesOfTarFile(String fsId, String tarFilename) throws FinderException, CreateException {
+        Collection<FileLocal> c = fileHome.findFilesOfTarFile(fsId, tarFilename+"%");
+        return toFileDTOs(c);
+    }
+
+    /**
+     * @ejb.interface-method
+     */
     public void updateTimeOfLastMd5Check(long pk) throws FinderException {
         Timestamp ts = new Timestamp(System.currentTimeMillis());
         if (log.isDebugEnabled())

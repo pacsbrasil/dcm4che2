@@ -18,7 +18,8 @@ import java.util.Arrays;
  */
 public class FileStatus {
 
-    private static final String[] ENUM = { 
+    private static final String[] ENUM = {
+        "MIGRATION_FAILED",
     	"QUERY_HSM_FAILED",
     	"MD5_CHECK_FAILED",
     	"VERIFY_COMPRESS_FAILED", 
@@ -26,9 +27,11 @@ public class FileStatus {
     	"DEFAULT", 
     	"TO_ARCHIVE",
     	"ARCHIVED",
-        "COMPRESSING", 
+        "COMPRESSING",
+        "MIGRATED"
     };
 
+    public static final int MIGRATION_FAILED = -5;
     public static final int QUERY_HSM_FAILED = -4;
     public static final int MD5_CHECK_FAILED = -3;
     public static final int VERIFY_COMPRESS_FAILED = -2;
@@ -37,8 +40,9 @@ public class FileStatus {
     public static final int TO_ARCHIVE = 1;    
     public static final int ARCHIVED = 2;
     public static final int COMPRESSING = 3;
+    public static final int MIGRATED = 4;
     
-    private static final int OFFSET = -QUERY_HSM_FAILED;
+    private static final int OFFSET = -MIGRATION_FAILED;
 
     public static final String toString(int value) {
         return ENUM[OFFSET + value];
