@@ -262,7 +262,7 @@ public class AttrUtils {
                 DcmElement modEl = (DcmElement) it.next();
                 final int tag = modEl.tag();
                 DcmElement newEl = newAttrs.get(tag);
-                if(newEl == null|| newEl.isEmpty()) {
+                if(newEl == null) {
                     continue;
                 }
                 if(newEl.hasItems()) {
