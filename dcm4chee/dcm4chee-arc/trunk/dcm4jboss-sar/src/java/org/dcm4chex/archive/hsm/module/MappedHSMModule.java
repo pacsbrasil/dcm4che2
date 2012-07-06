@@ -71,6 +71,7 @@ public class MappedHSMModule extends AbstractHSMModule {
     }
     
     public void setModuleMapping(String s) throws MalformedObjectNameException, NullPointerException {
+        s = s.trim();
         if(NONE.equals(s)) {
             mapping.clear();
         } else {
