@@ -108,6 +108,9 @@ public class StudyListFilter implements Serializable {
     }
 
     public String getPatientName() {
+        if (patientName != null && isFuzzyPNEnabled() && !AttributeFilter.isSoundexWithTrailingWildCardEnabled()) {
+            return patientName.replace("*", "");
+        }
         return patientName;
     }
 
