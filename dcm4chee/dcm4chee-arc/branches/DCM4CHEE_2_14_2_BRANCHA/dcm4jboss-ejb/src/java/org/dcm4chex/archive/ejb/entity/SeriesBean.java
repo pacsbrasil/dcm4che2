@@ -106,10 +106,6 @@ import org.dcm4chex.archive.util.Convert;
  *             query="SELECT OBJECT(s) FROM Series AS s WHERE s.ppsIuid = ?1"
  *             transaction-type="Supports"
  * 
- * @ejb.finder signature="java.util.Collection findByStatusAndUpdatedBefore(int status, java.sql.Timestamp updatedBefore)"
- *             query="SELECT OBJECT(s) FROM Series AS s WHERE s.seriesStatus = ?1 AND s.updatedTime < ?2"
- *             transaction-type="Supports"
- *             
  * @ejb.finder signature="java.util.Collection findWithNoPpsIuidFromSrcAETReceivedLastOfStudyBefore(java.lang.String srcAET, java.sql.Timestamp receivedBefore)"
  *             query="SELECT OBJECT(s) FROM Series AS s WHERE s.ppsIuid IS NULL AND s.sourceAET = ?1 AND s.study.updatedTime < ?2"
  *             transaction-type="Supports"
@@ -532,6 +528,19 @@ public abstract class SeriesBean implements EntityBean {
         }
         return true;
     }
+
+    /**
+     * @ejb.home-method
+     */
+    public Collection ejbHomeGetSeriesPksWithStatusAndUpdatedBefore(
+            int status, Timestamp updatedBefore) throws FinderException {
+        return ejbSelectSeriesPksByStatusAndUpdatedBefore(status, updatedBefore);
+    }
+
+    /**
+     * @ejb.select query="SELECT s.pk FROM Series s WHERE s.seriesStatus = ?1 AND s.updatedTime < ?2"
+     */
+    public abstract Collection ejbSelectSeriesPksByStatusAndUpdatedBefore(int status, Timestamp updatedBefore) throws FinderException;
 
     /**
      * @ejb.select query="SELECT DISTINCT i.retrieveAETs FROM Instance i WHERE i.series.pk = ?1"

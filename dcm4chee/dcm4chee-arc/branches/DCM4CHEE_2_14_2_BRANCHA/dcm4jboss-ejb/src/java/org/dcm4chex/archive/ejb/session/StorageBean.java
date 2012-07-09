@@ -40,7 +40,6 @@
 package org.dcm4chex.archive.ejb.session;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -281,29 +280,23 @@ public abstract class StorageBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public SeriesStored[] checkSeriesStored(long maxPendingTime)
+    public Collection getPksOfPendingSeries(Timestamp updatedBefore)
             throws FinderException {
-        Timestamp before = new Timestamp(System.currentTimeMillis() 
-                - maxPendingTime);
-        Collection c = seriesHome.findByStatusAndUpdatedBefore(RECEIVED, before);
-        if (c.isEmpty()) {
-            return new SeriesStored[0]; 
-        }
-        ArrayList list = new ArrayList(c.size());
-        for (Iterator iter = c.iterator(); iter.hasNext();) {
-            SeriesLocal series = (SeriesLocal) iter.next();
-            Timestamp lastUpdated =
-                    series.getMaxUpdatedTimeOfSeriesRelatedInstances();
-            if (lastUpdated != null && lastUpdated.before(before)) {
-                SeriesStored seriesStored = makeSeriesStored(series);
-                if (seriesStored != null) {
-                    list.add(seriesStored);
-                }
-            }
-        }
-        return (SeriesStored[]) list.toArray(new SeriesStored[list.size()]);
+        return seriesHome.getSeriesPksWithStatusAndUpdatedBefore(
+                RECEIVED, updatedBefore);
     }
-    
+
+    /**
+     * @ejb.interface-method
+     */
+    public SeriesStored makeSeriesStored(Long seriesPk, Timestamp updatedBefore)
+            throws FinderException {
+        SeriesLocal series = seriesHome.findByPrimaryKey(seriesPk);
+        Timestamp lastUpdated = series.getMaxUpdatedTimeOfSeriesRelatedInstances();
+        return (lastUpdated != null && lastUpdated.before(updatedBefore))
+                ? makeSeriesStored(series) : null;
+    }
+
     private SeriesStored makeSeriesStored(SeriesLocal series)
             throws FinderException {
         StudyLocal study = series.getStudy();
