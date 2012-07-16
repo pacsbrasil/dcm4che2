@@ -4,6 +4,9 @@ package org.dcm4chee.web.war;
 import java.net.URL;
 import java.util.List;
 
+import javax.management.MBeanServer;
+import javax.management.MBeanServerFactory;
+import javax.management.ObjectName;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.persistence.EntityManager;
@@ -73,6 +76,8 @@ public class DicomEditBeanTest extends BaseSessionBeanFixture<DicomEditBean>
     @SuppressWarnings("unchecked")
     @Override
     public void setUp() throws Exception {
+        this.initDummyMBean();
+        WASPTestUtil.initRolesMappingFile();
         super.setUp();
         EntityManager em = getEntityManager();
         List<PrivatePatient> privP = em.createQuery("SELECT OBJECT(p) FROM PrivatePatient p").getResultList();
@@ -83,6 +88,17 @@ public class DicomEditBeanTest extends BaseSessionBeanFixture<DicomEditBean>
             }
             em.getTransaction().commit();
         }
+    }
+    private void initDummyMBean() {
+        MBeanServer mbServer = MBeanServerFactory.createMBeanServer("jboss");
+        try {
+            mbServer.createMBean("org.dcm4chee.web.war.DummyWebCfgMBean", 
+                    new ObjectName("dcm4chee.web:service=WebConfig"));
+        } catch (Exception ignore) {log.error("Can't create DummyWebCfgMBean!",ignore);}        
+        try {
+            mbServer.createMBean("org.dcm4chee.web.war.DummyServerConfigMBean", 
+                    new ObjectName("jboss.system:type=ServerConfig"));
+        } catch (Exception ignore) {log.error("Can't create ServerConfigBean!",ignore);}        
     }
     
     @Test
