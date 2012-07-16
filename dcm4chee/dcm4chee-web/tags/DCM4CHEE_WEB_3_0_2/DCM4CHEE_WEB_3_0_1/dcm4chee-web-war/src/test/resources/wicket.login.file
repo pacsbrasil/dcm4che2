@@ -1,3 +1,0 @@
- dcm4chee {
-    org.jboss.security.auth.spi.UsersRolesLoginModule required;
-  };
