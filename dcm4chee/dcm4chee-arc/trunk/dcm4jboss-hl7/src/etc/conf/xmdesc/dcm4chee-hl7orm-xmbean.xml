@@ -68,6 +68,19 @@
       </descriptors>
    </attribute>   
    <attribute access="read-write"
+      getMethod="isCreateMissingOrderOnStatusChange"
+      setMethod="setCreateMissingOrderOnStatusChange">
+      <description><![CDATA[Create a new order if a 'Status Changed (SC)' order message
+(see <i>OrderControlOperationMap</i>) for an unknown order is received.<br />
+Default behaviour (<i>false</i>) is to ignore such SC messages.
+		]]></description>
+      <name>CreateMissingOrderOnStatusChange</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="isUpdateDifferentPatientOfExistingStudy"
       setMethod="setUpdateDifferentPatientOfExistingStudy">
       <description><![CDATA[Controls the behavior on receive of an order

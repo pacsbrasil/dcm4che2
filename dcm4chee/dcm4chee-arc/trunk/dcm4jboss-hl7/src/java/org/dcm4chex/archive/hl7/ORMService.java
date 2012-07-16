@@ -105,6 +105,7 @@ public class ORMService extends AbstractHL7Service {
     private int[] ops = {};
     
     private boolean updateDifferentPatientOfExistingStudy;
+    private boolean createMissingOrderOnStatusChange;
     
     private ObjectName deviceServiceName;
 
@@ -168,6 +169,15 @@ public class ORMService extends AbstractHL7Service {
         orderControls = newocs;
     }
     
+    public boolean isCreateMissingOrderOnStatusChange() {
+        return createMissingOrderOnStatusChange;
+    }
+
+    public void setCreateMissingOrderOnStatusChange(
+            boolean createMissingOrderOnStatusChange) {
+        this.createMissingOrderOnStatusChange = createMissingOrderOnStatusChange;
+    }
+
     public final boolean isUpdateDifferentPatientOfExistingStudy() {
         return updateDifferentPatientOfExistingStudy;
     }
@@ -256,7 +266,7 @@ public class ORMService extends AbstractHL7Service {
                     break;
                 default:
                     sps.putCS(Tags.SPSStatus, SPSStatus.toString(op[opIdx]-SC_OFF));
-                    updateSPSStatus(ds, mwlManager);
+                    updateSPSStatus(ds, mwlManager, createMissingOrderOnStatusChange);
                     break;
                 }
             }
@@ -385,19 +395,30 @@ public class ORMService extends AbstractHL7Service {
         case PPSStatus.COMPLETED:
             spsStatus = "COMPLETED";
             break;
-        default: // PPSStatus.DISCOMPLETED
+        default: // PPSStatus.DISCONTINUED
             spsStatus = "DISCONTINUED";
             break;
         }
         sps.putCS(Tags.SPSStatus, spsStatus);
-        updateSPSStatus(mwlitem, mwlManager);
+        updateSPSStatus(mwlitem, mwlManager, false);
     }
 
-    protected void updateSPSStatus(Dataset ds, MWLManager mwlManager)
+    protected void updateSPSStatus(Dataset ds, MWLManager mwlManager, boolean createMissingOrder)
             throws PatientMismatchException, RemoteException {
         log("Change SPS status of MWL Item:", ds);
         if (!mwlManager.updateSPSStatus(ds, patientMatching)) {
             log("No Such ", ds);
+            if (createMissingOrder) {
+                addMissingAttributes(ds);
+                log("->Create new MWL Item with status "+ds.getString(Tags.SPSStatus)+":", ds);
+                logDataset("Insert MWL Item:", ds);
+                try {
+                    mwlManager.addWorklistItem(ds, patientMatching);
+                    updateRequestAttributes(ds, mwlManager);
+                } catch (Exception x) {
+                    log.warn("Create missing order on Status Change (SC) failed!", x);
+                }
+            }
         }
     }
 
