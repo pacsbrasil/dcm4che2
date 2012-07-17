@@ -81,19 +81,19 @@ public class ItemParser implements StreamSegmentMapper {
 
     public static final class Item {
 
-        public final int offset;
+        public final long offset;
 
         public final long startPos;
 
         public final int length;
 
-        public Item(int offset, long startPos, int length) {
+        public Item(long offset, long startPos, int length) {
             this.offset = offset;
             this.startPos = startPos;
             this.length = length;
         }
 
-        public final int nextOffset() {
+        public final long nextOffset() {
             return offset + length;
         }
 
