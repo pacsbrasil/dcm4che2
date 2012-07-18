@@ -52,12 +52,16 @@ import org.dcm4chee.web.dao.common.DicomEditBean;
 import org.dcm4chee.web.dao.common.DicomEditLocal;
 import org.jboss.net.protocol.URLStreamHandlerFactory;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.bm.testsuite.BaseSessionBeanFixture;
 
 public class DicomEditBeanTest extends BaseSessionBeanFixture<DicomEditBean>
 {
 
+    private static Logger log = LoggerFactory.getLogger(DicomEditBeanTest.class);
+    
     private static final Class<?>[] usedBeans = {Patient.class, Study.class, Series.class, Instance.class,
         File.class, FileSystem.class, StudyOnFileSystem.class, VerifyingObserver.class,
         Media.class, MPPS.class, GPSPS.class, GPPPS.class, GPSPSRequest.class, GPSPSPerformer.class,
