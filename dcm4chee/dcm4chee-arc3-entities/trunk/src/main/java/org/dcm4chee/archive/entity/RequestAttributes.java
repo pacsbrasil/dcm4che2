@@ -183,6 +183,7 @@ public class RequestAttributes extends BaseEntity implements Serializable {
 
     public void setAttributes(DicomObject attrs) {
         this.studyInstanceUID = attrs.getString(Tag.StudyInstanceUID, "");
+        this.accessionNumber = attrs.getString(Tag.AccessionNumber);
         this.requestedProcedureID = attrs.getString(Tag.RequestedProcedureID,
                 "");
         this.scheduledProcedureStepID = attrs.getString(
