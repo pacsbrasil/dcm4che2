@@ -61,6 +61,7 @@ import org.dcm4chee.archive.entity.Instance;
 import org.dcm4chee.archive.entity.MPPS;
 import org.dcm4chee.archive.entity.MWLItem;
 import org.dcm4chee.archive.entity.Patient;
+import org.dcm4chee.archive.entity.RequestAttributes;
 import org.dcm4chee.archive.entity.Series;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.web.dao.util.CoercionUtil;
@@ -307,6 +308,7 @@ public class MppsToMwlLinkBean implements MppsToMwlLinkLocal {
                 }
                 seriesAttrs.putString(Tag.AccessionNumber, VR.SH, null);
                 s.setAttributes(seriesAttrs);
+                updateRequestAttributes(s, seriesAttrs.get(Tag.RequestAttributesSequence), null);
                 em.merge(s);
             }
             if (s != null) {
@@ -320,6 +322,55 @@ public class MppsToMwlLinkBean implements MppsToMwlLinkLocal {
         return mppsSav;
     }
     
+    private void updateRequestAttributes(Series s, DicomElement newReqAttrSq, String studyAccNo) {
+        Set<RequestAttributes> reqAttrs = s.getRequestAttributes();
+        if (newReqAttrSq == null) {
+            if (reqAttrs.size() > 0) {
+                for (RequestAttributes ra : reqAttrs) {
+                    em.remove(ra);
+                }
+                s.setRequestAttributes(reqAttrs);
+            }
+        } else {
+            RequestAttributes ra;
+            DicomObject rqAttrSqItem;
+            String rpId, spsId;
+            reqAttr: for (Iterator<RequestAttributes> it = reqAttrs.iterator() ; it.hasNext() ; ) {
+                ra = it.next();
+                for (int i = 0, len = newReqAttrSq.countItems() ; i < len ; i++) {
+                    rqAttrSqItem = newReqAttrSq.getDicomObject(i);
+                    rpId = rqAttrSqItem.getString(Tag.RequestedProcedureID); 
+                    spsId = rqAttrSqItem.getString(Tag.ScheduledProcedureStepID);
+                    if (ra.getRequestedProcedureID().equals(rpId) &&
+                        ra.getScheduledProcedureStepID().equals(spsId)) {
+                        ra.setAttributes(rqAttrSqItem);
+                        if (ra.getAccessionNumber() == null && studyAccNo != null)
+                            ra.setAccessionNumber(studyAccNo);
+                        em.merge(ra);
+                        newReqAttrSq.removeDicomObject(i);
+                        continue reqAttr;
+                    }
+                }
+                em.remove(ra);
+                it.remove();
+            }
+            if (newReqAttrSq.countItems() > 0) {
+                for (int i = 0, len = newReqAttrSq.countItems() ; i < len ; i++) {
+                    ra = new RequestAttributes();
+                    ra.setAttributes(newReqAttrSq.getDicomObject(i));
+                    if (ra.getAccessionNumber() == null && studyAccNo != null)
+                        ra.setAccessionNumber(studyAccNo);
+                    ra.setSeries(s);
+                    em.persist(ra);
+                    reqAttrs.add(ra);
+                }
+            }
+            if (log.isDebugEnabled())
+                log.debug("updateRequestAttributes! series.setRequestAttributes:"+reqAttrs);
+            s.setRequestAttributes(reqAttrs);
+        }
+    }
+
     @SuppressWarnings("unchecked")
     public Map<String,DicomObject> updateSeriesAndStudyAttributes(String[] mppsIuids, DicomObject coerce) {
         StringBuilder sb = new StringBuilder("SELECT object(s) FROM Series s WHERE performedProcedureStepInstanceUID");
@@ -343,6 +394,8 @@ public class MppsToMwlLinkBean implements MppsToMwlLinkLocal {
                 CoercionUtil.coerceAttributes(seriesAndStudyAttrs, coerce, null);
                 log.debug("Set coerced SeriesAndStudy: "+seriesAndStudyAttrs);
                 s.setAttributes(seriesAndStudyAttrs);
+                updateRequestAttributes(s, seriesAndStudyAttrs.get(Tag.RequestAttributesSequence),
+                        seriesAndStudyAttrs.getString(Tag.AccessionNumber));
                 em.merge(s);
                 log.debug("new Series Attrs: "+s.getAttributes(true));
             }
