@@ -1214,12 +1214,6 @@ public abstract class LookupTable {
                 pixelPaddingRange);
     }
 
-    private static boolean isInverse(DicomObject img) {
-        String shape = img.getString(Tag.PresentationLUTShape);
-        return shape != null ? "INVERSE".equals(shape) : "MONOCHROME1"
-                .equals(img.getString(Tag.PhotometricInterpretation));
-    }
-
     /**
      * @deprecated Please use
      * {@link #createLutFromVOISequence(DicomObject, DicomObject, DicomObject, boolean, int, short[], Integer, Integer)}
@@ -1432,6 +1426,18 @@ public abstract class LookupTable {
         }
         return createLut(stored, signed, outBits, mLut, voiLut, pLut, false,
                 pval2out, pixelPaddingValue, pixelPaddingRange);
+    }
+
+    /**
+     * Determines whether the given meta data indicates an inverse LUT shape.
+     * 
+     * @param img the image meta data.
+     * @return <code>true</code> if the given image has an inverse LUT shape.
+     */
+    public static boolean isInverse(DicomObject img) {
+        String shape = img.getString(Tag.PresentationLUTShape);
+        return shape != null ? "INVERSE".equals(shape) : "MONOCHROME1"
+                .equals(img.getString(Tag.PhotometricInterpretation));
     }
 
     private static void applyPixelPadding(GenericNumericArray array, int padValue,

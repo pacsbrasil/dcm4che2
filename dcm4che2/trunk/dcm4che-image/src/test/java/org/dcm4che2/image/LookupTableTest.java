@@ -2,6 +2,11 @@ package org.dcm4che2.image;
 
 import static org.junit.Assert.*;
 
+import org.dcm4che2.data.BasicDicomObject;
+import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.VR;
+import org.dcm4che2.image.LookupTable;
 import org.junit.Test;
 
 public class LookupTableTest {
@@ -103,5 +108,38 @@ public class LookupTableTest {
         assertEquals(128, lut.lookup(2048));
         assertEquals(0, lut.lookup(4090));
         assertEquals(255, lut.lookup(4095));
+    }
+    
+    @Test
+    public void testIsInverseShouldReturnTrueWhenPresentationLUTShapeIsSetToINVERSE() {
+        DicomObject img = new BasicDicomObject();
+        img.putString(Tag.PresentationLUTShape, VR.CS, "INVERSE");
+        
+        assertTrue(LookupTable.isInverse(img));
+    }
+    
+    @Test
+    public void testIsInverseShouldReturnFalseWhenPresentationLUTShapeIsSetToIDENTITY() {
+        DicomObject img = new BasicDicomObject();
+        img.putString(Tag.PresentationLUTShape, VR.CS, "IDENTITY");
+        
+        assertFalse(LookupTable.isInverse(img));
+    }
+    
+    @Test
+    public void testIsInverseShouldReturnTrueWhenPresentationLUTShapeIsNotSetAndImageIsMonochrome1() {
+        DicomObject img = new BasicDicomObject();
+        img.putString(Tag.PhotometricInterpretation, VR.CS, "MONOCHROME1");
+        
+        assertTrue(LookupTable.isInverse(img));
+    }
+    
+    @Test
+    public void testIsInverseShouldPreferExplicitLUTShapeToPhotometricInterpretation() {
+        DicomObject img = new BasicDicomObject();
+        img.putString(Tag.PresentationLUTShape, VR.CS, "IDENTITY");
+        img.putString(Tag.PhotometricInterpretation, VR.CS, "MONOCHROME1");
+        
+        assertFalse(LookupTable.isInverse(img));
     }
 }
