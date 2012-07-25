@@ -270,6 +270,8 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     private boolean verifyMD5OnMakeCStoreRQ = false;
     
+    private HashSet<String> updateSOFrequest = new HashSet<String>();
+    
     public QueryRetrieveScpService() {
     	moveScp = createMoveScp();
         getScp = createGetScp();
@@ -1298,12 +1300,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
         try {
             for (Iterator<StudyInstanceUIDAndDirPath> it = studyInfos.iterator(); it.hasNext();) {
                 StudyInstanceUIDAndDirPath studyInfo = it.next();
-                try {
-                    fsMgt.touchStudyOnFileSystem(studyInfo.studyIUID, studyInfo.dirpath);
-                } catch (Exception e) {
-                    log.warn("Failed to update access time for study "
-                            + studyInfo, e);
-                }
+                updateStudyAccessTime(studyInfo.studyIUID, studyInfo.dirpath);
             }
         } finally {
             try {
@@ -1315,12 +1312,21 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     private void updateStudyAccessTime(String studyIUID, String dirpath) {
         if (recordStudyAccessTime) {
+            String key = studyIUID+"_"+dirpath;
+            synchronized(this) {
+                if (!updateSOFrequest.add(key)) {
+                    if (log.isDebugEnabled())
+                        log.debug("updateStudyAccessTime for "+key+" already requested!");
+                    return;
+                }
+            }
             try {
                 getFileSystemMgt().touchStudyOnFileSystem(studyIUID, dirpath);
             } catch (Exception e) {
                 log.warn("Failed to update access time for study "
                         + studyIUID + " on " + dirpath, e);
             }
+            updateSOFrequest.remove(key);
         }
     }
 
