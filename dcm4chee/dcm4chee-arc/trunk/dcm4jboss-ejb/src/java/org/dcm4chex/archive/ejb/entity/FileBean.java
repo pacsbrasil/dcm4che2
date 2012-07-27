@@ -411,15 +411,4 @@ public abstract class FileBean implements EntityBean {
         return ejbSelectGenericTime(jbossQl.toString(), args);
     }
 
-    /**    
-     * @ejb.home-method
-     */
-    public Set ejbHomeSelectTarFilenamesToMigrate(String dirPath, boolean lastPksFirst, int limit) throws FinderException {
-        StringBuilder jbossQl = new StringBuilder()
-        .append("SELECT DISTINCT SUBSTRING(f.filePath, 1, LOCATE('!',f.filePath)) FROM File f WHERE f.fileSystem.directoryPath = ?1 AND f.fileStatus >= 0")
-        .append(" AND f.fileStatus <> ").append(FileStatus.MIGRATED).append(" ORDER BY f.pk ")
-        .append(lastPksFirst ? "DESC" : "ASC").append(" LIMIT ?2");
-        return ejbSelectGeneric(jbossQl.toString(), new Object[]{dirPath, limit});
-    }
-
 }

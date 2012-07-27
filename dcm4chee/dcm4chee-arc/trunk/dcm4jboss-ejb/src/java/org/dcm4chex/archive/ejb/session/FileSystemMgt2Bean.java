@@ -221,6 +221,13 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
     /**
      * @ejb.interface-method
      */
+    public FileSystemDTO getFileSystem(String path) throws FinderException {
+        return fileSystemHome.findByDirectoryPath(path).toDTO();
+    }
+
+    /**
+     * @ejb.interface-method
+     */
     public FileSystemDTO getFileSystemOfGroup(String groupID, String path)
             throws FinderException {
         return toDTO(
@@ -1064,13 +1071,6 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
             log.debug("Found " + c.size() + " files with status " + status
                     + " in " + dirPath);
         return toFileDTOs(c);
-    }
-
-    /**
-     * @ejb.interface-method
-     */
-    public Collection findTarFilenamesToMigrate(String dirPath, boolean lastPksFirst, int limit) throws FinderException {
-        return fileHome.selectTarFilenamesToMigrate(dirPath, lastPksFirst, limit);
     }
 
     /**
