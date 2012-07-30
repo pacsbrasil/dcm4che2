@@ -72,16 +72,12 @@ public class HSMMigrateService extends ServiceMBeanSupport {
     
     private final SchedulerDelegate scheduler = new SchedulerDelegate(this);
 
-    private String timerIDHSMMigrate;
-    private String timerIDHSMRemove;
+    private String[] timerIDs = new String[3];
     
-    private long taskIntervalMigrate = 0L;
-    private long taskIntervalRemove = 0L;
+    private long[] taskIntervals = new long[]{0L,0L,0L};
 
-    private int disabledStartHourMigrate;
-    private int disabledEndHourMigrate;
-    private int disabledStartHourRemove;
-    private int disabledEndHourRemove;
+    private int[] disabledStartHours = new int[]{0,0,0};
+    private int[] disabledEndHours = new int[]{0,0,0};
 
     private int limitNumberOfFilesPerMigrateTask;
     private int limitNumberOfFilesPerRemoveTask;
@@ -110,10 +106,10 @@ public class HSMMigrateService extends ServiceMBeanSupport {
             }
             Calendar cal = Calendar.getInstance();
             int hour = cal.get(Calendar.HOUR_OF_DAY);
-            if (isDisabled(hour, disabledStartHourMigrate, disabledEndHourMigrate)) {
+            if (isDisabled(hour, disabledStartHours[0], disabledEndHours[0])) {
                 if (log.isDebugEnabled())
                     log.debug("HSM Migration service disabled in time between "
-                            + disabledStartHourMigrate + " and " + disabledEndHourMigrate
+                            + disabledStartHours[0] + " and " + disabledEndHours[0]
                             + " !");
             } else { 
                 new Thread(new Runnable() {
@@ -129,6 +125,33 @@ public class HSMMigrateService extends ServiceMBeanSupport {
         }
 
     };
+    private final NotificationListener timerListenerRetry = new NotificationListener() {
+        public void handleNotification(Notification notif, Object handback) {
+            if (targetFilesystem == null || srcFilesystem == null) {
+                log.debug("HSM Migration service disabled (srcFilesystems or targetFilesystem is NONE)!");
+                return;
+            }
+            Calendar cal = Calendar.getInstance();
+            int hour = cal.get(Calendar.HOUR_OF_DAY);
+            if (isDisabled(hour, disabledStartHours[1], disabledEndHours[1])) {
+                if (log.isDebugEnabled())
+                    log.debug("HSM Migration service disabled in time between "
+                            + disabledStartHours[1] + " and " + disabledEndHours[1]
+                            + " !");
+            } else { 
+                new Thread(new Runnable() {
+                    public void run() {
+                        try {
+                            retry();
+                        } catch (Exception e) {
+                            log.error("HSM Migration Retry task failed!", e);
+                        }
+                    }
+                }).start();
+            }
+        }
+
+    };
     private final NotificationListener timerListenerRemove = new NotificationListener() {
         public void handleNotification(Notification notif, Object handback) {
             if (targetFilesystem == null || srcFilesystem == null) {
@@ -137,10 +160,10 @@ public class HSMMigrateService extends ServiceMBeanSupport {
             }
             Calendar cal = Calendar.getInstance();
             int hour = cal.get(Calendar.HOUR_OF_DAY);
-            if (isDisabled(hour, disabledStartHourRemove, disabledEndHourRemove)) {
+            if (isDisabled(hour, disabledStartHours[2], disabledEndHours[2])) {
                 if (log.isDebugEnabled())
                     log.debug("HSM Migration 'remove source files' service disabled in time between "
-                            + disabledStartHourMigrate + " and " + disabledEndHourMigrate
+                            + disabledStartHours[2] + " and " + disabledEndHours[2]
                             + " !");
             } else { 
                 new Thread(new Runnable() {
@@ -157,8 +180,7 @@ public class HSMMigrateService extends ServiceMBeanSupport {
 
     };
 
-    private Integer listenerIDMigrate;
-    private Integer listenerIDRemove;
+    private Integer listenerIDs[] = new Integer[3];
 
     private Integer removeSrcOnTargetFileStatus;
     private boolean removeSourceIsRunning;
@@ -166,6 +188,7 @@ public class HSMMigrateService extends ServiceMBeanSupport {
     private QueryStatusMode queryStatusMode;
 
     private int offsetForRemove;
+    private int offsetForRetry;
     
     public final String getSourceFileSystem() {
         return srcFilesystem == null ? NONE : srcFilesystem;
@@ -253,75 +276,76 @@ public class HSMMigrateService extends ServiceMBeanSupport {
     }
 
     public String getTimerIDHSMMigrate() {
-        return timerIDHSMMigrate;
+        return timerIDs[0];
     }
 
     public void setTimerIDHSMMigrate(String timerID) {
-        this.timerIDHSMMigrate = timerID;
+        this.timerIDs[0] = timerID;
+    }
+    public String getTimerIDHSMRtry() {
+        return timerIDs[1];
+    }
+
+    public void setTimerIDHSMRetry(String timerID) {
+        this.timerIDs[1] = timerID;
     }
     public String getTimerIDHSMRemove() {
-        return timerIDHSMRemove;
+        return timerIDs[2];
     }
 
     public void setTimerIDHSMRemove(String timerID) {
-        this.timerIDHSMRemove = timerID;
+        this.timerIDs[2] = timerID;
     }
  
     public final String getTaskIntervalMigrate() {
-        String s = RetryIntervalls.formatIntervalZeroAsNever(taskIntervalMigrate);
-        return (disabledEndHourMigrate == -1) ? s : s + "!" + disabledStartHourMigrate + "-"
-                + disabledEndHourMigrate;
+        return getTaskInterval(0);
     }
-
     public void setTaskIntervalMigrate(String interval) throws Exception {
-        long oldInterval = taskIntervalMigrate;
-        int pos = interval.indexOf('!');
-        if (pos == -1) {
-            taskIntervalMigrate = RetryIntervalls.parseIntervalOrNever(interval);
-            disabledEndHourMigrate = -1;
-        } else {
-            taskIntervalMigrate = RetryIntervalls.parseIntervalOrNever(interval
-                    .substring(0, pos));
-            int pos1 = interval.indexOf('-', pos);
-            disabledStartHourMigrate = Integer.parseInt(interval.substring(pos + 1,
-                    pos1));
-            disabledEndHourMigrate = Integer.parseInt(interval.substring(pos1 + 1));
-        }
-        if (getState() == STARTED && oldInterval != taskIntervalMigrate) {
-            scheduler.stopScheduler(timerIDHSMMigrate, listenerIDMigrate,
-                    timerListenerMigrate);
-            listenerIDMigrate = scheduler.startScheduler(timerIDHSMMigrate,
-                    taskIntervalMigrate, timerListenerMigrate);
-        }
+        setTaskInterval(interval, 0); 
     }
+    
+    public final String getTaskIntervalRetry() {
+        return getTaskInterval(1);
+    }
+    public void setTaskIntervalRetry(String interval) throws Exception {
+        setTaskInterval(interval, 1); 
+    }
+
     public final String getTaskIntervalRemove() {
-        String s = RetryIntervalls.formatIntervalZeroAsNever(taskIntervalRemove);
-        return (disabledEndHourRemove == -1) ? s : s + "!" + disabledStartHourRemove + "-"
-                + disabledEndHourRemove;
+        return getTaskInterval(2);
+    }
+    public void setTaskIntervalRemove(String interval) throws Exception {
+        setTaskInterval(interval, 2); 
     }
 
-    public void setTaskIntervalRemove(String interval) throws Exception {
-        long oldInterval = taskIntervalRemove;
+    private final String getTaskInterval(int idx) {
+        String s = RetryIntervalls.formatIntervalZeroAsNever(taskIntervals[idx]);
+        return (disabledEndHours[idx] == -1) ? s : s + "!" + disabledStartHours[idx] + "-"
+                + disabledEndHours[idx];
+    }
+
+    private final void setTaskInterval(String interval, int idx) throws Exception {
+        long oldInterval = taskIntervals[idx];
         int pos = interval.indexOf('!');
         if (pos == -1) {
-            taskIntervalRemove = RetryIntervalls.parseIntervalOrNever(interval);
-            disabledEndHourRemove = -1;
+            taskIntervals[idx] = RetryIntervalls.parseIntervalOrNever(interval);
+            disabledEndHours[idx] = -1;
         } else {
-            taskIntervalRemove = RetryIntervalls.parseIntervalOrNever(interval
+            taskIntervals[idx] = RetryIntervalls.parseIntervalOrNever(interval
                     .substring(0, pos));
             int pos1 = interval.indexOf('-', pos);
-            disabledStartHourRemove = Integer.parseInt(interval.substring(pos + 1,
+            disabledStartHours[idx] = Integer.parseInt(interval.substring(pos + 1,
                     pos1));
-            disabledEndHourRemove = Integer.parseInt(interval.substring(pos1 + 1));
+            disabledEndHours[idx] = Integer.parseInt(interval.substring(pos1 + 1));
         }
-        if (getState() == STARTED && oldInterval != taskIntervalRemove) {
-            scheduler.stopScheduler(timerIDHSMRemove, listenerIDRemove,
-                    timerListenerRemove);
-            listenerIDRemove = scheduler.startScheduler(timerIDHSMRemove,
-                    taskIntervalRemove, timerListenerRemove);
+        if (getState() == STARTED && oldInterval != taskIntervals[idx]) {
+            scheduler.stopScheduler(timerIDs[idx], listenerIDs[idx],
+                    timerListenerMigrate);
+            listenerIDs[idx] = scheduler.startScheduler(timerIDs[idx],
+                    taskIntervals[idx], timerListenerMigrate);
         }
     }
-
+    
     public boolean isLastPksFirst() {
         return lastPksFirst;
     }
@@ -348,6 +372,10 @@ public class HSMMigrateService extends ServiceMBeanSupport {
     
     public int getOffsetForRemove() {
         return offsetForRemove ;
+    }
+    
+    public int getOffsetForRetry() {
+        return offsetForRetry ;
     }
     
     public ObjectName getSchedulerServiceName() {
@@ -384,10 +412,12 @@ public class HSMMigrateService extends ServiceMBeanSupport {
     }
 
     protected void startService() throws Exception {
-        listenerIDMigrate = scheduler.startScheduler(timerIDHSMMigrate,
-                taskIntervalMigrate, timerListenerMigrate);
-        listenerIDRemove = scheduler.startScheduler(timerIDHSMRemove,
-                taskIntervalRemove, timerListenerRemove);
+        listenerIDs[0] = scheduler.startScheduler(timerIDs[0],
+                taskIntervals[0], timerListenerMigrate);
+        listenerIDs[1] = scheduler.startScheduler(timerIDs[1],
+                taskIntervals[1], timerListenerRetry);
+        listenerIDs[2] = scheduler.startScheduler(timerIDs[2],
+                taskIntervals[2], timerListenerRemove);
         if (this.srcFilesystem != null) {//to get pk's
             this.setSourceFileSystem(srcFilesystem);
             this.setTargetFileSystem(targetFilesystem);
@@ -395,13 +425,23 @@ public class HSMMigrateService extends ServiceMBeanSupport {
     }
 
     protected void stopService() throws Exception {
-        scheduler.stopScheduler(timerIDHSMMigrate, listenerIDMigrate,
+        scheduler.stopScheduler(timerIDs[0], listenerIDs[0],
                 timerListenerMigrate);
-        scheduler.stopScheduler(timerIDHSMRemove, listenerIDRemove,
+        scheduler.stopScheduler(timerIDs[1], listenerIDs[1],
+                timerListenerRemove);
+        scheduler.stopScheduler(timerIDs[2], listenerIDs[2],
                 timerListenerRemove);
     }
 
     public int migrate() throws Exception  {
+        return migrate(new int[]{0,1,2}, false);
+    }
+    
+    public int retry() throws Exception  {
+        return migrate(new int[]{FileStatus.MIGRATION_FAILED}, true);
+    }
+    
+    public int migrate(int[] fileStati, boolean retry) throws Exception  {
         if (srcFilesystem == null || this.targetFilesystem == null) {
             return 0;
         }
@@ -411,15 +451,23 @@ public class HSMMigrateService extends ServiceMBeanSupport {
                 return -1;
             }
         }
-        log.info("Start HSM Migration!");
+        if (retry) {
+            log.info("Start retry of HSM Migration!");
+        } else {
+            log.info("Start HSM Migration!");
+        }
         int[] counts = new int[]{0,0};
         FileSystemMgt2 mgr = newFileSystemMgt();
         Collection<String> tarFiles = new QueryHSMMigrateCmd()
-            .getTarFilenamesToMigrate(srcFsPk, lastPksFirst, this.limitNumberOfFilesPerMigrateTask);
-        log.info("Found "+tarFiles.size()+" tar files to migrate on filesystem "+srcFilesystem);
+            .getTarFilenamesToMigrate(srcFsPk, fileStati, lastPksFirst, 
+                    limitNumberOfFilesPerMigrateTask, retry ? offsetForRetry : 0);
+        int len = tarFiles.size();
+        if (retry)
+            offsetForRetry = len < 1 ? 0 : offsetForRetry + len;
+        log.info("Found "+len+" tar files to migrate on filesystem "+srcFilesystem);
         Iterator<String> iter = tarFiles.iterator();
         synchronized(taskList) {
-            counts[0] = Math.min(tarFiles.size(), concurrency);
+            counts[0] = Math.min(len, concurrency);
             for (int i = 0 ; i < counts[0] ; i++) {
                 MigrationTask t = new MigrationTask(this, iter, mgr, counts);
                 taskList.add(t);
