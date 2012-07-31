@@ -666,13 +666,16 @@ which Series Stored Notifications were not yet emitted.]]>
    <attribute access="read-write"
       getMethod="getSeriesStoredNotificationDelay"
       setMethod="setSeriesStoredNotificationDelay">
-      <description><![CDATA[Minimal delay in hours (#h), minutes (#m) or
+      <description><![CDATA[Minimal delay(s) in hours (#h), minutes (#m) or
 seconds (#s) between the receive of the last object of a Series and the
 emission of a Series Stored Notification for that Series. Shall not be
 configured smaller than the maximal time between the receive of two objects
 belonging to the same Series to avoid emission of multiple Series Stored
-Notifications for one Series.]]>
-      </description>
+Notifications for one Series.<br/>
+Supports also AE specific delays.<br/>
+Format: [&lt;AE Title&gt;:]&lt;delay&gt;<br/>
+Note: A default delay (without '&lt;AE Title&gt;:') must be configured!
+	  ]]></description>
       <name>SeriesStoredNotificationDelay</name>
       <type>java.lang.String</type>
       <descriptors>

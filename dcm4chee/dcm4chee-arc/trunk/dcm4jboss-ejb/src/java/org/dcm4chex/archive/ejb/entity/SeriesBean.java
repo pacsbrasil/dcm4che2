@@ -614,6 +614,19 @@ public abstract class SeriesBean implements EntityBean {
     public abstract Collection ejbSelectSeriesPksByStatusAndUpdatedBefore(int status, Timestamp updatedBefore) throws FinderException;
 
     /**
+     * @ejb.home-method
+     */
+    public Collection<SeriesLocal> ejbHomeGetSeriesWithStatusAndUpdatedBefore(
+            int status, Timestamp updatedBefore) throws FinderException {
+        return ejbSelectSeriesByStatusAndUpdatedBefore(status, updatedBefore);
+    }
+
+    /**
+     * @ejb.select query="SELECT OBJECT(s) FROM Series s WHERE s.seriesStatus = ?1 AND s.updatedTime < ?2"
+     */
+    public abstract Collection<SeriesLocal> ejbSelectSeriesByStatusAndUpdatedBefore(int status, Timestamp updatedBefore) throws FinderException;
+
+    /**
      * @ejb.select query="SELECT DISTINCT i.retrieveAETs FROM Instance i WHERE i.series.pk = ?1"
      */
     public abstract java.util.Set ejbSelectInternalRetrieveAETs(Long pk) throws FinderException;

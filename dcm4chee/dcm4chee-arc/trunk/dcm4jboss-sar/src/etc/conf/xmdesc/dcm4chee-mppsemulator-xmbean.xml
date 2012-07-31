@@ -20,19 +20,26 @@
      getMethod="getModalityAETitles" 
      setMethod="setModalityAETitles">
       <description><![CDATA[AE titles of modalities for which MPPS messages 
-        shall be emulated. Multiple AE titles are separated by new line.
-        For each AE title, a minimum delay time between the time the last
-        object of the a study is received and the generation of the MPPS
-        message can be explicit specified. If no delay is specified, a default
-        delay of 5 minutes is used.
-        <br/>Format: <i>aeTitle</i>[:<i>delay</i>] 
-        <br/><i>delay</i> can be specified in seconds (##s) or minutes (##m).
-        <br>Sample: MOD_MPPS:3m]]>
+        shall be emulated. Multiple AE titles are separated by new line.]]>
       </description>
       <name>ModalityAETitles</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="MOD_AET:3m"/>
+         <value value="MOD_AET"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write" 
+     getMethod="getDelay" 
+     setMethod="setDelay">
+      <description><![CDATA[Minimum delay time specified in seconds (##s) or minutes (##m)
+        between the time the last object of the a study is received and the generation of the MPPS
+        message can be explicit specified.
+        <br>Sample: 3m]]>
+      </description>
+      <name>MPPSDelay</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="5m"/>
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getPollInterval" setMethod="setPollInterval">

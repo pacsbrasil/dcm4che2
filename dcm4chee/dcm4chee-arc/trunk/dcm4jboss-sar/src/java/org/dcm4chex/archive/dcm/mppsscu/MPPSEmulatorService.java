@@ -39,9 +39,7 @@
 
 package org.dcm4chex.archive.dcm.mppsscu;
 
-import java.io.IOException;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.StringTokenizer;
 
 import javax.management.Notification;
@@ -68,7 +66,7 @@ import org.jboss.system.server.ServerImplMBean;
 public class MPPSEmulatorService extends ServiceMBeanSupport implements
         NotificationListener {
     
-    private static final long FIVE_MINUTES = 299999L;
+    private static final String NEWLINE = System.getProperty("line.separator", "\n");
 
     private static final String IN_PROGRESS = "IN PROGRESS";
     private static final String COMPLETED = "COMPLETED";
@@ -95,7 +93,7 @@ public class MPPSEmulatorService extends ServiceMBeanSupport implements
     private String calledAET;
 
     private String[] stationAETs = {};
-    private long[] delays;
+    private long delay;
     
     private ObjectName mppsScuServiceName;
     
@@ -131,33 +129,33 @@ public class MPPSEmulatorService extends ServiceMBeanSupport implements
     public final String getModalityAETitles() {
         StringBuffer sb = new StringBuffer();
         for (int i = 0; i < stationAETs.length; i++) {
-            sb.append(stationAETs[i]);
-            if (delays[i] != FIVE_MINUTES) {
-                sb.append(':').append(RetryIntervalls.formatInterval(delays[i]));
-            }
-            sb.append("\r\n");
+            sb.append(stationAETs[i]).append(NEWLINE);
         }
         return sb.toString();
     }
         
     public final void setModalityAETitles(String s) {
-        StringTokenizer stk = new StringTokenizer(s, "\r\n");
+        StringTokenizer stk = new StringTokenizer(s, "\n\t\r,;");
         String[] newStationAETs = new String[stk.countTokens()];
-        delays = new long[newStationAETs.length];
         int endAET;
         for (int i = 0; i < newStationAETs.length; i++) {
             newStationAETs[i] = stk.nextToken().trim();
-            delays[i] = FIVE_MINUTES;
-            endAET = newStationAETs[i].indexOf(':');
+            endAET = newStationAETs[i].indexOf(':'); //compatibility to previous AET:delay config
             if (endAET >= 0) {
-                delays[i] = RetryIntervalls.parseInterval(
-                        newStationAETs[i].substring(endAET+1));
                 newStationAETs[i] = newStationAETs[i].substring(0, endAET);
             }
         }
         stationAETs = newStationAETs;
     }
     
+    public String getDelay() {
+        return RetryIntervalls.formatInterval(delay);
+    }
+
+    public void setDelay(String delay) {
+        this.delay = RetryIntervalls.parseInterval(delay);
+    }
+
     public final String getPollInterval() {
         return RetryIntervalls.formatIntervalZeroAsNever(pollInterval);
     }
@@ -202,6 +200,7 @@ public class MPPSEmulatorService extends ServiceMBeanSupport implements
         }
     }
 
+    @SuppressWarnings("unchecked")
     public int emulateMPPS() {
         if (stationAETs.length == 0)
             return 0;
@@ -226,7 +225,7 @@ public class MPPSEmulatorService extends ServiceMBeanSupport implements
                 Collection<Long> studyPks;
                 try {
                     studyPks = (Collection<Long>) mppsEmulator.getStudiesWithMissingMPPS(stationAETs[i],
-                            delays[i]);
+                            delay);
                 } catch (Exception e) {
                     log.error("Failed to emulate MPPS for series received from " + 
                             stationAETs[i] + " failed:", e);

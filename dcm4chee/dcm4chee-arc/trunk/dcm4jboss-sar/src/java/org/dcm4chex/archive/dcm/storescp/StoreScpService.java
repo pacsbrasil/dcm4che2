@@ -48,9 +48,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
+import java.util.Map.Entry;
 
 import javax.ejb.CreateException;
 import javax.ejb.FinderException;
@@ -107,6 +110,7 @@ public class StoreScpService extends AbstractScpService {
 
     public static final String EVENT_TYPE_OBJECT_STORED = 
             "org.dcm4chex.archive.dcm.storescp";
+    private static final String NEWLINE = System.getProperty("line.separator", "\n");
 
     public static final NotificationFilter NOTIF_FILTER = 
             new NotificationFilter() {
@@ -155,7 +159,7 @@ public class StoreScpService extends AbstractScpService {
 
     private Integer listenerID;
     private long checkPendingSeriesStoredInterval;
-    private long seriesStoredNotificationDelay;
+    private Map<String,Long> seriesStoredNotificationDelays = new HashMap<String,Long>();
     private String defFileSystemGroupID;
 
     /**
@@ -280,12 +284,42 @@ public class StoreScpService extends AbstractScpService {
     }
             
     public final String getSeriesStoredNotificationDelay() {
-        return RetryIntervalls.formatInterval(seriesStoredNotificationDelay);
+        String defaultDelay = null;
+        StringBuilder sb = new StringBuilder();
+        for (Entry<String, Long> delay : seriesStoredNotificationDelays.entrySet()) {
+            if (delay.getKey() == null) {
+                defaultDelay = RetryIntervalls.formatInterval(delay.getValue());
+            } else {
+                sb.append(delay.getKey()).append(":")
+                .append(RetryIntervalls.formatInterval(delay.getValue())).append(NEWLINE);
+                
+            }
+        }
+        if (defaultDelay != null) {
+            sb.append(defaultDelay).append(NEWLINE);
+        }
+        return sb.toString();
     }
 
-    public void setSeriesStoredNotificationDelay(String interval) {
-        seriesStoredNotificationDelay = RetryIntervalls
-                .parseIntervalOrNever(interval);
+    public void setSeriesStoredNotificationDelay(String s) {
+        HashMap<String,Long> delays = new HashMap<String,Long>();
+        String aet, delay;
+        int pos;
+        for (StringTokenizer st = new StringTokenizer(s, "\n\t\r,;") ; st.hasMoreElements() ; ) {
+            aet = null;
+            delay = st.nextToken();
+            pos = delay.indexOf(':');
+            if (pos != -1) {
+                aet = delay.substring(0,pos);
+                delay = delay.substring(++pos);
+            }
+            delays.put(aet, RetryIntervalls.parseInterval(delay));
+        }
+        if (delays.containsKey(null)) {
+            seriesStoredNotificationDelays = delays;
+        } else {
+            throw new IllegalArgumentException("Missing default SeriesStored delay!");
+        }
     }
 
     public final boolean isMd5sum() {
@@ -917,9 +951,17 @@ public class StoreScpService extends AbstractScpService {
 
     private void checkPendingSeriesStored() throws Exception {
         Storage store = getStorage();
-        Timestamp updatedBefore = new Timestamp(
-                System.currentTimeMillis() - seriesStoredNotificationDelay);
-        Collection<Long> seriesPks = store.getPksOfPendingSeries(updatedBefore);
+        Collection<Long> seriesPks;
+        Timestamp updatedBefore;
+        if (seriesStoredNotificationDelays.size() == 1) {
+            updatedBefore = new Timestamp(
+                System.currentTimeMillis() - seriesStoredNotificationDelays.get(null));
+            seriesPks = store.getPksOfPendingSeries(updatedBefore);
+        } else {
+            updatedBefore = new Timestamp(System.currentTimeMillis());
+            seriesPks = store.getPksOfPendingSeries(seriesStoredNotificationDelays);
+            log.info("Found seriesPks for SeriesStored:"+seriesPks);
+        }
         for (Long seriesPk : seriesPks) {
             try {
                 SeriesStored seriesStored = 

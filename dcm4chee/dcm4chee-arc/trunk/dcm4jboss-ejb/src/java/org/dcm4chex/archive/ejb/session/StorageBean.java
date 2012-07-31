@@ -40,6 +40,7 @@
 package org.dcm4chex.archive.ejb.session;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -306,6 +307,39 @@ public abstract class StorageBean implements SessionBean {
             throws FinderException {
         return seriesHome.getSeriesPksWithStatusAndUpdatedBefore(
                 RECEIVED, updatedBefore);
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public Collection<Long> getPksOfPendingSeries(Map<String, Long> delays)
+            throws FinderException {
+        Long minDelay = null;
+        for (Long delay : delays.values()) {
+            if (minDelay == null || delay < minDelay) 
+                minDelay = delay;
+        }
+        long ts = System.currentTimeMillis();
+        Timestamp updatedBefore = new Timestamp(ts - minDelay);
+        Collection<SeriesLocal> c = seriesHome.getSeriesWithStatusAndUpdatedBefore(RECEIVED, updatedBefore);
+        String aet;
+        Long delay;
+        ArrayList<Long> pks = new ArrayList<Long>();
+        for (SeriesLocal s: c) {
+            aet = s.getSourceAET();
+            delay = delays.get(aet);
+            if (delay == null) {
+                delay = delays.get(null);
+                if (delay == null) {
+                    log.warn("No default delay and delay for sourceAET "+aet+" is not configured! Skipped!");
+                    continue;
+                }
+            }
+            if (s.getUpdatedTime().getTime() < ts - delay) {
+                pks.add(s.getPk());
+            }
+        }
+        return pks;
     }
 
     /**
