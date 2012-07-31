@@ -47,6 +47,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.ejb.CreateException;
@@ -711,5 +712,40 @@ public abstract class StorageBean implements SessionBean {
         return patHome.findByPatientIdWithIssuer(pid, issuer)
                 .getAttributes(false);
     }
+    
+    /**
+     * @ejb.interface-method
+     */
+    public List<String> getSopIuidsForRejectionNote(Dataset rejNote, String srcAet)
+            throws FinderException{
+        List<String> iuids = new ArrayList<String>();
+        DcmElement sq = rejNote.get(Tags.CurrentRequestedProcedureEvidenceSeq);
+        Dataset seriesItem;
+        SeriesLocal series;
+        String seriesIuid;
+        for (int i = 0, iLen = sq.countItems(); i < iLen; i++) {
+            DcmElement refSerSq = sq.getItem(i).get(Tags.RefSeriesSeq);
+            for (int j = 0, jLen = refSerSq.countItems(); j < jLen; j++) {
+                seriesItem = refSerSq.getItem(j);
+                seriesIuid = seriesItem.getString(Tags.SeriesInstanceUID);
+                try {
+                    series = seriesHome.findBySeriesIuid(seriesIuid);
+                    if (!srcAet.equals(series.getSourceAET()) ) {
+                        log.info("CallingAET ("+srcAet+") of RejectionNote request is different to SourceAET ("+
+                                series.getSourceAET()+") of Series "+seriesIuid+"! Ignore this series in RejectionNote!");
+                    } else {
+                        DcmElement refSopSq = seriesItem.get(Tags.RefSOPSeq);
+                        for (int k = 0, kLen = refSopSq.countItems(); k < kLen; k++) {
+                            iuids.add(refSopSq.getItem(k).getString(Tags.RefSOPInstanceUID));
+                        }
+                    }
+                } catch (FinderException x) {
+                    log.warn("Series "+seriesIuid+" not found. Ignore this series in RejectionNote!");
+                }
+            }
+        }
+        return iuids;
+    }
+
 }
 

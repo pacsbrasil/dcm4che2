@@ -38,12 +38,14 @@
 package org.dcm4chex.archive.mawf;
 
 import java.lang.reflect.InvocationTargetException;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.ejb.CreateException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
@@ -61,10 +63,15 @@ import org.dcm4che.dict.UIDs;
 import org.dcm4che.srom.Code;
 import org.dcm4che.srom.SRDocumentFactory;
 import org.dcm4chex.archive.common.BaseJmsOrder;
+import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.dcm.storescp.StoreScpService;
+import org.dcm4chex.archive.ejb.interfaces.Storage;
+import org.dcm4chex.archive.ejb.interfaces.StorageHome;
 import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.dcm4chex.archive.mbean.JMSDelegate;
+import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.dcm4chex.archive.util.HomeFactoryException;
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
@@ -85,6 +92,8 @@ public class RejectionNoteStoredService extends ServiceMBeanSupport
     private long deletionDelay;
     private boolean keepRejectionNote;
     private RetryIntervalls retryIntervals = new RetryIntervalls();
+
+    private boolean checkCallingAET;
 
     public ObjectName getStoreScpServiceName() {
         return storeScpServiceName;
@@ -149,6 +158,14 @@ public class RejectionNoteStoredService extends ServiceMBeanSupport
 
     public boolean isKeepRejectionNote() {
         return keepRejectionNote;
+    }
+
+    public boolean isCheckCallingAET() {
+        return checkCallingAET;
+    }
+
+    public void setCheckCallingAET(boolean checkCallingAET) {
+        this.checkCallingAET = checkCallingAET;
     }
 
     public void setRetryIntervals(String retryIntervals) {
@@ -282,16 +299,31 @@ public class RejectionNoteStoredService extends ServiceMBeanSupport
     }
 
     private String[] iuidsOf(Dataset ds) {
-        ArrayList<String> iuids = new ArrayList<String>();
-        DcmElement stysq = ds.get(Tags.CurrentRequestedProcedureEvidenceSeq);
-        for (int i = 0, styCount = stysq.countItems(); i < styCount; i++) {
-            DcmElement sersq = stysq.getItem(i).get(Tags.RefSeriesSeq);
-            for (int j = 0, serCount = sersq.countItems(); j < serCount; j++) {
-                DcmElement refsopsq = sersq.getItem(j).get(Tags.RefSOPSeq);
-                for (int k = 0, refsopsqCount = refsopsq.countItems();
-                        k < refsopsqCount; k++) {
-                    iuids.add(refsopsq.getItem(k)
-                            .getString(Tags.RefSOPInstanceUID));
+        List<String> iuids;
+        if (checkCallingAET) {
+            ds.setPrivateCreatorID(PrivateTags.CreatorID);
+            String callingAET = ds.getString(PrivateTags.CallingAET);
+            log.info("###### callingAET:"+callingAET);
+            ds.setPrivateCreatorID(null);
+            try {
+                Storage store = this.getStorage();
+                iuids = store.getSopIuidsForRejectionNote(ds, callingAET);
+            } catch (Exception x) {
+                log.error("Get SOPInstance UIDs for RejectionNote failed!", x);
+                iuids =  new ArrayList<String>();
+            }
+        } else {
+            iuids = new ArrayList<String>();
+            DcmElement stysq = ds.get(Tags.CurrentRequestedProcedureEvidenceSeq);
+            for (int i = 0, styCount = stysq.countItems(); i < styCount; i++) {
+                DcmElement sersq = stysq.getItem(i).get(Tags.RefSeriesSeq);
+                for (int j = 0, serCount = sersq.countItems(); j < serCount; j++) {
+                    DcmElement refsopsq = sersq.getItem(j).get(Tags.RefSOPSeq);
+                    for (int k = 0, refsopsqCount = refsopsq.countItems();
+                            k < refsopsqCount; k++) {
+                        iuids.add(refsopsq.getItem(k)
+                                .getString(Tags.RefSOPInstanceUID));
+                    }
                 }
             }
        }
@@ -315,4 +347,10 @@ public class RejectionNoteStoredService extends ServiceMBeanSupport
             throw new ConfigurationException(e);
         }
     }
+    
+    Storage getStorage() throws RemoteException, CreateException, HomeFactoryException {
+        return ((StorageHome) EJBHomeFactory.getFactory().lookup(
+                StorageHome.class, StorageHome.JNDI_NAME)).create();
+    }
+
 }

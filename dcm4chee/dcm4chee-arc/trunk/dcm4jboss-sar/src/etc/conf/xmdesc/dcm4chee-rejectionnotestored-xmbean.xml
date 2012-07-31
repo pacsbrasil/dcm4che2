@@ -62,6 +62,19 @@ and optionally also
    </attribute>
 
    <attribute access="read-write"
+      getMethod="isCheckCallingAET"
+      setMethod="setCheckCallingAET">
+      <description><![CDATA[Check source AET of series with calling AET of RejectionNote request.<br/>
+      	Skip Instances of Series if source and calling AET's are different.
+		]]></description>
+      <name>CheckCallingAET</name>
+      <type>boolean</type>
+    <descriptors>
+      <value value="true"/>
+    </descriptors>
+   </attribute>
+
+   <attribute access="read-write"
       getMethod="getDeletionDelay"
       setMethod="setDeletionDelay">
       <description><![CDATA[Controls the delay between the receive of an
