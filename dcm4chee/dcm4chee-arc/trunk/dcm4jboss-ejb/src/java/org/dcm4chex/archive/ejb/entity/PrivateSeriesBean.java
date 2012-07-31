@@ -42,11 +42,11 @@ package org.dcm4chex.archive.ejb.entity;
 
 import javax.ejb.CreateException;
 import javax.ejb.EntityBean;
+import javax.ejb.FinderException;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
-import org.dcm4che.dict.UIDs;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.ejb.interfaces.PrivateStudyLocal;
@@ -69,6 +69,8 @@ import org.dcm4chex.archive.ejb.interfaces.PrivateStudyLocal;
  * @ejb.finder signature="java.util.Collection findBySeriesIuid(int privateType, java.lang.String uid)"
  *             query="SELECT OBJECT(a) FROM PrivateSeries AS a WHERE a.privateType = ?1 AND a.seriesIuid = ?2"
  *             transaction-type="Supports"
+ * @jboss.query signature="int ejbSelectNumberOfSeriesRelatedInstances(java.lang.Long pk)"
+ *              query="SELECT COUNT(i) FROM PrivateInstance i WHERE i.series.pk = ?1"
  */
 public abstract class PrivateSeriesBean implements EntityBean {
 
@@ -166,4 +168,19 @@ public abstract class PrivateSeriesBean implements EntityBean {
     public abstract java.util.Collection getInstances();
     public abstract void setInstances(java.util.Collection series);
 
+    /**
+     * @ejb.select query=""
+     */ 
+    public abstract int ejbSelectNumberOfSeriesRelatedInstances(Long pk) throws FinderException;
+    
+    /**
+     * @ejb.interface-method
+     */
+    public int getNumberOfSeriesRelatedInstances() {
+        try {
+            return ejbSelectNumberOfSeriesRelatedInstances(getPk());
+        } catch (FinderException e) {
+            return getInstances().size();
+        }
+    }
 }

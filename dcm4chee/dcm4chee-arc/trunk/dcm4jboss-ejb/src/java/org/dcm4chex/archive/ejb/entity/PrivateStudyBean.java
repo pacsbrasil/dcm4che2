@@ -40,15 +40,18 @@
 
 package org.dcm4chex.archive.ejb.entity;
 
+import java.util.Collection;
+
 import javax.ejb.CreateException;
 import javax.ejb.EntityBean;
+import javax.ejb.FinderException;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
-import org.dcm4che.dict.UIDs;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.ejb.interfaces.PrivatePatientLocal;
+import org.dcm4chex.archive.ejb.interfaces.PrivateSeriesLocal;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -68,6 +71,8 @@ import org.dcm4chex.archive.ejb.interfaces.PrivatePatientLocal;
  * @ejb.finder signature="java.util.Collection findByStudyIuid(int privateType, java.lang.String uid)"
  *             query="SELECT OBJECT(a) FROM PrivateStudy AS a WHERE a.privateType = ?1 AND a.studyIuid = ?2"
  *             transaction-type="Supports"
+ * @jboss.query signature="int ejbSelectNumberOfStudyRelatedInstances(java.lang.Long pk)"
+ *              query="SELECT COUNT(i) FROM PrivateInstance i WHERE i.series.study.pk = ?1"
  */
 public abstract class PrivateStudyBean implements EntityBean {
     private static final Logger log = Logger.getLogger(PrivateStudyBean.class);
@@ -158,4 +163,26 @@ public abstract class PrivateStudyBean implements EntityBean {
     public abstract java.util.Collection getSeries();
     public abstract void setSeries(java.util.Collection series);
 
+    /**
+     * @ejb.select query=""
+     */
+    public abstract int ejbSelectNumberOfStudyRelatedInstances(Long pk) throws FinderException;
+    
+    /**
+     * @ejb.interface-method
+     */
+    @SuppressWarnings("unchecked")
+    public int getNumberOfStudyRelatedInstances() {
+        try {
+            return ejbSelectNumberOfStudyRelatedInstances(getPk());
+        } catch (FinderException e) {
+            int numberOfStudyRelatedInstances = 0;
+      
+            for (PrivateSeriesLocal privateSeriesLocal : (Collection<PrivateSeriesLocal>) getSeries()) {
+                numberOfStudyRelatedInstances += privateSeriesLocal.getNumberOfSeriesRelatedInstances();
+            }
+      
+            return numberOfStudyRelatedInstances;
+        }
+    }
 }
