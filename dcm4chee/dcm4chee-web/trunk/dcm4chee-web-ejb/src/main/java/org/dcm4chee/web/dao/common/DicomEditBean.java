@@ -420,30 +420,27 @@ public class DicomEditBean implements DicomEditLocal {
     }
     
     @SuppressWarnings("unchecked")
-    public EntityTree moveStudiesToPatient(long pks[], long pk)
-    {
+    public EntityTree moveStudiesToPatient(long pks[], long pk) {
         Query qP = em.createQuery("SELECT OBJECT(p) FROM Patient p WHERE pk = :pk").setParameter("pk", Long.valueOf(pk));
         Query qS = QueryUtil.getQueryForPks(em, "SELECT OBJECT(s) FROM Study s WHERE pk ", pks);
         return moveStudiesToPatient(qS.getResultList(), (Patient)qP.getSingleResult());
     }
 
     @SuppressWarnings("unchecked")
-    public EntityTree moveStudyToPatient(String iuid, String patId, String issuer)
-    {
+    public EntityTree moveStudyToPatient(String iuid, String patId, String issuer) {
         Query qS = em.createQuery("SELECT OBJECT(s) FROM Study s WHERE studyInstanceUID = :iuid").setParameter("iuid", iuid.trim());
         Query qP = QueryUtil.getPatientQuery(em, patId, issuer);
         return moveStudiesToPatient(qS.getResultList(), (Patient)qP.getSingleResult());
     }
 
-    private EntityTree moveStudiesToPatient(List<Study> studies, Patient patient)
-    {
+    private EntityTree moveStudiesToPatient(List<Study> studies, Patient patient) {
         EntityTree tree = new EntityTree();
         for(Study s : studies) {
             tree.addStudy(s);
             s.setPatient(patient);
             for (Series series : s.getSeries()) {
                 MPPS mpps = series.getModalityPerformedProcedureStep();
-                if(mpps != null) {
+                if(mpps != null && mpps.getPatient().getPk() != patient.getPk()) {
                     mpps.setPatient(patient);
                     em.merge(mpps);
                 }
