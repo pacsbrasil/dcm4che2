@@ -66,14 +66,16 @@ public class QueryHSMMigrateCmd extends BaseReadCmd {
     }
     
 	
-    public Set<String> getTarFilenamesToMigrate(long fsPk, boolean lastPksFirst, int limit) throws SQLException {
+    public Set<String> getTarFilenamesToMigrate(long fsPk, int[] fileStati, 
+            boolean lastPksFirst, int limit, int offset) throws SQLException {
         sqlBuilder.setFrom( new String[] {"File"} );
         sqlBuilder.setFieldNamesForSelect( new String[] { "SUBSTRING(files.filepath, 1, LOCATE('!',files.filepath))" });
         sqlBuilder.addIntValueMatch(null, "File.filesystem_fk", false, (int)fsPk);
-        sqlBuilder.addListOfIntMatch(null, "File.fileStatus", false, new int[]{0,1,2,3});
+        addFileStatiMatch(fileStati);
         sqlBuilder.addOrderBy("File.pk", lastPksFirst ? " DESC" : " ASC");
         sqlBuilder.setDistinct(true);
         sqlBuilder.setLimit(limit);
+        sqlBuilder.setOffset(offset);
         HashSet<String> result = new HashSet<String>();
         try {
             execute(sqlBuilder.getSql());
@@ -85,6 +87,7 @@ public class QueryHSMMigrateCmd extends BaseReadCmd {
             close();
         }
     }
+
 
     /**
      * Return list of tar filenames and file status for source FS and target FS of instances
@@ -114,13 +117,7 @@ public class QueryHSMMigrateCmd extends BaseReadCmd {
         sqlBuilder.addIntValueMatch(ALIAS_SRC, "File.filesystem_fk", false, (int)srcFsPk);
         sqlBuilder.addIntValueMatch(null, "File.filesystem_fk", false, (int)targetFsPk);
         sqlBuilder.addFieldValueMatch(ALIAS_SRC, "File.instance_fk", false, null, "File.instance_fk");
-        if (targetFileStati != null) {
-            if (targetFileStati.length == 1) {
-                sqlBuilder.addIntValueMatch(null, "File.fileStatus", false, targetFileStati[0]);
-            } else {
-                sqlBuilder.addListOfIntMatch(null, "File.fileStatus", false, targetFileStati);
-            }
-        }
+        addFileStatiMatch(targetFileStati);
         sqlBuilder.setDistinct(true);
         sqlBuilder.addOrderBy("File.pk", " ASC");
         sqlBuilder.setLimit(limit);
@@ -138,6 +135,16 @@ public class QueryHSMMigrateCmd extends BaseReadCmd {
         }
     }
     
+    private void addFileStatiMatch(int[] fileStati) {
+        if (fileStati != null) {
+            if (fileStati.length == 1) {
+                sqlBuilder.addIntValueMatch(null, "File.fileStatus", false, fileStati[0]);
+            } else {
+                sqlBuilder.addListOfIntMatch(null, "File.fileStatus", false, fileStati);
+            }
+        }
+    }
+
     private String toTarFn(String s) {
         return s.endsWith("!") ? s.substring(0,s.length()-1) : s;
     }
