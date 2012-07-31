@@ -303,7 +303,6 @@ public class RejectionNoteStoredService extends ServiceMBeanSupport
         if (checkCallingAET) {
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
             String callingAET = ds.getString(PrivateTags.CallingAET);
-            log.info("###### callingAET:"+callingAET);
             ds.setPrivateCreatorID(null);
             try {
                 Storage store = this.getStorage();
