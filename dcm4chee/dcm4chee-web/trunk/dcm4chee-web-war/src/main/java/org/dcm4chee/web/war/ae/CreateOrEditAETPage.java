@@ -181,36 +181,6 @@ public class CreateOrEditAETPage extends SecureSessionCheckPage {
             }
         });
 
-        form.add(new Label("emulateMPPSTime.label", new ResourceModel("ae.emulateMPPSTime") ) );
-        final TextField<String> emulateMPPSTime = 
-            new TextField<String>("emulateMPPSTime", new IModel<String>(){
-                private static final long serialVersionUID = 1L;
-
-                public void detach() {}
-
-                public String getObject() {
-                    return panel.getMppsEmulatedAETs().get(ae.getTitle());
-                }
-
-                public void setObject(String object) {
-                    panel.getMppsEmulatedAETs().put(ae.getTitle(), object);
-                }
-                
-            }) {
-                private static final long serialVersionUID = 1L;
-                @Override
-                public boolean isEnabled() {
-                    return panel.getMppsEmulatedAETs().containsKey(ae.getTitle());
-                }
-            };
-        emulateMPPSTime.add(new MPPSEmulatorDelayTimeValidator());
-        form.add(emulateMPPSTime
-                .setOutputMarkupId(true)
-                .setOutputMarkupPlaceholderTag(true)
-                .add(new TooltipBehaviour("ae."))
-        );
-
-        final String originalTime = panel.getMppsEmulatedAETs().get(ae.getTitle());
         form.add(new Label("emulateMPPS.label", new ResourceModel("ae.emulateMPPS") ) );
         form.add(new AjaxCheckBox("emulateMPPS", new IModel<Boolean>() {
             private static final long serialVersionUID = 1L;
@@ -218,12 +188,12 @@ public class CreateOrEditAETPage extends SecureSessionCheckPage {
             public void detach() {}
 
             public Boolean getObject() {
-                return panel.getMppsEmulatedAETs().containsKey(ae.getTitle());
+                return panel.getMppsEmulatedAETs().contains(ae.getTitle());
             }
 
             public void setObject(Boolean object) {
                 if (object) {
-                    panel.getMppsEmulatedAETs().put(ae.getTitle(), originalTime);
+                    panel.getMppsEmulatedAETs().add(ae.getTitle());
                 } else {
                     panel.getMppsEmulatedAETs().remove(ae.getTitle());
                 }
@@ -233,7 +203,6 @@ public class CreateOrEditAETPage extends SecureSessionCheckPage {
             @Override
             protected void onUpdate(AjaxRequestTarget target) {
                 target.addComponent(this);
-                target.addComponent(emulateMPPSTime);
             }
         }.setOutputMarkupId(true).add(new TooltipBehaviour("ae.")));
         

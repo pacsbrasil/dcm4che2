@@ -105,7 +105,7 @@ public class AEListPanel extends Panel {
     private ConfirmationWindow<AE> confirm; 
     
     PropertyListView<AE> list;
-    private Map<String, String> mppsEmulatedAETs;
+    private List<String> mppsEmulatedAETs;
     
     private final IModel<String> typeSelectionModel = new Model<String>();
 
@@ -257,7 +257,7 @@ public class AEListPanel extends Panel {
                     private static final long serialVersionUID = 1L;
                     @Override
                     public Boolean getObject() {
-                        return getMppsEmulatedAETs().containsKey(item.getModelObject().getTitle());
+                        return getMppsEmulatedAETs().contains(item.getModelObject().getTitle());
                     }
                 }).setEnabled(false));
                 item.add(new Label("stationName"));
@@ -352,7 +352,7 @@ public class AEListPanel extends Panel {
         list.setModelObject(updatedList);
     }
 
-    public Map<String, String> getMppsEmulatedAETs() {
+    public List<String> getMppsEmulatedAETs() {
         if (this.mppsEmulatedAETs == null) {
             mppsEmulatedAETs = AEDelegate.getInstance().getEmulatedAETs();
         }
