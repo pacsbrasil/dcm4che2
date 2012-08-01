@@ -186,10 +186,23 @@
          dcm4chee.archive:service=UPSScp#CalledAETitles
          dcm4chee.archive:service=UPSScp#CallingAETitles
          dcm4chee.archive:service=XDS-I#DocRepositoryAET
+         dcm4chee.web:service=AttributesModificationSCU#CallingAETitle
+         dcm4chee.web:service=AttributesModificationSCU#CalledAETitles
+         dcm4chee.web:service=AttributesModificationSCU#ModifyingSystem
+         dcm4chee.web:service=ContentEditService#ModifyingSystem
+         dcm4chee.web:service=ContentEditService#ForwardModifiedToAETs
+         dcm4chee.web:service=EchoService#CallingAETitle
+         dcm4chee.web:service=IANSCU#CallingAETitle
+         dcm4chee.web:service=IANSCU#CalledAETitles
          dcm4chee.web:service=MoveScu#CallingAETitle
          dcm4chee.web:service=MoveScu#CalledAETitle
-         dcm4chee.web:service=EchoService#CallingAETitle
+         dcm4chee.web:service=RejectionNoteSCU#CallingAETitle
+         dcm4chee.web:service=RejectionNoteSCU#CalledAETitles
+         dcm4chee.web:service=TCStoreScu#CallingAETitle
+         dcm4chee.web:service=TCStoreScu#CalledAETitles
          dcm4chee.web:service=Web3MwlSCU#CallingAETitle
+         dcm4chee.web:service=Web3MwlSCU#WorklistProviders
+         dcm4chee.web:service=Web3MwlSCU#DefaultWorklistProvider
          " />
       </descriptors>
    </attribute>
