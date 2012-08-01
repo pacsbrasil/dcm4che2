@@ -43,6 +43,24 @@
    </attribute>
 
    <attribute access="read-write"
+      getMethod="getIgnoreSourceAETs"
+      setMethod="setIgnoreSourceAETs">
+      <description><![CDATA[Source AE title(s) for CallingAETs that should be ignored.<br/>
+      	Series with source AET specified in the ignore list will be removed from the Rejection Note sent to the callingAET.<br/>
+      	Format: &lt;calledAET&gt;:&lt;sourceAET 1&gt;[,&lt;sourceAET 2&gt;[,..[,&lt;sourceAET n&gt;]]]<br/>
+      	Example:CENTRAL:CENTRAL,TEST<br/>
+      	If a Rejection Note is sent to CENTRAL, all referenced series with source AET CENTRAL or TEST 
+      	will be removed from Rejection Note.<br/>
+      	Use NONE to disable this feature.
+      ]]></description>
+      <name>IgnoreSourceAETs</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE" />
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write"
       getMethod="isBindToCallingAET"
       setMethod="setBindToCallingAET">
       <description>Bind socket to address of CallingAET.

@@ -40,9 +40,16 @@ package org.dcm4chee.web.service.rejnote;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.StringTokenizer;
 
 import javax.jms.MessageListener;
 
+import org.dcm4che2.data.BasicDicomObject;
+import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.UID;
@@ -53,8 +60,11 @@ import org.dcm4che2.net.DimseRSPHandler;
 import org.dcm4che2.net.NoPresentationContextException;
 import org.dcm4che2.net.TransferCapability;
 import org.dcm4che2.util.StringUtils;
+import org.dcm4chee.archive.common.PrivateTag;
 import org.dcm4chee.web.service.common.AbstractScheduledScuService;
 import org.dcm4chee.web.service.common.DicomActionOrder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author franz.willer@gmail.com
@@ -64,6 +74,9 @@ import org.dcm4chee.web.service.common.DicomActionOrder;
 public class RejectionNoteScuService extends AbstractScheduledScuService implements MessageListener {
 
     private String[] calledAETs;
+    private HashMap<String, List<String>> ignoreSourceAETs = new HashMap<String, List<String>>();
+    
+    private static Logger log = LoggerFactory.getLogger(RejectionNoteScuService.class);
     
     public RejectionNoteScuService() {
         super();
@@ -80,15 +93,94 @@ public class RejectionNoteScuService extends AbstractScheduledScuService impleme
     public void setCalledAETs(String calledAET) {
         this.calledAETs = NONE.equals(calledAET) ? null : StringUtils.split(calledAET, '\\');
     }
+
+    public String getIgnoreSourceAETs() {
+        if (ignoreSourceAETs.isEmpty())
+            return NONE;
+        StringBuilder sb = new StringBuilder();
+        for (Entry<String, List<String>> e : ignoreSourceAETs.entrySet()) {
+            sb.append(e.getKey()).append(":");
+            for (String s : e.getValue()) {
+                sb.append(s).append(',');
+            }
+            sb.setLength(sb.length()-1);
+            sb.append(LINE_SEPARATOR);
+        }
+        return sb.toString();
+    }
+
+    public void setIgnoreSourceAETs(String aets) {
+        ignoreSourceAETs.clear();
+        if (!NONE.equals(aets)) {
+            StringTokenizer st = new StringTokenizer(aets, "\n\t\r,;");
+            String tk, aet;
+            ArrayList<String> ignoreAets;
+            int pos;
+            while (st.hasMoreElements()) {
+                tk = st.nextToken();
+                pos = tk.indexOf(':');
+                if (pos != -1) {
+                    aet = tk.substring(0, pos);
+                    ignoreAets = new ArrayList<String>();
+                    for (String s : StringUtils.split(tk.substring(++pos), ',')) {
+                        ignoreAets.add(s.trim());
+                    }
+                    ignoreSourceAETs.put(aet, ignoreAets);
+                }
+            }            
+        }
+    }
+
     
     public void scheduleRejectionNote(DicomObject kos) throws Exception {
         if (calledAETs != null) {
+            DicomObject scheduledKos;
             for ( String aet : calledAETs) {
-                schedule(new DicomActionOrder(aet,kos, "Rejection Note"));
+                scheduledKos = prepareKOS(kos, aet);
+                if (scheduledKos != null) {
+                    schedule(new DicomActionOrder(aet, scheduledKos, "Rejection Note"));
+                } else {
+                    log.debug("Schedule Rejection Note to {} ignored!", aet);
+                }
             }
         }
     }
     
+    private DicomObject prepareKOS(DicomObject kos, String calledAet) {
+        List<String> ignoreAets = ignoreSourceAETs.get(calledAet);
+        log.debug("ignoreSourceAETs:{}",ignoreSourceAETs);
+        if (ignoreAets == null)
+            return kos;
+        DicomObject newKos = new BasicDicomObject();
+        kos.copyTo(newKos);
+        DicomElement seq = newKos.get(Tag.CurrentRequestedProcedureEvidenceSequence);
+        DicomObject item, refSeriesSeqItem;
+        DicomElement refSeriesSeq;
+        String srcAet;
+        int countSeriesToReject = 0;
+        log.debug("Number of CurrentRequestedProcedureEvidence items:"+seq.countItems());
+        for (int i = 0, len =seq.countItems() ; i < len ; i++) {
+            item = seq.getDicomObject(i);
+            refSeriesSeq = item.get(Tag.ReferencedSeriesSequence);
+            log.debug("Number of series in item {}:",refSeriesSeq.countItems());
+            for (int j = refSeriesSeq.countItems() ; j > 0 ; ) {
+                refSeriesSeqItem = refSeriesSeq.getDicomObject(--j);
+                srcAet = refSeriesSeqItem.getString(
+                        refSeriesSeqItem.resolveTag(PrivateTag.CallingAET, PrivateTag.CreatorID));
+                if (ignoreAets.contains(srcAet)) {
+                    log.info("Series "+refSeriesSeqItem.getString(Tag.SeriesInstanceUID)+
+                            " removed from RejectionNote! Source AET "+srcAet+
+                            " is ignored for calledAET "+calledAet);
+                    refSeriesSeq.removeDicomObject(j);
+                }
+            }
+            log.debug("Remaining number of series in item {}:",refSeriesSeq.countItems());
+            countSeriesToReject += refSeriesSeq.countItems();
+        }
+        log.debug("Remaining series to reject:{}",countSeriesToReject);
+        return countSeriesToReject == 0 ? null : newKos;
+    }
+
     public void process(DicomActionOrder order) throws Exception {
         this.sendRejectionNote(order.getDestAET(), order.getDicomObject());
     }
