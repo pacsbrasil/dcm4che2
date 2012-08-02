@@ -186,19 +186,18 @@ public abstract class StorageBean implements SessionBean {
      */
     public org.dcm4che.data.Dataset store(org.dcm4che.data.Dataset ds,
             long fspk, java.lang.String fileid, long size, byte[] md5,
-            boolean updateStudyAccessTime, PatientMatching matching) throws DcmServiceException, NonUniquePatientIDException {
-    	return store(ds, fspk, fileid, size, md5, updateStudyAccessTime, matching, true);
+            boolean updateStudyAccessTime, boolean clearExternalRetrieveAET, PatientMatching matching) throws DcmServiceException, NonUniquePatientIDException {
+    	return store(ds, fspk, fileid, size, md5, updateStudyAccessTime, clearExternalRetrieveAET, matching, true);
     }
     /**
      * @ejb.interface-method
      */
     public org.dcm4che.data.Dataset store(org.dcm4che.data.Dataset ds,
             long fspk, java.lang.String fileid, long size, byte[] md5,
-            boolean updateStudyAccessTime, PatientMatching matching
-            , boolean canRollback) throws DcmServiceException, NonUniquePatientIDException {
+            boolean updateStudyAccessTime, boolean clearExternalRetrieveAET, PatientMatching matching,
+            boolean canRollback) throws DcmServiceException, NonUniquePatientIDException {
         FileMetaInfo fmi = ds.getFileMetaInfo();
         final String iuid = fmi.getMediaStorageSOPInstanceUID();
-        final String cuid = fmi.getMediaStorageSOPClassUID();
         final String tsuid = fmi.getTransferSyntaxUID();
         log.info("inserting instance " + fmi);
         try {
@@ -209,13 +208,17 @@ public abstract class StorageBean implements SessionBean {
                 instance = instHome.findBySopIuid(iuid);
                 prevAvailability = instance.getAvailabilitySafe();
                 coerceInstanceIdentity(instance, ds, coercedElements);
+                if (clearExternalRetrieveAET && instance.getExternalRetrieveAET() != null) {
+                    log.info("Clear ExternalRetrieveAET of instance "+instance.getSopIuid());
+                    instance.setExternalRetrieveAET(null);
+                }
             } catch (ObjectNotFoundException onfe) {
                 instance = instHome.create(ds,
                         getSeries(matching, ds, coercedElements));
             }
             if (fspk != -1) {
                 FileSystemLocal fs = fileSystemHome.findByPrimaryKey(new Long(fspk));
-                FileLocal file = fileHome.create(fileid, tsuid, size, md5, 0,
+                fileHome.create(fileid, tsuid, size, md5, 0,
                         instance, fs);
                 instance.setAvailability(Math.min(fs.getAvailability(), prevAvailability));
                 instance.addRetrieveAET(fs.getRetrieveAET());

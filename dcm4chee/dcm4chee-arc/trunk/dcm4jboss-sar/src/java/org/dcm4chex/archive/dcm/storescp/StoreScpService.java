@@ -901,7 +901,7 @@ public class StoreScpService extends AbstractScpService {
         ds.setFileMetaInfo(fmi);
         String filePath = fileDTO.getFilePath();
         scp.updateDB(store, ds, fileDTO.getFileSystemPk(), filePath, fileDTO.getFileSize(),
-                fileDTO.getFileMd5(), true);
+                fileDTO.getFileMd5(), true, false);
         if (last) {
             logInstancesStoredAndSendSeriesStoredNotification(store, seriuid);
         }

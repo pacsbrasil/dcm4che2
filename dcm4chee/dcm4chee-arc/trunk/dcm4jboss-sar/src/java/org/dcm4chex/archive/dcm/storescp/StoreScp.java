@@ -708,17 +708,18 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     PerfCounterEnum.C_STORE_SCP_OBJ_REGISTER_DB);
             long fileLength = file != null ? file.length() : 0L;
             long fspk = fsDTO != null ? fsDTO.getPk() : -1L;
+            boolean clearExternalRetrieveAET = hasDifferentMd5(duplicates, md5sum);
             Dataset coercedElements;
             try {
                 coercedElements = updateDB(store, ds, fspk, filePath,
-                        fileLength, md5sum, newSeries);
+                        fileLength, md5sum, newSeries, clearExternalRetrieveAET);
             } catch (NonUniquePatientIDException e) {
                 service.coercePatientID(ds);
                 coerced.putLO(Tags.PatientID, ds.getString(Tags.PatientID));
                 coerced.putLO(Tags.IssuerOfPatientID,
                         ds.getString(Tags.IssuerOfPatientID));
                 coercedElements = updateDB(store, ds, fspk, filePath,
-                        fileLength, md5sum, newSeries);
+                        fileLength, md5sum, newSeries, clearExternalRetrieveAET);
             }
             if(newSeries) {
                seriesStored = initSeriesStored(ds, callingAET, retrieveAET);
@@ -1057,6 +1058,17 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         }
         return false;
     }
+    
+    private boolean hasDifferentMd5(List duplicates, byte[] md5sum) {
+        if (storeDuplicateIfDiffHost) {
+            for (int i = 0, n = duplicates.size(); i < n; ++i) {
+                FileDTO dto = (FileDTO) duplicates.get(i);
+                if (Arrays.equals(md5sum, dto.getFileMd5()))
+                    return false;
+            }
+        }
+        return true;
+    }
 
     private void deleteFailedStorage(File file) {
         if (file == null) {
@@ -1073,7 +1085,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     protected Dataset updateDB(Storage storage, Dataset ds, long fspk,
             String filePath, long fileLength, byte[] md5,
-            boolean updateStudyAccessTime)
+            boolean updateStudyAccessTime, boolean clearExternalRetrieveAET)
             throws DcmServiceException, NonUniquePatientIDException {
         int retry = 0;
         for (;;) {
@@ -1081,12 +1093,12 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 if (serializeDBUpdate) {
                     synchronized (storage) {
                         return storage.store(ds, fspk, filePath, fileLength,
-                                md5, updateStudyAccessTime,
+                                md5, updateStudyAccessTime, clearExternalRetrieveAET,
                                 service.patientMatching());
                     }
                 } else {
                     return storage.store(ds, fspk, filePath, fileLength,
-                            md5, updateStudyAccessTime,
+                            md5, updateStudyAccessTime, clearExternalRetrieveAET,
                             service.patientMatching());
                 }
             } catch (NonUniquePatientIDException e) {
