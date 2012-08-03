@@ -995,7 +995,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
 	public MoveScp getMoveScp() {
 		return moveScp;
 	}
-
+		
 		protected void bindDcmServices(DcmServiceRegistry services) {
         services.bind(UIDs.PatientRootQueryRetrieveInformationModelFIND,
                 dicomFindScp);
@@ -1228,7 +1228,11 @@ public class QueryRetrieveScpService extends AbstractScpService {
     }
     
     protected Socket createSocket(String moveCalledAET, AEDTO destAE) throws Exception {
-        return tlsConfig.createSocket(aeMgr().findByAET(moveCalledAET), destAE);
+        return createSocket(aeMgr().findByAET(moveCalledAET), destAE);
+    }
+
+    protected Socket createSocket(AEDTO moveCalledAE, AEDTO destAE) throws Exception {
+        return tlsConfig.createSocket(moveCalledAE, destAE);
     }
 
     void onInstancesRetrieved(String moveScp, String moveDest,
