@@ -69,7 +69,7 @@ public class QueryHSMMigrateCmd extends BaseReadCmd {
     public Set<String> getTarFilenamesToMigrate(long fsPk, int[] fileStati, 
             boolean lastPksFirst, int limit, int offset) throws SQLException {
         sqlBuilder.setFrom( new String[] {"File"} );
-        sqlBuilder.setFieldNamesForSelect( new String[] { "SUBSTRING(files.filepath, 1, LOCATE('!',files.filepath))" });
+        sqlBuilder.setFieldNamesForSelect( new String[] { getSelectTarFilename() });
         sqlBuilder.addIntValueMatch(null, "File.filesystem_fk", false, (int)fsPk);
         addFileStatiMatch(fileStati);
         sqlBuilder.addOrderBy("File.pk", lastPksFirst ? " DESC" : " ASC");
@@ -85,6 +85,23 @@ public class QueryHSMMigrateCmd extends BaseReadCmd {
             return result;
         } finally {
             close();
+        }
+    }
+
+
+    private String getSelectTarFilename() {
+        switch(JdbcProperties.getInstance().getDatabase()) {
+            case JdbcProperties.PSQL:
+            case JdbcProperties.FIREBIRD:
+                return "SUBSTRING(files.filepath FROM 1 FOR POSITION('!' IN files.filepath))";
+            case JdbcProperties.ORACLE:
+                return "SUBSTR(files.filepath, 1, INSTR(files.filepath,'!'))";
+            case JdbcProperties.DB2:
+                return "SUBSTR(files.filepath, 1, LOCATE('!', files.filepath))";
+            case JdbcProperties.MSSQL:
+                return "SUBSTRING(files.filepath, 1, PATINDEX('%!%', files.filepath))";
+            default:
+                return "SUBSTRING(files.filepath FROM 1 FOR LOCATE('!',files.filepath))";
         }
     }
 
@@ -111,7 +128,7 @@ public class QueryHSMMigrateCmd extends BaseReadCmd {
         sqlBuilder.setFieldNamesForSelect( new String[] { 
                 "SUBSTRING(src.filepath, 1, LOCATE('!',src.filepath))",
                 "src.file_status",
-                "SUBSTRING(files.filepath, 1, LOCATE('!',files.filepath))",
+                getSelectTarFilename(),
                 "files.file_status"
                 });
         sqlBuilder.addIntValueMatch(ALIAS_SRC, "File.filesystem_fk", false, (int)srcFsPk);
