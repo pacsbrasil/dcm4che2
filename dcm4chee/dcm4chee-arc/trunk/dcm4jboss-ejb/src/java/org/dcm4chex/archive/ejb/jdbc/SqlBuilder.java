@@ -75,6 +75,7 @@ class SqlBuilder {
     private String[] relations;
     private ArrayList<Match> matches = new ArrayList<Match>();
     private ArrayList<String> orderby = new ArrayList<String>();
+    private String groupBy;
     private int limit = 0;
     private int offset = 0;
     private String whereOrAnd = WHERE;
@@ -106,6 +107,10 @@ class SqlBuilder {
     }
 
     public void setSelectCount( String[] fields, boolean distinct) {
+        select = new String[]{ getCountOf(fields, distinct) };
+    }
+
+    public String getCountOf(String[] fields, boolean distinct) {
         StringBuffer sb = new StringBuffer();
         sb.append("count(");
         if ( distinct ) sb.append("DISTINCT ");
@@ -119,7 +124,7 @@ class SqlBuilder {
             }
         }
         sb.append(')');
-        select = new String[]{ sb.toString() };
+        return sb.toString();
     }
 
     public void setFrom(String[] entities) {
@@ -165,6 +170,10 @@ class SqlBuilder {
 
     public void addOrderBy(String field, String order) {
         orderby.add(JdbcProperties.getInstance().getProperty(field) + order);
+    }
+    
+    public void setGroupBy(String field) {
+        groupBy = field == null ? null : " ORDER BY "+JdbcProperties.getInstance().getProperty(field);
     }
 
     public final void setLimit(int limit) {
@@ -425,6 +434,9 @@ class SqlBuilder {
         if (!orderby.isEmpty()) {
             sb.append(" ORDER BY ");
             appendTo(sb, orderby.toArray(new String[orderby.size()]));
+        }
+        if (groupBy != null) {
+            sb.append(groupBy);
         }
         if (limit > 0 || offset > 0) {
             appendLimitAtEnd(sb);

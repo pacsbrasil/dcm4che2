@@ -134,6 +134,38 @@ public class QueryHSMMigrateCmd extends BaseReadCmd {
             close();
         }
     }
+
+    public int countFiles(long srcFsPk) throws SQLException {
+        sqlBuilder.setFrom(new String[] {"File"});
+        sqlBuilder.setSelectCount(null, false);
+        sqlBuilder.addIntValueMatch(null, "File.filesystem_fk", false, (int)srcFsPk);
+        try {
+            execute(sqlBuilder.getSql());
+            if (next()) {
+                 return rs.getInt(1);
+            }
+            return -1;
+        } finally {
+            close();
+        }
+    }
+    public List<int[]> countFilesPerStatus(long srcFsPk) throws SQLException {
+        sqlBuilder.setFrom(new String[] {"File"});
+        sqlBuilder.setSelect(new String[]{"File.fileStatus",
+                sqlBuilder.getCountOf(null, false)});
+        sqlBuilder.addIntValueMatch(null, "File.filesystem_fk", false, (int)srcFsPk);
+        sqlBuilder.setGroupBy("File.fileStatus");
+        ArrayList<int[]> result = new ArrayList<int[]>();
+        try {
+            execute(sqlBuilder.getSql());
+            while (next()) {
+                result.add(new int[]{rs.getInt(1), rs.getInt(2)});
+            }
+            return result;
+        } finally {
+            close();
+        }
+    }
     
     private void addFileStatiMatch(int[] fileStati) {
         if (fileStati != null) {

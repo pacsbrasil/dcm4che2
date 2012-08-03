@@ -38,6 +38,7 @@ package org.dcm4chex.archive.hsm;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -516,6 +517,37 @@ public class HSMMigrateService extends ServiceMBeanSupport {
         }
         log.info("Source file entities removed:"+count);
         return count;
+    }
+
+    public String showMigrationStatus(boolean detail) throws Exception  {
+        if (srcFilesystem == null || this.targetFilesystem == null) {
+            return "Migration service not active! Source Filesystem and Target Filesystem must be configured!";
+        }
+        int countSrc = new QueryHSMMigrateCmd().countFiles(srcFsPk);
+        int countTarget = new QueryHSMMigrateCmd().countFiles(targetFsPk);
+        StringBuilder sb = new StringBuilder();
+        sb.append("Migration Status: ");
+        if (countSrc > countTarget) {
+            sb.append(countTarget).append(" of ").append(countSrc).append(" dicom files migrated!");
+        } else {
+            sb.append("FINISHED! ").append(countTarget).append(" dicom files migrated");
+        }
+        sb.append("\n\nSource filesystem:").append(srcFilesystem)
+        .append("\nTarget filesystem:").append(targetFilesystem).append("\n\n");
+        if (detail) {
+            addFilesystemDetail(srcFsPk, srcFilesystem, sb);
+            addFilesystemDetail(targetFsPk, targetFilesystem, sb);
+        }
+        return sb.toString();
+    }
+    
+    private void addFilesystemDetail(long fsPk, String fsPath, StringBuilder sb) throws SQLException {
+        sb.append("Details for Filesystem ").append(fsPath).append(":\n");
+        List<int[]> result = new QueryHSMMigrateCmd().countFilesPerStatus(fsPk);
+        for (int[] ia : result) {
+            sb.append(FileStatus.toString(ia[0])).append(":").append(ia[1]).append("<br/>");
+        }
+        sb.append("-----------------------------------------\n\n");
     }
     
     private int processStatusCheck(String srcTarFilename, String targetTarFilename, int currentTargetFileStatus) throws Exception {
