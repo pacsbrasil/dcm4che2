@@ -523,27 +523,38 @@ public class HSMMigrateService extends ServiceMBeanSupport {
         if (srcFilesystem == null || this.targetFilesystem == null) {
             return "Migration service not active! Source Filesystem and Target Filesystem must be configured!";
         }
-        int countSrc = new QueryHSMMigrateCmd().countFiles(srcFsPk);
-        int countTarget = new QueryHSMMigrateCmd().countFiles(targetFsPk);
+        List<int[]> srcFilesPerStatus = new QueryHSMMigrateCmd().countFilesPerStatus(srcFsPk);
+        int srcTotal = 0;
+        int remaining = 0;
+        for (int[] ia : srcFilesPerStatus) {
+            srcTotal += ia[1];
+            if (ia[0] >= FileStatus.DEFAULT && ia[0] <FileStatus.MIGRATED) {
+                remaining += ia[1];
+            }
+        }
+        List<int[]> targetFilesPerStatus = new QueryHSMMigrateCmd().countFilesPerStatus(targetFsPk);
+        int targetTotal = 0;
+        for (int[] ia : srcFilesPerStatus) {
+            targetTotal += ia[1];
+        }
         StringBuilder sb = new StringBuilder();
         sb.append("Migration Status: ");
-        if (countSrc > countTarget) {
-            sb.append(countTarget).append(" of ").append(countSrc).append(" dicom files migrated!");
+        if (remaining == 0) {
+            sb.append("FINISHED! ").append(targetTotal).append(" dicom files migrated");
         } else {
-            sb.append("FINISHED! ").append(countTarget).append(" dicom files migrated");
+            sb.append(remaining).append(" dicom files remaining. ").append(srcTotal).append(" dicom files migrated!");
         }
         sb.append("\n\nSource filesystem:").append(srcFilesystem)
         .append("\nTarget filesystem:").append(targetFilesystem).append("\n\n");
         if (detail) {
-            addFilesystemDetail(srcFsPk, srcFilesystem, sb);
-            addFilesystemDetail(targetFsPk, targetFilesystem, sb);
+            addFilesystemDetail(srcFilesPerStatus, srcFilesystem, sb);
+            addFilesystemDetail(targetFilesPerStatus, targetFilesystem, sb);
         }
         return sb.toString();
     }
     
-    private void addFilesystemDetail(long fsPk, String fsPath, StringBuilder sb) throws SQLException {
+    private void addFilesystemDetail(List<int[]> result, String fsPath, StringBuilder sb) throws SQLException {
         sb.append("Details for Filesystem ").append(fsPath).append(":\n");
-        List<int[]> result = new QueryHSMMigrateCmd().countFilesPerStatus(fsPk);
         for (int[] ia : result) {
             sb.append(FileStatus.toString(ia[0])).append(":").append(ia[1]).append("<br/>");
         }

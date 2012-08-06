@@ -54,7 +54,6 @@ import org.dcm4chex.archive.common.FileStatus;
  * @since 25.07.2012
  */
 public class QueryHSMMigrateCmd extends BaseReadCmd {
-
     private static final String ALIAS_SRC = "src";
 
     public static int transactionIsolationLevel = 0;
@@ -152,20 +151,6 @@ public class QueryHSMMigrateCmd extends BaseReadCmd {
         }
     }
 
-    public int countFiles(long srcFsPk) throws SQLException {
-        sqlBuilder.setFrom(new String[] {"File"});
-        sqlBuilder.setSelectCount(null, false);
-        sqlBuilder.addIntValueMatch(null, "File.filesystem_fk", false, (int)srcFsPk);
-        try {
-            execute(sqlBuilder.getSql());
-            if (next()) {
-                 return rs.getInt(1);
-            }
-            return -1;
-        } finally {
-            close();
-        }
-    }
     public List<int[]> countFilesPerStatus(long srcFsPk) throws SQLException {
         sqlBuilder.setFrom(new String[] {"File"});
         sqlBuilder.setSelect(new String[]{"File.fileStatus",
