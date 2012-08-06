@@ -173,7 +173,7 @@ class SqlBuilder {
     }
     
     public void setGroupBy(String field) {
-        groupBy = field == null ? null : " ORDER BY "+JdbcProperties.getInstance().getProperty(field);
+        groupBy = field == null ? null : " GROUP BY "+JdbcProperties.getInstance().getProperty(field);
     }
 
     public final void setLimit(int limit) {

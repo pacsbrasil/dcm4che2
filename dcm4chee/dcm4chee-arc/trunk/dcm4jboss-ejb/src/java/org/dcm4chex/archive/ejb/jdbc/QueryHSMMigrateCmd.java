@@ -69,7 +69,7 @@ public class QueryHSMMigrateCmd extends BaseReadCmd {
     public Set<String> getTarFilenamesToMigrate(long fsPk, int[] fileStati, 
             boolean lastPksFirst, int limit, int offset) throws SQLException {
         sqlBuilder.setFrom( new String[] {"File"} );
-        sqlBuilder.setFieldNamesForSelect( new String[] { getSelectTarFilename() });
+        sqlBuilder.setFieldNamesForSelect( new String[] { getSelectTarFilename("files") });
         sqlBuilder.addIntValueMatch(null, "File.filesystem_fk", false, (int)fsPk);
         addFileStatiMatch(fileStati);
         sqlBuilder.addOrderBy("File.pk", lastPksFirst ? " DESC" : " ASC");
@@ -89,19 +89,19 @@ public class QueryHSMMigrateCmd extends BaseReadCmd {
     }
 
 
-    private String getSelectTarFilename() {
+    private String getSelectTarFilename(String alias) {
         switch(JdbcProperties.getInstance().getDatabase()) {
             case JdbcProperties.PSQL:
             case JdbcProperties.FIREBIRD:
-                return "SUBSTRING(files.filepath FROM 1 FOR POSITION('!' IN files.filepath))";
+                return "SUBSTRING("+alias+".filepath FROM 1 FOR POSITION('!' IN "+alias+".filepath))";
             case JdbcProperties.ORACLE:
-                return "SUBSTR(files.filepath, 1, INSTR(files.filepath,'!'))";
+                return "SUBSTR("+alias+".filepath, 1, INSTR("+alias+".filepath,'!'))";
             case JdbcProperties.DB2:
-                return "SUBSTR(files.filepath, 1, LOCATE('!', files.filepath))";
+                return "SUBSTR("+alias+".filepath, 1, LOCATE('!', "+alias+".filepath))";
             case JdbcProperties.MSSQL:
-                return "SUBSTRING(files.filepath, 1, PATINDEX('%!%', files.filepath))";
+                return "SUBSTRING("+alias+".filepath, 1, PATINDEX('%!%', "+alias+".filepath))";
             default:
-                return "SUBSTRING(files.filepath FROM 1 FOR LOCATE('!',files.filepath))";
+                return "SUBSTRING("+alias+".filepath FROM 1 FOR LOCATE('!',"+alias+".filepath))";
         }
     }
 
@@ -126,9 +126,9 @@ public class QueryHSMMigrateCmd extends BaseReadCmd {
         sqlBuilder.setFrom(new String[] {"File", "File"});
         sqlBuilder.setAliases(new String[] {ALIAS_SRC, null});
         sqlBuilder.setFieldNamesForSelect( new String[] { 
-                "SUBSTRING(src.filepath, 1, LOCATE('!',src.filepath))",
+                getSelectTarFilename(ALIAS_SRC),
                 "src.file_status",
-                getSelectTarFilename(),
+                getSelectTarFilename("files"),
                 "files.file_status"
                 });
         sqlBuilder.addIntValueMatch(ALIAS_SRC, "File.filesystem_fk", false, (int)srcFsPk);
