@@ -72,6 +72,7 @@ import org.dcm4chex.archive.ejb.interfaces.FileLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.MPPSLocal;
+import org.dcm4chex.archive.ejb.interfaces.OtherPatientIDLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.PrivateFileLocalHome;
@@ -748,7 +749,8 @@ public abstract class PrivateManagerBean implements SessionBean {
                 .getPatientId(), patient.getIssuerOfPatientId());
         PrivatePatientLocal privPat;
         if (col.isEmpty()) {
-            privPat = privPatHome.create(type, patient.getAttributes(true));
+            Dataset patAttrs = getAttrsWithUpdatedOtherPatientIDs(patient);
+            privPat = privPatHome.create(type, patAttrs);
         } else {
             privPat = (PrivatePatientLocal) col.iterator().next();
         }
@@ -762,6 +764,28 @@ public abstract class PrivateManagerBean implements SessionBean {
             }
         }
         return privPat;
+    }
+
+    /**
+     * Update Other Patient IDs in attributes for patient
+     *
+     * @param pat Patient whose other patient IDs are to be updated
+     */
+    private Dataset getAttrsWithUpdatedOtherPatientIDs(PatientLocal pat) {
+        Dataset attrs = pat.getAttributes(false);
+        // Remove any existing information in Other PIDS sequence and re-populate
+        attrs.remove(Tags.OtherPatientIDSeq);
+        Collection otherPIDs = pat.getOtherPatientIds();
+        if (otherPIDs.size() > 0) {
+            DcmElement newOpidSeq = attrs.putSQ(Tags.OtherPatientIDSeq);
+            for ( Iterator<?> iter = otherPIDs.iterator() ; iter.hasNext() ; ) { 
+                OtherPatientIDLocal opid = (OtherPatientIDLocal) iter.next(); 
+                Dataset opidItem = newOpidSeq.addNewItem(); 
+                opidItem.putLO(Tags.PatientID, opid.getPatientId()); 
+                opidItem.putLO(Tags.IssuerOfPatientID, opid.getIssuerOfPatientId()); 
+            }
+        }
+        return attrs;
     }
 
     private Dataset makeIAN(StudyLocal study, Map mapSeries) {
