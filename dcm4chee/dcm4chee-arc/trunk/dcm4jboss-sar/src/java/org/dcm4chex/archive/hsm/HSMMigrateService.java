@@ -534,7 +534,7 @@ public class HSMMigrateService extends ServiceMBeanSupport {
         }
         List<int[]> targetFilesPerStatus = new QueryHSMMigrateCmd().countFilesPerStatus(targetFsPk);
         int targetTotal = 0;
-        for (int[] ia : srcFilesPerStatus) {
+        for (int[] ia : targetFilesPerStatus) {
             targetTotal += ia[1];
         }
         StringBuilder sb = new StringBuilder();
