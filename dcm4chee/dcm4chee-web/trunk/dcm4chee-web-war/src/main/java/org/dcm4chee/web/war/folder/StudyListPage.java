@@ -265,6 +265,7 @@ public class StudyListPage extends Panel {
             add(CSSPackageResource.getHeaderContribution(StudyListPage.CSS));
 
         viewport = getViewPort();
+        viewport.getFilter().setAutoWildcard(WebCfgDelegate.getInstance().getAutoWildcard());
         
         studyPermissionHelper = StudyPermissionHelper.get();
 
@@ -397,7 +398,16 @@ public class StudyListPage extends Panel {
         searchTableComponents.add(form.createAjaxParent("searchFields"));
         
         form.addPatientNameField("patientName", new PropertyModel<String>(filter, "patientName"),
-                    WebCfgDelegate.getInstance().useFamilyAndGivenNameQueryFields(), enabledModelPat, false);
+                new IModel<Boolean>() {
+                    private static final long serialVersionUID = 1L;
+                    public void detach() {}
+                    public void setObject(Boolean arg0) {}
+        
+                    public Boolean getObject() {
+                        return WebCfgDelegate.getInstance().useFamilyAndGivenNameQueryFields();
+                    }
+                }, 
+                new PropertyModel<Boolean>(filter, "PNAutoWildcard"), enabledModelPat, false);
         form.addTextField("patientID", enabledModelPat, true);
         form.addTextField("issuerOfPatientID", enabledModelPat, true);
        

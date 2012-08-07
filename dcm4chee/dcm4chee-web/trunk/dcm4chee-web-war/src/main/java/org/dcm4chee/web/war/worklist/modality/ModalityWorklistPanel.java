@@ -270,7 +270,16 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         searchTableComponents.add(form.createAjaxParent("searchFields"));
         
         pnField = form.addPatientNameField("patientName", new PropertyModel<String>(filter, "patientName"),
-                WebCfgDelegate.getInstance().useFamilyAndGivenNameQueryFields(), enabledModel, false);
+                new IModel<Boolean>() {
+                    private static final long serialVersionUID = 1L;
+                    public void detach() {}
+                    public void setObject(Boolean arg0) {}
+
+                    public Boolean getObject() {
+                        return WebCfgDelegate.getInstance().useFamilyAndGivenNameQueryFields();
+                    }
+                }, 
+                new PropertyModel<Boolean>(filter, "PNAutoWildcard"), enabledModel, false);
         pnField.setOutputMarkupId(true);
         form.addComponent(new CheckBox("fuzzyPN") {
             private static final long serialVersionUID = 1L;
