@@ -445,7 +445,8 @@
       	 <dd>1...Only patient name</dd>
       	 <dd>2...All 'wildcard' search fields</dd>
       	</dl><br/>
-      	Note: Not used for fuzzy (phonetic) search.
+      	Note: <br/>Also used for fuzzy (phonetic) search if supported.<br/>
+      	NOT used in single patient name fields (useFamilyAndGivenNameQueryFields=false)!
       ]]></description>
       <name>AutoWildcard</name>
       <type>int</type>
