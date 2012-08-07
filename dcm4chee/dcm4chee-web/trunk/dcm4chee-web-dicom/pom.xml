@@ -5,13 +5,13 @@
     <parent>
         <artifactId>dcm4chee-web</artifactId>
         <groupId>dcm4che.dcm4chee</groupId>
-        <version>3.0.1</version>
+        <version>3.0.3</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>dcm4che.dcm4chee</groupId>
     <artifactId>dcm4chee-web-dicom</artifactId>
     <packaging>war</packaging>
-    <version>3.0.1</version>
+    <version>${version}</version>
     <name>WAR for dcm4chee-web-dicom</name>
     <description>Supports SSO for dicom security</description>
     <dependencies>

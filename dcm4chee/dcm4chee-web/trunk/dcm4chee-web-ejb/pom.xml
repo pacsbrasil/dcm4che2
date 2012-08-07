@@ -5,13 +5,13 @@
     <parent>
         <artifactId>dcm4chee-web</artifactId>
         <groupId>dcm4che.dcm4chee</groupId>
-        <version>3.0.1</version>
+        <version>3.0.3</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>dcm4che.dcm4chee</groupId>
     <artifactId>dcm4chee-web-ejb</artifactId>
     <packaging>ejb</packaging>
-    <version>3.0.1</version>
+    <version>${version}</version>
     <name>EJB3 Components for dcm4chee-web</name>
     <dependencies>
         <dependency>
@@ -23,14 +23,14 @@
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-arc-entities</artifactId>
-            <version>3.0.1</version>
+            <version>${version}</version>
             <classifier>${db}</classifier>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-usr-dao</artifactId>
-            <version>3.0.1</version>
+            <version>${version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

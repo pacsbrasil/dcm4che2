@@ -5,14 +5,14 @@
     <parent>
         <artifactId>dcm4chee-web</artifactId>
         <groupId>dcm4che.dcm4chee</groupId>
-        <version>3.0.1</version>
+        <version>3.0.3</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>dcm4che.dcm4chee</groupId>
     <artifactId>dcm4chee-web-ear</artifactId>
     <packaging>ear</packaging>
     <name>EAR for dcm4chee-web</name>
-    <version>3.0.1</version>
+    <version>${version}</version>
     <description />
     <properties>
         <db>hsql</db>
@@ -23,7 +23,7 @@
             <artifactId>dcm4chee-arc-entities</artifactId>
             <type>ejb</type>
             <classifier>${db}</classifier>
-            <version>3.0.1</version>
+            <version>${version}</version>
             <exclusions>
 	            <exclusion>
 		            <groupId>dcm4che</groupId>
@@ -36,29 +36,29 @@
             <artifactId>dcm4chee-usr-entity</artifactId>
             <type>ejb</type>
             <classifier>${db}</classifier>
-            <version>3.0.1</version>
+            <version>${version}</version>
         </dependency>
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-usr-dao</artifactId>
             <type>ejb</type>
-            <version>3.0.1</version>
+            <version>${version}</version>
         </dependency>
 		<dependency>
 			<groupId>dcm4che.dcm4chee</groupId>
 			<artifactId>dcm4chee-web-common</artifactId>
-			<version>3.0.1</version>
+			<version>${version}</version>
 		</dependency>
 		<dependency>
 			<groupId>dcm4che.dcm4chee</groupId>
 			<artifactId>dcm4chee-web-sar-common</artifactId>
-			<version>3.0.1</version>
+			<version>${version}</version>
 		</dependency>
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-web-ejb</artifactId>
             <type>ejb</type>
-            <version>3.0.1</version>
+            <version>${version}</version>
             <exclusions>
 	            <exclusion>
 		            <groupId>dcm4che</groupId>
@@ -70,7 +70,7 @@
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-web-war</artifactId>
             <type>war</type>
-            <version>3.0.1</version>
+            <version>${version}</version>
             <exclusions>
 	            <exclusion>
 		            <groupId>dcm4che</groupId>
@@ -82,19 +82,19 @@
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-web-dicom</artifactId>
             <type>war</type>
-            <version>3.0.1</version>
+            <version>${version}</version>
         </dependency>
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>      
             <artifactId>dcm4chee-dashboard-sar-config</artifactId>
             <type>sar</type>
-            <version>3.0.1</version>
+            <version>${version}</version>
         </dependency>
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-web-sar-bridge-store</artifactId>
             <type>sar</type>
-            <version>3.0.1</version>
+            <version>${version}</version>
             <exclusions>
 	            <exclusion>
 		            <groupId>dcm4che</groupId>
@@ -106,7 +106,7 @@
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-web-sar-contentedit</artifactId>
             <type>sar</type>
-            <version>3.0.1</version>
+            <version>${version}</version>
             <exclusions>
 	            <exclusion>
 		            <groupId>dcm4che</groupId>
@@ -118,7 +118,7 @@
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-web-sar-echo</artifactId>
             <type>sar</type>
-            <version>3.0.1</version>
+            <version>${version}</version>
             <exclusions>
 	            <exclusion>
 		            <groupId>dcm4che</groupId>
@@ -130,7 +130,7 @@
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-web-sar-hl7send</artifactId>
             <type>sar</type>
-            <version>3.0.1</version>
+            <version>${version}</version>
             <exclusions>
 	            <exclusion>
 					<groupId>org.regenstrief</groupId>
@@ -146,7 +146,7 @@
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-web-sar-ianscu</artifactId>
             <type>sar</type>
-            <version>3.0.1</version>
+            <version>${version}</version>
             <exclusions>
 	            <exclusion>
 		            <groupId>dcm4che</groupId>
@@ -158,7 +158,7 @@
       		<groupId>dcm4che.dcm4chee</groupId>
       		<artifactId>dcm4chee-web-sar-movescu</artifactId>
       		<type>sar</type>
-      		<version>3.0.1</version>
+      		<version>${version}</version>
             <exclusions>
 	            <exclusion>
 		            <groupId>dcm4che</groupId>
@@ -170,7 +170,7 @@
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-web-sar-rejnotescu</artifactId>
             <type>sar</type>
-            <version>3.0.1</version>
+            <version>${version}</version>
             <exclusions>
 	            <exclusion>
 		            <groupId>dcm4che</groupId>
@@ -182,7 +182,7 @@
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-web-sar-tlscfg</artifactId>
             <type>sar</type>
-            <version>3.0.1</version>
+            <version>${version}</version>
             <exclusions>
 	            <exclusion>
 		            <groupId>dcm4che</groupId>
@@ -194,7 +194,7 @@
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-web-sar-webcfg</artifactId>
             <type>sar</type>
-            <version>3.0.1</version>
+            <version>${version}</version>
             <exclusions>
 	            <exclusion>
 		            <groupId>dcm4che</groupId>
@@ -206,7 +206,7 @@
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-web-sar-modify</artifactId>
             <type>sar</type>
-            <version>3.0.1</version>
+            <version>${version}</version>
             <exclusions>
 	            <exclusion>
 		            <groupId>dcm4che</groupId>
@@ -218,7 +218,7 @@
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-web-sar-mwlscu</artifactId>
             <type>sar</type>
-            <version>3.0.1</version>
+            <version>${version}</version>
             <exclusions>
 	            <exclusion>
 		            <groupId>dcm4che</groupId>
@@ -230,7 +230,7 @@
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-web-sar-storescu</artifactId>
             <type>sar</type>
-            <version>3.0.1</version>
+            <version>${version}</version>
             <exclusions>
                     <exclusion>
                             <groupId>dcm4che</groupId>

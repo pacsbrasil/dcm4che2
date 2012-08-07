@@ -4,12 +4,12 @@
   <parent>
         <artifactId>dcm4chee-web</artifactId>
         <groupId>dcm4che.dcm4chee</groupId>
-        <version>3.0.1</version>
+        <version>3.0.3</version>
   </parent>
   <groupId>dcm4che.dcm4chee</groupId>
   <artifactId>dcm4chee-web-dist</artifactId>
   <packaging>pom</packaging>
-  <version>3.0.1</version>
+  <version>${version}</version>
   <name>Assemble Distribution for WEB3</name>
   <dependencies>
     <dependency>
@@ -17,101 +17,101 @@
       <artifactId>dcm4chee-web-ear</artifactId>
       <classifier>${db}</classifier>
       <type>ear</type>
-      <version>3.0.1</version>
+      <version>${version}</version>
     </dependency>
     <dependency>
       <groupId>dcm4che.dcm4chee</groupId>
       <artifactId>dcm4chee-web-urlprovider</artifactId>
-      <version>3.0.1</version>
+      <version>${version}</version>
     </dependency>
     <dependency>
       <groupId>dcm4che.dcm4chee</groupId>
       <artifactId>dcm4chee-web-licenseprovider</artifactId>
-      <version>3.0.1</version>
+      <version>${version}</version>
     </dependency>
     <dependency>
       <groupId>dcm4che.dcm4chee</groupId>
       <artifactId>dcm4chee-dashboard-sar-auditlog</artifactId>
       <classifier>config-xmbean</classifier>
       <type>xml</type>
-      <version>3.0.1</version>
+      <version>${version}</version>
     </dependency>
     <dependency>
       <groupId>dcm4che.dcm4chee</groupId>
       <artifactId>dcm4chee-web-sar-auditlog</artifactId>
       <classifier>bridgestore-xmbean</classifier>
       <type>xml</type>
-      <version>3.0.1</version>
+      <version>${version}</version>
     </dependency>
     <dependency>
       <groupId>dcm4che.dcm4chee</groupId>
       <artifactId>dcm4chee-web-sar-auditlog</artifactId>
       <classifier>contentedit-xmbean</classifier>
       <type>xml</type>
-      <version>3.0.1</version>
+      <version>${version}</version>
     </dependency>
     <dependency>
       <groupId>dcm4che.dcm4chee</groupId>
       <artifactId>dcm4chee-web-sar-auditlog</artifactId>
       <classifier>echo-xmbean</classifier>
       <type>xml</type>
-      <version>3.0.1</version>
+      <version>${version}</version>
     </dependency>
     <dependency>
       <groupId>dcm4che.dcm4chee</groupId>
       <artifactId>dcm4chee-web-sar-auditlog</artifactId>
       <classifier>hl7send-xmbean</classifier>
       <type>xml</type>
-      <version>3.0.1</version>
+      <version>${version}</version>
     </dependency>
     <dependency>
       <groupId>dcm4che.dcm4chee</groupId>
       <artifactId>dcm4chee-web-sar-auditlog</artifactId>
       <classifier>ianscu-xmbean</classifier>
       <type>xml</type>
-      <version>3.0.1</version>
+      <version>${version}</version>
     </dependency>
     <dependency>
       <groupId>dcm4che.dcm4chee</groupId>
       <artifactId>dcm4chee-web-sar-auditlog</artifactId>
       <classifier>attrmod-xmbean</classifier>
       <type>xml</type>
-      <version>3.0.1</version>
+      <version>${version}</version>
     </dependency>
     <dependency>
       <groupId>dcm4che.dcm4chee</groupId>
       <artifactId>dcm4chee-web-sar-auditlog</artifactId>
       <classifier>movescu-xmbean</classifier>
       <type>xml</type>
-      <version>3.0.1</version>
+      <version>${version}</version>
     </dependency>
     <dependency>
       <groupId>dcm4che.dcm4chee</groupId>
       <artifactId>dcm4chee-web-sar-auditlog</artifactId>
       <classifier>mwlscu-xmbean</classifier>
       <type>xml</type>
-      <version>3.0.1</version>
+      <version>${version}</version>
     </dependency>
     <dependency>
       <groupId>dcm4che.dcm4chee</groupId>
       <artifactId>dcm4chee-web-sar-auditlog</artifactId>
       <classifier>rejnotescu-xmbean</classifier>
       <type>xml</type>
-      <version>3.0.1</version>
+      <version>${version}</version>
     </dependency>
     <dependency>
       <groupId>dcm4che.dcm4chee</groupId>
       <artifactId>dcm4chee-web-sar-auditlog</artifactId>
       <classifier>tlscfg-xmbean</classifier>
       <type>xml</type>
-      <version>3.0.1</version>
+      <version>${version}</version>
     </dependency>
     <dependency>
       <groupId>dcm4che.dcm4chee</groupId>
       <artifactId>dcm4chee-web-sar-auditlog</artifactId>
       <classifier>webcfg-xmbean</classifier>
       <type>xml</type>
-      <version>3.0.1</version>
+      <version>${version}</version>
     </dependency>
   </dependencies>
   <profiles>
