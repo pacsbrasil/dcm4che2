@@ -5,10 +5,11 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>dcm4che.dcm4chee</groupId>
     <artifactId>dcm4chee-usr</artifactId>
-    <version>3.0.1</version>
+    <version>${version}</version>
     <packaging>pom</packaging>
     <name>Dcm4chee application</name>
     <properties>
+        <version>3.0.3</version>
         <wicket.version>1.4.7</wicket.version>
     </properties>
     <build>
