@@ -168,8 +168,9 @@ public class BaseForm extends Form<Object> {
         return tf;
     }
 
-    public PatientNameField addPatientNameField(String id, IModel<String> model, boolean useFnGn, final IModel<Boolean> enabledModel, boolean addLabel) {
-        PatientNameField tf = new PatientNameField(id, model, useFnGn) {
+    public PatientNameField addPatientNameField(String id, IModel<String> model, IModel<Boolean> useFnGn, IModel<Boolean> autoWildcard,
+            final IModel<Boolean> enabledModel, boolean addLabel) {
+        PatientNameField tf = new PatientNameField(id, model, useFnGn, autoWildcard) {
 
             private static final long serialVersionUID = 1L;
 

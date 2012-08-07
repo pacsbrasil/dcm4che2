@@ -58,37 +58,55 @@ public class PatientNameField extends FormComponentPanel<String> {
 
     private static final long serialVersionUID = 1L;
     
-    private boolean useFnGn;
+    private IModel<Boolean> useFnGn;
+    private IModel<Boolean> autoWildcard;
+
+    private Label pnLabel;
+    private Label fnLabel;
+    private Label gnLabel;
     private TextField<String> pnField;
     private TextField<String> fnField;
     private TextField<String> gnField;
 
     private static Logger log = LoggerFactory.getLogger(PatientNameField.class);
     
-    public PatientNameField(String id, IModel<String> model, final boolean useFnGn) {
+    public PatientNameField(String id, IModel<String> model, IModel<Boolean> useFnGn, IModel<Boolean> autoWildcard) {
         super(id, model);
         this.useFnGn = useFnGn;
+        this.autoWildcard = autoWildcard;
         setType(String.class);
-        
-        add(new Label("pnLabel", new ResourceModel("patientname.label")).setVisible(!useFnGn));
+        pnLabel = new Label("pnLabel", new ResourceModel("patientname.label"));
+        add(pnLabel);
         pnField = new TextField<String>("pnField", model);
-        add(pnField.setVisible(!useFnGn));
-        
-        add(new Label("fnLabel", new ResourceModel("familyname.label")).setVisible(useFnGn));
+        add(pnField);
+        fnLabel = new Label("fnLabel", new ResourceModel("familyname.label"));
+        add(fnLabel);
         fnField = new TextField<String>("fnField", new FamilyNameModel(this));
-        add(fnField.setVisible(useFnGn));
-        
-        add(new Label("gnLabel", new ResourceModel("givenname.label")).setVisible(useFnGn));
+        add(fnField);
+        gnLabel = new Label("gnLabel", new ResourceModel("givenname.label"));
+        add(gnLabel);
         gnField = new TextField<String>("gnField", new GivenNameModel(this));
-        add(gnField.setVisible(useFnGn));
+        add(gnField);
+    }
+    
+    @Override
+    public void onBeforeRender() {
+        super.onBeforeRender();
+        boolean b = this.useFnGn.getObject();
+        pnLabel.setVisible(!b);
+        pnField.setVisible(!b);
+        fnLabel.setVisible(b);
+        fnField.setVisible(b);
+        gnLabel.setVisible(b);
+        gnField.setVisible(b);
     }
     
     public boolean isUseFnGn() {
-        return useFnGn;
+        return useFnGn.getObject();
     }
 
     public void setUseFnGn(boolean useFnGn) {
-        this.useFnGn = useFnGn;
+        this.useFnGn.setObject(useFnGn);
     }
 
     @Override
@@ -100,7 +118,7 @@ public class PatientNameField extends FormComponentPanel<String> {
     
     @Override
     public String getInput() {
-        return (useFnGn) ? fnField.getInput() + "^" + gnField.getInput() : pnField.getInput();
+        return (useFnGn.getObject()) ? fnField.getInput() + "^" + gnField.getInput() : pnField.getInput();
     }
     
     @Override
@@ -108,10 +126,10 @@ public class PatientNameField extends FormComponentPanel<String> {
         String fn = fnField.getConvertedInput();
         String converted;
         int pos;
-        if (!useFnGn) {
+        if (!useFnGn.getObject()) {
             converted = pnField.getConvertedInput();
         } else if (fn != null && (pos = fn.indexOf('^')) != -1) { //if fn contains '^' ignore gn and set full name!
-            if (pos == fn.lastIndexOf('^')) { //if fn contains only fn and gn -> add * to each.
+            if (autoWildcard.getObject() && pos == fn.lastIndexOf('^')) { //if fn contains only fn and gn -> add * to each.
                 converted = fn.substring(0, pos)+"*"+fn.substring(pos)+"*";
             } else {
                 converted = fn;
@@ -120,10 +138,10 @@ public class PatientNameField extends FormComponentPanel<String> {
             String gn = gnField.getConvertedInput();
             converted = fn == null ? "" : fn;
             if (gn != null && gn.length() != 0) {
-                if (!converted.endsWith("*"))
+                if (autoWildcard.getObject() && !converted.endsWith("*"))
                     converted += "*";
                 converted += "^"+gn;
-                if (gn.indexOf('^') == -1 && !converted.endsWith("*"))
+                if (autoWildcard.getObject() && gn.indexOf('^') == -1 && !converted.endsWith("*"))
                     converted += "*";
             }
         }
@@ -162,7 +180,7 @@ public class PatientNameField extends FormComponentPanel<String> {
         }
         
         protected String toViewString(String s) {
-            return s != null && s.endsWith("*") ? s.substring(0,s.length()-1) : s;
+            return autoWildcard.getObject() && s != null && s.endsWith("*") ? s.substring(0,s.length()-1) : s;
         }
 
         public void setObject(String object) {
