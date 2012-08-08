@@ -117,6 +117,12 @@
             <xsl:with-param name="vr" select="'LO'"/>
             <xsl:with-param name="val" select="substring(field[30]/text(),1,64)"/>
         </xsl:call-template>
+		<!-- Study Description -->
+		<xsl:call-template name="attr">
+			<xsl:with-param name="tag" select="'00081030'"/>
+			<xsl:with-param name="vr" select="'LO'"/>
+			<xsl:with-param name="val" select="field[4]/component[1]/text()"/>
+		</xsl:call-template>
     </xsl:template>
     <xsl:template match="ORC" mode="sps">
         <item>
