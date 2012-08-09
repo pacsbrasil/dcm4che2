@@ -10,22 +10,22 @@
     <name>Web Application for DASHBOARD</name>
     <groupId>dcm4che.dcm4chee</groupId>
     <artifactId>dcm4chee-dashboard-war</artifactId>
-    <version>${version}</version>
+    <version>${project.version}</version>
     <packaging>war</packaging>
     <properties>
-        <ear>dcm4chee-dashboard-${version}</ear>
+        <ear>dcm4chee-dashboard-${project.version}</ear>
     </properties>
     <dependencies>
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-web-common</artifactId>
-            <version>${version}</version>
+            <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-dashboard-ui</artifactId>
-            <version>${version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
