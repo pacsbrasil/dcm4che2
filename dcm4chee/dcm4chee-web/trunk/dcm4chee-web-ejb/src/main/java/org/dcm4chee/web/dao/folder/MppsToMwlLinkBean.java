@@ -118,32 +118,37 @@ public class MppsToMwlLinkBean implements MppsToMwlLinkLocal {
         mwl.setAttributes(mwlAttrs);
         mwl.setPatient(mwlPat);
         result.setMwl(mwl);
-        Patient mppsPat;
         for (MPPS mpps : mppss) {
             log.debug("link MPPS {} with MWL!", mpps);
-            mppsPat = mpps.getPatient();
-            if ( mppsPat.getPk() != mwlPat.getPk()) {
-                log.warn("Patient of MPPS("+mppsPat.getPatientID()+") and MWL("+mwlPat.getPatientID()+") are different!");
-                result.addStudyToMove(mpps.getSeries().iterator().next().getStudy());
-            }
+            checkPatients(mpps, mwlPat, result);
             link(mpps, mwlAttrs, modifyingSystem, reason);
             result.addMppsAttributes(mpps);
         }
         return result;
     }
 
+    private void checkPatients(MPPS mpps, Patient mwlPat,
+            MppsToMwlLinkResult result) {
+        Patient mppsPat;
+        mppsPat = mpps.getPatient();
+        if ( mppsPat.getPk() != mwlPat.getPk()) {
+            log.warn("Patient of MPPS("+mppsPat.getPatientID()+") and MWL("+mwlPat.getPatientID()+") are different!");
+            if (mpps.getSeries().size() > 0) {
+                result.addStudyToMove(mpps.getSeries().iterator().next().getStudy());
+            } else {
+                mpps.setPatient(mwlPat);
+                em.merge(mpps);
+            }
+        }
+    }
+
     private MppsToMwlLinkResult link(List<MPPS> mppss, MWLItem mwl, boolean updateMwlStatus, String modifyingSystem, String reason) {
-        Patient patMpps;
         Patient mwlPat = mwl.getPatient();
         MppsToMwlLinkResult result = new MppsToMwlLinkResult();
         result.setMwl(mwl);
         DicomObject mwlAttrs = mwl.getAttributes();
         for (MPPS mpps : mppss) {
-            patMpps = mpps.getPatient();
-            if ( patMpps.getPk() != mwlPat.getPk()) {
-                log.warn("Patient of MPPS("+patMpps.getPatientID()+") and MWL("+mwlPat.getPatientName()+") are different!");
-                result.addStudyToMove(mpps.getSeries().iterator().next().getStudy());
-            }
+            checkPatients(mpps, mwlPat, result);
             link(mpps, mwlAttrs, modifyingSystem, reason);
             result.addMppsAttributes(mpps);
         }

@@ -158,9 +158,9 @@ public class TrashListBean implements TrashListLocal {
     }
 
     private static void appendPatFilter(StringBuilder ql, TrashListFilter filter) {
-        QueryUtil.appendPatientNameFilter(ql, QueryUtil.checkAutoWildcard(filter.getPatientName(), filter.isPNAutoWildcard()));
-        QueryUtil.appendPatientIDFilter(ql, QueryUtil.checkAutoWildcard(filter.getPatientID(), filter.isAutoWildcard()));
-        QueryUtil.appendIssuerOfPatientIDFilter(ql, QueryUtil.checkAutoWildcard(filter.getIssuerOfPatientID(), filter.isAutoWildcard()));
+        QueryUtil.appendPatientNameFilter(ql, "p", QueryUtil.checkAutoWildcard(filter.getPatientName(), filter.isPNAutoWildcard()));
+        QueryUtil.appendPatientIDFilter(ql, "p", QueryUtil.checkAutoWildcard(filter.getPatientID(), filter.isAutoWildcard()));
+        QueryUtil.appendIssuerOfPatientIDFilter(ql, "p", QueryUtil.checkAutoWildcard(filter.getIssuerOfPatientID(), filter.isAutoWildcard()));
     }
 
     private static void setQueryParameters(Query query, TrashListFilter filter, List<String> roles) {

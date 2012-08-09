@@ -201,8 +201,8 @@ public class QueryUtil {
         }
     }
 
-    public static void appendPatientNameFilter(StringBuilder ql, String patientName) {
-        appendPatientName(ql, "p.patientName", ":patientName", patientName);
+    public static void appendPatientNameFilter(StringBuilder ql, String alias, String patientName) {
+        appendPatientName(ql, alias+".patientName", ":patientName", patientName);
     }
 
     public static void appendPatientName(StringBuilder ql, String fieldName, String varName, String patientName) {
@@ -216,8 +216,8 @@ public class QueryUtil {
         }
     }
     
-    public static void appendPatientNameFuzzyFilter(StringBuilder ql, String patientName) {
-        appendPersonNameFuzzyFilter(ql, "p.patientFamilyNameSoundex", "p.patientGivenNameSoundex", patientName);
+    public static void appendPatientNameFuzzyFilter(StringBuilder ql, String alias, String patientName) {
+        appendPersonNameFuzzyFilter(ql, alias+".patientFamilyNameSoundex", alias+".patientGivenNameSoundex", patientName);
     }
     public static void appendPersonNameFuzzyFilter(StringBuilder ql, String fnField, String gnField, String name) {
         PersonName pn = new PersonName(name);
@@ -260,9 +260,9 @@ public class QueryUtil {
         }
     }
 
-    public static void appendPatientIDFilter(StringBuilder ql,
+    public static void appendPatientIDFilter(StringBuilder ql, String alias,
             String patientID) {
-        appendANDwithTextValue(ql, "p.patientID", "patientID", patientID);
+        appendANDwithTextValue(ql, alias+".patientID", "patientID", patientID);
     }
 
     public static void setPatientIDQueryParameter(Query query,
@@ -270,9 +270,9 @@ public class QueryUtil {
         setTextQueryParameter(query, "patientID", patientID);
     }
 
-    public static void appendIssuerOfPatientIDFilter(StringBuilder ql,
+    public static void appendIssuerOfPatientIDFilter(StringBuilder ql, String alias,
             String issuerOfPatientID) {
-        appendANDwithTextValue(ql, "p.issuerOfPatientID", "issuerOfPatientID", issuerOfPatientID);
+        appendANDwithTextValue(ql, alias+".issuerOfPatientID", "issuerOfPatientID", issuerOfPatientID);
     }
 
     public static void setIssuerOfPatientIDQueryParameter(Query query,
@@ -280,16 +280,16 @@ public class QueryUtil {
         setTextQueryParameter(query, "issuerOfPatientID", issuerOfPatientID);
     }
 
-    public static void appendPatientBirthDateFilter(StringBuilder ql, Date minDate, Date maxDate) {
+    public static void appendPatientBirthDateFilter(StringBuilder ql, String alias, Date minDate, Date maxDate) {
         if (minDate!=null) {
             if (maxDate==null) {
-                ql.append(" AND p.patientBirthDate >= :birthdateMin");
+                ql.append(" AND "+alias+".patientBirthDate >= :birthdateMin");
             } else {
-                ql.append(" AND p.patientBirthDate BETWEEN :birthdateMin AND :birthdateMax");
+                ql.append(" AND "+alias+".patientBirthDate BETWEEN :birthdateMin AND :birthdateMax");
                 
             }
         } else if (maxDate!=null) {
-            ql.append(" AND p.patientBirthDate <= :birthdateMax");
+            ql.append(" AND "+alias+".patientBirthDate <= :birthdateMax");
         }
     }
     public static void setPatientBirthDateQueryParameter(Query query, Date minDate, Date maxDate) {

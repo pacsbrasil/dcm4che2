@@ -41,6 +41,7 @@ package org.dcm4chee.web.dao.folder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 
@@ -126,6 +127,7 @@ public class StudyListBean implements StudyListLocal {
                 patient = (Patient) element[0];
                 if (!patientList.contains(patient)) {
                     patient.setStudies(new LinkedHashSet<Study>());
+                    patient.setModalityPerformedProcedureSteps(new HashSet<MPPS>());
                     patientList.add(patient);
                 }
                 patient.getStudies().add((Study) element[1]);
@@ -133,6 +135,48 @@ public class StudyListBean implements StudyListLocal {
             return patientList;
         }
     }
+
+    public int countUnconnectedMPPS(StudyListFilter filter) {
+        StringBuilder ql = new StringBuilder(64);
+        ql.append("SELECT COUNT(*) FROM MPPS m WHERE NOT EXISTS (SELECT s.pk FROM Series s WHERE s.modalityPerformedProcedureStep = m)");
+        appendPatFilter(ql, "m.patient", filter);
+        Query query = em.createQuery(ql.toString());
+        setPatQueryParameters(query, filter);
+        return ((Number) query.getSingleResult()).intValue();
+    }
+    public List<Patient> findUnconnectedMPPS(StudyListFilter filter, int max, int index) {
+        ArrayList<Patient> patList = new ArrayList<Patient>();
+        StringBuilder ql = new StringBuilder(64);
+        ql.append("SELECT m, m.patient FROM MPPS m WHERE NOT EXISTS ")
+        .append("(SELECT s.pk FROM Series s WHERE s.modalityPerformedProcedureStep = m)");
+        appendPatFilter(ql, "m.patient", filter);
+        ql.append(" ORDER BY m.patient.patientName");
+        Query query = em.createQuery(ql.toString());
+        setPatQueryParameters(query, filter);
+        @SuppressWarnings("unchecked")
+        List<Object[]> result = query.setMaxResults(max).setFirstResult(index).getResultList();
+        MPPS mpps;
+        Patient patient;
+        for (Object[] entry: result) {
+            mpps = (MPPS)entry[0];
+            patient = (Patient)entry[1];
+            if (!patList.contains(patient)) {
+                patient.setModalityPerformedProcedureSteps(new LinkedHashSet<MPPS>());
+                patList.add(patient);
+            }
+            patient.getModalityPerformedProcedureSteps().add(mpps);
+        }
+        return patList;
+    }    
+    @SuppressWarnings("unchecked")
+    public List<MPPS> findUnconnectedMPPSofPatient(long patPk) {
+        StringBuilder ql = new StringBuilder(64);
+        ql.append("SELECT m FROM MPPS m WHERE m.patient.pk = :pk AND ")
+        .append("NOT EXISTS (SELECT s.pk FROM Series s WHERE s.modalityPerformedProcedureStep = m)");
+        Query query = em.createQuery(ql.toString());
+        query.setParameter("pk", patPk);
+        return (List<MPPS>) query.getResultList();
+    }    
 
     private static void appendFromClause(StringBuilder ql, StudyListFilter filter) {
         ql.append(" FROM Patient p");
@@ -143,14 +187,14 @@ public class StudyListBean implements StudyListLocal {
     private void appendWhereClause(StringBuilder ql, StudyListFilter filter, List<String> roles) {
         ql.append(" WHERE p.mergedWith IS NULL");
         if ( filter.isPatientQuery()) {
-            appendPatFilter(ql, filter);
+            appendPatFilter(ql, "p", filter);
         } else {
             if ( filter.isExtendedQuery() && !QueryUtil.isUniversalMatch(filter.getStudyInstanceUID())) {
                 ql.append(" AND s.studyInstanceUID = :studyInstanceUID");
             } else if (filter.isExtendedQuery() && !QueryUtil.isUniversalMatch(filter.getSeriesInstanceUID())) {
                 QueryUtil.appendSeriesInstanceUIDFilter(ql, filter.getSeriesInstanceUID());
             } else {
-                appendPatFilter(ql, filter);
+                appendPatFilter(ql, "p", filter);
                 QueryUtil.appendAccessionNumberFilter(ql, QueryUtil.checkAutoWildcard(filter.getAccessionNumber(), filter.isAutoWildcard()));
                 QueryUtil.appendPpsWithoutMwlFilter(ql, filter.isWithoutPps(), filter.isPpsWithoutMwl());
                 QueryUtil.appendStudyDateMinFilter(ql, filter.getStudyDateMin());
@@ -167,16 +211,16 @@ public class StudyListBean implements StudyListLocal {
         }
     }
 
-    private static void appendPatFilter(StringBuilder ql, StudyListFilter filter) {
+    private static void appendPatFilter(StringBuilder ql, String alias, StudyListFilter filter) {
         if (filter.isFuzzyPN()) {
-            QueryUtil.appendPatientNameFuzzyFilter(ql, filter.getPatientName());
+            QueryUtil.appendPatientNameFuzzyFilter(ql, alias, filter.getPatientName());
         } else {
-            QueryUtil.appendPatientNameFilter(ql, QueryUtil.checkAutoWildcard(filter.getPatientName(), filter.isPNAutoWildcard()));
+            QueryUtil.appendPatientNameFilter(ql, alias, QueryUtil.checkAutoWildcard(filter.getPatientName(), filter.isPNAutoWildcard()));
         }
-        QueryUtil.appendPatientIDFilter(ql, QueryUtil.checkAutoWildcard(filter.getPatientID(), filter.isAutoWildcard()));
-        QueryUtil.appendIssuerOfPatientIDFilter(ql, QueryUtil.checkAutoWildcard(filter.getIssuerOfPatientID(), filter.isAutoWildcard()));
+        QueryUtil.appendPatientIDFilter(ql, alias, QueryUtil.checkAutoWildcard(filter.getPatientID(), filter.isAutoWildcard()));
+        QueryUtil.appendIssuerOfPatientIDFilter(ql, alias, QueryUtil.checkAutoWildcard(filter.getIssuerOfPatientID(), filter.isAutoWildcard()));
         if ( filter.isExtendedQuery()) {
-            QueryUtil.appendPatientBirthDateFilter(ql, filter.getBirthDateMin(), filter.getBirthDateMax());
+            QueryUtil.appendPatientBirthDateFilter(ql, alias, filter.getBirthDateMin(), filter.getBirthDateMax());
         }
     }
 

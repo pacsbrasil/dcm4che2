@@ -137,6 +137,7 @@ import org.dcm4che2.data.VR;
 import org.dcm4che2.io.DicomInputStream;
 import org.dcm4chee.archive.common.PrivateTag;
 import org.dcm4chee.archive.conf.AttributeFilter;
+import org.dcm4chee.archive.entity.MPPS;
 import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.archive.entity.StudyPermission;
@@ -220,6 +221,13 @@ public class StudyListPage extends Panel {
     private static final String MODULE_NAME = "folder";
     private static final long serialVersionUID = 1L;
     private static Logger log = LoggerFactory.getLogger(StudyListPage.class);
+
+    private static final int SEARCH_PATIENT = 0;
+    private static final int SEARCH_STUDY = 1;
+    private static final int SEARCH_PPS_WITHOUT_MWL = 2;
+    private static final int SEARCH_WITHOUT_PPS = 3;
+    private static final int SEARCH_WITHOUT_MWL = 4;
+    private static final int SEARCH_UNCONNECTED_MPPS = 5;
 
     private static String tooOldAuditMessageText = 
         "Requested editing of an object that should not be edited anymore because of editing time limit. " +
@@ -323,7 +331,7 @@ public class StudyListPage extends Panel {
         addNavigation(form);
         addActions(form);
         
-        header = new StudyListHeader("thead", form);
+        header = new StudyListHeader("thead", form, viewport);
         form.add(header);
         form.add(new PatientListView("patients", viewport.getPatients()));
         msgWin.setTitle("");
@@ -382,7 +390,8 @@ public class StudyListPage extends Panel {
 
             @Override
             public Boolean getObject() {
-                return !filter.isPatientQuery() && (!filter.isExtendedQuery() || 
+                return !filter.isPatientQuery() && !filter.isUnconnectedMPPS() &&
+                        (!filter.isExtendedQuery() || 
                         (QueryUtil.isUniversalMatch(filter.getStudyInstanceUID()) && 
                          QueryUtil.isUniversalMatch(filter.getSeriesInstanceUID())));
             }
@@ -462,7 +471,7 @@ public class StudyListPage extends Panel {
 
             @Override
             public boolean isEnabled() {
-                return !filter.isPatientQuery();
+                return !filter.isPatientQuery() && !filter.isUnconnectedMPPS();
             }            
         }
         .add(new PatternValidator("^[0-9]+(\\.[0-9]+)*$"))
@@ -474,7 +483,8 @@ public class StudyListPage extends Panel {
 
             @Override
             public boolean isEnabled() {
-                return !filter.isPatientQuery() && QueryUtil.isUniversalMatch(filter.getStudyInstanceUID());
+                return !filter.isPatientQuery() && !filter.isUnconnectedMPPS() &&
+                    QueryUtil.isUniversalMatch(filter.getStudyInstanceUID());
             }
         }
         .add(new PatternValidator("^[0-9]+(\\.[0-9]+)*$"))
@@ -561,25 +571,29 @@ public class StudyListPage extends Panel {
             public Integer getObject() {
                 StudyListFilter filter = viewport.getFilter();
                 int i = 0;
-                if (!filter.isPatientQuery()) { 
-                    if (filter.isPpsWithoutMwl())
-                        i = 0x01;
-                    if (filter.isWithoutPps())
-                        i = i | 0x02;
-                    i++;
-                }
-                return i; 
+                if (filter.isPatientQuery())
+                    return SEARCH_PATIENT;
+                if (filter.isUnconnectedMPPS())
+                    return SEARCH_UNCONNECTED_MPPS;
+                if (filter.isPpsWithoutMwl() && filter.isPpsWithoutMwl())
+                    return SEARCH_WITHOUT_MWL;
+                if (filter.isPpsWithoutMwl())
+                    return SEARCH_PPS_WITHOUT_MWL;
+                if (filter.isWithoutPps())
+                    return SEARCH_WITHOUT_PPS;
+                 return SEARCH_STUDY;
             }
 
             public void setObject(Integer object) {
                 StudyListFilter filter = viewport.getFilter();
                 filter.setPatientQuery(object == 0);
-                filter.setPpsWithoutMwl((--object & 0x01) > 0);
+                filter.setPpsWithoutMwl((--object & 0x01) > 0);//1..SEARCH_STUDY
                 filter.setWithoutPps((object & 0x02) > 0);
+                filter.setUnconnectedMPPS((object & 0x04) > 0);
             }
             
         };
-        final DropDownChoice<Integer> queryType = new DropDownChoice<Integer>("queryType", searchOptionSelected, Arrays.asList(0,1,2,3,4));
+        final DropDownChoice<Integer> queryType = new DropDownChoice<Integer>("queryType", searchOptionSelected, Arrays.asList(0,1,2,3,4,5));
         form.addComponent(queryType);
         form.addInternalLabel("queryType");
         queryType.setChoiceRenderer(new IChoiceRenderer<Integer>() {
@@ -587,16 +601,18 @@ public class StudyListPage extends Panel {
 
                 public Object getDisplayValue(Integer object) {
                         switch(object) {
-                        case 0:
+                        case SEARCH_PATIENT:
                             return form.getString("folder.searchOptions.patient");
-                        case 1:
+                        case SEARCH_STUDY:
                             return form.getString("folder.searchOptions.study");
-                        case 2:
+                        case SEARCH_PPS_WITHOUT_MWL:
                             return form.getString("folder.searchOptions.ppsWithoutMwl");
-                        case 3:
+                        case SEARCH_WITHOUT_PPS:
                             return form.getString("folder.searchOptions.withoutPps");
-                        case 4:
+                        case SEARCH_WITHOUT_MWL:
                             return form.getString("folder.searchOptions.withoutMwl");
+                        case SEARCH_UNCONNECTED_MPPS:
+                            return form.getString("folder.searchOptions.unconnectedMpps");
                         };
                         return "unknown";
                 }
@@ -659,7 +675,7 @@ public class StudyListPage extends Panel {
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 viewport.setOffset(0);
                 viewport.getFilter().setAutoWildcard(WebCfgDelegate.getInstance().getAutoWildcard());
-                queryStudies(target);
+                query(target);
                 Auditlog.logQuery(true, UID.StudyRootQueryRetrieveInformationModelFIND, viewport.getFilter().getQueryDicomObject());
                 target.addComponent(form);
             }
@@ -705,7 +721,7 @@ public class StudyListPage extends Panel {
             protected void onSubmit(AjaxRequestTarget target) {
                 if (!WebCfgDelegate.getInstance().isQueryAfterPagesizeChange())
                     return;
-                queryStudies(target);
+                query(target);
                 target.addComponent(form);
                 target.addComponent(header);
             }
@@ -732,7 +748,7 @@ public class StudyListPage extends Panel {
             @Override
             public void onClick() {
                 viewport.setOffset(Math.max(0, viewport.getOffset() - pagesize.getObject()));
-                queryStudies(null);               
+                query(null);               
             }
             
             @Override
@@ -752,7 +768,7 @@ public class StudyListPage extends Panel {
             @Override
             public void onClick() {
                 viewport.setOffset(viewport.getOffset() + pagesize.getObject());
-                queryStudies(null);
+                query(null);
             }
 
             @Override
@@ -777,8 +793,11 @@ public class StudyListPage extends Panel {
                 return notSearched ? "folder.search.notSearched" : 
                     viewport.getFilter().isPatientQuery() ? 
                             (viewport.getTotal() == 0 ? "folder.search.noMatchingPatientsFound" : 
-                            "folder.search.patientsFound")
-                            : (viewport.getTotal() == 0 ? "folder.search.noMatchingStudiesFound" : 
+                                "folder.search.patientsFound") :
+                    viewport.getFilter().isUnconnectedMPPS() ?
+                            (viewport.getTotal() == 0 ? "folder.search.noMatchingMPPSFound" : 
+                                "folder.search.mppsFound")
+                    : (viewport.getTotal() == 0 ? "folder.search.noMatchingStudiesFound" : 
                                 "folder.search.studiesFound");
             }
         };
@@ -856,7 +875,7 @@ public class StudyListPage extends Panel {
                         setStatus(new StringResourceModel("folder.message.deleteDone", StudyListPage.this,null));
                         if (selected.hasPatients()) {
                             viewport.getPatients().clear();
-                            queryStudies(target);
+                            query(target);
                         } else
                             selected.refreshView(true);
                     } else
@@ -1135,11 +1154,30 @@ public class StudyListPage extends Panel {
         form.add(confirmEmulateMpps);
     }
 
-    private void queryStudies(AjaxRequestTarget target) {
+    private void query(AjaxRequestTarget target) {
+        StudyListFilter filter = viewport.getFilter();
+        notSearched = false;
+        if (filter.isUnconnectedMPPS()) {
+            queryUnconnectedMPPS(filter);
+        } else {
+            queryStudies(target, filter);
+        }
+    }
+
+    private void queryUnconnectedMPPS(StudyListFilter filter) {
+        viewport.setTotal(dao.countUnconnectedMPPS(filter));
+        List<Patient> patients = dao.findUnconnectedMPPS(filter, pagesize.getObject(), viewport.getOffset());
+        retainSelectedPatients();
+        for (Patient patient : patients) {
+            addPatient(patient); 
+        }
+        header.expandToLevel(AbstractDicomModel.PPS_LEVEL);
+    }
+    
+    private void queryStudies(AjaxRequestTarget target, StudyListFilter filter) {
         try {
             List<String> dicomSecurityRoles = (studyPermissionHelper.applyStudyPermissions() ? 
                         studyPermissionHelper.getDicomRoles() : null);
-            StudyListFilter filter = viewport.getFilter();
             viewport.setTotal(dao.count(filter, dicomSecurityRoles));
             updatePatients(dao.findPatients(filter, pagesize.getObject(), viewport.getOffset(), dicomSecurityRoles));
             header.expandToLevel(filter.isPatientQuery() ? 
@@ -1149,7 +1187,6 @@ public class StudyListPage extends Panel {
                 filter.setPpsWithoutMwl(false);
                 filter.setWithoutPps(false);
             }
-            notSearched = false;
         } catch (Throwable x) {
             if ((x instanceof EJBException) && x.getCause() != null) 
                 x = x.getCause();
@@ -1171,7 +1208,6 @@ public class StudyListPage extends Panel {
     
     private void updatePatients(List<Patient> patients) {
         retainSelectedPatients();
-        boolean forceExpandable = WebCfgDelegate.getInstance().forcePatientExpandableForPatientQuery();
         for (Patient patient : patients) {
             PatientModel patientModel = addPatient(patient);   
             if (!viewport.getFilter().isPatientQuery() && 
@@ -1184,7 +1220,7 @@ public class StudyListPage extends Panel {
                         patientModel.setExpandable(true);
                     }
                 }
-            } else if (forceExpandable) {
+            } else if (WebCfgDelegate.getInstance().forcePatientExpandableForPatientQuery()) {
                 patientModel.setExpandable(true);
             }
         }
@@ -1450,7 +1486,13 @@ public class StudyListPage extends Panel {
             item.setOutputMarkupId(true);
 
             final StudyModel studyModel = (StudyModel) item.getModelObject();
-            WebMarkupContainer row = new WebMarkupContainer("row");
+            WebMarkupContainer row = new WebMarkupContainer("row"){
+                private static final long serialVersionUID = 1L;
+                @Override
+                public boolean isVisible() {
+                    return studyModel.getPk() != -1;
+                }
+            };
             AjaxCheckBox selChkBox = new AjaxCheckBox("selected") {
 
                 private static final long serialVersionUID = 1L;
@@ -1603,6 +1645,9 @@ public class StudyListPage extends Panel {
                 protected void onComponentTag(ComponentTag tag) {
                    super.onComponentTag(tag);
                    tag.put("rowspan", ppsModel.getRowspan());
+                   if (ppsModel.getParent().getPk() == -1) {
+                       tag.put("colspan", "2");
+                   }
                 }
             };
             cell.add(new ExpandCollapseLink("expand", ppsModel, ppsListItem) {
@@ -1611,7 +1656,7 @@ public class StudyListPage extends Panel {
 
                 @Override
                 public boolean isVisible() {
-                    return ppsModel.getUid() != null;
+                    return ppsModel.getUid() != null && ppsModel.getSeries1() != null;
                 }
             });
             row.add(cell);
@@ -2237,7 +2282,7 @@ public class StudyListPage extends Panel {
                     @Override
                     public void onClose(AjaxRequestTarget target) {
                         updateStudyPermissions();
-                        queryStudies(target); 
+                        query(target); 
                         modalWindow.getPage().setOutputMarkupId(true);
                         target.addComponent(modalWindow.getPage());
                         target.addComponent(header);
@@ -2356,7 +2401,7 @@ public class StudyListPage extends Panel {
                     wmc.setVisible(showSearch); 
             }
             if (Boolean.valueOf(paras.getString("query"))) {
-                queryStudies(null);
+                query(null);
             }
         }
     }

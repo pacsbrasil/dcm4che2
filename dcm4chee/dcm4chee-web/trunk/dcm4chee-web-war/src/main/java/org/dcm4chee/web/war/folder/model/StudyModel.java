@@ -199,14 +199,16 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
 
     @Override
     public void expand() {
-        ppss.clear();
-        StudyListLocal dao = (StudyListLocal)
-        JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-        if (seriesIuid == null) {
-            for (Series series : dao.findSeriesOfStudy(getPk())) 
-                add(series);
-        } else {
-            add(dao.findSeriesByIuid(seriesIuid));
+        if (getPk() != -1) {
+            ppss.clear();
+            StudyListLocal dao = (StudyListLocal)
+            JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
+            if (seriesIuid == null) {
+                for (Series series : dao.findSeriesOfStudy(getPk())) 
+                    add(series);
+            } else {
+                add(dao.findSeriesByIuid(seriesIuid));
+            }
         }
     }
 
@@ -235,6 +237,10 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
         PPSModel pps = new PPSModel(mpps, seriesModel, this, mpps != null ? mpps.getCreatedTime() : null);
         ppss.add(pps);
     }
+    
+    void add(PPSModel pps) {
+        ppss.add(pps);
+    }
 
     @Override
     public void update(DicomObject dicomObject) {
@@ -254,17 +260,24 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
     @Override
     public AbstractEditableDicomModel refresh() {
         StudyListLocal dao = (StudyListLocal)
-            JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
-        updateModel(dao.getStudy(getPk()));
+        JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
+        if (getPk() != -1) {
+            updateModel(dao.getStudy(getPk()));
+        } else {
+            ppss.clear();
+            this.getPatient().initMpps(this, dao.findUnconnectedMPPSofPatient(getParent().getPk()));
+        }
         return this;
     }    
     
     private void updateModel(Study s) {
-        dataset = s.getAttributes(false);
-        availability = s.getAvailability().name();
-        modalities = s.getModalitiesInStudy();
-        numberOfStudyRelatedSeries = s.getNumberOfStudyRelatedSeries();
-        numberOfStudyRelatedInstances = s.getNumberOfStudyRelatedInstances();
+        if (getPk() != -1) {
+            dataset = s.getAttributes(false);
+            availability = s.getAvailability().name();
+            modalities = s.getModalitiesInStudy();
+            numberOfStudyRelatedSeries = s.getNumberOfStudyRelatedSeries();
+            numberOfStudyRelatedInstances = s.getNumberOfStudyRelatedInstances();
+        }
     }
     
     @Override

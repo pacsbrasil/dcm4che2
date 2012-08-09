@@ -77,6 +77,7 @@ public class StudyListFilter implements Serializable {
     private String sourceAET;
     private String seriesInstanceUID;
     private boolean patientQuery;
+    private boolean unconnectedMPPS;
     private boolean latestStudiesFirst;
     private boolean ppsWithoutMwl;
     private boolean withoutPps;
@@ -276,6 +277,14 @@ public class StudyListFilter implements Serializable {
 
     public void setPatientQuery(boolean patQuery) {
         this.patientQuery = patQuery;
+    }
+
+    public boolean isUnconnectedMPPS() {
+        return unconnectedMPPS;
+    }
+
+    public void setUnconnectedMPPS(boolean unconnectedMPPS) {
+        this.unconnectedMPPS = unconnectedMPPS;
     }
 
     public boolean isLatestStudiesFirst() {

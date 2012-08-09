@@ -77,9 +77,11 @@ public class PPSModel extends AbstractEditableDicomModel implements Serializable
             hasForeignPpsInfo = false;
         }
         setParent(studyModel);
-        series1.setPPS(this);
-        this.series1 = series1;
-        seriess.add(series1);
+        if (series1 != null) {
+            series1.setPPS(this);
+            this.series1 = series1;
+            seriess.add(series1);
+        }
     }
     
     public void setStudy(StudyModel m) {
@@ -102,7 +104,7 @@ public class PPSModel extends AbstractEditableDicomModel implements Serializable
     public Date getDatetime() {
         return dataset != null 
                 ? toDate(Tag.PerformedProcedureStepStartDate, Tag.PerformedProcedureStepStartTime)
-                : series1.getPPSStartDatetime();
+                : series1 == null ? null : series1.getPPSStartDatetime();
     }
 
     public String getAccessionNumber() {
@@ -137,37 +139,37 @@ public class PPSModel extends AbstractEditableDicomModel implements Serializable
     public String getId() {
         return dataset != null 
                 ? dataset.getString(Tag.PerformedProcedureStepID)
-                : series1.getPPSId();
+                : series1 == null ? null : series1.getPPSId();
     }
 
     public String getUid() {
         return dataset != null 
                 ? dataset.getString(Tag.SOPInstanceUID)
-                : series1.getPPSUid();
+                : series1 == null ? null : series1.getPPSUid();
     }
 
     public String getDescription() {
         return dataset != null 
                 ? dataset.getString(Tag.PerformedProcedureStepDescription)
-                : series1.getPPSDescription();
+                : series1 == null ? null : series1.getPPSDescription();
     }
 
     public String getModality() {
         return dataset != null 
                 ? dataset.getString(Tag.Modality)
-                : series1.getModality();
+                : series1 == null ? null : series1.getModality();
     }
 
     public String getStationName() {
         return dataset != null 
                 ? dataset.getString(Tag.PerformedStationName)
-                : series1.getStationName();
+                : series1 == null ? null : series1.getStationName();
     }
 
     public String getStationAET() {
         return dataset != null 
                 ? dataset.getString(Tag.PerformedStationAETitle)
-                : series1.getSourceAET();
+                : series1 == null ? null : series1.getSourceAET();
     }
 
     public int getNumberOfSeries() {

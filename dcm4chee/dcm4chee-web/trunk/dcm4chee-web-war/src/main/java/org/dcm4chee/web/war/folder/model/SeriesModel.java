@@ -255,6 +255,8 @@ public class SeriesModel extends AbstractEditableDicomModel implements Serializa
     }
     
     public boolean containedBySamePPS(SeriesModel series) {
+        if (series == null )
+            return false;
         String ppsuid1 = getPPSUid();
         String ppsuid2 = series.getPPSUid();
         if (ppsuid1 != null) {

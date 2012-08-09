@@ -40,12 +40,15 @@ package org.dcm4chee.web.war.folder.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.wicket.model.IModel;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4chee.archive.entity.MPPS;
 import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.archive.util.JNDIUtils;
@@ -64,6 +67,7 @@ public class PatientModel extends AbstractEditableDicomModel implements Serializ
     private static final long serialVersionUID = 1L;
     
     private List<StudyModel> studies = new ArrayList<StudyModel>();
+    private Set<MPPS> mppsList;
     private IModel<Boolean> latestStudyFirst;
     private Boolean expandable;
 
@@ -75,6 +79,21 @@ public class PatientModel extends AbstractEditableDicomModel implements Serializ
         this.latestStudyFirst = latestStudyFirst;
         this.createdTime = patient.getCreatedTime();
         expandable = null;
+        mppsList = patient.getModalityPerformedProcedureSteps();
+        if (mppsList != null && !mppsList.isEmpty()) {
+            StudyModel study = new StudyModel(null, this, createdTime);
+            studies.add(study);
+            initMpps(study, mppsList);
+        } else {
+            mppsList = null;
+        }
+    }
+
+    protected void initMpps(StudyModel study, Collection<MPPS> mppsList) {
+        for (MPPS pps : mppsList) {
+            study.add(new PPSModel(pps, null, study, pps.getCreatedTime()));
+        }
+        expandable = study.getPPSs().size() > 0;
     }
 
     @Override
@@ -109,7 +128,7 @@ public class PatientModel extends AbstractEditableDicomModel implements Serializ
     public List<StudyModel> getStudies() {
         return studies;
     }
-
+    
     @Override
     public int getRowspan() {
         int rowspan = isDetails() ? 2 : 1;
@@ -143,12 +162,18 @@ public class PatientModel extends AbstractEditableDicomModel implements Serializ
     @Override
     public void expand() {
         studies.clear();
-        List<String> dicomSecurityRoles = StudyPermissionHelper.get().applyStudyPermissions() ? 
-                StudyPermissionHelper.get().getDicomRoles() : null;
-        for (Study study : dao.findStudiesOfPatient(getPk(), latestStudyFirst.getObject(), dicomSecurityRoles))     
-            this.studies.add(new StudyModel(study, this, study.getCreatedTime(), 
-                    dao.findStudyPermissionActions(study.getStudyInstanceUID(), 
-                            StudyPermissionHelper.get().getDicomRoles())));
+        if (mppsList == null) {
+            List<String> dicomSecurityRoles = StudyPermissionHelper.get().applyStudyPermissions() ? 
+                    StudyPermissionHelper.get().getDicomRoles() : null;
+            for (Study study : dao.findStudiesOfPatient(getPk(), latestStudyFirst.getObject(), dicomSecurityRoles))     
+                this.studies.add(new StudyModel(study, this, study.getCreatedTime(), 
+                        dao.findStudyPermissionActions(study.getStudyInstanceUID(), 
+                                StudyPermissionHelper.get().getDicomRoles())));
+        } else {
+            StudyModel study = new StudyModel(null, this, createdTime);
+            studies.add(study);
+            initMpps(study, mppsList);
+        }
     }
 
     @Override

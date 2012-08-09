@@ -116,9 +116,9 @@ public class ModalityWorklistBean implements ModalityWorklistLocal {
             ql.append(" AND m.studyInstanceUID = :studyInstanceUID");
         } else {
             if (filter.isFuzzyPN()) {
-                QueryUtil.appendPatientNameFuzzyFilter(ql, filter.getPatientName());
+                QueryUtil.appendPatientNameFuzzyFilter(ql, "p", filter.getPatientName());
             } else {
-                QueryUtil.appendPatientNameFilter(ql, QueryUtil.checkAutoWildcard(filter.getPatientName(), filter.isPNAutoWildcard()));
+                QueryUtil.appendPatientNameFilter(ql, "p", QueryUtil.checkAutoWildcard(filter.getPatientName(), filter.isPNAutoWildcard()));
             }
             appendPatientIDFilter(ql, QueryUtil.checkAutoWildcard(filter.getPatientID(), filter.isAutoWildcard()));
             appendIssuerOfPatientIDFilter(ql, QueryUtil.checkAutoWildcard(filter.getIssuerOfPatientID(), filter.isAutoWildcard()));

@@ -29,21 +29,29 @@ public class StudyListHeader extends Panel {
     private int headerExpandLevel = 1;
     private int expandAllLevel = 0;
     private IModel<Boolean> autoExpand = new Model<Boolean>(false);
+    private final IModel<Boolean>hideStudyModel;
  
     private final class Row extends WebMarkupContainer {
 
         private static final long serialVersionUID = 1L;
         
         private final int entityLevel;
+        private IModel<Boolean> hide;
 
         public Row(String id, int entityLevel) {
             super(id);
             this.entityLevel = entityLevel;
         }
+        
+        private Row setVisibleModel(IModel<Boolean> hide) {
+            this.hide = hide;
+            return this;
+        }
 
         @Override
         public boolean isVisible() {
-            return StudyListHeader.this.headerExpandLevel >= Row.this.entityLevel;
+            return StudyListHeader.this.headerExpandLevel >= Row.this.entityLevel && 
+            (hide == null || !hide.getObject());
         }
     }
 
@@ -85,12 +93,24 @@ public class StudyListHeader extends Panel {
         protected void onComponentTag(ComponentTag tag) {
            super.onComponentTag(tag);
            tag.put("rowspan", 1 + headerExpandLevel - entityLevel);
+           if (entityLevel == AbstractDicomModel.PPS_LEVEL && hideStudyModel != null && hideStudyModel.getObject()) {
+               tag.put("colspan", "2");
+           }
         }
     }
 
-    public StudyListHeader(String id, Component toUpd) {
+    public StudyListHeader(String id, Component toUpd, final ViewPort viewport) {
         super(id);
         setOutputMarkupId(true);
+        hideStudyModel = new IModel<Boolean>(){
+            private static final long serialVersionUID = 1L;
+            public void detach() {}
+            public void setObject(Boolean arg0) {}
+
+            public Boolean getObject() {
+                return viewport.getFilter().isUnconnectedMPPS();
+            }
+        };
         
         add(new AjaxCheckBox("autoExpand", autoExpand) {
 
@@ -117,7 +137,7 @@ public class StudyListHeader extends Panel {
                 .add(new SelectAllLink("deselectAll", patients,PatientModel.PATIENT_LEVEL, false, toUpd, true)
                 .add(new TooltipBehaviour("folder.studyview.", "deselectAllPatients")))
                 );
-        add(new Row("study", PatientModel.STUDY_LEVEL).add(new Cell("cell", 1))
+        add(new Row("study", PatientModel.STUDY_LEVEL).setVisibleModel(hideStudyModel).add(new Cell("cell", 1))
                 .add(new SelectAllLink("selectAll", patients,PatientModel.STUDY_LEVEL, true, toUpd, true)
                 .add(new TooltipBehaviour("folder.studyview.", "selectAllStudies")))
                 .add(new SelectAllLink("deselectAll", patients,PatientModel.STUDY_LEVEL, false, toUpd, true)
