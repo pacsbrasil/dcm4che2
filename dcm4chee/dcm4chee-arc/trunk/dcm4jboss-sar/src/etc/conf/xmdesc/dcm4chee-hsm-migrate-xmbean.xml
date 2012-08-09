@@ -329,11 +329,6 @@
    <operation impact="ACTION">
       <description>Show current status of migration.</description>
       <name>showMigrationStatus</name>
-      <parameter>
-        <description>Details: Overview of file stati infos for source and target filesystem</description>
-        <name>details</name>
-        <type>boolean</type>
-      </parameter>
       <return-type>java.lang.String</return-type>
    </operation>
 

@@ -519,7 +519,7 @@ public class HSMMigrateService extends ServiceMBeanSupport {
         return count;
     }
 
-    public String showMigrationStatus(boolean detail) throws Exception  {
+    public String showMigrationStatus() throws Exception  {
         if (srcFilesystem == null || this.targetFilesystem == null) {
             return "Migration service not active! Source Filesystem and Target Filesystem must be configured!";
         }
@@ -542,14 +542,12 @@ public class HSMMigrateService extends ServiceMBeanSupport {
         if (remaining == 0) {
             sb.append("FINISHED! ").append(targetTotal).append(" dicom files migrated");
         } else {
-            sb.append(remaining).append(" dicom files remaining. ").append(srcTotal).append(" dicom files migrated!");
+            sb.append(remaining).append(" dicom files remaining. ").append(targetTotal).append(" dicom files migrated!");
         }
         sb.append("\n\nSource filesystem:").append(srcFilesystem)
         .append("\nTarget filesystem:").append(targetFilesystem).append("\n\n");
-        if (detail) {
-            addFilesystemDetail(srcFilesPerStatus, srcFilesystem, sb);
-            addFilesystemDetail(targetFilesPerStatus, targetFilesystem, sb);
-        }
+        addFilesystemDetail(srcFilesPerStatus, srcFilesystem, sb);
+        addFilesystemDetail(targetFilesPerStatus, targetFilesystem, sb);
         return sb.toString();
     }
     
