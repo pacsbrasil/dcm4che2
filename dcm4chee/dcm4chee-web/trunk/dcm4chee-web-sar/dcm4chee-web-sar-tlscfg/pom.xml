@@ -10,7 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>dcm4che.dcm4chee</groupId>
     <artifactId>dcm4chee-web-sar-tlscfg</artifactId>
-    <version>${version}</version>
+    <version>${project.version}</version>
     <packaging>jboss-sar</packaging>
     <name>DICOM TLS Configuration Service</name>
     <dependencies>
@@ -55,7 +55,7 @@
 							<groupId>dcm4che.dcm4chee</groupId>
 							<artifactId>dcm4chee-web-sar-auditlog</artifactId>
 							<classifier>tlscfg-xmbean</classifier>
-							<version>${version}</version>
+							<version>${project.version}</version>
 							<packaging>xml</packaging>
 							<file>${project.build.directory}/auditlog/web3-tlscfg-xmbean.xml</file>
 						</configuration>

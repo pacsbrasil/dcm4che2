@@ -10,7 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>dcm4che.dcm4chee</groupId>
     <artifactId>dcm4chee-web-sar-common</artifactId>
-    <version>${version}</version>
+    <version>${project.version}</version>
     <packaging>jar</packaging>
     <name>Common classes for dcm4chee-sar services</name>
     <properties>
@@ -32,14 +32,14 @@
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-arc-entities</artifactId>
-            <version>${version}</version>
+            <version>${project.version}</version>
             <classifier>${db}</classifier>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-web-ejb</artifactId>
-            <version>${version}</version>
+            <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

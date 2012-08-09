@@ -10,7 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>dcm4che.dcm4chee</groupId>
     <artifactId>dcm4chee-web-sar-bridge</artifactId>
-    <version>${version}</version>
+    <version>${project.version}</version>
     <packaging>pom</packaging>
     <modules>
         <module>dcm4chee-web-sar-bridge-store</module>

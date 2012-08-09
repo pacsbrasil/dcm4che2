@@ -11,7 +11,7 @@
     <groupId>dcm4che.dcm4chee</groupId>
     <artifactId>dcm4chee-web-dicom</artifactId>
     <packaging>war</packaging>
-    <version>${version}</version>
+    <version>${project.version}</version>
     <name>WAR for dcm4chee-web-dicom</name>
     <description>Supports SSO for dicom security</description>
     <dependencies>

@@ -11,7 +11,7 @@
     <groupId>dcm4che.dcm4chee</groupId>
     <artifactId>dcm4chee-web-urlprovider</artifactId>
     <packaging>jar</packaging>
-    <version>${version}</version>
+    <version>${project.version}</version>
     <name>Url provider for dcm4chee-web</name>
     <dependencies>
         <dependency>

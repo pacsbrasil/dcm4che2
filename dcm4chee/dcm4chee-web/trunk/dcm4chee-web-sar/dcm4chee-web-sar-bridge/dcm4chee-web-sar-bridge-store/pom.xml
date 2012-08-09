@@ -5,12 +5,12 @@
     <parent>
         <artifactId>dcm4chee-web-sar-bridge</artifactId>
         <groupId>dcm4che.dcm4chee</groupId>
-        <version>${version}</version>
+        <version>${project.version}</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>dcm4che.dcm4chee</groupId>
     <artifactId>dcm4chee-web-sar-bridge-store</artifactId>
-    <version>${version}</version>
+    <version>${project.version}</version>
     <packaging>jboss-sar</packaging>
     <name>Bridge to old StoreScp service to import dicom files</name>
     <dependencies>
@@ -29,20 +29,20 @@
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-arc-entities</artifactId>
-            <version>${version}</version>
+            <version>${project.version}</version>
             <classifier>${db}</classifier>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-web-sar-common</artifactId>
-            <version>${version}</version>
+            <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-web-sar-bridge-interface</artifactId>
-            <version>${version}</version>
+            <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -74,7 +74,7 @@
 							<groupId>dcm4che.dcm4chee</groupId>
 							<artifactId>dcm4chee-web-sar-auditlog</artifactId>
 							<classifier>bridgestore-xmbean</classifier>
-							<version>${version}</version>
+							<version>${project.version}</version>
 							<packaging>xml</packaging>
 							<file>${project.build.directory}/auditlog/web3-bridge-store-xmbean.xml</file>
 						</configuration>

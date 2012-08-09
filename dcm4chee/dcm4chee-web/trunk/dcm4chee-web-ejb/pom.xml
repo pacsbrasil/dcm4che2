@@ -11,7 +11,7 @@
     <groupId>dcm4che.dcm4chee</groupId>
     <artifactId>dcm4chee-web-ejb</artifactId>
     <packaging>ejb</packaging>
-    <version>${version}</version>
+    <version>${project.version}</version>
     <name>EJB3 Components for dcm4chee-web</name>
     <dependencies>
         <dependency>
@@ -23,14 +23,14 @@
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-arc-entities</artifactId>
-            <version>${version}</version>
+            <version>${project.version}</version>
             <classifier>${db}</classifier>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-usr-dao</artifactId>
-            <version>${version}</version>
+            <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

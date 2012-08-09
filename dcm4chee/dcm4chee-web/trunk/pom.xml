@@ -5,12 +5,11 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>dcm4che.dcm4chee</groupId>
     <artifactId>dcm4chee-web</artifactId>
-    <version>${version}</version>
+    <version>3.0.3</version>
     <packaging>pom</packaging>
     <name>Dcm4chee Web3 Components</name>
     <description>Web Application for DCM4CHEE Archive</description>
     <properties>
-        <version>3.0.3</version>
         <project.version>3.0.3</project.version>
         <wicket.version>1.4.7</wicket.version>
     </properties>

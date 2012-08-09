@@ -9,7 +9,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>dcm4che.dcm4chee</groupId>
 	<artifactId>dcm4chee-web-sar-hl7send</artifactId>
-	<version>${version}</version>
+	<version>${project.version}</version>
 	<packaging>jboss-sar</packaging>
 	<name>HL7 Send Service for HL7 v2</name>
 	<dependencies>
@@ -22,20 +22,20 @@
 		<dependency>
 			<groupId>dcm4che.dcm4chee</groupId>
 			<artifactId>dcm4chee-arc-entities</artifactId>
-			<version>${version}</version>
+			<version>${project.version}</version>
 			<classifier>${db}</classifier>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>dcm4che.dcm4chee</groupId>
 			<artifactId>dcm4chee-web-ejb</artifactId>
-			<version>${version}</version>
+			<version>${project.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>dcm4che.dcm4chee</groupId>
 			<artifactId>dcm4chee-web-sar-common</artifactId>
-			<version>${version}</version>
+			<version>${project.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
@@ -96,7 +96,7 @@
 							<groupId>dcm4che.dcm4chee</groupId>
 							<artifactId>dcm4chee-web-sar-auditlog</artifactId>
 							<classifier>hl7send-xmbean</classifier>
-							<version>${version}</version>
+							<version>${project.version}</version>
 							<packaging>xml</packaging>
 							<file>${project.build.directory}/auditlog/web3-hl7send-xmbean.xml</file>
 						</configuration>
