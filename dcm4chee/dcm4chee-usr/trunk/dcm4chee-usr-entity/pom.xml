@@ -11,7 +11,7 @@
     <name>Entity components for dcm4chee</name>
     <groupId>dcm4che.dcm4chee</groupId>
     <artifactId>dcm4chee-usr-entity</artifactId>
-    <version>${version}</version>
+    <version>${project.version}</version>
     <packaging>ejb</packaging>
     <properties>
 	    <ds>java:/pacsDS</ds>

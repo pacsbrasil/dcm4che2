@@ -11,33 +11,33 @@
     <groupId>dcm4che.dcm4chee</groupId>
     <artifactId>dcm4chee-usr-ui</artifactId>
     <packaging>jar</packaging>
-    <version>${version}</version>
+    <version>${project.version}</version>
     <name>Jar with the wicket components</name>
     <description></description>
     <dependencies>
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-icons</artifactId>
-            <version>${version}</version>
+            <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-web-common</artifactId>
-            <version>${version}</version>
+            <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-usr-entity</artifactId>
-            <version>${version}</version>
+            <version>${project.version}</version>
             <classifier>${db}</classifier>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-usr-dao</artifactId>
-            <version>${version}</version>
+            <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

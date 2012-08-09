@@ -10,13 +10,13 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>dcm4che.dcm4chee</groupId>
     <artifactId>dcm4chee-usr-dao</artifactId>
-    <version>${version}</version>
+    <version>${project.version}</version>
     <name>Ejb 3.0 components for dcm4chee</name>
     <dependencies>
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-usr-entity</artifactId>
-            <version>${version}</version>
+            <version>${project.version}</version>
             <classifier>${db}</classifier>
             <scope>provided</scope>
         </dependency>
