@@ -172,7 +172,7 @@ public class HSMMigrateService extends ServiceMBeanSupport {
                         try {
                             removeSourceFiles();
                         } catch (Exception e) {
-                            log.error("HSM Migration task failed!", e);
+                            log.error("HSM removeSourceFiles failed!", e);
                         }
                     }
                 }).start();
@@ -302,21 +302,21 @@ public class HSMMigrateService extends ServiceMBeanSupport {
         return getTaskInterval(0);
     }
     public void setTaskIntervalMigrate(String interval) throws Exception {
-        setTaskInterval(interval, 0); 
+        setTaskInterval(interval, 0, timerListenerMigrate); 
     }
     
     public final String getTaskIntervalRetry() {
         return getTaskInterval(1);
     }
     public void setTaskIntervalRetry(String interval) throws Exception {
-        setTaskInterval(interval, 1); 
+        setTaskInterval(interval, 1, timerListenerRetry); 
     }
 
     public final String getTaskIntervalRemove() {
         return getTaskInterval(2);
     }
     public void setTaskIntervalRemove(String interval) throws Exception {
-        setTaskInterval(interval, 2); 
+        setTaskInterval(interval, 2, timerListenerRemove); 
     }
 
     private final String getTaskInterval(int idx) {
@@ -325,7 +325,7 @@ public class HSMMigrateService extends ServiceMBeanSupport {
                 + disabledEndHours[idx];
     }
 
-    private final void setTaskInterval(String interval, int idx) throws Exception {
+    private final void setTaskInterval(String interval, int idx, NotificationListener timerListener) throws Exception {
         long oldInterval = taskIntervals[idx];
         int pos = interval.indexOf('!');
         if (pos == -1) {
@@ -341,9 +341,9 @@ public class HSMMigrateService extends ServiceMBeanSupport {
         }
         if (getState() == STARTED && oldInterval != taskIntervals[idx]) {
             scheduler.stopScheduler(timerIDs[idx], listenerIDs[idx],
-                    timerListenerMigrate);
+                    timerListener);
             listenerIDs[idx] = scheduler.startScheduler(timerIDs[idx],
-                    taskIntervals[idx], timerListenerMigrate);
+                    taskIntervals[idx], timerListener);
         }
     }
     
