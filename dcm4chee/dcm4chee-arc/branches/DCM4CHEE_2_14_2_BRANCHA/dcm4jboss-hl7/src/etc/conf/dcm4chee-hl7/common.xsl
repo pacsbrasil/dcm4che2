@@ -217,19 +217,50 @@
       <xsl:with-param name="xpn" select="field[6]"/>
     </xsl:call-template>
     <!-- Map SSN Number to Other Patient ID Sequence Item -->
-    <xsl:variable name="ssn" select="field[19]"/>
-    <xsl:if test="normalize-space($ssn)">
+    <xsl:call-template name="OtherPID">
+      <xsl:with-param name="ssn" select="field[19]"/>
+      <xsl:with-param name="opid" select="string(field[2]/text())"/>
+      <xsl:with-param name="oissuer" select="string(field[2]/component[3]/text())"/>
+    </xsl:call-template>
+  </xsl:template>
+  <xsl:template name="OtherPID">
+    <xsl:param name="ssn"/>
+    <xsl:param name="opid"/>
+    <xsl:param name="oissuer"/>
+    <xsl:variable name="add_opid">
+       <xsl:choose>
+         <xsl:when test="normalize-space($opid) and normalize-space($oissuer)">
+           <xsl:value-of select="'true'"/>
+         </xsl:when>
+         <xsl:otherwise>
+           <xsl:value-of select="'false'"/>
+         </xsl:otherwise>
+       </xsl:choose>
+    </xsl:variable>
+    <xsl:if test="normalize-space($ssn) or $add_opid='true'">
       <attr tag="00101002" vr="SQ">
-        <item>
-          <!-- Patient ID -->
-          <attr tag="00100020" vr="LO">
-            <xsl:value-of select="$ssn"/>
-          </attr>
-          <!-- Issuer Of Patient ID -->
-          <attr tag="00100021" vr="LO">
-            <xsl:value-of select="$ssn-issuer"/>
-          </attr>
-        </item>
+         <xsl:if test="normalize-space($ssn)">
+          <item>
+            <!-- Patient ID -->
+            <attr tag="00100020" vr="LO">
+              <xsl:value-of select="$ssn"/>
+            </attr>
+            <!-- Issuer Of Patient ID -->
+            <attr tag="00100021" vr="LO">
+              <xsl:value-of select="$ssn-issuer"/>
+            </attr>
+          </item>
+        </xsl:if>
+      <xsl:if test="$add_opid='true'">
+          <item>
+            <attr tag="00100020" vr="LO">
+              <xsl:value-of select="$opid"/>
+            </attr>
+            <attr tag="00100021" vr="LO">
+              <xsl:value-of select="$oissuer"/>
+            </attr>
+          </item>
+       </xsl:if>   
       </attr>
     </xsl:if>    
   </xsl:template>
