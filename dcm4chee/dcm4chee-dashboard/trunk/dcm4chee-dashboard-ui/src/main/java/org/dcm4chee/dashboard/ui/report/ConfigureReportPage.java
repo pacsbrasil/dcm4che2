@@ -154,10 +154,10 @@ public class ConfigureReportPage extends SecureSessionCheckPage {
             for (final String parameterName : DatabaseUtils.getParameterSet(report.getStatement())) {
                 
                 WebMarkupContainer parameterRow = new WebMarkupContainer(parameterName);
-                parameterRow.add(new Label("variable-name", parameterName.toString()));
                 variableRows.add(parameterRow);                        
 
-                if (parameterName.toString().startsWith("date")) {
+                if (parameterName.startsWith("date")) {
+                	parameterRow.add(new Label("variable-name", parameterName.substring(4)));
                     SimpleDateTimeField dtf;
                     parameterRow
                             .add(dtf = new SimpleDateTimeField("date-variable-value", new IModel<Date>() {
@@ -201,6 +201,13 @@ public class ConfigureReportPage extends SecureSessionCheckPage {
                                         "date-variable-value.timeField"));
                     parameterRow.add(new TextField<String>("variable-value").setVisible(false));
                 } else {
+                	parameterRow.add(new Label("variable-name", 
+                			parameterName
+                				.replace("text","")
+                				.replace("int","")
+                				.replace("float","")
+                				.replace("boolean","")
+                			));
                     parameterRow
                             .add((new TextField<String>("variable-value", new Model<String>() {
     
@@ -211,7 +218,7 @@ public class ConfigureReportPage extends SecureSessionCheckPage {
                                     parameters.put(parameterName, value != null ? value : "");
                                 }                            
                             }))
-                            .setVisible(!parameterName.toString().startsWith("date"))
+                            .setVisible(!parameterName.startsWith("date"))
                     );
                     parameterRow.add(new Label("date-variable-value").setVisible(false));
                 }
