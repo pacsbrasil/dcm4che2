@@ -50,6 +50,7 @@ import java.sql.Types;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -147,8 +148,12 @@ public class DisplayReportTablePanel extends Panel {
                             } catch (Exception e) {
                                 log.error(this.getClass().toString() + ": " + "respond: " + e.getMessage());
                                 log.debug("Exception: ", e);
+                                e.printStackTrace();
+                            } finally {
+                            	try {
+                            		wr.close();
+                            	} catch (Exception ignore) {};
                             }
-                            wr.close();
                         }
 
                         @Override
@@ -187,8 +192,11 @@ public class DisplayReportTablePanel extends Panel {
                             } catch (IOException e) {
                                 log.error(this.getClass().toString() + ": " + "respond: " + e.getMessage());
                                 log.debug("Exception: ", e);
+                            } finally {
+                            	try {
+                            		wr.close();
+                            	} catch (Exception ignore) {};
                             }
-                            wr.close();
                         }
 
                         @Override
@@ -365,10 +373,10 @@ public class DisplayReportTablePanel extends Panel {
             node3.appendChild(document.createTextNode(report.getTitle()));
             
             Calendar calendar = Calendar.getInstance();
-            calendar.setTimeInMillis(report.getCreated());
+            calendar.setTimeInMillis(new Date().getTime());
             node3 = document.createElement("created");
             node2.appendChild(node3);
-            node3.appendChild(document.createTextNode(new SimpleDateFormat("dd.MM.yyyy hh:mm").format(calendar.getTime())));
+            node3.appendChild(document.createTextNode(new SimpleDateFormat("dd.MM.yyyy HH:mm").format(calendar.getTime())));
         
             node3 = document.createElement("statement");
             node2.appendChild(node3);
@@ -412,9 +420,9 @@ public class DisplayReportTablePanel extends Panel {
             resultSet.first();
 
             Calendar calendar = Calendar.getInstance();
-            calendar.setTimeInMillis(report.getCreated());
+            calendar.setTimeInMillis(new Date().getTime());
             final List<String[]> csvList = new ArrayList<String[]>();
-            csvList.add(new String[] {report.getTitle(), new SimpleDateFormat("dd.MM.yyyy hh:mm").format(calendar.getTime()), report.getStatement()});
+            csvList.add(new String[] {report.getTitle(), new SimpleDateFormat("dd.MM.yyyy HH:mm").format(calendar.getTime()), report.getStatement()});
     
             if (total > 0) {
                 List<String> columnList = new ArrayList<String>(headers.size());

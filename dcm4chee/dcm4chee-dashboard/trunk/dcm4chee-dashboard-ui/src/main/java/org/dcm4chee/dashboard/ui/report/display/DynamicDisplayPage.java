@@ -40,11 +40,11 @@ package org.dcm4chee.dashboard.ui.report.display;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Map;
 
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.markup.html.CSSPackageResource;
-import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
@@ -53,8 +53,8 @@ import org.dcm4chee.dashboard.model.ReportModel;
 import org.dcm4chee.dashboard.ui.DashboardPanel;
 import org.dcm4chee.dashboard.ui.util.DatabaseUtils;
 import org.dcm4chee.web.common.base.BaseWicketPage;
-import org.dcm4chee.web.common.secure.SecurityBehavior;
 import org.dcm4chee.web.common.secure.SecureWicketPage;
+import org.dcm4chee.web.common.secure.SecurityBehavior;
 
 /**
  * @author Robert David <robert.david@agfa.com>
@@ -78,8 +78,8 @@ public class DynamicDisplayPage extends SecureWicketPage {
 
         add(new Label("title", report.getTitle()));
         Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(report.getCreated());
-        add(new Label("date", new SimpleDateFormat("dd.MM.yyyy hh:mm").format(calendar.getTime())));
+        calendar.setTimeInMillis(new Date().getTime());
+        add(new Label("date", new SimpleDateFormat("dd.MM.yyyy HH:mm").format(calendar.getTime())));
         
         add(new Label("statement-header", new ResourceModel("dashboard.report.display.header.statement"))
         .add(new SecurityBehavior(getModuleName() + ":showStatementLabel")));
