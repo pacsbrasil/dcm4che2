@@ -263,7 +263,7 @@ public class TCObject implements Serializable {
                 {
                     for (TCReferencedInstance image : series.getImages())
                     {
-                        if (!imageRefs.contains(image))
+                    	if (image.isImage() && !imageRefs.contains(image))
                         {
                             imageRefs.add(image);
                         }
