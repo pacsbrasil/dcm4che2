@@ -61,12 +61,14 @@ import org.apache.wicket.markup.repeater.RepeatingView;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
+import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.model.util.ListModel;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.usr.dao.UserAccess;
 import org.dcm4chee.usr.model.Group;
 import org.dcm4chee.usr.ui.config.delegate.UsrCfgDelegate;
+import org.dcm4chee.usr.ui.usermanagement.role.RoleListPanel;
 import org.dcm4chee.usr.ui.util.CSSUtils;
 import org.dcm4chee.usr.util.JNDIUtils;
 import org.dcm4chee.web.common.base.BaseWicketApplication;
@@ -197,7 +199,8 @@ public class GroupListPanel extends Panel {
 
                 @Override
                 public void onClick(AjaxRequestTarget target) {
-                    confirmationWindow.confirm(target, new Model<String>(new ResourceModel("grouplist.remove-group-link.confirmation").wrapOnAssignment(this.getParent()).getObject()), group);
+                    confirmationWindow.confirm(target, 
+                    		new StringResourceModel("grouplist.remove-group-link.confirmation", GroupListPanel.this, null, new Object[] {group.getGroupname()}), group);
                 }
             }
             .add(new Image("grouplist.delete.image", ImageManager.IMAGE_COMMON_REMOVE)

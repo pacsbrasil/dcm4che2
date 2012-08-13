@@ -61,6 +61,7 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
+import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.model.util.ListModel;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
@@ -70,6 +71,7 @@ import org.dcm4chee.usr.entity.UserRoleAssignment;
 import org.dcm4chee.usr.model.Role;
 import org.dcm4chee.usr.ui.config.delegate.UsrCfgDelegate;
 import org.dcm4chee.usr.ui.usermanagement.ChangePasswordLink;
+import org.dcm4chee.usr.ui.usermanagement.role.RoleListPanel;
 import org.dcm4chee.usr.ui.util.CSSUtils;
 import org.dcm4chee.usr.util.JNDIUtils;
 import org.dcm4chee.web.common.base.BaseWicketApplication;
@@ -196,7 +198,8 @@ public class UserListPanel extends Panel {
     
                     @Override
                     public void onClick(AjaxRequestTarget target) {
-                        confirmationWindow.confirm(target, new Model<String>(new ResourceModel("userlist.remove-user-link.confirmation").wrapOnAssignment(this.getParent()).getObject()), user);
+                        confirmationWindow.confirm(target, 
+                        		new StringResourceModel("userlist.remove-user-link.confirmation", UserListPanel.this, null, new Object[] {user.getUserID()}), user);
                     }
             };
             removeUserLink.add(new Image("img-delete", ImageManager.IMAGE_COMMON_REMOVE)

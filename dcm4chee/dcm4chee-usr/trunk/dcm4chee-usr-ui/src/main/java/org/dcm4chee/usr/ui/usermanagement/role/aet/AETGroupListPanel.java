@@ -71,6 +71,7 @@ import org.apache.wicket.markup.repeater.RepeatingView;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
+import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.model.util.ListModel;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
@@ -80,6 +81,7 @@ import org.dcm4chee.usr.model.AETGroup;
 import org.dcm4chee.usr.model.Role;
 import org.dcm4chee.usr.model.Group;
 import org.dcm4chee.usr.ui.config.delegate.UsrCfgDelegate;
+import org.dcm4chee.usr.ui.usermanagement.user.UserListPanel;
 import org.dcm4chee.usr.ui.util.CSSUtils;
 import org.dcm4chee.usr.util.JNDIUtils;
 import org.dcm4chee.web.common.base.BaseWicketApplication;
@@ -221,7 +223,8 @@ public class AETGroupListPanel extends Panel {
 
                 @Override
                 public void onClick(AjaxRequestTarget target) {
-                    confirmationWindow.confirm(target, new Model<String>(new ResourceModel("aetgrouplist.remove-aet-group-link.confirmation").wrapOnAssignment(this.getParent()).getObject()), aetGroup);
+                    confirmationWindow.confirm(target, 
+                    		new StringResourceModel("aetgrouplist.remove-aet-group-link.confirmation", AETGroupListPanel.this, null, new Object[] {aetGroup.getGroupname()}), aetGroup);
                 }
             }
             .add(new Image("aetgrouplist.delete.image", ImageManager.IMAGE_COMMON_REMOVE)

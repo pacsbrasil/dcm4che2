@@ -71,6 +71,7 @@ import org.apache.wicket.markup.repeater.RepeatingView;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
+import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.model.util.ListModel;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
@@ -254,7 +255,8 @@ public class RoleListPanel extends Panel {
 
                 @Override
                 public void onClick(AjaxRequestTarget target) {
-                    confirmationWindow.confirm(target, new Model<String>(new ResourceModel("rolelist.remove-role-link.confirmation").wrapOnAssignment(this.getParent()).getObject()), role);
+                    confirmationWindow.confirm(target, 
+                    		new StringResourceModel("rolelist.remove-role-link.confirmation", RoleListPanel.this, null, new Object[] {role.getRolename()}), role);
                 }
             }
             .add(new Image("rolelist.delete.image", ImageManager.IMAGE_COMMON_REMOVE)
