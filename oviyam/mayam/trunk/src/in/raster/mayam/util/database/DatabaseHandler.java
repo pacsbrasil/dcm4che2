@@ -529,6 +529,9 @@ public class DatabaseHandler {
             addNewLocale("pt_BR");
             addNewLocale("eu_ES");
             addNewLocale("ta_IN");
+            addNewLocale("cs_CZ");
+            addNewLocale("el_GR");
+            addNewLocale("de_DE");
             conn.commit();
 
         } catch (Exception e) {
@@ -545,7 +548,7 @@ public class DatabaseHandler {
         }
         Locale locale = new Locale(languagecode, countrycode);
         String language = locale.getDisplayLanguage();
-        String country = locale.getDisplayCountry();
+        String country = locale.getDisplayCountry();      
 
         insertLocale(language, country, languagecode, countrycode, localeid);
 
