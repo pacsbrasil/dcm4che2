@@ -1095,7 +1095,6 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
             }
             newPath = f.getFilePath();
             if (!sameTarFN) {
-            } else {
                 pos = newPath.indexOf('!');
                 newPath = newPath.substring(++pos);
                 newPath = newTarFilename+newPath;
