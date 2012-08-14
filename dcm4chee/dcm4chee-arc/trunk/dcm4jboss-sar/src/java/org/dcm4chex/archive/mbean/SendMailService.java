@@ -420,7 +420,7 @@ public class SendMailService extends ServiceMBeanSupport {
                     replyTo = fromAddr;
                 try {
                     message.setReplyTo(new Address[] { new InternetAddress(
-                            fromAddr) });
+                            replyTo) });
                 }
                 catch (Exception x) {
                     // ignore; some implementation doesnt support this method!
