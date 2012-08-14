@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanException;
@@ -88,6 +89,7 @@ import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.common.markup.DateTimeLabel;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
+import org.dcm4chee.web.common.webview.link.WebviewerLinkProvider;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
 import org.dcm4chee.web.dao.vo.MppsToMwlLinkResult;
 import org.dcm4chee.web.war.AuthenticatedWebSession;
@@ -97,6 +99,7 @@ import org.dcm4chee.web.war.folder.delegate.ContentEditDelegate;
 import org.dcm4chee.web.war.folder.model.PPSModel;
 import org.dcm4chee.web.war.folder.model.PatientModel;
 import org.dcm4chee.web.war.folder.model.StudyModel;
+import org.dcm4chee.web.war.folder.webviewer.Webviewer;
 import org.dcm4chee.web.war.worklist.modality.MWLItemListView;
 import org.dcm4chee.web.war.worklist.modality.ModalityWorklistPanel;
 import org.dcm4chee.web.war.worklist.modality.ViewPort;
@@ -118,8 +121,8 @@ public class Mpps2MwlLinkPage extends ModalWindow {
     private static final ResourceReference folderCSS = new CompressedResourceReference(Mpps2MwlLinkPage.class, "folder-style.css");
     private static final ResourceReference CSS = new CompressedResourceReference(Mpps2MwlLinkPage.class, "mpps-link-style.css");
     
-    private Mpps2MwlLinkPanelM linkPanel = new Mpps2MwlLinkPanelM("panel");
-    private ContentPanel panel = new ContentPanel("contentPanel");
+    private Mpps2MwlLinkPanelM linkPanel;
+    private ContentPanel panel;
     private List<PPSModel> ppsModels;
     private PPSModel ppsModelForInfo;
     private PatientModel ppsPatModelForInfo;
@@ -129,11 +132,12 @@ public class Mpps2MwlLinkPage extends ModalWindow {
     private boolean linkDone = false;
     private static Logger log = LoggerFactory.getLogger(Mpps2MwlLinkPage.class);
     
+    private WebviewerLinkProvider[] webviewerLinkProviders;
+
     StudyListLocal dao = (StudyListLocal) JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
     
     public Mpps2MwlLinkPage(String id) {
         super(id);
-        
         setPageCreator(new ModalWindow.PageCreator() {
             private static final long serialVersionUID = 1L;
               
@@ -141,6 +145,24 @@ public class Mpps2MwlLinkPage extends ModalWindow {
                 return new LinkPage();
             }
         });
+        initWebviewerLinkProvider();
+    }
+
+    private void initWebviewerLinkProvider() {
+        List<String> names = WebCfgDelegate.getInstance().getWebviewerNameList();
+        if (names == null) {
+            names = WebCfgDelegate.getInstance().getInstalledWebViewerNameList();
+        }
+        if (names == null || names.isEmpty()) {
+            webviewerLinkProviders = null;
+        } else {
+            webviewerLinkProviders = new WebviewerLinkProvider[names.size()];
+            Map<String,String> baseUrls = WebCfgDelegate.getInstance().getWebviewerBaseUrlMap();
+            for (int i = 0 ; i < webviewerLinkProviders.length ; i++) {
+                webviewerLinkProviders[i] = new WebviewerLinkProvider(names.get(i));
+                webviewerLinkProviders[i].setBaseUrl(baseUrls.get(names.get(i)));
+            }
+        }
     }
 
     public Button getSearchButton() {
@@ -168,9 +190,12 @@ public class Mpps2MwlLinkPage extends ModalWindow {
         ppsModels  = toList(ppsModel);
         ppsModelForInfo = ppsModels.get(0);
         ppsPatModelForInfo = ppsModelForInfo.getStudy().getPatient();
-        panel.replace(linkPanel);
+
+        panel = new ContentPanel("contentPanel");
+        panel.replace(linkPanel = new Mpps2MwlLinkPanelM("panel"));
         linkPanel.getViewPort().clear();
         linkPanel.presetSearchfields();
+
         comp = c;
         if (WebCfgDelegate.getInstance().isMpps2mwlAutoQuery() ) {
             target.appendJavascript("hideMask();document.getElementById('" + linkPanel.getSearchButton().getMarkupId() +
@@ -314,6 +339,10 @@ public class Mpps2MwlLinkPage extends ModalWindow {
             p.add(new DateTimeLabel("datetime"));
             p.add(new Label("studyDescription.label", new ResourceModel("link.studyDescriptionLabel")));
             p.add(new Label("studyDescription"));
+			p.add(new Label("webviewer.label", new ResourceModel("link.webviewerLabel"))
+				.setVisible(webviewerLinkProviders != null));
+            p.add(Webviewer.getLink(ppsModels.get(0).getStudy(), webviewerLinkProviders, StudyPermissionHelper.get(), new TooltipBehaviour("mpps2mwl.", "webviewer"), null)
+            		.setVisible(webviewerLinkProviders != null));
             add(p);
         }
 
@@ -465,7 +494,7 @@ public class Mpps2MwlLinkPage extends ModalWindow {
                 }
             });
             add(confirmLink.setInitialHeight(150).setInitialWidth(410));
-            add(linkPanel);
+            add(linkPanel = new Mpps2MwlLinkPanelM("panel"));
         }
     }
     
