@@ -117,23 +117,27 @@ public class StudyListBean implements StudyListLocal {
         QueryUtil.appendOrderBy(ql, new String[]{"p.patientName", studyDT});
         Query query = em.createQuery(ql.toString());
         setQueryParameters(query, filter, roles);
+        List<Patient> patientList;
         if (filter.isPatientQuery()) {
-            return query.setMaxResults(max).setFirstResult(index).getResultList();
+           patientList = (List<Patient>)query.setMaxResults(max).setFirstResult(index).getResultList();
+           for (Patient p : patientList) {
+               p.setModalityPerformedProcedureSteps(new HashSet<MPPS>());
+           }
         } else {
             List<Object[]> result = query.setMaxResults(max).setFirstResult(index).getResultList();
-            List<Patient> patientList = new ArrayList<Patient>();
+            patientList = new ArrayList<Patient>();
             Patient patient = null;
             for (Object[] element: result) {
                 patient = (Patient) element[0];
                 if (!patientList.contains(patient)) {
                     patient.setStudies(new LinkedHashSet<Study>());
-                    patient.setModalityPerformedProcedureSteps(new HashSet<MPPS>());
+                    patient.setModalityPerformedProcedureSteps(null);
                     patientList.add(patient);
                 }
                 patient.getStudies().add((Study) element[1]);
             }
-            return patientList;
         }
+        return patientList;
     }
 
     public int countUnconnectedMPPS(StudyListFilter filter) {
@@ -383,8 +387,15 @@ public class StudyListBean implements StudyListLocal {
     }
 
     public Patient updatePatient(long pk, DicomObject attrs) {
-        Patient patient = em.find(Patient.class, pk);
-        patient.setAttributes(attrs);
+        Patient patient;
+        if (pk == -1) {
+            patient = new Patient();
+            patient.setAttributes(attrs);
+            em.persist(patient);
+        } else {
+            patient = em.find(Patient.class, pk);
+            patient.setAttributes(attrs);
+        }
         return patient;
     }
 
