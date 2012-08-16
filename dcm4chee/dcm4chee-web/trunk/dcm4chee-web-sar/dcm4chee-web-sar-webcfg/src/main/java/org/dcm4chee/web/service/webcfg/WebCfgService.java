@@ -140,6 +140,8 @@ public class WebCfgService extends ServiceMBeanSupport implements
 
     private ObjectName tarRetrieveServiceName;
 
+	private ObjectName mppsForwardServiceName;
+	
     private ObjectName timerServiceName;
 
     private Map<String, String> imageCUIDS = new LinkedHashMap<String, String>();
@@ -850,6 +852,14 @@ public class WebCfgService extends ServiceMBeanSupport implements
         this.tarRetrieveServiceName = name;
     }
 
+    public ObjectName getMppsforwardServiceName() {
+        return mppsForwardServiceName;
+    }
+
+    public void setMppsforwardServiceName(ObjectName name) {
+        this.mppsForwardServiceName = name;
+    }
+
     public int checkCUID(String cuid) {
         if (isInCuids(cuid, imageCUIDS)) {
             return 0;
@@ -893,9 +903,11 @@ public class WebCfgService extends ServiceMBeanSupport implements
     }
 
     private static Map<String, String> parseUIDs(String uids) {
+        Map<String, String> map = new LinkedHashMap<String, String>();
+    	if ("NONE".equals(uids))
+    		return map;
         StringTokenizer st = new StringTokenizer(uids, " \t\r\n;");
         String uid, name;
-        Map<String, String> map = new LinkedHashMap<String, String>();
         while (st.hasMoreTokens()) {
             uid = st.nextToken().trim();
             name = uid;
