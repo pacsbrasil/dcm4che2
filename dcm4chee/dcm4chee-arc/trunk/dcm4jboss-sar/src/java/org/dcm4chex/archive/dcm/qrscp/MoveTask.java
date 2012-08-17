@@ -489,6 +489,8 @@ public class MoveTask implements Runnable {
     private void notifyMoveSCU(Command moveRspCmd, Dataset moveRspData) {
         if (!moveAssocClosed) {
             try {
+                if (!moveRspCmd.isPending())
+                    moveAssoc.removeCancelListener(msgID);
                 moveAssoc.getAssociation().write(
                         AssociationFactory.getInstance().newDimse(movePcid,
                                 moveRspCmd, moveRspData));

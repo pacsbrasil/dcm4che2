@@ -260,6 +260,8 @@ class HPMoveTask implements Runnable {
     }
 
     private void notifyMoveFinished() {
+        if (moveAssoc != null)
+            moveAssoc.removeCancelListener(msgID);
         notifyMoveSCU(canceled ? Status.Cancel
                 : failed > 0 ? Status.SubOpsOneOrMoreFailures : Status.Success,
                 makeMoveRspIdentifier());

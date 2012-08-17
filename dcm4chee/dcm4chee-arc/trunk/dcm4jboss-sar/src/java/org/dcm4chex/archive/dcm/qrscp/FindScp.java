@@ -354,6 +354,7 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
                 doAfterRsp(assoc, rsp);
             } while (rspCmd.isPending());
         } finally {
+            assoc.removeCancelListener(rspCmd.getMessageIDToBeingRespondedTo());
             mdr.release();
         }
     }

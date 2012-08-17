@@ -245,6 +245,7 @@ class GetTask implements Runnable {
             failedIUIDs.addAll(remainingIUIDs);
             remainingIUIDs.clear();
         }
+        assoc.removeCancelListener(msgID);
         sendGetRsp(status(), service.makeRetrieveRspIdentifier(failedIUIDs));
     }
 
