@@ -61,6 +61,7 @@ public interface ActiveAssociation extends Runnable
    public void start();
 
    void addCancelListener(int msgID, DimseListener l);
+   void removeCancelListener(int msgID);
    
    Association getAssociation();
 
