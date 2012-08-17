@@ -142,7 +142,14 @@ final class ActiveAssociationImpl implements ActiveAssociation,
 
     // Public --------------------------------------------------------
     public final void addCancelListener(int msgID, DimseListener l) {
-        cancelDispatcher.put(msgID, l);
+        synchronized (cancelDispatcher) {
+            cancelDispatcher.put(msgID, l);
+        }
+    }
+    public final void removeCancelListener(int msgID) {
+        synchronized (cancelDispatcher) {
+            cancelDispatcher.remove(msgID);
+        }
     }
 
     public String toString() {
