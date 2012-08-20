@@ -96,6 +96,16 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "I
 // KEY: swarm.principal.IgnoreEditTimeLimit
 };
 
+grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "CreatePatientRecord"
+{
+// KEY: swarm.principal.CreatePatientRecord
+    permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:newPatientButton", "render, enable";
+};
+grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "EditNewPatientID"
+{
+// KEY: swarm.principal.EditNewPatientID
+};
+
 grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "TrashRead"
 {
 // KEY: swarm.principal.TrashRead

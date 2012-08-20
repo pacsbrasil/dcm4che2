@@ -46,12 +46,14 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.wicket.model.IModel;
+import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4chee.archive.entity.MPPS;
 import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.archive.util.JNDIUtils;
+import org.dcm4chee.web.common.exceptions.WicketExceptionWithMsgKey;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
 import org.dcm4chee.web.war.StudyPermissionHelper;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
@@ -73,6 +75,10 @@ public class PatientModel extends AbstractEditableDicomModel implements Serializ
 
     StudyListLocal dao = (StudyListLocal) JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
 
+    public PatientModel() {
+        setPk(-1);
+        dataset = new BasicDicomObject();
+    }
     public PatientModel(Patient patient, IModel<Boolean> latestStudyFirst) {
         setPk(patient.getPk());
         this.dataset = patient.getAttributes();
@@ -188,7 +194,11 @@ public class PatientModel extends AbstractEditableDicomModel implements Serializ
 
     @Override
     public void update(DicomObject dicomObject) {
-        dataset = dao.updatePatient(getPk(), dicomObject).getAttributes();
+        Patient pat = dao.updatePatient(getPk(), dicomObject);
+        if (pat == null) {
+            throw new WicketExceptionWithMsgKey("PatientAlreadyExists");
+        }
+        dataset = pat.getAttributes();
     }
     
     @Override

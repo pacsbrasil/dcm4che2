@@ -245,8 +245,7 @@ public class TrashListPage extends Panel {
         searchTableComponents.add(form.createAjaxParent("searchFields"));
 
         form.addPatientNameField("patientName", new PropertyModel<String>(
-                filter, "patientName"), 
-                new IModel<Boolean>() {
+                filter, "patientName"), new IModel<Boolean>() {
                     private static final long serialVersionUID = 1L;
                     public void detach() {}
                     public void setObject(Boolean arg0) {}

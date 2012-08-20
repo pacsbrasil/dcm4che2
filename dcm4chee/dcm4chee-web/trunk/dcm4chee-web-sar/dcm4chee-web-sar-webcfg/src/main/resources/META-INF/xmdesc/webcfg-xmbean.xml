@@ -104,6 +104,33 @@
          <value value="NONE"/>
       </descriptors>
    </attribute>
+
+   <attribute access="read-write"
+      getMethod="getPatientIDPattern"
+      setMethod="setPatientIDPattern">
+      <description><![CDATA[
+        Pattern for generated patient ID's.<br/>
+        {##...#}..Numeric timestamp (milliseconds since 1.1.1970)<br />
+        {&lt;Date format&gt;}..Format string y..year,M..month,d..day,H..hour,m..minute,s..second,S..milliseconds<br />
+        e.g: PACS-{yyMMddHHmmss}]]>
+      </description>
+      <name>PatientIDPattern</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="PACS-{#############}"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getIssuerOfPatientID"
+      setMethod="setIssuerOfPatientID">
+      <description><![CDATA[Issuer of generated patient ID's.<br/>]]>
+      </description>
+      <name>IssuerOfPatientID</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="DCM4CHEE"/>
+      </descriptors>
+   </attribute>
       
    <attribute access="read-write"
       getMethod="getImageCUIDS"

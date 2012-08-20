@@ -115,63 +115,42 @@ public class WebCfgService extends ServiceMBeanSupport implements
     private String dicomSecurityServletUrl;
 
     private String wadoBaseURL;
-
     private String ridBaseURL;
-
     private List<String> webviewerNames;
-
     private Map<String, String> webviewerBaseUrls = new HashMap<String, String>();
 
     private ObjectName aeServiceName;
-
     private ObjectName echoServiceName;
-
     private ObjectName moveScuServiceName;
-    
     private ObjectName tcStoreScuServiceName;
-
     private ObjectName contentEditServiceName;
-
     private ObjectName storeBridgeServiceName;
-
     private ObjectName mppsEmulatorServiceName;
-
     private ObjectName mwlscuServiceName;
-
     private ObjectName tarRetrieveServiceName;
-
-	private ObjectName mppsForwardServiceName;
-	
+    private ObjectName mppsForwardServiceName;
     private ObjectName timerServiceName;
 
     private Map<String, String> imageCUIDS = new LinkedHashMap<String, String>();
-
     private Map<String, String> srCUIDS = new LinkedHashMap<String, String>();
-
     private Map<String, String> psCUIDS = new LinkedHashMap<String, String>();
-
     private Map<String, String> waveformCUIDS = new LinkedHashMap<String, String>();
-
     private Map<String, String> videoCUIDS = new LinkedHashMap<String, String>();
-
     private Map<String, String> encapsulatedCUIDS = new LinkedHashMap<String, String>();
 
     private Map<String, List<String>> ridMimeTypes = new LinkedHashMap<String, List<String>>();
 
     private String tcSeriesDisplayFormat;
-    
     private String tcKeywordCataloguesPath;
-
     private Map<String, String> tcKeywordCatalogues = new LinkedHashMap<String, String>();
-
     private Map<String, String> tcKeywordCataloguesExclusive = new LinkedHashMap<String, String>();
-    
     private List<String> tcRestrictedSrcAETs = new ArrayList<String>();
-    
     private boolean tcEditOnDoubleClick;
 
-    private List<String> modalities = new ArrayList<String>();
+    private String patientIDPattern;
+    private String issuerOfPatientID;
 
+    private List<String> modalities = new ArrayList<String>();
     private List<String> aetTypes = new ArrayList<String>();
     
     private String aeManagementDefault = new String();
@@ -179,43 +158,32 @@ public class WebCfgService extends ServiceMBeanSupport implements
     private List<String> stationNames = new ArrayList<String>();
 
     private boolean autoUpdateModalities;
-
     private boolean autoUpdateStationNames;
-
     private Integer autoUpdateTimerId;
 
     private List<Integer> pagesizes = new ArrayList<Integer>();
-
     private int defaultFolderPagesize;
-
     private int defaultMWLPagesize;
-
     private boolean queryAfterPagesizeChange;
 
     private String mpps2mwlPresetPatientname;
-
     private String mpps2mwlPresetModality;
-
     private String mpps2mwlPresetStartDate;
-
     private boolean mpps2mwlAutoQuery;
 
     private boolean useFamilyAndGivenNameQueryFields;
 
     private boolean manageStudyPermissions;
-
     private boolean useStudyPermissions;
 
     private boolean forcePatientExpandableForPatientQuery;
 
     private String tooOldLimit;
-
     private String ignoreEditTimeLimitRolename;
 
     private String retentionTime;
 
     private String emptyTrashInterval;
-
     private Integer trashCleanerTimerId;
 
     private List<Integer> autoExpandLevelChoices = new ArrayList<Integer>(6);
@@ -309,6 +277,24 @@ public class WebCfgService extends ServiceMBeanSupport implements
 
     public void setWebviewerBaseUrls(String urls) {
         this.webviewerBaseUrls = stringAsMap(urls);
+    }
+
+    public String getPatientIDPattern() {
+        return patientIDPattern;
+    }
+
+    public void setPatientIDPattern(String p) {
+        if (p.indexOf('{') == -1 || p.indexOf('}') == -1)
+            throw new IllegalArgumentException("Wrong pattern format! Must contain '{' and '}'");
+        this.patientIDPattern = p;
+    }
+
+    public String getIssuerOfPatientID() {
+        return issuerOfPatientID;
+    }
+
+    public void setIssuerOfPatientID(String issuerOfPatientID) {
+        this.issuerOfPatientID = issuerOfPatientID;
     }
 
     public String getImageCUIDS() {

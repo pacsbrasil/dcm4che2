@@ -37,7 +37,23 @@
 				          </td>
 				          <td>
 				          	<div class="edit-table-panel">
-								<div class="edit-value"><input wicket:id="value" type="text" /></div>
+								<div class="edit-value"><input wicket:id="value" type="text" class="edit-value"/></div>
+							</div>
+				          </td>
+				          <td class="edit-table-panel">
+				          		<select wicket:id="presets" class="edit-preset" />
+				          		<a wicket:id="presetLink" href="#"><img wicket:id="presetImg" alt="S" /></a>
+				          </td>
+				        </wicket:fragment>
+				        <wicket:fragment wicket:id="choice_element">
+				          <td wicket:id="name">
+				          	<div class="edit-table-panel">
+				          		<div class="edit-desc">[Attribute Name]</div>
+				          	</div>
+				          </td>
+				          <td>
+				          	<div class="edit-table-panel">
+								<div class="edit-value"><select wicket:id="value" type="text" /></div>
 							</div>
 				          </td>
 				          <td class="edit-table-panel">
@@ -69,7 +85,7 @@
 					<input type="submit" wicket:id="cancel"/>
 				</div>
 				<div style="clear: both; margin-top: 9px; height: 50px; text-align: center; vertical-align: middle;">
-					<div wicket:id="result-message">
+					<br/><div wicket:id="result-message">
 						[Result message]
 					</div>
 				</div>

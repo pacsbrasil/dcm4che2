@@ -44,6 +44,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.wicket.model.IModel;
 import org.dcm4chee.web.common.delegate.BaseCfgDelegate;
 import org.dcm4chee.web.service.common.RetryIntervalls;
 import org.slf4j.Logger;
@@ -86,6 +87,13 @@ public class WebCfgDelegate extends BaseCfgDelegate {
 
     public String getIgnoreEditTimeLimitRolename() {
         return getString("ignoreEditTimeLimitRolename");
+    }
+    
+    public String getPatientIDPattern() {
+        return getString("PatientIDPattern");
+    }
+    public String getIssuerOfPatientID() {
+        return getString("IssuerOfPatientID");
     }
 
     public String getRetentionTime() {

@@ -274,7 +274,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
                     private static final long serialVersionUID = 1L;
                     public void detach() {}
                     public void setObject(Boolean arg0) {}
-
+        
                     public Boolean getObject() {
                         return WebCfgDelegate.getInstance().useFamilyAndGivenNameQueryFields();
                     }

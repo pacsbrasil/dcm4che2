@@ -51,6 +51,8 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
 import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.VR;
 import org.dcm4chee.archive.common.Availability;
 import org.dcm4chee.archive.common.StorageStatus;
 import org.dcm4chee.archive.entity.File;
@@ -389,6 +391,18 @@ public class StudyListBean implements StudyListLocal {
     public Patient updatePatient(long pk, DicomObject attrs) {
         Patient patient;
         if (pk == -1) {
+            String issuer = attrs.getString(Tag.IssuerOfPatientID);
+            StringBuilder sb = new StringBuilder("SELECT p FROM Patient p WHERE p.patientID=?1");
+            if (issuer == null || issuer.length() == 0) {
+                sb.append(" AND p.issuerOfPatientID IS NULL");
+            } else {
+                sb.append(" AND p.issuerOfPatientID=?2");
+            }
+            Query q = em.createQuery(sb.toString()).setParameter(1, attrs.getString(Tag.PatientID));
+            if (issuer != null)
+                q.setParameter(2, issuer);
+            if (q.getResultList().size() > 0)
+                return null;
             patient = new Patient();
             patient.setAttributes(attrs);
             em.persist(patient);

@@ -236,6 +236,7 @@ public class StudyListPage extends Panel {
     private ViewPort viewport;
     private StudyListHeader header;
     private SelectedEntities selected = new SelectedEntities();
+    private SimpleEditDicomObjectPanel newPatientPanel;
 
     private IModel<Boolean> latestStudyFirst = new AbstractReadOnlyModel<Boolean>() {
         private static final long serialVersionUID = 1L;
@@ -570,15 +571,14 @@ public class StudyListPage extends Panel {
 
             public Integer getObject() {
                 StudyListFilter filter = viewport.getFilter();
-                int i = 0;
                 if (filter.isPatientQuery())
                     return SEARCH_PATIENT;
                 if (filter.isUnconnectedMPPS())
                     return SEARCH_UNCONNECTED_MPPS;
                 if (filter.isPpsWithoutMwl() && filter.isPpsWithoutMwl())
-                    return SEARCH_WITHOUT_MWL;
-                if (filter.isPpsWithoutMwl())
                     return SEARCH_PPS_WITHOUT_MWL;
+                if (filter.isPpsWithoutMwl())
+                    return SEARCH_WITHOUT_MWL;
                 if (filter.isWithoutPps())
                     return SEARCH_WITHOUT_PPS;
                  return SEARCH_STUDY;
@@ -586,10 +586,10 @@ public class StudyListPage extends Panel {
 
             public void setObject(Integer object) {
                 StudyListFilter filter = viewport.getFilter();
-                filter.setPatientQuery(object == 0);
-                filter.setPpsWithoutMwl((--object & 0x01) > 0);//1..SEARCH_STUDY
-                filter.setWithoutPps((object & 0x02) > 0);
-                filter.setUnconnectedMPPS((object & 0x04) > 0);
+                filter.setPatientQuery(object == SEARCH_PATIENT);
+                filter.setPpsWithoutMwl(object == SEARCH_WITHOUT_MWL || object == SEARCH_PPS_WITHOUT_MWL);
+                filter.setWithoutPps(object == SEARCH_WITHOUT_MWL || object == SEARCH_WITHOUT_PPS);
+                filter.setUnconnectedMPPS(object == SEARCH_UNCONNECTED_MPPS);
             }
             
         };
@@ -900,6 +900,56 @@ public class StudyListPage extends Panel {
         };
         form.add(confirmDelete);
 
+        AjaxFallbackButton newPatBtn = new AjaxFallbackButton("newPatBtn", form) {
+            
+            private static final long serialVersionUID = 1L;
+            
+            @Override
+            protected void onSubmit(final AjaxRequestTarget target, Form<?> form) {
+                final PatientModel newPatModel = getNewPatientModel();
+                newPatientPanel = new SimpleEditDicomObjectPanel("content", modalWindow, newPatModel,
+                        new ResourceModel("folder.newPatient.text").wrapOnAssignment(this).getObject(),
+                        new int[][]{{Tag.PatientName},{Tag.PatientID},{Tag.IssuerOfPatientID},
+                            {Tag.PatientBirthDate},{Tag.PatientSex}}, true, 
+                            new IModel<Boolean>() {
+                                private static final long serialVersionUID = 1L;
+                                public void detach() {}
+                                public void setObject(Boolean arg0) {}
+
+                                public Boolean getObject() {
+                                    return WebCfgDelegate.getInstance().useFamilyAndGivenNameQueryFields();
+                                }
+                            }) {
+                    private static final long serialVersionUID = 1L;
+                    
+                    @Override
+                    protected void onSubmit() {
+                        DicomObject obj = getDicomObject();
+                        if (obj.getString(Tag.PatientName) == null) {
+                            throw new WicketExceptionWithMsgKey("PatientNameIsEmpty");
+                        }
+                        newPatModel.update(obj);
+                        viewport.getPatients().add(0, newPatModel);
+                    }
+                };
+                newPatientPanel.addChoices(Tag.PatientSex, new String[]{"M","F","O","U"});
+                if (!StudyPermissionHelper.get().isEditNewPatientID()) {
+                    newPatientPanel.setNotEditable(Arrays.asList(Tag.PatientID, Tag.IssuerOfPatientID));
+                }
+                modalWindow.setContent(newPatientPanel);
+                modalWindow.setTitle("");
+                modalWindow.show(target);
+            }
+        };
+        newPatBtn.add(new Image("newPatImg",ImageManager.IMAGE_USER_ADD)
+            .add(new ImageSizeBehaviour("vertical-align: middle;"))
+        );
+        newPatBtn.add(new Label("newPatText", new ResourceModel("folder.newPatBtn.text"))
+            .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle")))
+        );
+        form.add(newPatBtn);
+        newPatBtn.add(new SecurityBehavior(getModuleName() + ":newPatientButton"));
+        
         AjaxButton deleteBtn = new AjaxButton("deleteBtn") {
 
         	private static final long serialVersionUID = 1L;
@@ -2438,5 +2488,43 @@ public class StudyListPage extends Panel {
         } catch (Exception ignore) {
             log.warn("Audit log of SecurityAlert for overriding editing time limit failed!", ignore);
         }
+    }
+
+    private PatientModel getNewPatientModel() {
+        PatientModel newPatModel = new PatientModel();
+        DicomObject attrs = newPatModel.getDataset();
+        attrs.putString(Tag.PatientName, VR.PN, "");
+        attrs.putString(Tag.PatientID, VR.LO, createPatID());
+        attrs.putString(Tag.IssuerOfPatientID, VR.LO, WebCfgDelegate.getInstance().getIssuerOfPatientID());
+        attrs.putDate(Tag.PatientBirthDate, VR.DA, null);
+        attrs.putString(Tag.PatientSex, VR.CS, "M");
+        return newPatModel;
+    }
+
+    private String createPatID() {
+        String pattern = WebCfgDelegate.getInstance().getPatientIDPattern();
+        StringBuilder sb = new StringBuilder();
+        int pos1 = pattern.indexOf('{');
+        int pos2 = pattern.indexOf('}');
+        sb.append(pattern.substring(0, pos1));
+        String p = pattern.substring(++pos1, pos2);
+        if (p.charAt(0) == '#') {
+            String v = String.valueOf(System.currentTimeMillis());
+            int diff = v.length()-p.length();
+            if (diff > 0) {
+                v = v.substring(diff);
+            } else {
+                for (int j = diff; j < 0; j++) {
+                    sb.append('0');
+                }
+            }
+            sb.append(v);
+        } else {
+            SimpleDateFormat df = new SimpleDateFormat(p);
+            sb.append(df.format(new Date()));
+        }
+        if (++pos2 < pattern.length())
+            sb.append(pattern.substring(pos2));
+        return sb.toString();
     }
 }

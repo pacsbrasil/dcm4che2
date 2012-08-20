@@ -77,7 +77,9 @@ import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
+import org.dcm4chee.web.common.exceptions.WicketExceptionWithMsgKey;
 import org.dcm4chee.web.common.markup.BaseForm;
+import org.dcm4chee.web.common.markup.PatientNameField;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 
 /**
@@ -94,13 +96,18 @@ public class SimpleEditDicomObjectPanel extends Panel {
     private static ElementDictionary dict = ElementDictionary.getDictionary();
     private final DicomObject dcmObj;
     private Map<Integer,Map<String,Object>> presetChoices;
+    private Map<Integer,String[]> choices = new HashMap<Integer, String[]>();
+    private List<Integer> notEditable;
+    
     private final BaseForm form;
     private TooltipBehaviour tooltipBehaviour = new TooltipBehaviour("dicom.");
     private Model<String> resultMessage;
+    private IModel<Boolean> useFnGn;
     
-    public SimpleEditDicomObjectPanel(String id, final ModalWindow window, AbstractDicomModel dcmModel, String title, final int[][] tagPaths, final boolean close) {
+    public SimpleEditDicomObjectPanel(String id, final ModalWindow window, AbstractDicomModel dcmModel, 
+            String title, final int[][] tagPaths, final boolean close, IModel<Boolean> useFnGn) {
         super(id);
-    
+        this.useFnGn = useFnGn;
         if (SimpleEditDicomObjectPanel.BaseCSS != null)
             add(CSSPackageResource.getHeaderContribution(SimpleEditDicomObjectPanel.BaseCSS));
         
@@ -143,9 +150,11 @@ public class SimpleEditDicomObjectPanel extends Panel {
                     target.addComponent(getPage());
                     if (close)
                         window.close(target);
+                } catch (WicketExceptionWithMsgKey e) {
+                    resultMessage.setObject(this.getString(e.getMsgKey()));
+                    target.addComponent(SimpleEditDicomObjectPanel.this);
                 } catch (Exception e) {
                     resultMessage.setObject(e.getLocalizedMessage());
-                    SimpleEditDicomObjectPanel.this.setOutputMarkupId(true);
                     target.addComponent(SimpleEditDicomObjectPanel.this);
                 }
             }
@@ -169,6 +178,15 @@ public class SimpleEditDicomObjectPanel extends Panel {
         form.add(new Label("result-message", (resultMessage = new Model<String>(""))));
     }
 
+    public SimpleEditDicomObjectPanel(String id, final ModalWindow window, AbstractDicomModel dcmModel, 
+            String title, final int[][] tagPaths, final boolean close) {
+        this(id, window, dcmModel, title, tagPaths, close, null);
+    }
+
+    public void addChoices(int tag, String[] values) {
+        choices.put(tag, values);
+    }
+    
     public void setPresetChoices(Map<Integer, Map<String, Object>> presetChoices) {
         this.presetChoices = presetChoices;
     }
@@ -189,10 +207,28 @@ public class SimpleEditDicomObjectPanel extends Panel {
         return true;
     }
 
+    public List<Integer> getNotEditable() {
+        return notEditable;
+    }
+
+    public void setNotEditable(List<Integer> notEditable) {
+        this.notEditable = notEditable;
+    }
+
     private void addHdrLabels(WebMarkupContainer table) {
         table.add(new Label("nameHdr", new ResourceModel("dicom.nameHdr")).add(tooltipBehaviour));
         table.add(new Label("valueHdr", new ResourceModel("dicom.valueHdr")).add(tooltipBehaviour));
-        table.add(new Label("presetHdr", new ResourceModel("dicom.presetHdr")).add(tooltipBehaviour));
+        table.add(new Label("presetHdr", presetChoices == null || presetChoices.isEmpty() ? 
+                new IModel<String>() {
+                    private static final long serialVersionUID = 1L;
+                    public void detach() {}
+                    public void setObject(String arg0) {}      
+
+                    public String getObject() {
+                        return null;
+                    }
+                } : 
+                new ResourceModel("dicom.presetHdr")).add(tooltipBehaviour));
     }
 
     public DicomObject getDicomObject() {
@@ -227,7 +263,7 @@ public class SimpleEditDicomObjectPanel extends Panel {
 
         @SuppressWarnings("unchecked")
         public ElementFragment(String id, SpecificCharacterSet cs, final int[] tagPath) {
-            super(id, "element", SimpleEditDicomObjectPanel.this);
+            super(id, choices.get(tagPath[tagPath.length-1]) == null ? "element" : "choice_element", SimpleEditDicomObjectPanel.this);
             final int tag = tagPath[tagPath.length-1];
             add(new Label("name", new AbstractReadOnlyModel<String>(){
                 
@@ -246,7 +282,15 @@ public class SimpleEditDicomObjectPanel extends Panel {
                     return s;
                 }
             }));
-            final FormComponent c = form.getDicomObjectField("value", dcmObj, tagPath);
+            @SuppressWarnings("rawtypes")
+            final FormComponent c = form.getDicomObjectField("value", dcmObj, tagPath, 
+                    choices.get(tagPath[tagPath.length-1]));
+            if (c instanceof PatientNameField) {
+                ((PatientNameField) c).setUseFnGn(useFnGn);
+            }
+            if (notEditable != null && notEditable.contains(tagPath[tagPath.length-1])) {
+                c.setEnabled(false);
+            }
             add(c);
             if (c instanceof FormComponentPanel) {
                 setMarkupTagReferenceId("date_element"); 
