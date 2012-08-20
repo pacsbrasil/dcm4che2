@@ -66,6 +66,7 @@ import org.dcm4che.util.BufferedOutputStream;
 import org.dcm4che.util.MD5Utils;
 import org.dcm4chex.archive.common.DeleteStudyOrder;
 import org.dcm4chex.archive.common.FileStatus;
+import org.dcm4chex.archive.common.FileSystemStatus;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
@@ -143,9 +144,30 @@ public class FileMoveService extends AbstractDeleterService implements MessageLi
     }
     
     public long updateMinFreeDiskSpaceFromSrcFSGroup() throws Exception  {
-        String mfd = (String) server.getAttribute(new ObjectName(getFileSystemMgtServiceNamePrefix()+srcFsGroup), "MinimumFreeDiskSpace");
+        String mfd = (String) server.getAttribute(new ObjectName(getFileSystemMgtServiceNamePrefix()+srcFsGroup), 
+                "MinimumFreeDiskSpace");
         log.info("getMinFreeDiskSpaceFromSrcFS group:"+srcFsGroup+" minFree:"+mfd);
-        minFree = mfd.equalsIgnoreCase(NONE) ? 0 : FileUtils.parseSize(mfd, MIN_FREE_DISK_SPACE);
+        if (mfd.equalsIgnoreCase(NONE)) 
+            return 0;
+        if (mfd.endsWith("%")) {
+            float ratio = Float.parseFloat(mfd.substring(0,mfd.length()-1));
+            FileSystemDTO[] fsDTOs =
+                fileSystemMgt().getFileSystemsOfGroup(srcFsGroup);
+            long total = 0L;
+            for (FileSystemDTO fsDTO : fsDTOs) {
+                int status = fsDTO.getStatus();
+                if (status == FileSystemStatus.RW
+                        || status == FileSystemStatus.DEF_RW) {
+                    File dir = FileUtils.toFile(fsDTO.getDirectoryPath());
+                    if (dir.isDirectory()) {
+                        total += FileSystemUtils.totalSpace(dir.getPath());
+                    }
+                }
+            }
+            minFree = (long) (total * ratio / 100);
+        } else {
+            minFree = FileUtils.parseSize(mfd, MIN_FREE_DISK_SPACE);
+        }
         return minFree;
     }
     
