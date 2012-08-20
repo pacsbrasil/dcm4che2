@@ -39,6 +39,7 @@
 package org.dcm4chee.web.common.markup;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -358,7 +359,7 @@ public class BaseForm extends Form<Object> {
         return true;
     }
 
-    public FormComponent<?> getDicomObjectField(String id, DicomObject dcmObj, int[] tagPath) {
+    public FormComponent<?> getDicomObjectField(String id, DicomObject dcmObj, int[] tagPath, String[] choices) {
         VR vr = DicomElementModel.getVRof(dcmObj, tagPath);
         FormComponent<?> fc;
         if (vr==VR.DA) {
@@ -367,18 +368,26 @@ public class BaseForm extends Form<Object> {
             fc = this.getSimpleDateTimeField(id, DicomElementModel.newDateModel(dcmObj, tagPath), null, false);
         } else if (vr==VR.TM) {
             fc = new TimeField(id, DicomElementModel.newDateModel(dcmObj, tagPath));
+        } else if (vr==VR.PN) {
+            fc = new PatientNameField(id, DicomElementModel.newStringModel(dcmObj, tagPath))
+            .setHidePatientnameLabel(true);
         } else {
             final String tfClass = ( vr == VR.IS || vr == VR.AE || vr == VR.SH || vr == VR.CS) ?
                    "textFieldSH" : "textFieldLO";
-            FormComponent<String> fct = new TextField<String>(id, DicomElementModel.newStringModel(dcmObj, tagPath)){
-                 private static final long serialVersionUID = 1L;
-
-                @Override
-                public void onComponentTag(ComponentTag tag) {
-                    super.onComponentTag(tag);
-                    tag.put("class", tfClass);
-                }
-            };
+            FormComponent<String> fct;
+            if (choices == null) {
+                fct = new TextField<String>(id, DicomElementModel.newStringModel(dcmObj, tagPath)){
+                     private static final long serialVersionUID = 1L;
+    
+                    @Override
+                    public void onComponentTag(ComponentTag tag) {
+                        super.onComponentTag(tag);
+                        tag.put("class", tfClass);
+                    }
+                };
+            } else {
+                fct = new DropDownChoice<String>(id,DicomElementModel.newStringModel(dcmObj, tagPath), Arrays.asList(choices));
+            }
             fct.add(getDicomTextValidator(vr));
             fc = fct;
         }

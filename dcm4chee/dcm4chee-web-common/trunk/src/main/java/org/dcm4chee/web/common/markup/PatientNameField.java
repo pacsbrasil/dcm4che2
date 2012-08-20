@@ -67,9 +67,14 @@ public class PatientNameField extends FormComponentPanel<String> {
     private TextField<String> pnField;
     private TextField<String> fnField;
     private TextField<String> gnField;
+    
+    private boolean hidePatientnameLabel;
 
     private static Logger log = LoggerFactory.getLogger(PatientNameField.class);
     
+    public PatientNameField(String id, IModel<String> model) {
+        this(id, model, null, null);
+    }
     public PatientNameField(String id, IModel<String> model, IModel<Boolean> useFnGn, IModel<Boolean> autoWildcard) {
         super(id, model);
         this.useFnGn = useFnGn;
@@ -92,8 +97,8 @@ public class PatientNameField extends FormComponentPanel<String> {
     @Override
     public void onBeforeRender() {
         super.onBeforeRender();
-        boolean b = this.useFnGn.getObject();
-        pnLabel.setVisible(!b);
+        boolean b = isUseFnGn();
+        pnLabel.setVisible(!hidePatientnameLabel && !b);
         pnField.setVisible(!b);
         fnLabel.setVisible(b);
         fnField.setVisible(b);
@@ -101,14 +106,25 @@ public class PatientNameField extends FormComponentPanel<String> {
         gnField.setVisible(b);
     }
     
+    public IModel<Boolean> getUseFnGn() {
+        return useFnGn;
+    }
+
+    public void setUseFnGn(IModel<Boolean> useFnGn) {
+        this.useFnGn = useFnGn;
+    }
+    
+    public PatientNameField setHidePatientnameLabel(boolean hidePatientnameLabel) {
+        this.hidePatientnameLabel = hidePatientnameLabel;
+        return this;
+    }
     public boolean isUseFnGn() {
-        return useFnGn.getObject();
+        return useFnGn == null ? false : useFnGn.getObject().booleanValue();
     }
 
-    public void setUseFnGn(boolean useFnGn) {
-        this.useFnGn.setObject(useFnGn);
+    public boolean isAutoWildcard() {
+        return autoWildcard == null ? false : autoWildcard.getObject().booleanValue();
     }
-
     @Override
     public void onComponentTag(ComponentTag tag) {
         super.onComponentTag(tag);
@@ -118,7 +134,7 @@ public class PatientNameField extends FormComponentPanel<String> {
     
     @Override
     public String getInput() {
-        return (useFnGn.getObject()) ? fnField.getInput() + "^" + gnField.getInput() : pnField.getInput();
+        return isUseFnGn() ? fnField.getInput() + "^" + gnField.getInput() : pnField.getInput();
     }
     
     @Override
@@ -126,10 +142,10 @@ public class PatientNameField extends FormComponentPanel<String> {
         String fn = fnField.getConvertedInput();
         String converted;
         int pos;
-        if (!useFnGn.getObject()) {
+        if (!isUseFnGn()) {
             converted = pnField.getConvertedInput();
         } else if (fn != null && (pos = fn.indexOf('^')) != -1) { //if fn contains '^' ignore gn and set full name!
-            if (autoWildcard.getObject() && pos == fn.lastIndexOf('^')) { //if fn contains only fn and gn -> add * to each.
+            if (isAutoWildcard() && pos == fn.lastIndexOf('^')) { //if fn contains only fn and gn -> add * to each.
                 converted = fn.substring(0, pos)+"*"+fn.substring(pos)+"*";
             } else {
                 converted = fn;
@@ -138,10 +154,10 @@ public class PatientNameField extends FormComponentPanel<String> {
             String gn = gnField.getConvertedInput();
             converted = fn == null ? "" : fn;
             if (gn != null && gn.length() != 0) {
-                if (autoWildcard.getObject() && !converted.endsWith("*"))
+                if (isAutoWildcard() && !converted.endsWith("*"))
                     converted += "*";
                 converted += "^"+gn;
-                if (autoWildcard.getObject() && gn.indexOf('^') == -1 && !converted.endsWith("*"))
+                if (isAutoWildcard() && gn.indexOf('^') == -1 && !converted.endsWith("*"))
                     converted += "*";
             }
         }
@@ -180,7 +196,7 @@ public class PatientNameField extends FormComponentPanel<String> {
         }
         
         protected String toViewString(String s) {
-            return autoWildcard.getObject() && s != null && s.endsWith("*") ? s.substring(0,s.length()-1) : s;
+            return isAutoWildcard() && s != null && s.endsWith("*") ? s.substring(0,s.length()-1) : s;
         }
 
         public void setObject(String object) {

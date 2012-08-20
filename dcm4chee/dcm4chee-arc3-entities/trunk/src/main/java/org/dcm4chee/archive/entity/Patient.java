@@ -354,7 +354,7 @@ public class Patient extends BaseEntity implements Serializable {
 
     public void setAttributes(DicomObject attrs) {
         this.patientID = attrs.getString(Tag.PatientID, "");
-        this.issuerOfPatientID = attrs.getString(Tag.IssuerOfPatientID, "");
+        this.issuerOfPatientID = attrs.getString(Tag.IssuerOfPatientID);
         PersonName pn = new PersonName(attrs.getString(Tag.PatientName));
         this.patientName = pn.componentGroupString(PersonName.SINGLE_BYTE,
                 false).toUpperCase();
