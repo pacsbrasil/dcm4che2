@@ -1375,7 +1375,7 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
     public int deleteFilesOfInvalidTarFile(String fsId, String tarFilename) throws FinderException, RemoveException {
         if (fsId.startsWith("tar:") && tarFilename.length() > 10) {
             Collection<FileLocal> c = fileHome.findFilesOfTarFile(fsId, tarFilename+"%");
-            log.info("Found "+c.size()+" files of invalid tar file "+tarFilename);
+            log.info("Delete "+c.size()+" files of tar file "+tarFilename);
             for (FileLocal f : c) {
                 f.remove();
             }

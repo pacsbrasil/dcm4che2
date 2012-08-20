@@ -139,6 +139,7 @@ public class MigrationTask implements Runnable {
             if (target != null) {
                 service.failedHSMFile(target, targetFsId, targetTarFilename);
                 target.delete();
+                log.error("Remove file entities of failed migrated tar file!");
                 mgr.deleteFilesOfInvalidTarFile(targetFsId, targetTarFilename);
             }
             throw x;
