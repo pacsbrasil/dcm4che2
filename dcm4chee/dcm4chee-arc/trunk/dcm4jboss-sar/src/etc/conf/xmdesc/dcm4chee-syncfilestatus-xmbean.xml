@@ -38,8 +38,9 @@
    <attribute access="read-write"
       getMethod="getHSMModulServicename"
       setMethod="setHSMModulServicename">
-      <description>HSM Module to query status of files on HSM systems.
-      </description>
+      <description><![CDATA[HSM Module to query status of files on HSM systems.<br />
+      	Module 'dcm4chee.archive:service=FileCopyHSMModule,type=Mapped' can be used if more than one HSM modules are active.
+      ]]></description>
       <name>HSMModulServicename</name>
       <type>java.lang.String</type>
       <descriptors>

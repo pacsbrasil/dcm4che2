@@ -20,8 +20,10 @@
    <attribute access="read-write"
       getMethod="getHSMModulServicename"
       setMethod="setHSMModulServicename">
-      <description>HSM Module to retrieve files/tarballs from HSM systems. Use NONE if filesystem has no HSM support.
-      </description>
+      <description><![CDATA[HSM Module to retrieve files/tarballs from HSM systems.<br /> 
+      			Use NONE if filesystem has no HSM support.<br />
+            	Module 'dcm4chee.archive:service=FileCopyHSMModule,type=Mapped' can be used if more than one HSM modules are active.
+      ]]></description>
       <name>HSMModulServicename</name>
       <type>java.lang.String</type>
       <descriptors>

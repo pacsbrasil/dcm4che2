@@ -60,6 +60,10 @@ public class MappedHSMModule extends AbstractHSMModule {
 
     HashMap<String, ObjectName> mapping = new HashMap<String, ObjectName>();
         
+    protected void startService() throws Exception {}
+
+    protected void stopService() throws Exception {}
+    
     public String getModuleMapping() {
         if (mapping.isEmpty())
             return NONE;
