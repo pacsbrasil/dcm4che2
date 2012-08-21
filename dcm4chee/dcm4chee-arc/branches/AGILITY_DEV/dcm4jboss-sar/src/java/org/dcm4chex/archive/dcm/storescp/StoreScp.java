@@ -147,7 +147,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     private static final String RECEIVE_BUFFER = "RECEIVE_BUFFER";
 
-    private static final String SERIES_STORED = "SERIES_STORED";
+    protected static final String SERIES_STORED = "SERIES_STORED";
 
 //    private static final String SOP_IUIDS = "SOP_IUIDS";
 
@@ -448,8 +448,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             boolean checkIncorrectWorklistEntry) {
         this.checkIncorrectWorklistEntry = checkIncorrectWorklistEntry;
     }
-
-    protected void doCStore(ActiveAssociation activeAssoc, Dimse rq,
+    
+	protected void doCStore(ActiveAssociation activeAssoc, Dimse rq,
             Command rspCmd) throws IOException, DcmServiceException {
         InputStream in = rq.getDataAsStream();
         perfMon.start(activeAssoc, rq, PerfCounterEnum.C_STORE_SCP_OBJ_IN);
@@ -1201,7 +1201,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             } else if (service.isSyncFileAfterCStoreRSP()) {
                 final FileOutputStream fos2 = fos;
                 syncFileExecutor().execute(new Runnable() {
-                    public void run() {
+					public void run() {
                         try {
                             fos2.getFD().sync();
                         } catch (Exception e) {
@@ -1313,26 +1313,26 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     // Implementation of AssociationListener
 
-    public void write(Association src, PDU pdu) {
+	public void write(Association src, PDU pdu) {
         if (pdu instanceof AAssociateAC)
             perfMon.assocEstEnd(src, Command.C_STORE_RQ);
     }
 
-    public void received(Association src, PDU pdu) {
+	public void received(Association src, PDU pdu) {
         if (pdu instanceof AAssociateRQ)
             perfMon.assocEstStart(src, Command.C_STORE_RQ);
     }
 
-    public void write(Association src, Dimse dimse) {
+	public void write(Association src, Dimse dimse) {
     }
 
-    public void received(Association src, Dimse dimse) {
+	public void received(Association src, Dimse dimse) {
     }
 
-    public void error(Association src, IOException ioe) {
+	public void error(Association src, IOException ioe) {
     }
 
-    public void closing(Association assoc) {
+	public void closing(Association assoc) {
         if (assoc.getAAssociateAC() != null)
             perfMon.assocRelStart(assoc, Command.C_STORE_RQ);
 
@@ -1355,7 +1355,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         log.error("Clean up on Association close failed:", e);
     }
 
-    public void closed(Association assoc) {
+	public void closed(Association assoc) {
         if (assoc.getAAssociateAC() != null)
             perfMon.assocRelEnd(assoc, Command.C_STORE_RQ);
     }
