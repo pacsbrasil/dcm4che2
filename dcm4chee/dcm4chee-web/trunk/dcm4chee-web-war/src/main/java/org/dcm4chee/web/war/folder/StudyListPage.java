@@ -575,10 +575,10 @@ public class StudyListPage extends Panel {
                     return SEARCH_PATIENT;
                 if (filter.isUnconnectedMPPS())
                     return SEARCH_UNCONNECTED_MPPS;
-                if (filter.isPpsWithoutMwl() && filter.isPpsWithoutMwl())
-                    return SEARCH_PPS_WITHOUT_MWL;
-                if (filter.isPpsWithoutMwl())
+                if (filter.isWithoutPps() && filter.isPpsWithoutMwl())
                     return SEARCH_WITHOUT_MWL;
+                if (filter.isPpsWithoutMwl())
+                    return SEARCH_PPS_WITHOUT_MWL;
                 if (filter.isWithoutPps())
                     return SEARCH_WITHOUT_PPS;
                  return SEARCH_STUDY;
