@@ -195,7 +195,8 @@ public class MoveEntitiesPage extends SecureSessionCheckPage {
                 } else if (selected.hasSeries()) {
                     for ( SeriesModel m : selected.getSeries()) {
                         if (Availability.valueOf(m.getAvailability()) != Availability.ONLINE) {
-                            return MSGID_ERR_SELECTION_MOVE_NOT_ONLINE;
+                            if (!m.getPPS().getStudy().isSelected())
+                                return MSGID_ERR_SELECTION_MOVE_NOT_ONLINE;
                         }
                     }
                     SeriesModel sm = selected.getSeries().iterator().next();
@@ -203,7 +204,8 @@ public class MoveEntitiesPage extends SecureSessionCheckPage {
                 } else if (selected.hasInstances()) {
                     for ( InstanceModel m : selected.getInstances()) {
                         if (Availability.valueOf(m.getAvailability()) != Availability.ONLINE) {
-                            return MSGID_ERR_SELECTION_MOVE_NOT_ONLINE;
+                            if (!m.getSeries().getPPS().getStudy().isSelected())
+                                return MSGID_ERR_SELECTION_MOVE_NOT_ONLINE;
                         }
                     }
                     InstanceModel im = selected.getInstances().iterator().next();
@@ -216,9 +218,6 @@ public class MoveEntitiesPage extends SecureSessionCheckPage {
                 return MSGID_ERR_SELECTION_MOVE_SOURCE_LEVEL;
             } else {
                 for ( StudyModel m : selected.getStudies()) {
-                    if (Availability.valueOf(m.getAvailability()) != Availability.ONLINE) {
-                        return MSGID_ERR_SELECTION_MOVE_NOT_ONLINE;
-                    }
                     if (m.getPatient().equals(patModel)) {
                         return MSGID_ERR_SELECTION_MOVE_SAME_PARENT;
                     }
