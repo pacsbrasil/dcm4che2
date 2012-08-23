@@ -111,6 +111,8 @@ public class ImageManager {
         new ResourceReference(ImageManager.class, "folder/time_limit_link.png");
     public static final ResourceReference IMAGE_FOLDER_TIMELIMIT_UNLINK = 
         new ResourceReference(ImageManager.class, "folder/time_limit_unlink.png");
+    public static final ResourceReference IMAGE_FOLDER_MPPS_FORWARD = 
+            new ResourceReference(ImageManager.class, "folder/mpps_forward.png");
     
     public static final ResourceReference IMAGE_AE_ECHO = 
         new ResourceReference(ImageManager.class, "ae/echo.png");
