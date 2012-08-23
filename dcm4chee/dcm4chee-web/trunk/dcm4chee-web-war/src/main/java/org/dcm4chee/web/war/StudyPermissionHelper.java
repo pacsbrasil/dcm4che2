@@ -94,6 +94,7 @@ public class StudyPermissionHelper implements Serializable {
     private boolean allowPropagation;
     
     private boolean ignoreEditTimeLimit;
+    private boolean editNewPatientID;
     
     private boolean SSO = false;
 
@@ -104,15 +105,14 @@ public class StudyPermissionHelper implements Serializable {
 
     public StudyPermissionHelper(org.apache.wicket.security.hive.authentication.Subject webSubject) {
         setStudyPermissionParameters();
-        setStudyPermissionRight(webSubject);
-        setIgnoreEditTimeLimit(webSubject);
+        initWebRights(webSubject);
         SSO = true;
     }
     
     public StudyPermissionHelper(String username, String password, org.apache.wicket.security.hive.authentication.Subject webSubject) throws AttributeNotFoundException, InstanceNotFoundException, MalformedObjectNameException, MBeanException, ReflectionException, NullPointerException, IOException {
 
         setStudyPermissionParameters();
-        setStudyPermissionRight(webSubject);
+        initWebRights(webSubject);
         try {
             javax.security.auth.Subject dicomSubject = new javax.security.auth.Subject();
             WebCfgDelegate.getInstance().getMBeanServer().invoke(
@@ -237,7 +237,10 @@ public class StudyPermissionHelper implements Serializable {
     public boolean ignoreEditTimeLimit() {
         return ignoreEditTimeLimit;
     }
-
+    public boolean isEditNewPatientID() {
+        return editNewPatientID;
+    }
+    
     public void setSSO(boolean sSO) {
         SSO = sSO;
     }
@@ -284,35 +287,25 @@ public class StudyPermissionHelper implements Serializable {
     }
 
     
-    private void setStudyPermissionRight(org.apache.wicket.security.hive.authentication.Subject webSubject) {
+    private void initWebRights(org.apache.wicket.security.hive.authentication.Subject webSubject) {
         studyPermissionRight = StudyPermissionRight.NONE;
         String studyPermissionsAll = BaseWicketApplication.get().getInitParameter("StudyPermissionsAllRolename");
         String studyPermissionsOwn = BaseWicketApplication.get().getInitParameter("StudyPermissionsOwnRolename");
         String studyPermissionsPropagation = BaseWicketApplication.get().getInitParameter("StudyPermissionsPropagationRolename");
-        if (studyPermissionsAll != null || studyPermissionsOwn != null) {
-            Iterator<org.apache.wicket.security.hive.authorization.Principal> i = webSubject.getPrincipals().iterator();
-            while (i.hasNext()) {
-                String rolename = i.next().getName();    
-                if (rolename.equals(studyPermissionsAll)) {
-                    studyPermissionRight = StudyPermissionRight.ALL;
-                    break;
-                } else if (rolename.equals(studyPermissionsOwn)) {
-                    studyPermissionRight = StudyPermissionRight.OWN;
-                } else if (rolename.equals(studyPermissionsPropagation))
-                    allowPropagation = true;
-            }
-        }
-    }
-    
-    private void setIgnoreEditTimeLimit(org.apache.wicket.security.hive.authentication.Subject webSubject) {
-        ignoreEditTimeLimit = false;
         String ignoreEditTimeLimitRolename = WebCfgDelegate.getInstance().getIgnoreEditTimeLimitRolename();
         Iterator<org.apache.wicket.security.hive.authorization.Principal> i = webSubject.getPrincipals().iterator();
         while (i.hasNext()) {
-            String rolename = i.next().getName();    
-            if (rolename.equals(ignoreEditTimeLimitRolename)) {
+            String rolename = i.next().getName();
+            if (rolename.equals(studyPermissionsAll)) {
+                studyPermissionRight = StudyPermissionRight.ALL;
+            } else if (studyPermissionRight == StudyPermissionRight.NONE && rolename.equals(studyPermissionsOwn)) {
+                studyPermissionRight = StudyPermissionRight.OWN;
+            } else if (studyPermissionRight == StudyPermissionRight.NONE && rolename.equals(studyPermissionsPropagation)) {
+                allowPropagation = true;
+            } else if (rolename.equals(ignoreEditTimeLimitRolename)) {
                 ignoreEditTimeLimit = true;
-                break;
+            } else if (rolename.equals("EditNewPatientID")) {
+                editNewPatientID = true;
             }
         }
     }
