@@ -191,7 +191,7 @@ public class MppsForwardPanel extends Panel {
                 result = getString("forward.forwardResult.default");
                 try {
                 	result = MppsForwardDelegate.getInstance()
-                		.forwardMPPS(ppsModel.getDataset(), destinationAET.getTitle());
+                		.forwardMPPS(ppsModel, destinationAET.getTitle());
                 	success = true;
             	} catch (Exception e) {
             		log.error("Error forwarding mpps", e);

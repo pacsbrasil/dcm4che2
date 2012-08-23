@@ -48,6 +48,7 @@ import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.net.DicomServiceException;
 import org.dcm4chee.web.common.delegate.BaseMBeanDelegate;
+import org.dcm4chee.web.war.folder.model.PPSModel;
 
 /**
  * @author Robert David <robert.david@agfa.com>
@@ -60,13 +61,17 @@ public class MppsForwardDelegate extends BaseMBeanDelegate {
         super();
     }
 
-    public String forwardMPPS(DicomObject dataset, String aet) throws 
+    public String forwardMPPS(PPSModel ppsModel, String aet) throws 
     	InstanceNotFoundException, MBeanException, ReflectionException, IOException, DicomServiceException {
+    	
+    	DicomObject ppsData = ppsModel.getDataset();
+    	ppsModel.getParent().getParent().getDataset().copyTo(ppsData);
+
     	return (String)  
 			server.invoke(serviceObjectName, "sendMPPS", 
 	                new Object[] { 
-						dataset.contains(Tag.ScheduledStepAttributesSequence),
-						dataset, 
+						ppsData.contains(Tag.ScheduledStepAttributesSequence),
+						ppsData, 
 						aet}, 
 	                new String[] { 
 						boolean.class.getName(), 
