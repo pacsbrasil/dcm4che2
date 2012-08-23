@@ -1830,6 +1830,8 @@ public class StudyListPage extends Panel {
             else
                 if (tooltip != null) image.add(tooltip);            
             unlinkBtn.add(image);
+            unlinkBtn.setVisible(studyPermissionHelper.checkPermission(ppsModel, StudyPermission.UPDATE_ACTION));
+            unlinkBtn.add(new SecurityBehavior(getModuleName() + ":unlinkPPSLink"));
             row.add(unlinkBtn);
             
             row.add(new AjaxFallbackLink<Object>("emulateBtn") {
