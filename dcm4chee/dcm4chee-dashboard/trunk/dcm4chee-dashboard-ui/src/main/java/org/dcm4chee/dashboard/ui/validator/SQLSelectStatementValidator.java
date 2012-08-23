@@ -55,9 +55,9 @@ public class SQLSelectStatementValidator extends AbstractValidator<String> {
         String statement = validatable.getValue().toString().toUpperCase();
         if ((!statement.startsWith("SELECT"))
         || (!statement.contains("FROM"))
-        || statement.contains("UPDATE")
-        || statement.contains("DELETE")
-        || statement.contains("DROP")
+        || statement.contains("UPDATE ")
+        || statement.contains("DELETE ")
+        || statement.contains("DROP ")
         || (statement.indexOf(";") != -1 && statement.indexOf(";") != (statement.length() - 1))) 
             error(validatable);
     }
