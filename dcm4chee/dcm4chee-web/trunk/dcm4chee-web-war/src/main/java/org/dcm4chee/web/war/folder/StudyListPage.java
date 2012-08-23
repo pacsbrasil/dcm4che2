@@ -92,6 +92,7 @@ import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow.WindowClo
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
+import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.CheckBox;
@@ -117,6 +118,7 @@ import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.protocol.http.WebRequestCycle;
+import org.apache.wicket.security.components.SecureWebPage;
 import org.apache.wicket.security.hive.authentication.DefaultSubject;
 import org.apache.wicket.security.hive.authorization.Principal;
 import org.apache.wicket.security.hive.authorization.SimplePrincipal;
@@ -1852,9 +1854,23 @@ public class StudyListPage extends Panel {
                 .setVisible(studyPermissionHelper.checkPermission(ppsModel, StudyPermission.APPEND_ACTION))
                 .add(new SecurityBehavior(getModuleName() + ":emulatePPSLink"))
             );
-             
-            row.add(selChkBox.add(tooltip)
-            );
+
+            row.add(new AjaxLink<Object>("forward") {
+            	
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public void onClick(AjaxRequestTarget target) {
+                	modalWindow.setContent(new MppsForwardPanel("content", modalWindow, ppsModel));
+                    modalWindow.setTitle("");
+                    modalWindow.show(target);
+                }
+            }.add(new Image("forwardImg", ImageManager.IMAGE_FOLDER_MPPS_FORWARD)
+            .add(new ImageSizeBehaviour())
+            .add(tooltip))
+            .setVisible(ppsModel.getDataset() != null));
+
+            row.add(selChkBox.add(tooltip));
             
             WebMarkupContainer details = new WebMarkupContainer("details") {
                 

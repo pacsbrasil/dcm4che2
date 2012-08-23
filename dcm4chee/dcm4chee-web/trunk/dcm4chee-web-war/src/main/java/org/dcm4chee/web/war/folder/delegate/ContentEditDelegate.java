@@ -51,8 +51,10 @@ import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
+import org.dcm4che2.net.DicomServiceException;
 import org.dcm4che2.util.UIDUtils;
 import org.dcm4chee.archive.common.Availability;
+import org.dcm4chee.archive.entity.MPPS;
 import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.Series;
 import org.dcm4chee.archive.entity.Study;
@@ -316,7 +318,7 @@ public class ContentEditDelegate extends BaseMBeanDelegate {
         }
         return pks;
     }
-
+    
     @Override
     public String getServiceNameCfgAttribute() {
         return "contentEditServiceName";

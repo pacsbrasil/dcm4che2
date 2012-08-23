@@ -818,6 +818,17 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getMppsforwardServiceName"
+      setMethod="setMppsforwardServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>mppsForwardServiceName</name>
+      <type>javax.management.ObjectName</type>
+      <descriptors>
+         <value value="dcm4chee.web:service=MPPSForward"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getUserMgtUserRole"
       setMethod="setUserMgtUserRole">
       <description><![CDATA[User Rolename for User Management.

@@ -166,6 +166,18 @@
 	            </exclusion>
             </exclusions>
     	</dependency>
+    	<dependency>
+      		<groupId>dcm4che.dcm4chee</groupId>
+      		<artifactId>dcm4chee-web-sar-mppsforward</artifactId>
+      		<type>sar</type>
+      		<version>${project.version}</version>
+            <exclusions>
+	            <exclusion>
+		            <groupId>dcm4che</groupId>
+		            <artifactId>dcm4che-core</artifactId>
+	            </exclusion>
+            </exclusions>
+    	</dependency>
         <dependency>
             <groupId>dcm4che.dcm4chee</groupId>
             <artifactId>dcm4chee-web-sar-rejnotescu</artifactId>
@@ -311,6 +323,10 @@
 		                <sarModule>
 		                    <groupId>dcm4che.dcm4chee</groupId>
 		                    <artifactId>dcm4chee-web-sar-movescu</artifactId>
+		                </sarModule>
+		                <sarModule>
+		                    <groupId>dcm4che.dcm4chee</groupId>
+		                    <artifactId>dcm4chee-web-sar-mppsforward</artifactId>
 		                </sarModule>
 		                <sarModule>
 		                    <groupId>dcm4che.dcm4chee</groupId>

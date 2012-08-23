@@ -26,6 +26,7 @@
         <module>dcm4chee-web-sar-modify</module>
         <module>dcm4chee-web-sar-mwlscu</module>
         <module>dcm4chee-web-sar-storescu</module>
+        <module>dcm4chee-web-sar-mppsforward</module>
     </modules>
     <name>JMX services for dcm4chee-web</name>
   <properties>
