@@ -73,6 +73,7 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
     private int numberOfStudyRelatedInstances;
     private List<String> studyPermissionActions = new ArrayList<String>();
     private String seriesIuid;
+    private boolean unlinkedSeries;
     
     public StudyModel(Study study, PatientModel patModel, Date createdTime) {
         if (study == null) {
@@ -166,6 +167,14 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
         return ppss;
     }
 
+    public boolean hasUnlinkedSeries() {
+        return unlinkedSeries;
+    }
+
+    public void setUnlinkedSeries(boolean unlinkedSeries) {
+        this.unlinkedSeries = unlinkedSeries;
+    }
+
     @Override
     public int getRowspan() {
         int rowspan = isDetails() ? 2 : 1;
@@ -201,6 +210,7 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
     public void expand() {
         if (getPk() != -1) {
             ppss.clear();
+            unlinkedSeries = false;
             StudyListLocal dao = (StudyListLocal)
             JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
             if (seriesIuid == null) {
@@ -234,6 +244,7 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
                 return;
             }
         }
+        unlinkedSeries |= mpps == null || mpps.getAccessionNumber() == null;
         PPSModel pps = new PPSModel(mpps, seriesModel, this, mpps != null ? mpps.getCreatedTime() : null);
         ppss.add(pps);
     }

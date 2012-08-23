@@ -41,6 +41,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -96,6 +97,7 @@ import org.dcm4chee.web.war.AuthenticatedWebSession;
 import org.dcm4chee.web.war.StudyPermissionHelper;
 import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
 import org.dcm4chee.web.war.folder.delegate.ContentEditDelegate;
+import org.dcm4chee.web.war.folder.delegate.MppsEmulateDelegate;
 import org.dcm4chee.web.war.folder.model.PPSModel;
 import org.dcm4chee.web.war.folder.model.PatientModel;
 import org.dcm4chee.web.war.folder.model.StudyModel;
@@ -130,11 +132,14 @@ public class Mpps2MwlLinkPage extends ModalWindow {
     private ConfirmationWindow<MWLItemModel> confirmLink;
     private AjaxLink<String> closeLink;
     private boolean linkDone = false;
+    private int missingPPS = -1; 
     private static Logger log = LoggerFactory.getLogger(Mpps2MwlLinkPage.class);
     
     private WebviewerLinkProvider[] webviewerLinkProviders;
 
     StudyListLocal dao = (StudyListLocal) JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
+
+    private boolean studyCollapsed;
     
     public Mpps2MwlLinkPage(String id) {
         super(id);
@@ -186,8 +191,12 @@ public class Mpps2MwlLinkPage extends ModalWindow {
     }
     
     public void show(AjaxRequestTarget target, PPSModel ppsModel, Component c) {
+        show(target, toList(ppsModel), c);
+    }
+    
+    public void show(AjaxRequestTarget target, List<PPSModel> ppsModels, Component c) {
         linkDone = false;
-        ppsModels  = toList(ppsModel);
+        this.ppsModels  = ppsModels;
         ppsModelForInfo = ppsModels.get(0);
         ppsPatModelForInfo = ppsModelForInfo.getStudy().getPatient();
 
@@ -204,6 +213,32 @@ public class Mpps2MwlLinkPage extends ModalWindow {
         super.show(target);
     }
     
+    public void show(AjaxRequestTarget target, StudyModel studyModel, Component c) {
+        if (studyModel.isCollapsed()) {
+            studyCollapsed = true;
+        }
+        List<PPSModel> models = getUnlinkedPPS(studyModel);
+        show(target, models, c);
+    }
+
+    private List<PPSModel> getUnlinkedPPS(StudyModel studyModel) {
+        studyModel.expand();
+        ArrayList<PPSModel> models = new ArrayList<PPSModel>(studyModel.getPPSs().size());
+        missingPPS = 0;
+        for (PPSModel m : studyModel.getPPSs()) {
+            if (m.getDataset() == null) { 
+                models.add(m);
+                missingPPS++;
+            } else if (m.getAccessionNumber() == null) {
+                models.add(m);
+            }
+        }
+        if (studyCollapsed) {
+            studyModel.collapse();
+        }
+        return models;
+    }
+
     private void hideLinkedPpsInFolder(org.dcm4chee.web.war.folder.ViewPort viewport) {
         StudyModel study;
         for (PPSModel mpps : ppsModels) {
@@ -225,24 +260,44 @@ public class Mpps2MwlLinkPage extends ModalWindow {
         return l;
     }
 
-    private void doLink(final MWLItemModel mwlItemModel, Patient pat) throws InstanceNotFoundException, MBeanException,
+    private boolean doLink(final MWLItemModel mwlItemModel, Patient pat) throws InstanceNotFoundException, MBeanException,
             ReflectionException, IOException {
+        log.info("########### doLink called! missingPPS:"+missingPPS);
+        if (missingPPS > 0) {
+            log.info("############### Emulate MPPS of study:"+ppsModels.get(0).getStudy());
+            int emulated = MppsEmulateDelegate.getInstance().emulateMpps(ppsModels.get(0).getStudy().getPk());
+            if (emulated < 1) {
+                confirmLink.setStatus(new ResourceModel("folder.message.emulateFailed").wrapOnAssignment(linkPanel));
+                return false;
+            }
+            ppsModels = getUnlinkedPPS(ppsModels.get(0).getStudy());
+            if (ppsModels.isEmpty()) {
+                confirmLink.setStatus(new ResourceModel("link.message.noPPS2Link").wrapOnAssignment(linkPanel));
+                return true;
+            }
+        }
+        log.info("########### start linkMppsToMwl");
         MppsToMwlLinkResult result = ContentEditDelegate.getInstance().linkMppsToMwl(ppsModels, mwlItemModel, pat);
+        log.info("########### finished linkMppsToMwl");
         org.dcm4chee.web.war.folder.ViewPort viewport = ((AuthenticatedWebSession) getSession()).getFolderViewPort();
         int nrOfStudies = result.getStudiesToMove().size();
         boolean hideLinkedPps = ((AuthenticatedWebSession) getSession()).getFolderViewPort().getFilter().isPpsWithoutMwl();
         if (nrOfStudies == 0) {
-            if (hideLinkedPps) {
+            if (hideLinkedPps && !studyCollapsed) {
                 hideLinkedPpsInFolder(viewport);
             } else {
-                for (PPSModel mpps : ppsModels) {
-                    mpps.getStudy().refresh().expand();
+                ppsModels.get(0).getStudy().refresh().expand();
+                if (studyCollapsed) {
+                    ppsModels.get(0).getStudy().collapse();
                 }
             }
         } else {
-            hideLinkedPpsInFolder(viewport);
+            if (!studyCollapsed) {
+                hideLinkedPpsInFolder(viewport);
+            }
             if (!hideLinkedPps) {
                 List<PatientModel> pats = viewport.getPatients();
+                result.getMwl().getPatient().setModalityPerformedProcedureSteps(null);
                 PatientModel patModel = new PatientModel(result.getMwl().getPatient(), new Model<Boolean>(false));
                 int pos = pats.indexOf(patModel);
                 if (pos == -1) {
@@ -258,12 +313,17 @@ public class Mpps2MwlLinkPage extends ModalWindow {
                                     StudyPermissionHelper.get().getStudyPermissionRight().equals(StudyPermissionHelper.StudyPermissionRight.ALL) ?
                                             null : StudyPermissionHelper.get().getDicomRoles()));
                     sm.refresh().expand();
+                    if (studyCollapsed) {
+                        sm.collapse();
+                    }
                     studies.add(sm);
                 }
                 ppsPatModelForInfo.collapse();
                 ppsPatModelForInfo.expand();
             }
         }
+        confirmLink.setStatus(new ResourceModel("link.message.linked").wrapOnAssignment(linkPanel));
+        return true;
     }
 
     public class LinkPage extends WebPage {
@@ -471,17 +531,15 @@ public class Mpps2MwlLinkPage extends ModalWindow {
                                 target.addComponent(p);
                                 return;
                             } else {
-                                doLink(mwlItemModel, pats.get(0));
+                                linkDone = doLink(mwlItemModel, pats.get(0));
                             }
                         } else {
-                            doLink(mwlItemModel, null);
+                            linkDone = doLink(mwlItemModel, null);
                         }
                         target.addComponent(comp);
-                        confirmLink.setStatus(new ResourceModel("link.message.linked").wrapOnAssignment(this));
-                        linkDone = true;
                     } catch (Exception e) {
                         log.error("MPPS to MWL link failed!", e);
-                        confirmLink.setStatus(new ResourceModel("link.message.linkFailed").wrapOnAssignment(this));
+                        confirmLink.setStatus(new ResourceModel("link.message.linkFailed").wrapOnAssignment(linkPanel));
                     }
                 }
             };

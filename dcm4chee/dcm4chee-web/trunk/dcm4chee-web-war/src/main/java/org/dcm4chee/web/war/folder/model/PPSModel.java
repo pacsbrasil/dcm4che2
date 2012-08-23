@@ -75,6 +75,8 @@ public class PPSModel extends AbstractEditableDicomModel implements Serializable
             this.dataset = mpps.getAttributes();
             this.createdTime = createdTime == null ? new Date() : createdTime;
             hasForeignPpsInfo = false;
+        } else {
+            setPk(-1);
         }
         setParent(studyModel);
         if (series1 != null) {

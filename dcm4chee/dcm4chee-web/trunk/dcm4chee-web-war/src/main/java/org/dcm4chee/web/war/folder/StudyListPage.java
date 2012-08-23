@@ -253,7 +253,9 @@ public class StudyListPage extends Panel {
     private MessageWindow msgWin = new MessageWindow("msgWin");
     private Mpps2MwlLinkPage mpps2MwlLinkWindow = new Mpps2MwlLinkPage("linkPage");
     private ConfirmationWindow<PPSModel> confirmLinkMpps;
+    private ConfirmationWindow<StudyModel> confirmLinkMppsStudy;
     private ConfirmationWindow<PPSModel> confirmUnlinkMpps;
+    private ConfirmationWindow<StudyModel> confirmUnlinkMppsStudy;
     private ConfirmationWindow<PPSModel> confirmEmulateMpps;
     private ConfirmationWindow<AbstractEditableDicomModel> confirmEdit;
     private ImageSelectionWindow imageSelectionWindow = new ImageSelectionWindow("imgSelection");
@@ -1129,6 +1131,22 @@ public class StudyListPage extends Panel {
             .setInitialHeight(150)
             .setInitialWidth(410));
         
+        confirmLinkMppsStudy = new ConfirmationWindow<StudyModel>("confirmLinkStudy") {
+            
+            private static final long serialVersionUID = 1L;
+            
+            @Override
+            public void onConfirmation(AjaxRequestTarget target, final StudyModel studyModel) {
+                logSecurityAlert(studyModel, true, StudyListPage.tooOldAuditMessageText);
+                
+                setMppsLinkWindow().show(target, studyModel, form);
+                setStatus(new Model<String>(""));
+            }
+        };
+        form.add(confirmLinkMppsStudy
+            .setInitialHeight(150)
+            .setInitialWidth(410));
+        
         confirmUnlinkMpps = new ConfirmationWindow<PPSModel>("confirmUnlink") {
  
             private static final long serialVersionUID = 1L;
@@ -1166,6 +1184,43 @@ public class StudyListPage extends Panel {
             }
         };
         form.add(confirmUnlinkMpps.setInitialHeight(150));
+        
+        confirmUnlinkMppsStudy = new ConfirmationWindow<StudyModel>("confirmUnlinkStudy") {
+            
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public void onOk(AjaxRequestTarget target) {
+                target.addComponent(form);
+            }
+
+            @Override
+            public void close(AjaxRequestTarget target) {
+                target.addComponent(form);
+                super.close(target);
+            }
+
+            @Override
+            public void onConfirmation(AjaxRequestTarget target, final StudyModel studyModel) {
+                logSecurityAlert(studyModel, true, StudyListPage.tooOldAuditMessageText);
+                
+                this.setStatus(new StringResourceModel("folder.message.unlink.running", StudyListPage.this, null));
+                getMessageWindowPanel().getOkBtn().setVisible(false);
+
+                try {
+                    int failed = ContentEditDelegate.getInstance().unlink(studyModel);
+                    if (failed == 0) {
+                        setStatus(new StringResourceModel("folder.message.unlinkDone", StudyListPage.this,null));
+                    } else 
+                        setStatus(new StringResourceModel("folder.message.unlinkFailed", StudyListPage.this,null));
+                } catch (Throwable t) {
+                    log.error("Unlink of MPPS failed:"+studyModel, t);
+                }
+                target.addComponent(getMessageWindowPanel().getMsgLabel());
+                target.addComponent(getMessageWindowPanel().getOkBtn());
+            }
+        };
+        form.add(confirmUnlinkMppsStudy.setInitialHeight(150));
         
         confirmEmulateMpps = new ConfirmationWindow<PPSModel>("confirmEmulate") {
             private static final long serialVersionUID = 1L;
@@ -1362,15 +1417,24 @@ public class StudyListPage extends Panel {
                             it.remove();
                         }
                     }
+                } else if (StudyPermissionHelper.get().isEasyLink()) {
+                    checkHasUnlinkedSeries(study, m);
                 }
             }
         } else if (expandLevel > StudyModel.STUDY_LEVEL) {
             expandToLevel(m, expandLevel);
+        } else if (StudyPermissionHelper.get().isEasyLink()) {
+            checkHasUnlinkedSeries(study, m);
         }
         studies.add(m);
         return true;
     }
     
+    private void checkHasUnlinkedSeries(Study study, StudyModel m) {
+        m.expand();
+        m.collapse();
+    }
+
     private void expandToLevel(AbstractDicomModel m, int level) {
         int modelLevel = m.levelOfModel();
         if ( modelLevel < level) {
@@ -1648,6 +1712,86 @@ public class StudyListPage extends Panel {
             item.add(details);
             details.add(new DicomObjectPanel("dicomobject", studyModel, false));
             details.setVisible(studyPermissionHelper.checkPermission(studyModel, StudyPermission.QUERY_ACTION));
+            final boolean tooOld = selected.tooOld(studyModel);
+            IndicatingAjaxFallbackLink<?> linkStudyBtn = new IndicatingAjaxFallbackLink<Object>("linkStudyBtn") {
+                
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public void onClick(AjaxRequestTarget target) {
+                    log.info("#### linkStudyBtn clicked!");
+                    if (tooOld) {
+                        int[] winSize = WebCfgDelegate.getInstance().getWindowSize("linkToOld");
+                        confirmLinkMppsStudy.setInitialWidth(winSize[0]).setInitialHeight(winSize[1]);
+                        confirmLinkMppsStudy.confirm(target, 
+                                new StringResourceModel("folder.message.tooOld.link",this, null), 
+                                studyModel);
+                    } else {
+                        setMppsLinkWindow().show(target, studyModel, form);
+                    }
+                    log.info("#### linkStudyBtn onClick finished!");
+                }
+
+                @Override
+                protected IAjaxCallDecorator getAjaxCallDecorator() {
+                    try {
+                        return macb.getAjaxCallDecorator();
+                    } catch (Exception e) {
+                        log.error("Failed to get IAjaxCallDecorator: ", e);
+                    }
+                    return null;
+                }
+                
+                @Override
+                public boolean isVisible() {
+                    return studyModel.hasUnlinkedSeries() && studyPermissionHelper.checkPermission(studyModel, StudyPermission.UPDATE_ACTION);
+                }
+                @Override
+                public boolean isEnabled() {
+                    return StudyPermissionHelper.get().ignoreEditTimeLimit() || !tooOld;
+                }
+            };            
+            Image image = tooOld ? new Image("linkStudyImg", ImageManager.IMAGE_FOLDER_TIMELIMIT_LINK) : 
+                new Image("linkStudyImg", ImageManager.IMAGE_COMMON_LINK);
+            image.add(new ImageSizeBehaviour());
+            if (tooOld && !StudyPermissionHelper.get().ignoreEditTimeLimit())
+                image.add(new AttributeModifier("title", true, new ResourceModel("folder.message.tooOld.link.tooltip")));
+            else
+                if (tooltip != null) image.add(tooltip);            
+            linkStudyBtn.add(image);
+            linkStudyBtn.add(new SecurityBehavior(getModuleName() + ":linkPPSLinkStudy"));
+            row.add(linkStudyBtn);
+            
+            IndicatingAjaxFallbackLink<?> unlinkStudyBtn = new IndicatingAjaxFallbackLink<Object>("unlinkStudyBtn") {
+
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public void onClick(AjaxRequestTarget target) {     
+                    confirmUnlinkMppsStudy.confirm(target, new StringResourceModel((tooOld ? "folder.message.tooOld.unlink" : "folder.message.confirmUnlink"),this, null,new Object[]{studyModel}), studyModel);
+                }
+
+                @Override
+                public boolean isVisible() {
+                    return !studyModel.hasUnlinkedSeries() && studyPermissionHelper.checkPermission(studyModel, StudyPermission.UPDATE_ACTION);
+                }
+                
+                @Override
+                public boolean isEnabled() {
+                    return StudyPermissionHelper.get().ignoreEditTimeLimit() || !tooOld;
+                }
+            };
+            unlinkStudyBtn.add(new SecurityBehavior(getModuleName() + ":unlinkPPSLinkStudy"));
+            image = tooOld ? new Image("unlinkStudyImg", ImageManager.IMAGE_FOLDER_TIMELIMIT_UNLINK) : 
+                new Image("unlinkStudyImg", ImageManager.IMAGE_FOLDER_UNLINK);
+            image.add(new ImageSizeBehaviour());
+            if (tooOld && !StudyPermissionHelper.get().ignoreEditTimeLimit())
+                image.add(new AttributeModifier("title", true, new ResourceModel("folder.message.tooOld.unlink.tooltip")));
+            else
+                if (tooltip != null) image.add(tooltip);            
+            unlinkStudyBtn.add(image);
+            row.add(unlinkStudyBtn);
+            
             item.add(new PPSListView("ppss",
                     studyModel.getPPSs(), patientListItem));
         }

@@ -272,6 +272,26 @@ public class ContentEditDelegate extends BaseMBeanDelegate {
         mpps.getStudy().expand();
         return status;
     }
+    
+    public int unlink(StudyModel study)  throws InstanceNotFoundException, MBeanException, ReflectionException, IOException {
+        boolean collapsed = study.isCollapsed();
+        if (collapsed) {
+            study.expand();
+        }
+        int failed = 0;
+        for (PPSModel mpps : study.getPPSs()) {
+            if (!(Boolean) server.invoke(serviceObjectName, "unlinkMpps", 
+                new Object[]{mpps.getPk()}, 
+                new String[]{long.class.getName()})) {
+                failed++;
+            }
+        }
+        study.expand();
+        if (collapsed && failed == 0) {
+            study.collapse();
+        }
+        return failed;
+    }
 
     public void doAfterDicomEdit(AbstractEditableDicomModel model) throws InstanceNotFoundException, MBeanException, ReflectionException, IOException {
         PatientModel pat;

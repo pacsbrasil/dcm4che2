@@ -95,6 +95,7 @@ public class StudyPermissionHelper implements Serializable {
     
     private boolean ignoreEditTimeLimit;
     private boolean editNewPatientID;
+    private boolean easyLink;
     
     private boolean SSO = false;
 
@@ -240,6 +241,9 @@ public class StudyPermissionHelper implements Serializable {
     public boolean isEditNewPatientID() {
         return editNewPatientID;
     }
+    public boolean isEasyLink() {
+        return easyLink;
+    }
     
     public void setSSO(boolean sSO) {
         SSO = sSO;
@@ -306,6 +310,8 @@ public class StudyPermissionHelper implements Serializable {
                 ignoreEditTimeLimit = true;
             } else if (rolename.equals("EditNewPatientID")) {
                 editNewPatientID = true;
+            } else if (rolename.equals("Mpps2MwlLinkEasy")) {
+                easyLink = true;
             }
         }
     }
