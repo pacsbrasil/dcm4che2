@@ -30,6 +30,7 @@ public class StudyListHeader extends Panel {
     private int expandAllLevel = 0;
     private IModel<Boolean> autoExpand = new Model<Boolean>(false);
     private final IModel<Boolean>hideStudyModel;
+    private IModel<Boolean>hidePPSModel;
  
     private final class Row extends WebMarkupContainer {
 
@@ -71,10 +72,22 @@ public class StudyListHeader extends Panel {
                 @Override
                 public void onClick(AjaxRequestTarget target) {
                     headerExpandLevel = headerExpandLevel > Cell.this.entityLevel ?
-                            Cell.this.entityLevel : Cell.this.entityLevel + 1;
+                            Cell.this.entityLevel : Cell.this.entityLevel + getLevelIncrement();
                     if (target != null) {
                         target.addComponent(StudyListHeader.this);
                     }
+                }
+
+                private int getLevelIncrement() {
+                    int inc = 1;
+                    int level = Cell.this.entityLevel;
+                    if (level == AbstractDicomModel.PATIENT_LEVEL && isHideStudy()) {
+                        inc++;
+                    }
+                    if (level == AbstractDicomModel.STUDY_LEVEL && isHidePPS()) {
+                        inc++;
+                    }
+                    return inc;
                 }
             }.add( new Image("expandImg", new AbstractReadOnlyModel<ResourceReference>() {
 
@@ -93,15 +106,17 @@ public class StudyListHeader extends Panel {
         protected void onComponentTag(ComponentTag tag) {
            super.onComponentTag(tag);
            tag.put("rowspan", 1 + headerExpandLevel - entityLevel);
-           if (entityLevel == AbstractDicomModel.PPS_LEVEL && hideStudyModel != null && hideStudyModel.getObject()) {
+           if (entityLevel == AbstractDicomModel.PPS_LEVEL && isHideStudy() ||
+                   entityLevel == AbstractDicomModel.SERIES_LEVEL && isHidePPS()) {
                tag.put("colspan", "2");
            }
         }
     }
 
-    public StudyListHeader(String id, Component toUpd, final ViewPort viewport) {
+    public StudyListHeader(String id, Component toUpd, final ViewPort viewport, IModel<Boolean> hidePPSModel) {
         super(id);
         setOutputMarkupId(true);
+        this.hidePPSModel = hidePPSModel;
         hideStudyModel = new IModel<Boolean>(){
             private static final long serialVersionUID = 1L;
             public void detach() {}
@@ -143,7 +158,7 @@ public class StudyListHeader extends Panel {
                 .add(new SelectAllLink("deselectAll", patients,PatientModel.STUDY_LEVEL, false, toUpd, true)
                 .add(new TooltipBehaviour("folder.studyview.", "deselectAllStudies")))
                 );
-        add(new Row("pps", PatientModel.PPS_LEVEL).add(new Cell("cell", 2)));
+        add(new Row("pps", PatientModel.PPS_LEVEL).setVisibleModel(hidePPSModel).add(new Cell("cell", 2)));
         add(new Row("series", PatientModel.SERIES_LEVEL).add(new Cell("cell", 3))
                 .add(new SelectAllLink("selectAll", patients,PatientModel.SERIES_LEVEL, true, toUpd, true)
                 .add(new TooltipBehaviour("folder.studyview.", "selectAllSeries")))
@@ -154,6 +169,13 @@ public class StudyListHeader extends Panel {
         add(new Row("file", 5));
     }
 
+    private boolean isHidePPS() {
+        return hidePPSModel != null && hidePPSModel.getObject();
+    }
+    private boolean isHideStudy() {
+        return hideStudyModel != null && hideStudyModel.getObject();
+    }
+    
     public void setExpandAllLevel(int expandAllLevel) {
         this.expandAllLevel = expandAllLevel;
         if (autoExpand.getObject())

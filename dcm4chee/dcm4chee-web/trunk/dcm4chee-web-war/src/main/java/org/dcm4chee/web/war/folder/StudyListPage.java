@@ -247,6 +247,8 @@ public class StudyListPage extends Panel {
             return viewport.getFilter().isLatestStudiesFirst();
         }
     };
+    private IModel<Boolean> hidePPSModel = new Model<Boolean>();
+    
     private boolean showSearch = true;
     private boolean notSearched = true;
     private BaseForm form;
@@ -273,7 +275,8 @@ public class StudyListPage extends Panel {
 
     public StudyListPage(final String id) {
         super(id);
-
+        hidePPSModel.setObject(StudyPermissionHelper.get().isHidePPSAllowed() ? 
+                WebCfgDelegate.getInstance().getDefaultHidePPS() : false);
         if (StudyListPage.CSS != null)
             add(CSSPackageResource.getHeaderContribution(StudyListPage.CSS));
 
@@ -336,7 +339,7 @@ public class StudyListPage extends Panel {
         addNavigation(form);
         addActions(form);
         
-        header = new StudyListHeader("thead", form, viewport);
+        header = new StudyListHeader("thead", form, viewport, hidePPSModel);
         form.add(header);
         form.add(new PatientListView("patients", viewport.getPatients()));
         msgWin.setTitle("");
@@ -537,7 +540,22 @@ public class StudyListPage extends Panel {
     private void addQueryOptions(final BaseForm form) {
 
         final CheckBox chkLatestStudyFirst = form.addLabeledCheckBox("latestStudiesFirst", null);
+        AjaxCheckBox chkHidePPSLevel = new AjaxCheckBox("hidePPSLevel", hidePPSModel) {
+            private static final long serialVersionUID = 1L;
 
+            @Override
+            protected void onUpdate(AjaxRequestTarget target) {
+                target.addComponent(form);
+            }
+            @Override
+            public boolean isEnabled() {
+                return !viewport.getFilter().isUnconnectedMPPS();
+            }
+        };
+        chkHidePPSLevel.add(new SecurityBehavior(getModuleName() + ":hidePPSLevel"));
+        form.addComponent(chkHidePPSLevel);
+        form.addInternalLabel(chkHidePPSLevel.getId()).add(new SecurityBehavior(getModuleName() + ":hidePPSLevel"));
+        
         List<Integer> expandChoices = WebCfgDelegate.getInstance().getAutoExpandLevelChoiceList();
         final DropDownChoice<Integer> autoExpand = new DropDownChoice<Integer>("autoExpandLevel", expandChoices) {
             private static final long serialVersionUID = 1L;
@@ -594,6 +612,9 @@ public class StudyListPage extends Panel {
                 filter.setPpsWithoutMwl(object == SEARCH_WITHOUT_MWL || object == SEARCH_PPS_WITHOUT_MWL);
                 filter.setWithoutPps(object == SEARCH_WITHOUT_MWL || object == SEARCH_WITHOUT_PPS);
                 filter.setUnconnectedMPPS(object == SEARCH_UNCONNECTED_MPPS);
+                if (filter.isUnconnectedMPPS()) {
+                    hidePPSModel.setObject(false);
+                }
             }
             
         };
@@ -658,6 +679,7 @@ public class StudyListPage extends Panel {
                     sourceAETDropDownChoice.setNullValid(true);
                 pagesize.setObject(WebCfgDelegate.getInstance().getDefaultFolderPagesize());
                 notSearched = true;
+                hidePPSModel.setObject(false);
                 form.setOutputMarkupId(true);
                 target.addComponent(form);
             }
@@ -1634,7 +1656,11 @@ public class StudyListPage extends Panel {
                 @Override
                 protected void onComponentTag(ComponentTag tag) {
                    super.onComponentTag(tag);
-                   tag.put("rowspan", studyModel.getRowspan());
+                   int rows = studyModel.getRowspan();
+                   if (hidePPSModel.getObject()) {
+                       rows -= studyModel.getPPSs().size();
+                   }
+                   tag.put("rowspan", rows);
                 }
             };
             cell.add(new ExpandCollapseLink("expand", studyModel, patientListItem));
@@ -1823,7 +1849,13 @@ public class StudyListPage extends Panel {
             final PPSModel ppsModel = (PPSModel) item.getModelObject();
             final boolean tooOld = selected.tooOld(ppsModel);
             
-            WebMarkupContainer row = new WebMarkupContainer("row");
+            WebMarkupContainer row = new WebMarkupContainer("row"){
+                private static final long serialVersionUID = 1L;
+                @Override
+                public boolean isVisible() {
+                    return !hidePPSModel.getObject();
+                }
+            };
             AjaxCheckBox selChkBox = new AjaxCheckBox("selected") {
                 private static final long serialVersionUID = 1L;
 
@@ -2079,6 +2111,9 @@ public class StudyListPage extends Panel {
                 protected void onComponentTag(ComponentTag tag) {
                    super.onComponentTag(tag);
                    tag.put("rowspan", seriesModel.getRowspan());
+                   if (hidePPSModel.getObject()) {
+                       tag.put("colspan", "2");
+                   }
                 }
             };
             cell.add(new ExpandCollapseLink("expand", seriesModel, patientListItem));

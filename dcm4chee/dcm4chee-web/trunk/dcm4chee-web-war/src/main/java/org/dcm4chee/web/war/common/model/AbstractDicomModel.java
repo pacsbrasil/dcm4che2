@@ -94,20 +94,20 @@ public abstract class AbstractDicomModel implements Serializable {
         this.parent = parent;
     }
 
-    public boolean isSelected() {
+    public Boolean isSelected() {
         return selected;
     }
 
-    public void setSelected(boolean selected) {
-        this.selected = selected;
+    public void setSelected(Boolean selected) {
+        this.selected = selected == null ? false : selected.booleanValue();
     }
 
-    public boolean isDetails() {
+    public Boolean isDetails() {
         return details;
     }
 
-    public void setDetails(boolean details) {
-        this.details = details;
+    public void setDetails(Boolean details) {
+        this.details = details == null ? false : details.booleanValue();
     }
     
     public String getAttributeValueAsString(int tag) {

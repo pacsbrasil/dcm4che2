@@ -253,6 +253,10 @@ public class WebCfgDelegate extends BaseCfgDelegate {
         return getBoolean("useFamilyAndGivenNameQueryFields", false);
     }
 
+    public boolean getDefaultHidePPS() {
+        return getBoolean("DefaultHidePPS", false);
+    }
+
     public boolean forcePatientExpandableForPatientQuery() {
         return getBoolean("forcePatientExpandableForPatientQuery", true);
     }

@@ -60,6 +60,12 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "M
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:unlinkPPSLinkStudy", "render, enable";
 };
 
+grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "HidePPSLevel"
+{
+// KEY: swarm.principal.HidePPSLevel
+    permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:hidePPSLevel", "render, enable";
+};
+
 grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "StudyPermissionsAll"
 {
 // KEY: swarm.principal.StudyPermissionsAll

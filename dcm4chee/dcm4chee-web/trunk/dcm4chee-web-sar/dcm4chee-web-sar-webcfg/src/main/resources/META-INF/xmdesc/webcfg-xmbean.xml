@@ -543,6 +543,19 @@
          <value value="false"/>
       </descriptors>
    </attribute>
+   
+   <attribute access="read-write"
+      getMethod="isDefaultHidePPS"
+      setMethod="setDefaultHidePPS">
+      <description><![CDATA[Default value for 'Hide PPS'.<br/>
+      		Note: The user must have the right 'HidePPSLevel' to use this feature.
+      ]]></description>
+      <name>DefaultHidePPS</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
+      </descriptors>
+   </attribute>
 
    <attribute access="read-write"
       getMethod="isForcePatientExpandableForPatientQuery"

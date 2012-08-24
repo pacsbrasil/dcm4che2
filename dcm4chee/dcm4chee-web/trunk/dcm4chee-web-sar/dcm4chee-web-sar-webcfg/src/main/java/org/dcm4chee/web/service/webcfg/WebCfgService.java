@@ -189,6 +189,8 @@ public class WebCfgService extends ServiceMBeanSupport implements
     private List<Integer> autoExpandLevelChoices = new ArrayList<Integer>(6);
 
     private int autoWildcard;
+    
+    private boolean defaultHidePPS;
 
     private int hasNotificationListener;
     
@@ -605,6 +607,14 @@ public class WebCfgService extends ServiceMBeanSupport implements
 
     public void setUseFamilyAndGivenNameQueryFields(boolean b) {
         this.useFamilyAndGivenNameQueryFields = b;
+    }
+
+    public boolean isDefaultHidePPS() {
+        return defaultHidePPS;
+    }
+
+    public void setDefaultHidePPS(boolean defaultHidePPS) {
+        this.defaultHidePPS = defaultHidePPS;
     }
 
     public boolean isForcePatientExpandableForPatientQuery() {
