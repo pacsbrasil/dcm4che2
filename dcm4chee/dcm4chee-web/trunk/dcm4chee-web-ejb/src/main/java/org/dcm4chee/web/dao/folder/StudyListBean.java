@@ -52,7 +52,6 @@ import javax.persistence.Query;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
-import org.dcm4che2.data.VR;
 import org.dcm4chee.archive.common.Availability;
 import org.dcm4chee.archive.common.StorageStatus;
 import org.dcm4chee.archive.entity.File;
@@ -265,7 +264,6 @@ public class StudyListBean implements StudyListLocal {
             QueryUtil.setPatientBirthDateQueryParameter(query, filter.getBirthDateMin(), filter.getBirthDateMax());
         }
     }
-
 
     public int countStudiesOfPatient(long pk, List<String> roles) {
         if ((roles != null) && (roles.size() == 0)) return 0;

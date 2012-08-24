@@ -965,7 +965,7 @@ public class StudyListPage extends Panel {
                     	Iterator<PatientModel> i = selected.getPatients().iterator();
                     	while (i.hasNext()) {
                     		PatientModel patientModel = i.next();
-                    		studiesCount += patientModel.getStudies().size();
+                    		studiesCount += dao.countStudiesOfPatient(patientModel.getPk(), null);
                     		patientListing += (
                     				(patientModel.getId() != null ? patientModel.getId() : " ") + 
                     				" / " + 
