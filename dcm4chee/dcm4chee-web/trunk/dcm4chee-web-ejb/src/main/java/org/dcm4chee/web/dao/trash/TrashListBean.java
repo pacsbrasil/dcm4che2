@@ -113,7 +113,7 @@ public class TrashListBean implements TrashListLocal {
             ql.append(", s");
         appendFromClause(ql, filter);
         appendWhereClause(ql, filter, roles);
-        QueryUtil.appendOrderBy(ql, new String[]{"p.patientName"});        
+        QueryUtil.appendOrderBy(ql, new String[]{"p.patientName, p.patientID, p.issuerOfPatientID"});
         Query query = em.createQuery(ql.toString());
         setQueryParameters(query, filter, roles);
         if (filter.isPatientQuery())

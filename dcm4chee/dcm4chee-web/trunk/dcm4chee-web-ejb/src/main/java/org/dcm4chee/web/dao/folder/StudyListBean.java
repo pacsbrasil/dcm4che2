@@ -115,7 +115,7 @@ public class StudyListBean implements StudyListLocal {
         appendWhereClause(ql, filter, roles);
         String studyDT = filter.isPatientQuery() ? null : 
             filter.isLatestStudiesFirst() ? "s.studyDateTime DESC" : "s.studyDateTime";
-        QueryUtil.appendOrderBy(ql, new String[]{"p.patientName", studyDT});
+        QueryUtil.appendOrderBy(ql, new String[]{"p.patientName, p.patientID, p.issuerOfPatientID", studyDT});
         Query query = em.createQuery(ql.toString());
         setQueryParameters(query, filter, roles);
         List<Patient> patientList;
