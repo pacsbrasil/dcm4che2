@@ -262,9 +262,10 @@ public class DisplayReportDiagramPanel extends Panel {
             addOrReplace(new Label("error-reason", "").setVisible(false));
         } catch (Exception e) {
             log.error("Exception: " + e.getMessage());
-            addOrReplace(((DynamicDisplayPage) this.getPage()).new PlaceholderLink("diagram-download"));
-            addOrReplace(new Image("diagram-print-image"));
-            addOrReplace(new Image("diagram"));
+            
+            addOrReplace(((DynamicDisplayPage) this.getPage()).new PlaceholderLink("diagram-download").setVisible(false));
+            addOrReplace(new Image("diagram-print-image").setVisible(false));
+            addOrReplace(new Image("diagram").setVisible(false));
             addOrReplace(new Label("error-message", new ResourceModel("dashboard.report.reportdiagram.statement.error").wrapOnAssignment(this).getObject()).add(new AttributeModifier("class", true, new Model<String>("message-error"))));
             addOrReplace(new Label("error-reason", e.getMessage()).add(new AttributeModifier("class", true, new Model<String>("message-error"))));
             log.debug(getClass() + ": ", e);
