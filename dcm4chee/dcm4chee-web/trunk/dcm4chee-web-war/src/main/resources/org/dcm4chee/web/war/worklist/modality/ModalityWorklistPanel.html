@@ -51,8 +51,6 @@
 						<td></td>
 						<td>
 							<div wicket:id="patientName" id="patientName" />
-							<input type="checkbox" id="fuzzyPN" wicket:id="fuzzyPN" />
-							<label for="fuzzyPN" wicket:id="fuzzyPN.label" style="padding-right: 5px;">Fuzzy</label>
 						</td>
 						<td>
 			                <div wicket:id="patientID.label">ID</div>
@@ -74,6 +72,14 @@
 			                   <input wicket:id="accessionNumber" id="accessionNumber" type="text"/>
 						</td>
 						<td></td>
+					</tr>
+					<tr wicket:id="searchFuzzy" class="search-table">
+					    <td></td>
+	                    <td style="text-align: left;" colspan="8">
+	                        <input type="checkbox" id="fuzzyPN" wicket:id="fuzzyPN" />
+	                        <label for="fuzzyPN" wicket:id="fuzzyPN.label" style="padding-right: 5px;">Fuzzy</label>
+	                    </td>
+	                    <td></td>
 					</tr>
 					<tr wicket:id="searchDropdowns" class="search-table">
 						<td></td>

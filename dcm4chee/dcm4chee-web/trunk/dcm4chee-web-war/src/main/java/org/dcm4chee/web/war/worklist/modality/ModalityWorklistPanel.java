@@ -281,6 +281,16 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
                 }, 
                 new PropertyModel<Boolean>(filter, "PNAutoWildcard"), enabledModel, false);
         pnField.setOutputMarkupId(true);
+       
+        form.addTextField("patientID", enabledModel, true);
+        form.addTextField("issuerOfPatientID", enabledModel, true);
+        SimpleDateTimeField dtf = form.addDateTimeField("startDateMin", null, enabledModel, false, true);
+        SimpleDateTimeField dtfMax = form.addDateTimeField("startDateMax", null, enabledModel, true, true);
+        dtf.addToDateField(new CheckOneDayBehaviour(dtf, dtfMax, "onchange"));
+        
+        form.addTextField("accessionNumber", enabledModel, false);
+        
+        searchTableComponents.add(form.createAjaxParent("searchFuzzy"));        
         form.addComponent(new CheckBox("fuzzyPN") {
             private static final long serialVersionUID = 1L;
 
@@ -295,14 +305,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
                 return filter.isFuzzyPNEnabled() && viewport.isInternalWorklistProvider();
             }
         });
-        form.addTextField("patientID", enabledModel, true);
-        form.addTextField("issuerOfPatientID", enabledModel, true);
-        SimpleDateTimeField dtf = form.addDateTimeField("startDateMin", null, enabledModel, false, true);
-        SimpleDateTimeField dtfMax = form.addDateTimeField("startDateMax", null, enabledModel, true, true);
-        dtf.addToDateField(new CheckOneDayBehaviour(dtf, dtfMax, "onchange"));
-        
-        form.addTextField("accessionNumber", enabledModel, false);
-        
+
         searchTableComponents.add(form.createAjaxParent("searchDropdowns"));
 
         form.addInternalLabel("modality");
