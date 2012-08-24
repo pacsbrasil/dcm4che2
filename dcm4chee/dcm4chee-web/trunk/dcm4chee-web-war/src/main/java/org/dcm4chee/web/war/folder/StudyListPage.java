@@ -745,7 +745,35 @@ public class StudyListPage extends Panel {
             }
         });
 
-        form.add(new Link<Object>("prev") {
+        addViewPort(form);
+        
+        confirmEdit = new ConfirmationWindow<AbstractEditableDicomModel>("confirmEdit") {
+
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public void onConfirmation(AjaxRequestTarget target, final AbstractEditableDicomModel model) {
+                logSecurityAlert(model, true, StudyListPage.tooOldAuditMessageText);
+            }
+        };
+        confirmEdit.setWindowClosedCallback(new ModalWindow.WindowClosedCallback() {
+            private static final long serialVersionUID = 1L;
+            public void onClose(AjaxRequestTarget target) {
+                if (confirmEdit.getState() == ConfirmationWindow.CONFIRMED) {
+                    modalWindow.setContent(getEditDicomObjectPanel(confirmEdit.getUserObject()));
+                    modalWindow.show(target);
+                }
+            }
+        });
+        confirmEdit.setInitialHeight(150);
+        form.add(confirmEdit);
+        
+        addViewPort(form.createAjaxParent("viewport-bottom"));
+    }
+
+    private void addViewPort(final WebMarkupContainer parent) {
+    	
+    	parent.add(new Link<Object>("prev") {
 
             private static final long serialVersionUID = 1L;
 
@@ -765,7 +793,7 @@ public class StudyListPage extends Panel {
         .add(new TooltipBehaviour("folder.search.")))
         );
 
-        form.add(new Link<Object>("next") {
+    	parent.add(new Link<Object>("next") {
 
             private static final long serialVersionUID = 1L;
 
@@ -805,7 +833,7 @@ public class StudyListPage extends Panel {
                                 "folder.search.studiesFound");
             }
         };
-        form.add(new Label("viewport", new StringResourceModel("${}", StudyListPage.this, keySelectModel,new Object[]{"dummy"}){
+        parent.add(new Label("viewport", new StringResourceModel("${}", StudyListPage.this, keySelectModel,new Object[]{"dummy"}){
 
             private static final long serialVersionUID = 1L;
 
@@ -816,27 +844,6 @@ public class StudyListPage extends Panel {
                         viewport.getTotal()};
             }
         }).setEscapeModelStrings(false));
-        
-        confirmEdit = new ConfirmationWindow<AbstractEditableDicomModel>("confirmEdit") {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void onConfirmation(AjaxRequestTarget target, final AbstractEditableDicomModel model) {
-                logSecurityAlert(model, true, StudyListPage.tooOldAuditMessageText);
-            }
-        };
-        confirmEdit.setWindowClosedCallback(new ModalWindow.WindowClosedCallback() {
-            private static final long serialVersionUID = 1L;
-            public void onClose(AjaxRequestTarget target) {
-                if (confirmEdit.getState() == ConfirmationWindow.CONFIRMED) {
-                    modalWindow.setContent(getEditDicomObjectPanel(confirmEdit.getUserObject()));
-                    modalWindow.show(target);
-                }
-            }
-        });
-        confirmEdit.setInitialHeight(150);
-        form.add(confirmEdit);
     }
 
     private void addActions(final BaseForm form) {

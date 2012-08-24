@@ -389,7 +389,7 @@
 			      </td>
 			    </tr>
 			    <wicket:container wicket:id="ppss" >
-			    <tr wicket:id="row" class="pps">
+			    <tr wicket:id="row" class="pps" style="border-color: blue;">
 			      <td wicket:id=cell rowspan="4" class="expand">
 			        <a wicket:id="expand" href="#"><img wicket:id="expandImg" alt="(+)" /></a>
 			      </td>
@@ -545,6 +545,17 @@
 			    </wicket:container>
 			  </tbody>
 			</table>
+			<div wicket:id="viewport-bottom">
+				<div class="viewport" style="margin: 10px;">
+					<a wicket:id="prev" style="text-decoration: none;">
+						<img wicket:id="prevImg" />
+					</a>
+					<span wicket:id="viewport" />
+					<a wicket:id="next" style="text-decoration: none;">
+						<img wicket:id="nextImg" />
+					</a>
+				</div>
+			</div>
 		</form>
 	</wicket:panel>	
 </html>
