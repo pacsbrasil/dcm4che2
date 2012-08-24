@@ -118,6 +118,16 @@ public class PatientModel extends AbstractEditableDicomModel implements Serializ
     public String getIssuer() {
         return dataset.getString(Tag.IssuerOfPatientID);
     }
+    
+    public String getIdAndIssuer() {
+        String id = getId();
+        String issuer = getIssuer();
+        if (issuer == null) {
+            return id == null ? "" : id; 
+        }
+        return id == null ? " / "+issuer : id+" / "+issuer;
+        
+    }
 
     public String getSex() {
         return dataset.getString(Tag.PatientSex);

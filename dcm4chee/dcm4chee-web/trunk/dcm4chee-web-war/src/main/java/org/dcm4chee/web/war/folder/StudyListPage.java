@@ -1560,17 +1560,7 @@ public class StudyListPage extends Panel {
             
             TooltipBehaviour tooltip = new TooltipBehaviour("folder.content.data.patient.");
             row.add(new Label("name").add(tooltip));        
-            row.add(new Label("id", new AbstractReadOnlyModel<String>(){
-
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                public String getObject() {
-                    return patModel.getIssuer() == null ? patModel.getId() :
-                        patModel.getId()+" / "+patModel.getIssuer();
-                }
-            })
-            .add(tooltip));
+            row.add(new Label("idAndIssuer").add(tooltip));
             DateTimeLabel dtl = new DateTimeLabel("birthdate").setWithoutTime(true);
             dtl.add(tooltip.newWithSubstitution(new PropertyModel<String>(dtl, "textFormat")));
             row.add(dtl);
