@@ -41,7 +41,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -476,11 +475,11 @@ public class Mpps2MwlLinkPage extends ModalWindow {
     private class PpsInfoModel implements Serializable{
         private static final long serialVersionUID = 1L;
 
-        public String getPatientName() {
-            return ppsPatModelForInfo.getName();
-        }
         public String getPatientID() {
             return ppsPatModelForInfo.getId();
+        }
+        public String getPatientName() {
+            return ppsPatModelForInfo.getName();
         }
         public Date getBirthdate() {
             return ppsPatModelForInfo.getBirthdate();

@@ -73,8 +73,6 @@
 						<td></td>
 						<td>
 							<div wicket:id="patientName" id="patientName" />
-							<input type="checkbox" id="fuzzyPN" wicket:id="fuzzyPN" />
-							<label for="fuzzyPN" wicket:id="fuzzyPN.label" style="padding-right: 5px;">Fuzzy</label>
 						</td>
 						<td>
 			                <div wicket:id="patientID.label">ID</div>
@@ -96,6 +94,14 @@
 			                   <input wicket:id="accessionNumber" id="accessionNumber" type="text"/>
 						</td>
 						<td></td>
+					</tr>
+					<tr wicket:id="searchFuzzy" class="search-table">
+					    <td></td>
+	                    <td style="text-align: left;" colspan="8">
+	                        <input type="checkbox" id="fuzzyPN" wicket:id="fuzzyPN" />
+	                        <label for="fuzzyPN" wicket:id="fuzzyPN.label" style="padding-right: 5px;">Fuzzy</label>
+	                    </td>
+	                    <td></td>
 					</tr>
 					<tr wicket:id="searchDropdowns">
 						<td></td>
@@ -187,6 +193,7 @@
 					<thead>
 						<tr>
 							<th></th>
+				      		<th><wicket:message key="mpps2mwl.content.header.patientID" /></th>
 				      		<th><wicket:message key="mpps2mwl.content.header.patientName" /></th>
 				      		<th><wicket:message key="mpps2mwl.content.header.birthDate" /></th>
 							<th><wicket:message key="mpps2mwl.content.header.SPSDescription" /></th>
@@ -195,7 +202,6 @@
 							<th><wicket:message key="mpps2mwl.content.header.stationAET" /></th>
 							<th><wicket:message key="mpps2mwl.content.header.stationName" /></th>
 				      		<th><wicket:message key="mpps2mwl.content.header.accessionNumber" /></th>
-				      		<th><wicket:message key="mpps2mwl.content.header.SPSStatus" /></th>
 				      		<th colspan="2"></th>
 				    	</tr>
 					</thead>
@@ -203,6 +209,7 @@
 						<wicket:container wicket:id="mwlitems">
 					    	<tr wicket:id="mwlitem">
 								<td wicket:id="cell" class="expand"></td>
+								<td wicket:id="patientID">[Patient ID]</td>
 								<td wicket:id="patientName">[Patient Name]</td>
 								<td wicket:id="birthDate">[Birth date]</td>
 					      		<td wicket:id="SPSDescription">[Scheduled Procedure Step Description]</td>
@@ -211,7 +218,6 @@
 								<td wicket:id="stationAET">[Station AET]</td>
 								<td wicket:id="stationName">[Station Name]</td>
 								<td wicket:id="accessionNumber">[Accession Number]</td>
-								<td wicket:id="SPSStatus">SPS Status</td>
 								<td class="action">
 									<a wicket:id="link" href="#">
 										<img wicket:id="linkImg" alt="L" />
