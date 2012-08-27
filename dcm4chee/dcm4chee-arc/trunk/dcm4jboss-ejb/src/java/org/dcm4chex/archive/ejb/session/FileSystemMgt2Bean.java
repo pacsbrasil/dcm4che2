@@ -185,9 +185,19 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
      */
     public FileSystemDTO removeFileSystem(String groupID, String dirPath)
             throws FinderException, RemoveException {
+    	String fn = "removeFileSystem: ";
         FileSystemLocal fs = fileSystemHome
                 .findByGroupIdAndDirectoryPath(groupID, dirPath);
         FileSystemDTO dto = fs.toDTO();
+        
+        int numFiles = fs.countFiles();
+        if ( numFiles > 0 ) {
+        	throw new RemoveException("cannot remove filesystem " + fs.getDirectoryPath() + " because there are still "+ numFiles + " file records");
+        }
+        int numPrivFiles = fs.countPrivateFiles();
+        if ( numPrivFiles > 0 ) {
+        	throw new RemoveException("cannot remove filesystem" + fs.getDirectoryPath() + " because there are still " + numPrivFiles + " private file records");
+        }
         removeFileSystem(fs);
         return dto;
     }
