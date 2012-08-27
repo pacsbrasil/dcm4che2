@@ -660,17 +660,16 @@ public class WADOCacheImpl implements WADOCache {
         }
     }
 
-    protected void createJPEG(BufferedImage bi, File file, float quality)
-            throws IOException {
-        writeJPEGwithIIO(bi, file, quality);
+    protected void createJPEG(BufferedImage bi, File file, float quality) throws IOException {
+        writeJPEGwithIIO(bi, new FileOutputStream(file), quality);
     }
-    
+
     public void writeJPEG(BufferedImage bi, OutputStream out, float quality) throws IOException {
         writeJPEGwithIIO(bi,out, quality);
     }
-    
-    protected void writeJPEGwithIIO(BufferedImage bi, Object fileOrStream, float quality) throws IOException {
-        ImageOutputStream out = ImageIO.createImageOutputStream(fileOrStream);
+
+    protected void writeJPEGwithIIO(BufferedImage bi, OutputStream out, float quality) throws IOException {
+        ImageOutputStream ios = ImageIO.createImageOutputStream(out);
         ImageWriter writer = getImageWriterWriter(imageWriterClass);
         try {
             writer.setOutput(out);
@@ -688,6 +687,7 @@ public class WADOCacheImpl implements WADOCache {
             iwparam.setCompressionQuality(quality);
             writer.write(null, new IIOImage(bi, null, null), iwparam);
         } finally {
+            ios.close();
             out.close();
             writer.dispose();
         }
