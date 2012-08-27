@@ -438,11 +438,14 @@ public class DicomEditBean implements DicomEditLocal {
         for(Study s : studies) {
             tree.addStudy(s);
             s.setPatient(patient);
+            HashSet<MPPS> set = new HashSet<MPPS>();
             for (Series series : s.getSeries()) {
                 MPPS mpps = series.getModalityPerformedProcedureStep();
                 if(mpps != null && mpps.getPatient().getPk() != patient.getPk()) {
-                    mpps.setPatient(patient);
-                    em.merge(mpps);
+                    if (set.add(mpps)) {
+                        mpps.setPatient(patient);
+                        em.merge(mpps);
+                    }
                 }
             } 
         }
