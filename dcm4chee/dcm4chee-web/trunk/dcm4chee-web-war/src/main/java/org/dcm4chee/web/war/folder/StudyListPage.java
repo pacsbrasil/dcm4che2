@@ -41,7 +41,6 @@ package org.dcm4chee.web.war.folder;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.nio.file.DirectoryStream.Filter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
