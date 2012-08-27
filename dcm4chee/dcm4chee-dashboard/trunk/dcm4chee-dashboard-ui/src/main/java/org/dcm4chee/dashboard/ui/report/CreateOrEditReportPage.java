@@ -175,11 +175,13 @@ public class CreateOrEditReportPage extends SecureSessionCheckPage {
                 @Override
                 protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
 
-                    String message = null;
+                	String message = null;
                     Connection jdbcConnection = null;
-
+                    boolean isConfigurable = false;
                     try {
-                        if (DatabaseUtils.isConfigurableStatement(thisReport.getStatement())) {
+                    	isConfigurable = 
+                    			DatabaseUtils.isConfigurableStatement(thisReport.getStatement());
+                        if (isConfigurable) {
                             message = new ResourceModel("dashboard.report.createoredit.form.statement-test-submit.configurable-statement-message").wrapOnAssignment(this.getParent()).getObject();
                             return;
                         }
@@ -203,11 +205,16 @@ public class CreateOrEditReportPage extends SecureSessionCheckPage {
                             jdbcConnection.close();
                         } catch (Exception ignore) {
                         }
-                        resultMessage.setDefaultModel(new Model<String>(new ResourceModel(message == null ? "dashboard.report.createoredit.form.statement-test-submit.success-message" : 
-                                                                                          "dashboard.report.createoredit.form.statement-test-submit.failure-message")
-                                                            .wrapOnAssignment(this.getParent()).getObject().toString()
-                                                            + (message == null ? "" : message)))
-                        .add(new AttributeModifier("class", true, new Model<String>(message == null ? "result-message" : "error-message")));              
+                        if (isConfigurable)
+                        	resultMessage.setDefaultModel(new Model<String>(message));
+                        else
+	                        resultMessage.setDefaultModel(new Model<String>(new ResourceModel( 
+	                        		message == null ? "dashboard.report.createoredit.form.statement-test-submit.success-message" : 
+	                                                                                          "dashboard.report.createoredit.form.statement-test-submit.failure-message")
+	                                                            .wrapOnAssignment(this.getParent()).getObject().toString()
+	                                                            + (message == null ? "" : "<br />" + message))).setEscapeModelStrings(false);
+                        resultMessage                       	
+                        	.add(new AttributeModifier("class", true, new Model<String>(message == null ? "result-message" : "error-message")));
                         target.addComponent(resultMessage);
                     }
                 }
