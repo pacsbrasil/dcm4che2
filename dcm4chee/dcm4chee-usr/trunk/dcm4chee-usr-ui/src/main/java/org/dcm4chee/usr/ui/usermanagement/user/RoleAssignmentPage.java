@@ -57,6 +57,7 @@ import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.usr.dao.UserAccess;
 import org.dcm4chee.usr.entity.User;
 import org.dcm4chee.usr.entity.UserRoleAssignment;
+import org.dcm4chee.usr.model.Group;
 import org.dcm4chee.usr.model.Role;
 import org.dcm4chee.usr.ui.util.CSSUtils;
 import org.dcm4chee.usr.util.JNDIUtils;
@@ -99,14 +100,21 @@ public class RoleAssignmentPage extends SecureSessionCheckPage {
         );
 
         List<Role> allRoles = userAccess.getAllRoles();
+        final List<Group> groups = userAccess.getAllGroups();
         RepeatingView roleRows = new RepeatingView("role-rows");
         addOrReplace(roleRows);
         int i = 0;
         for (Role role : allRoles) {
             WebMarkupContainer rowParent;
+            StringBuffer roleTypeTitle = new StringBuffer();
+            roleTypeTitle.append("[");          
+            for (Group group : groups)
+            	if (role.getRoleGroups().contains(group.getUuid()))
+            			roleTypeTitle.append(" " + group.getGroupname() + " ");
+            roleTypeTitle.append("] ");
             roleRows.add((rowParent = new WebMarkupContainer(roleRows.newChildId()))
                     .add(new Label("rolename", role.getRolename())
-                    .add(new AttributeModifier("title", true, new Model<String>(role.getRolename()))))
+                    .add(new AttributeModifier("title", true, new Model<String>(roleTypeTitle.toString() + role.getDescription()))))
             );
             if (role.isSuperuser())
                 rowParent.add(new SecurityBehavior(getModuleName() + ":superuserRoleRow"));

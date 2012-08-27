@@ -142,7 +142,7 @@ public class CreateOrEditRolePage extends SecureSessionCheckPage {
             final StringBuffer webRoleUuid = new StringBuffer();
             final StringBuffer dicomRoleUuid = new StringBuffer();
             final StringBuffer aetRoleUuid = new StringBuffer();
-            
+
             groupCheckboxList = new ArrayList<CheckBox>(groups.size());
             RepeatingView groupRows = new RepeatingView("group-rows");
             add(groupRows);           
@@ -161,7 +161,7 @@ public class CreateOrEditRolePage extends SecureSessionCheckPage {
                 rowParent.add(new Label("groupname", new Model<String>(group.getGroupname())));
                 groupCheckboxList.add(groupCheckbox);
                 groupRows.add(rowParent);
-                
+
                 if (group.getGroupname().equals("Web"))
                     webRoleUuid.append(group.getUuid());
                 else if (group.getGroupname().equals("Dicom"))
