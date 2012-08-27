@@ -20,6 +20,7 @@
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
+ * Mohannad Hussain - Agfa HealthCare <mohannad.hussain@agfa.com>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -37,16 +38,50 @@
 
 package org.dcm4che2.data;
 
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.StringTokenizer;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** Provides tag constants.*/
 public class Tag {
+	
+	private static final Map<String, Integer> caseInsensitiveTags;
+	private static final Logger log = LoggerFactory.getLogger(Tag.class);
 
+	/**
+	 * Populate a static map with lower case version of all known tag names and
+	 * numbers, when used with caseInsensitiveLookup(), you get case insensitive
+	 * matching where any of: SeriesDescription, SERIESDESCRIPTION, 
+	 * seriesdescription, seriesDescription, 0008103E or 0008103e will actually
+	 * return the integer value 0x0008103E;
+	 */
+    static {
+    	Field[] fields = Tag.class.getFields();
+    	caseInsensitiveTags = new HashMap<String, Integer>(fields.length * 2); // each tag will get added twice (Tag name & number)
+    	
+    	for(Field f : fields) {
+            if( f.getType() != Integer.TYPE ) continue;
+            String name = f.getName();
+            try {
+            	Integer number = f.getInt(null);
+            	String numStr = String.format("%08x", number); // this format puts the number in lower case as well
+            	caseInsensitiveTags.put(name.toLowerCase(), number);
+            	caseInsensitiveTags.put(numStr, number);
+            } catch( Exception e ) {
+            	log.warn("Ignoring error while building case insensitive map of tag names and numbers", e);
+            }
+    	}
+    }
+    
     /** Private constructor */
     private Tag() {
         // Suppresses default constructor, ensuring non-instantiability.
     }
-
+    
     public static final int forName(String name) {
        try {
           return Tag.class.getField(name).getInt(null);
@@ -95,6 +130,22 @@ public class Tag {
             tagPath = tmp;
         }
         return tagPath;
+    }
+    
+    /**
+     * Accepts a string representation of a tag name (e.g. SliceLocation) or tag
+     * number (e.g. 7FDB0010), and performance a case insensitive lookup either 
+     * way, returning the integer tag number if found.
+     * 
+     * @param tag
+     * @return
+     */
+    public static int caseInsensitiveLookup(String tag) {
+    	Integer ret = caseInsensitiveTags.get(tag.toLowerCase());
+    	if( ret == null ) {
+    		return 0;
+    	}
+    	return ret;
     }
 
     /** (0000,0000) VR=UL, VM=1 Command Group Length */

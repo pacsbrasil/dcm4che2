@@ -109,4 +109,13 @@ public class TagTest extends TestCase {
             assertEquals("For input string: \"a\"", e.getMessage());
         }
     }
+    
+    public void testCaseInsensitiveLookup() {
+    	assertEquals("SeriesDescription resolves to 0x0008103E", 0x0008103E, Tag.caseInsensitiveLookup("SeriesDescription"));
+    	assertEquals("SERIESDESCRIPTION resolves to 0x0008103E", 0x0008103E, Tag.caseInsensitiveLookup("SERIESDESCRIPTION"));
+    	assertEquals("seriesdescription resolves to 0x0008103E", 0x0008103E, Tag.caseInsensitiveLookup("seriesdescription"));
+    	assertEquals("sErIeSdEsCrIpTiOn resolves to 0x0008103E", 0x0008103E, Tag.caseInsensitiveLookup("sErIeSdEsCrIpTiOn"));
+    	assertEquals("0008103E resolves to 0x0008103E", 0x0008103E, Tag.caseInsensitiveLookup("0008103E"));
+    	assertEquals("0008103e resolves to 0x0008103E", 0x0008103E, Tag.caseInsensitiveLookup("0008103e"));
+    }
 }
