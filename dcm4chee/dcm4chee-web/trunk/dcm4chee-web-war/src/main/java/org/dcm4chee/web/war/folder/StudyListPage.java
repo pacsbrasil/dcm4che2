@@ -41,6 +41,7 @@ package org.dcm4chee.web.war.folder;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.file.DirectoryStream.Filter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -262,7 +263,8 @@ public class StudyListPage extends Panel {
     private ConfirmationWindow<AbstractEditableDicomModel> confirmEdit;
     private ImageSelectionWindow imageSelectionWindow = new ImageSelectionWindow("imgSelection");
     private ModalWindow wadoImageWindow = new ModalWindow("wadoImageWindow");
-    
+	private ConfirmationWindow<Form<?>> confirmSearch;
+	
     private WebviewerLinkProvider[] webviewerLinkProviders;
     
     private List<WebMarkupContainer> searchTableComponents = new ArrayList<WebMarkupContainer>();
@@ -298,6 +300,20 @@ public class StudyListPage extends Panel {
         });
         initWebviewerLinkProvider();
         
+        confirmSearch = new ConfirmationWindow<Form<?>>("confirmSearch") {
+            
+            private static final long serialVersionUID = 1L;
+            
+            @Override
+            public void onConfirmation(AjaxRequestTarget target, final Form<?> form) {
+            	doSearch(target, form, viewport.resetOnSearch());
+            }
+        };
+        add(confirmSearch
+            .setInitialHeight(150)
+            .setInitialWidth(410));
+
+
         final StudyListFilter filter = viewport.getFilter();
         add(form = new BaseForm("form", new CompoundPropertyModel<Object>(filter)));
         form.setResourceIdPrefix("folder.");
@@ -658,14 +674,15 @@ public class StudyListPage extends Panel {
         });
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private void addNavigation(final BaseForm form) {
 
         Button resetBtn = new AjaxButton("resetBtn") {
             
             private static final long serialVersionUID = 1L;
 
-            @Override
+            @SuppressWarnings("rawtypes")
+			@Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
 
                 form.clearInput();
@@ -699,11 +716,12 @@ public class StudyListPage extends Panel {
             
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                viewport.setOffset(0);
-                viewport.getFilter().setAutoWildcard(WebCfgDelegate.getInstance().getAutoWildcard());
-                query(target);
-                Auditlog.logQuery(true, UID.StudyRootQueryRetrieveInformationModelFIND, viewport.getFilter().getQueryDicomObject());
-                target.addComponent(form);
+            	if (!viewport.getFilter().isFiltered()) {
+            		viewport.setResetOnSearch(true);
+            		confirmSearch.confirm(target, new StringResourceModel("folder.message.confirmSearch", this, null), form);
+            	} else {
+            		doSearch(target, form, true);
+            	}
             }
             
             @Override
@@ -747,8 +765,10 @@ public class StudyListPage extends Panel {
             protected void onSubmit(AjaxRequestTarget target) {
                 if (!WebCfgDelegate.getInstance().isQueryAfterPagesizeChange())
                     return;
-                query(target);
-                target.addComponent(form);
+                if (!viewport.getFilter().isFiltered()) {
+                	viewport.setResetOnSearch(false);
+            		confirmSearch.confirm(target, new StringResourceModel("folder.message.confirmSearch", this.getComponent(), null), form); 
+                } else doSearch(target, form, false);
                 target.addComponent(header);
             }
 
@@ -793,7 +813,17 @@ public class StudyListPage extends Panel {
         addViewPort(form.createAjaxParent("viewport-bottom"));
     }
 
-    private void addViewPort(final WebMarkupContainer parent) {
+    protected void doSearch(AjaxRequestTarget target, Form<?> form, boolean reset) {
+    	if (reset) {
+    		viewport.setOffset(0);
+    		viewport.getFilter().setAutoWildcard(WebCfgDelegate.getInstance().getAutoWildcard());
+    	}
+    	query(target);
+    	Auditlog.logQuery(true, UID.StudyRootQueryRetrieveInformationModelFIND, viewport.getFilter().getQueryDicomObject());
+    	target.addComponent(form);
+	}
+
+	private void addViewPort(final WebMarkupContainer parent) {
     	
     	parent.add(new Link<Object>("prev") {
 

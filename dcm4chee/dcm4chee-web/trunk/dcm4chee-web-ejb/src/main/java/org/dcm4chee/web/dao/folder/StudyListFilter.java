@@ -108,6 +108,21 @@ public class StudyListFilter implements Serializable {
         isStudyIuidQuery = isSeriesIuidQuery = false;
     }
 
+    public boolean isFiltered() {
+    	return patientName != null
+    			|| patientID != null 
+    			|| issuerOfPatientID != null 
+    			|| accessionNumber != null 
+                || studyInstanceUID != null
+                || !modality.equals("*")
+                || !sourceAET.equals("*")
+                || seriesInstanceUID != null
+                || studyDateMin != null
+                || studyDateMax != null 
+                || birthDateMin != null
+                || birthDateMax != null;
+    }
+    
     public String getPatientName() {
         if (patientName != null && isFuzzyPN() && !AttributeFilter.isSoundexWithTrailingWildCardEnabled()) {
             return patientName.replace("*", "");

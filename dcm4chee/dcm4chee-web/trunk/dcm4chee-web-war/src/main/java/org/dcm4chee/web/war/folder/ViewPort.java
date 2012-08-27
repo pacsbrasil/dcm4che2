@@ -58,6 +58,7 @@ public class ViewPort extends AbstractViewPort {
     
     private StudyListFilter filter;
     private List<PatientModel> patients = new ArrayList<PatientModel>();
+	private boolean resetOnSearch;
     
     public StudyListFilter getFilter() {
         if (filter == null) 
@@ -74,4 +75,13 @@ public class ViewPort extends AbstractViewPort {
         filter.clear();
         patients.clear();
     }
+
+	public boolean resetOnSearch() {
+		return resetOnSearch;
+	}
+	
+	public void setResetOnSearch(boolean resetOnSearch) {
+		this.resetOnSearch = resetOnSearch;
+	}
+
 }
