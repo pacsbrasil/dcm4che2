@@ -80,6 +80,7 @@ public interface TrashListLocal {
     
     public List<PrivateFile> getFilesForEntity(long pk, Class<? extends BaseEntity> clazz);
     public List<Study> getStudiesInFolder(String[] suids);
+    List<Study> getStudiesInFolder(long privPatPk);
     
     public DicomObject getDicomAttributes(long filePk);
 

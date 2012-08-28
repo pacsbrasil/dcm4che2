@@ -42,9 +42,11 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.wicket.AttributeModifier;
@@ -78,9 +80,11 @@ import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.Tag;
 import org.dcm4chee.archive.common.Availability;
 import org.dcm4chee.archive.entity.File;
 import org.dcm4chee.archive.entity.Instance;
+import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.PrivateFile;
 import org.dcm4chee.archive.entity.PrivateInstance;
 import org.dcm4chee.archive.entity.PrivatePatient;
@@ -617,7 +621,6 @@ public class TrashListPage extends Panel {
                 target.addComponent(getMessageWindowPanel().getOkBtn());
             }
         };
-        confirmRestore.setInitialHeight(150);
         form.add(confirmRestore);
 
         AjaxButton restoreBtn = new AjaxButton("restoreBtn") {
@@ -630,13 +633,14 @@ public class TrashListPage extends Panel {
                 selected.deselectChildsOfSelectedEntities();
                 if (selected.hasDicomSelection()) {
                     try {
-                        Set<Study> studiesInFolder = new HashSet<Study>();
+                        HashMap<PrivPatientModel,List<Study>> studiesInFolder = new HashMap<PrivPatientModel,List<Study>>();
                         List<PrivateFile> files = getFilesToRestore(studiesInFolder);
                         log.debug("Files to restore: {}", files);
-                        log.debug("Trash restore studiesInFolder: {}",
-                                studiesInFolder);
+                        log.debug("Trash restore studiesInFolder: {}", studiesInFolder);
                         if (files.size() > 0) {
                             if (studiesInFolder.isEmpty()) {
+                                confirmRestore.setInitialWidth(400);
+                                confirmRestore.setInitialHeight(200);
                                 confirmRestore.confirm(target,
                                         new StringResourceModel(
                                                 "trash.message.confirmRestore",
@@ -644,12 +648,30 @@ public class TrashListPage extends Panel {
                                                 new Object[] { selected }),
                                         files);
                             } else {
-                                StringBuilder suids = new StringBuilder();
-                                for (Study st : studiesInFolder) {
-                                    suids.append(st.getStudyInstanceUID())
-                                            .append(", ");
+                                StringBuilder info = new StringBuilder("<br/>");
+                                PrivPatientModel pm;
+                                List<Study> studies;
+                                for (Entry<PrivPatientModel, List<Study>> e : studiesInFolder.entrySet()) {
+                                    pm = e.getKey();
+                                    studies = e.getValue();
+                                    if (studies.isEmpty())
+                                        continue;
+                                    info.append(pm.getName()).append(" (").append(pm.getId());
+                                    if (pm.getIssuer() != null) {
+                                        info.append(" / ").append(pm.getIssuer());
+                                    }
+                                    info.append("):<br/>");
+                                    for (Study st : studies) {
+                                        info.append(st.getStudyInstanceUID());
+                                        if (isDifferentPatient(pm, st.getPatient())) {
+                                            info.append(" -&gt; ");
+                                            appendPatientInfo(info, st.getPatient());
+                                        }
+                                        info.append("<br/>");
+                                    }
                                 }
-                                suids.setLength(suids.length() - 2);
+                                confirmRestore.setInitialWidth(830);
+                                confirmRestore.setInitialHeight(350);
                                 confirmRestore
                                         .confirm(
                                                 target,
@@ -661,7 +683,7 @@ public class TrashListPage extends Panel {
                                                                 selected,
                                                                 studiesInFolder
                                                                         .size(),
-                                                                suids }), files);
+                                                                info }), files);
                             }
                         } else {
                             msgWin.show(
@@ -800,6 +822,23 @@ public class TrashListPage extends Panel {
         deleteBtn.add(new SecurityBehavior(getModuleName() + ":deleteButton"));
     }
 
+    private boolean isDifferentPatient(PrivPatientModel pm, Patient p) {
+        return notEqual(pm.getDataset().getString(Tag.PatientName), p.getAttributes().getString(Tag.PatientName)) ||
+            notEqual(pm.getId(), p.getPatientID()) || 
+            notEqual(pm.getIssuer(), p.getIssuerOfPatientID());
+    }
+    private boolean notEqual(String s1, String s2) {
+        return s1 == null ? s2 != null : !s1.equals(s2); 
+    }
+    private void appendPatientInfo(StringBuilder sb, Patient p) {
+        sb.append(p.getAttributes().getString(Tag.PatientName)).append(" (")
+        .append(p.getPatientID());
+        if (p.getIssuerOfPatientID() != null) {
+            sb.append(" / ").append(p.getIssuerOfPatientID());
+        }
+        sb.append(")");
+    }
+        
     private void queryStudies() {
         List<String> dicomSecurityRoles = (StudyPermissionHelper.get()
                 .applyStudyPermissions() ? StudyPermissionHelper.get()
@@ -1354,20 +1393,16 @@ public class TrashListPage extends Panel {
         return true;
     }
 
-    private List<PrivateFile> getFilesToRestore(Set<Study> studiesInFolder) {
+    private List<PrivateFile> getFilesToRestore(HashMap<PrivPatientModel, List<Study>> studiesInFolder) {
 
         List<PrivateFile> files = new ArrayList<PrivateFile>();
         if (selected.hasPatients()) {
             for (PrivPatientModel pp : selected.getPatients()) {
                 files.addAll(dao.getFilesForEntity(pp.getPk(),
                         PrivatePatient.class));
-                List<PrivStudyModel> studies = pp.getStudies();
+                List<Study> studies = dao.getStudiesInFolder(pp.getPk());
                 if (!studies.isEmpty()) {
-                    String[] suids = new String[studies.size()];
-                    int i = 0;
-                    for (PrivStudyModel psm : studies)
-                        suids[i++] = psm.getStudyInstanceUID();
-                    studiesInFolder.addAll(dao.getStudiesInFolder(suids));
+                    studiesInFolder.put(pp, studies);
                 }
             }
         }
@@ -1375,26 +1410,42 @@ public class TrashListPage extends Panel {
             for (PrivStudyModel pst : selected.getStudies()) {
                 files.addAll(dao.getFilesForEntity(pst.getPk(),
                         PrivateStudy.class));
-                studiesInFolder.addAll(dao
-                        .getStudiesInFolder(new String[] { pst
-                                .getStudyInstanceUID() }));
+                List<Study> studies = studiesInFolder.get(pst.getPatient());
+                if (studies == null) {
+                    studies = dao.getStudiesInFolder(new String[]{pst.getStudyInstanceUID()});
+                    if (studies.size() > 0)
+                        studiesInFolder.put(pst.getPatient(), studies);
+                } else {
+                    studies.addAll(dao.getStudiesInFolder(new String[] { pst.getStudyInstanceUID() }));
+                }
             }
         }
         if (selected.hasSeries()) {
             for (PrivSeriesModel pse : selected.getSeries()) {
                 files.addAll(dao.getFilesForEntity(pse.getPk(),
                         PrivateSeries.class));
-                studiesInFolder.addAll(dao
-                        .getStudiesInFolder(new String[] { pse.getStudy()
-                                .getStudyInstanceUID() }));
+                List<Study> studies = studiesInFolder.get(pse.getStudy().getPatient());
+                if (studies == null) {
+                    studies = dao.getStudiesInFolder(new String[]{pse.getStudy().getStudyInstanceUID()});
+                    if (studies.size() > 0)
+                        studiesInFolder.put(pse.getStudy().getPatient(), studies);
+                } else {
+                    studies.addAll(dao.getStudiesInFolder(new String[] { pse.getStudy().getStudyInstanceUID() }));
+                }
             }
         }
         if (selected.hasInstances()) {
             for (PrivInstanceModel pi : selected.getInstances()) {
                 files.addAll(dao.getFilesForEntity(pi.getPk(),
                         PrivateInstance.class));
-                studiesInFolder.addAll(dao.getStudiesInFolder(new String[] { pi
-                        .getSeries().getStudy().getStudyInstanceUID() }));
+                List<Study> studies = studiesInFolder.get(pi.getSeries().getStudy().getPatient());
+                if (studies == null) {
+                    studies = dao.getStudiesInFolder(new String[]{pi.getSeries().getStudy().getStudyInstanceUID()});
+                    if (studies.size() > 0)
+                        studiesInFolder.put(pi.getSeries().getStudy().getPatient(), studies);
+                } else {
+                    studies.addAll(dao.getStudiesInFolder(new String[] { pi.getSeries().getStudy().getStudyInstanceUID() }));
+                }
             }
         }
         return files;

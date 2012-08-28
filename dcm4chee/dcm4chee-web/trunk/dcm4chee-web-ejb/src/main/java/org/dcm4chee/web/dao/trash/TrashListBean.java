@@ -343,13 +343,21 @@ public class TrashListBean implements TrashListLocal {
     
     @SuppressWarnings("unchecked")
     public List<Study> getStudiesInFolder(String[] suids) {
-        StringBuilder sb = new StringBuilder("SELECT st from Study st WHERE st.studyInstanceUID");
+        StringBuilder sb = new StringBuilder("SELECT st FROM Study st LEFT JOIN FETCH st.patient WHERE st.studyInstanceUID");
         QueryUtil.appendIN(sb, suids.length);
         Query q = em.createQuery(sb.toString());
         QueryUtil.setParametersForIN(q, suids);
         return q.getResultList();
     }
 
+    @SuppressWarnings("unchecked")
+    public List<Study> getStudiesInFolder(long privPatPk) {
+        StringBuilder sb = new StringBuilder("SELECT st FROM Study st LEFT JOIN FETCH st.patient, PrivateStudy pst WHERE pst.patient.pk = :patPk AND st.studyInstanceUID = pst.studyInstanceUID");
+        Query q = em.createQuery(sb.toString());
+        q.setParameter("patPk", new Long(privPatPk));
+        return q.getResultList();
+    }
+    
     public DicomObject getDicomAttributes(long filePk) {
         PrivateFile pf = em.find(PrivateFile.class, filePk);
         DicomObject dio = pf.getInstance().getAttributes();
