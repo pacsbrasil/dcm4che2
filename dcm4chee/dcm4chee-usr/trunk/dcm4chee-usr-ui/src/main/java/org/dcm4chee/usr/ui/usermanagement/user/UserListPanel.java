@@ -47,9 +47,7 @@ import org.apache.wicket.RequestCycle;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
-import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
-import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
@@ -57,7 +55,6 @@ import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.markup.repeater.RepeatingView;
-import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
@@ -71,10 +68,8 @@ import org.dcm4chee.usr.entity.UserRoleAssignment;
 import org.dcm4chee.usr.model.Role;
 import org.dcm4chee.usr.ui.config.delegate.UsrCfgDelegate;
 import org.dcm4chee.usr.ui.usermanagement.ChangePasswordLink;
-import org.dcm4chee.usr.ui.usermanagement.role.RoleListPanel;
 import org.dcm4chee.usr.ui.util.CSSUtils;
 import org.dcm4chee.usr.util.JNDIUtils;
-import org.dcm4chee.web.common.base.BaseWicketApplication;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.markup.ModalWindowLink;
@@ -101,6 +96,7 @@ public class UserListPanel extends Panel {
     List<String> roleTypes;
 
     private String userId;
+    private boolean superuser;
 
     private ModalWindow addUserWindow;
     private ModalWindow changePasswordWindow;
@@ -114,7 +110,7 @@ public class UserListPanel extends Panel {
             add(CSSPackageResource.getHeaderContribution(UserListPanel.BaseCSS));
 
         userAccess = (UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME);
-        
+
         setOutputMarkupId(true);
         
         this.userId = ((SecureSession) getSession()).getUsername();
@@ -174,13 +170,29 @@ public class UserListPanel extends Panel {
 
         RepeatingView roleRows = new RepeatingView("role-rows");
         addOrReplace(roleRows);
-        
+
+        for (Role role : allRoles.getObject())
+        	if (role.isSuperuser())
+        			for (UserRoleAssignment ura : userAccess.getUser(userId).getRoles())
+        				if (ura.getRole().equals(role.getRolename()))
+        						this.superuser = true;
+
         for (int i = 0; i < this.allUsers.getObject().size(); i++) {
             
             final User user = this.allUsers.getObject().get(i);
-            
+           	
             WebMarkupContainer rowParent;
             roleRows.add((rowParent = new WebMarkupContainer(roleRows.newChildId())).add(new Label("userID", user.getUserID())));
+
+            StringBuffer assignedRoles = new StringBuffer();
+            for (UserRoleAssignment ura : user.getRoles()) {
+                assignedRoles.append(ura.getRole()).append(", ");
+                if (!superuser)
+                	for (Role role : allRoles.getObject())
+                		if (role.isSuperuser() && role.getRolename().equals(ura.getRole()))
+                			rowParent.setVisible(false);
+            }
+           	
             ChangePasswordLink changePasswordLink
                 = new ChangePasswordLink("change-password-link", this.changePasswordWindow, this.userId, user);
             changePasswordLink.add(new Image("img-change-password", ImageManager.IMAGE_USER_CHANGE_PASSWORD)
@@ -190,7 +202,7 @@ public class UserListPanel extends Panel {
             rowParent.add(changePasswordLink)
                 .add(new AttributeModifier("class", true, new Model<String>(CSSUtils.getRowClass(i))));
             changePasswordLink.add(new SecurityBehavior(getModuleName() + ":changePasswordLink"));
-            
+
             AjaxFallbackLink<Object> removeUserLink 
                 = new AjaxFallbackLink<Object>("remove-user-link") {
 
@@ -235,10 +247,7 @@ public class UserListPanel extends Panel {
                 .add(new TooltipBehaviour("userlist.", "manage-roles-link")))
                 .add(new SecurityBehavior(getModuleName() + ":manageRolesLink"))
             );
-            
-            StringBuffer assignedRoles = new StringBuffer();
-            for (UserRoleAssignment ura : user.getRoles())
-                assignedRoles.append(ura.getRole()).append(", ");
+
             if (assignedRoles.length() > 0) 
                 assignedRoles.delete(assignedRoles.length() - 2, assignedRoles.length() - 1);
                 

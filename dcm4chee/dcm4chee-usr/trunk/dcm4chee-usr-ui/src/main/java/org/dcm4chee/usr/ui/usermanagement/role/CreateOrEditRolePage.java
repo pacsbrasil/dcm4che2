@@ -59,6 +59,7 @@ import org.apache.wicket.markup.repeater.RepeatingView;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.util.ListModel;
 import org.dcm4chee.usr.dao.UserAccess;
+import org.dcm4chee.usr.entity.UserRoleAssignment;
 import org.dcm4chee.usr.model.Group;
 import org.dcm4chee.usr.model.Role;
 import org.dcm4chee.usr.ui.validator.RoleValidator;
@@ -66,6 +67,7 @@ import org.dcm4chee.usr.util.JNDIUtils;
 import org.dcm4chee.web.common.base.BaseWicketApplication;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.markup.BaseForm;
+import org.dcm4chee.web.common.secure.SecureSession;
 import org.dcm4chee.web.common.secure.SecureSessionCheckPage;
 import org.dcm4chee.web.common.secure.SecurityBehavior;
 import org.dcm4chee.web.common.util.Auditlog;
@@ -86,7 +88,7 @@ public class CreateOrEditRolePage extends SecureSessionCheckPage {
     private static Logger log = LoggerFactory.getLogger(CreateOrEditRolePage.class);
 
     protected ModalWindow window;
-   
+
     public CreateOrEditRolePage(final ModalWindow window, ListModel<Role> allRolenames, Role role, Map<String,Group> types) {
         super();
         
@@ -129,6 +131,8 @@ public class CreateOrEditRolePage extends SecureSessionCheckPage {
             );
             add(descriptionTextField);
 
+            WebMarkupContainer superuserContainer = new WebMarkupContainer("superuserContainer");
+            add(superuserContainer);
             final CheckBox superuserCheckbox = new CheckBox("superuser-checkbox", superuser);
             superuser.setObject(role != null && role.isSuperuser());
             if (role != null) {
@@ -137,7 +141,15 @@ public class CreateOrEditRolePage extends SecureSessionCheckPage {
                 superuserCheckbox.setModelObject(role.isSuperuser());
             }
             superuserCheckbox.add(new SecurityBehavior(getModuleName() + ":superuserCheckbox"));
-            add(superuserCheckbox);
+            superuserContainer.add(superuserCheckbox);
+            
+            superuserContainer.setVisible(false);
+            for (Role role1 : userAccess.getAllRoles())
+            	if (role1.isSuperuser())
+            			for (UserRoleAssignment ura : userAccess
+            					.getUser(((SecureSession) getSession()).getUsername()).getRoles())
+            				if (ura.getRole().equals(role1.getRolename()))
+            					superuserContainer.setVisible(true);
             
             final StringBuffer webRoleUuid = new StringBuffer();
             final StringBuffer dicomRoleUuid = new StringBuffer();

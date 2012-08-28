@@ -91,7 +91,6 @@ public class UserAccessBean implements UserAccess {
     private String adminRoleName;
     private boolean ensureUserAndAdminRole;
     
-    @SuppressWarnings("unused")
     @PostConstruct
     @PostActivate
     private void config() {
@@ -200,7 +199,10 @@ public class UserAccessBean implements UserAccess {
     }
 
     public User getUser(String userId) {
-        return this.em.find(User.class, userId);
+    	return (User) 
+    			this.em.createQuery("SELECT DISTINCT u FROM User u LEFT JOIN FETCH u.roles r WHERE u.userID = :userID")
+                .setParameter("userID", userId)
+                .getSingleResult();
     }
 
     public User getUserIgnoreCase(String userId) {
