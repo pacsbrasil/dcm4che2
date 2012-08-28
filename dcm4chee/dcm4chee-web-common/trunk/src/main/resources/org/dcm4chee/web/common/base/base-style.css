@@ -131,11 +131,11 @@ table.folded-table tr.instance { background-color: #54B291; }
 table.folded-table tr.instance_selected { background-color: orange; }
 table.folded-table tr.series { background-color: #A0D8C4; }
 table.folded-table tr.series_selected { background-color: orange; }
-table.folded-table tr.pps { background-color: #D1FEF6; }
+table.folded-table tr.pps { background-color: #FFFFFF; }
 table.folded-table tr.pps_selected { background-color: orange; }
-table.folded-table tr.study { background-color: #E1E0DE; }
+table.folded-table tr.study { background-color: #D1FEF6; }
 table.folded-table tr.study_selected { background-color: orange; }
-table.folded-table tr.patient { background-color: #FFFFFF; }
+table.folded-table tr.patient { background-color: #E1E0DE; }
 table.folded-table tr.patient_selected { background-color: orange; }
 
 div.dicomobjectpanel { border: thin; border-width: 1px; border-style: inset; border-color: #AAAAAA; }
