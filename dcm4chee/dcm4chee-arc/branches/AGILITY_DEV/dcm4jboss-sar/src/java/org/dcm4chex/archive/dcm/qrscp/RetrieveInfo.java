@@ -64,7 +64,7 @@ import org.dcm4chex.archive.ejb.jdbc.FileInfo;
  * @since 23.03.2005
  */
 
-final class RetrieveInfo {
+public final class RetrieveInfo {
 
     private static final String[] IVR_LE_TS = { UIDs.ImplicitVRLittleEndian };
 
@@ -102,7 +102,7 @@ final class RetrieveInfo {
 
     private boolean externalRetrieveAET;
     
-    RetrieveInfo(QueryRetrieveScpService service, FileInfo[][] instInfos) {
+    public RetrieveInfo(QueryRetrieveScpService service, FileInfo[][] instInfos) {
         FileInfo[] fileInfos;
         FileInfo fileInfo;
         String iuid;
