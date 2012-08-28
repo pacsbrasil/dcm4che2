@@ -80,6 +80,7 @@ import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.exceptions.WicketExceptionWithMsgKey;
 import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.common.markup.PatientNameField;
+import org.dcm4chee.web.common.model.DicomElementModel;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 
 /**
@@ -103,6 +104,7 @@ public class SimpleEditDicomObjectPanel extends Panel {
     private TooltipBehaviour tooltipBehaviour = new TooltipBehaviour("dicom.");
     private Model<String> resultMessage;
     private IModel<Boolean> useFnGn;
+    private int[][] tagPaths;
     
     public SimpleEditDicomObjectPanel(String id, final ModalWindow window, AbstractDicomModel dcmModel, 
             String title, final int[][] tagPaths, final boolean close, IModel<Boolean> useFnGn) {
@@ -122,6 +124,7 @@ public class SimpleEditDicomObjectPanel extends Panel {
         });
         
         this.dcmObj = new BasicDicomObject();
+        this.tagPaths = tagPaths;
         dcmModel.getDataset().copyTo(this.dcmObj);
         add(new Label("title", new Model<String>(title)));
         add(form = new BaseForm("form"));
@@ -232,6 +235,9 @@ public class SimpleEditDicomObjectPanel extends Panel {
     }
 
     public DicomObject getDicomObject() {
+    	for (int i = 0; i < tagPaths.length; i++)
+    		if (dcmObj.get(tagPaths[i]) == null)
+    			dcmObj.putNull(tagPaths[i], DicomElementModel.getVRof(dcmObj, tagPaths[i]));
         return dcmObj;
     }
 
@@ -354,7 +360,7 @@ public class SimpleEditDicomObjectPanel extends Panel {
             };
             choice.add(onChangeAjaxBehavior);
             add(choice);
-            AjaxLink presetLink = new AjaxLink("presetLink"){
+            AjaxLink<?> presetLink = new AjaxLink<Object>("presetLink"){
                 private static final long serialVersionUID = 1L;
 
                 @Override
