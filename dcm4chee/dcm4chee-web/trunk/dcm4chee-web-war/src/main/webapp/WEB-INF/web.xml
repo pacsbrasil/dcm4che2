@@ -15,7 +15,7 @@
 			<param-name>configuration</param-name>
 			<param-value>deployment</param-value>
  		</init-param>
-        <!-- List of languages for language selection separated by ','
+        <!-- List of languages for language selection separated by ',' or ANY for all supported languages.
              A leading '*' marks the (global) default language instead of language of current session. 
              e.g. 'en,*de,ja'
         -->
