@@ -244,14 +244,14 @@ public class ModuleSelectorPanel extends SecureAjaxTabbedPanel {
 
     private List<String> getLanguages() {
         if (languages == null) {
-            languages = new ArrayList<String>();
             String s = ((WebApplication)getApplication()).getInitParameter("Languages");
-            if (s == null) {
-                languages.add("en");
+            if (s == null || s.equals("ANY")) {
+                languages = Arrays.asList("en", "de", "ja");
             } else {
+                languages = new ArrayList<String>();
                 String l;
                 for ( StringTokenizer st = new StringTokenizer(s, ",") ; st.hasMoreElements() ; ) {
-                    l = st.nextToken();
+                    l = st.nextToken().trim();
                     if (l.charAt(0) == '*') {
                         l = l.substring(1);
                         defaultLanguage = l;
