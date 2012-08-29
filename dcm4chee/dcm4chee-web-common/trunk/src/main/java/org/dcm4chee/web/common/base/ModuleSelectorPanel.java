@@ -40,8 +40,10 @@ package org.dcm4chee.web.common.base;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.StringTokenizer;
 
 import javax.servlet.http.Cookie;
 
@@ -62,9 +64,11 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
+import org.apache.wicket.protocol.http.WebApplication;
 import org.apache.wicket.protocol.http.WebRequest;
 import org.apache.wicket.protocol.http.WebResponse;
 import org.apache.wicket.security.swarm.SwarmWebApplication;
+import org.dcm4che2.util.StringUtils;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
 import org.dcm4chee.web.common.model.ProgressProvider;
 import org.dcm4chee.web.common.secure.SecureAjaxTabbedPanel;
@@ -87,6 +91,8 @@ import org.xml.sax.helpers.DefaultHandler;
 public class ModuleSelectorPanel extends SecureAjaxTabbedPanel {
 
     private static final long serialVersionUID = 1L;
+    private static List<String> languages;
+    private static String defaultLanguage;
     
     public boolean showLogout = true;
     
@@ -195,13 +201,8 @@ public class ModuleSelectorPanel extends SecureAjaxTabbedPanel {
                     })
         )));
 
-        List<String> languages = new ArrayList<String>();
-        languages.add("en");
-        languages.add("de");
-        languages.add("ja");
-
         final DropDownChoice<String> languageSelector = 
-            new DropDownChoice<String>("language", new Model<String>(), languages, new ChoiceRenderer<String>() {
+            new DropDownChoice<String>("language", new Model<String>(), getLanguages(), new ChoiceRenderer<String>() {
 
             private static final long serialVersionUID = 1L;
             
@@ -222,6 +223,9 @@ public class ModuleSelectorPanel extends SecureAjaxTabbedPanel {
                 getSession().setLocale(new Locale(newSelection));
             }
         };
+        if (defaultLanguage != null) {
+            getSession().setLocale(new Locale(defaultLanguage));
+        }
         languageSelector.setDefaultModelObject(getSession().getLocale().getLanguage());
         languageSelector.add(new AjaxFormComponentUpdatingBehavior("onchange") {
             private static final long serialVersionUID = 1L;
@@ -236,6 +240,27 @@ public class ModuleSelectorPanel extends SecureAjaxTabbedPanel {
         add(new Image("img_logo", new ResourceReference(ModuleSelectorPanel.class, 
                 "images/logo.gif"))
         );
+    }
+
+    private List<String> getLanguages() {
+        if (languages == null) {
+            languages = new ArrayList<String>();
+            String s = ((WebApplication)getApplication()).getInitParameter("Languages");
+            if (s == null) {
+                languages.add("en");
+            } else {
+                String l;
+                for ( StringTokenizer st = new StringTokenizer(s, ",") ; st.hasMoreElements() ; ) {
+                    l = st.nextToken();
+                    if (l.charAt(0) == '*') {
+                        l = l.substring(1);
+                        defaultLanguage = l;
+                    }
+                    languages.add(l);
+                }
+            }
+        }
+        return languages;
     }
 
     public void addModule(final Class<? extends Panel> clazz) {
