@@ -673,7 +673,7 @@ public class WebCfgService extends ServiceMBeanSupport implements
             String s = list.get(i);
             sb.append(sep).append(s==null?EMPTY:s);
         }
-        return sb.toString();
+        return sb.append(sep).toString();
     }
 
     private List<String> stringAsList(String s, String sep) {
