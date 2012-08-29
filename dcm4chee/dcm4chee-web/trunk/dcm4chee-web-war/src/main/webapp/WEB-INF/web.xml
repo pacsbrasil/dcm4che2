@@ -15,6 +15,14 @@
 			<param-name>configuration</param-name>
 			<param-value>deployment</param-value>
  		</init-param>
+        <!-- List of languages for language selection separated by ','
+             A leading '*' marks the (global) default language instead of language of current session. 
+             e.g. 'en,*de,ja'
+        -->
+        <init-param>
+          <param-name>Languages</param-name>
+          <param-value>en,de,ja</param-value>
+        </init-param>
 	    <init-param>
 	      <param-name>WebCfgServiceName</param-name>
 	      <param-value>dcm4chee.web:service=WebConfig</param-value>
