@@ -96,12 +96,13 @@ public interface WADOCache {
      * @param imageQuality
      *            Integer string (1-100) representing required quality of
      *            the image to be returned within the range 1 to 100
+     * @param suffix2 
      * 
      * @return The File object of the image if in cache or null.
      */
     File getImageFile(String studyUID, String seriesUID, String instanceUID,
             String rows, String columns, String region, String windowWidth,
-            String windowCenter, String imageQuality, String suffix);
+            String windowCenter, String imageQuality, String contentType, String suffix2);
 
     /**
      * Put a region of an image of special size to this cache.
@@ -136,7 +137,7 @@ public interface WADOCache {
     File putImage(BufferedImage image, String studyUID, String seriesUID,
             String instanceUID, String pixelRows, String pixelColumns,
             String region, String windowWidth, String windowCenter,
-            String imageQuality, String suffix) throws IOException;
+            String imageQuality, String contentType, String suffix) throws IOException;
 
     /**
      * Puts a stream to this cache.
@@ -173,6 +174,7 @@ public interface WADOCache {
             String imageQuality, String suffix) throws IOException;
 
     void writeJPEG(BufferedImage bi, OutputStream out, float quality) throws IOException;
+    void writePNG(BufferedImage bi, Object out) throws IOException;
     
     /**
      * Clears this cache.

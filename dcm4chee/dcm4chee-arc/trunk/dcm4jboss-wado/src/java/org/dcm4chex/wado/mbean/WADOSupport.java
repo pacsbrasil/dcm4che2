@@ -48,6 +48,8 @@ import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferUShort;
 import java.awt.image.IndexColorModel;
+import java.awt.image.Raster;
+import java.awt.image.WritableRaster;
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.File;
@@ -65,6 +67,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -140,6 +143,7 @@ public class WADOSupport implements NotificationListener {
     private static final String REDIRECT_PARAM = "redir";
 
     public static final String CONTENT_TYPE_JPEG = "image/jpeg";
+    public static final String CONTENT_TYPE_PNG = "image/png";
 
     public static final String CONTENT_TYPE_DICOM = "application/dicom";
 
@@ -321,7 +325,7 @@ public class WADOSupport implements NotificationListener {
         // Try to short-circuit the case where we want to retrieve
         // an existing icon - we dont need to query the database for that
         if( !disableCache && req.getContentTypes() != null &&
-             req.getContentTypes().contains("image/jpeg")) {
+             (req.getContentTypes().contains(CONTENT_TYPE_JPEG) || req.getContentTypes().contains(CONTENT_TYPE_PNG))) {
             WADOResponseObject scResp = tryToShortCircuitIconCacheLookup(req);
             if(scResp != null) {
                 return scResp;
@@ -367,8 +371,8 @@ public class WADOSupport implements NotificationListener {
                     + req.getRequest().getParameter("contentType"));
         }
         req.setObjectInfo(objectDs);
-        if (CONTENT_TYPE_JPEG.equals(contentType)) {
-            return this.handleJpg(req);
+        if (CONTENT_TYPE_JPEG.equals(contentType) || CONTENT_TYPE_PNG.equals(contentType)) {
+            return this.handleImage(req, contentType);
         } else if (CONTENT_TYPE_DICOM.equals(contentType)) {
             return handleDicom(req); // audit log is done in handleDicom to
             // avoid extra query.
@@ -435,11 +439,12 @@ public class WADOSupport implements NotificationListener {
                     suffix = "-" + frame;
                 }
             }
+            String contentType = req.getContentTypes().contains(CONTENT_TYPE_JPEG) ? CONTENT_TYPE_JPEG : CONTENT_TYPE_PNG;
             File file = WADOCacheImpl.getWADOCache().getImageFile(req.getStudyUID(),
                             req.getSeriesUID(), req.getObjectUID(),
                             req.getRows(),req.getColumns(), req.getRegion(),
                             req.getWindowWidth(), req.getWindowCenter(),
-                            req.getImageQuality(), suffix);
+                            req.getImageQuality(), contentType, suffix);
             if(file != null) {
                 if(log.isDebugEnabled())
                     log.debug("short-circuit sucessful!: " + file);
@@ -465,7 +470,7 @@ public class WADOSupport implements NotificationListener {
         }
         if (req.getRequest().getParameter(REDIRECT_PARAM) != null) {
             log.warn("WADO request is already redirected! Return 'NOT FOUND' to avoid circular redirect!\n(Maybe a filesystem was removed from filesystem management but already exists in database!)");
-            return new WADOStreamResponseObjectImpl(null, CONTENT_TYPE_JPEG,
+            return new WADOStreamResponseObjectImpl(null, contentType,
                     HttpServletResponse.SC_NOT_FOUND,
             "Object not found (Circular redirect found)!");
         }
@@ -529,6 +534,7 @@ public class WADOSupport implements NotificationListener {
             types.add(CONTENT_TYPE_PLAIN);
         } else if ( getImageSopCuids().containsValue(sopCuid) ){
             types.add(CONTENT_TYPE_JPEG);
+            types.add(CONTENT_TYPE_PNG);
         } else if ( getEncapsulatedSopCuids().containsValue(sopCuid) ){
             String mime = objectDs.getString(Tags.MIMETypeOfEncapsulatedDocument);
             if (mime == null) {
@@ -721,6 +727,7 @@ public class WADOSupport implements NotificationListener {
      * Use this method first if content type jpeg is possible to get advantage
      * of the cache.
      * <p>
+     * @param contentType 
      * 
      * @param studyUID
      *                The unique id of a study.
@@ -735,7 +742,7 @@ public class WADOSupport implements NotificationListener {
      * 
      * @return The WADO response object containing the file of the image.
      */
-    public WADOResponseObject handleJpg(WADORequestObject req) {
+    public WADOResponseObject handleImage(WADORequestObject req, String contentType) {
         String studyUID = req.getStudyUID();
         String seriesUID = req.getSeriesUID();
         String instanceUID = req.getObjectUID();
@@ -754,39 +761,39 @@ public class WADOSupport implements NotificationListener {
             }
             if (disableCache) {
                 BufferedImage bi = getBufferedImage(studyUID, seriesUID, instanceUID, rows,
-                        columns, frame, region, windowWidth, windowCenter);
+                        columns, frame, region, windowWidth, windowCenter, contentType);
                 return new WADOImageResponseObjectImpl(bi, WADOCacheImpl.getWADOCache(), 
                         imageQuality != null ? imageQuality : WADOCacheImpl.getWADOCache().getImageQuality(),
-                        CONTENT_TYPE_JPEG, HttpServletResponse.SC_OK, "Info: Caching disabled!");
+                        contentType, HttpServletResponse.SC_OK, "Info: Caching disabled!");
             } else {
-                File file = getJpg(studyUID, seriesUID, instanceUID, rows, columns,
+                File file = getImage(studyUID, seriesUID, instanceUID, rows, columns,
                         frame, region, windowWidth, windowCenter,
-                        imageQuality);
+                        imageQuality, contentType);
                 if (file != null) {
                     WADOStreamResponseObjectImpl resp = new WADOStreamResponseObjectImpl(
-                            new FileInputStream(file), CONTENT_TYPE_JPEG,
+                            new FileInputStream(file), contentType,
                             HttpServletResponse.SC_OK, null);
                     resp.setPatInfo(req.getObjectInfo());
                     return resp;
                 } else {
                     return new WADOStreamResponseObjectImpl(null,
-                            CONTENT_TYPE_JPEG, HttpServletResponse.SC_NOT_FOUND,
+                            contentType, HttpServletResponse.SC_NOT_FOUND,
                     "DICOM object not found!");
                 }
             }
         } catch (NeedRedirectionException nre) {
-            return handleNeedRedirectException(req, CONTENT_TYPE_JPEG, nre);
+            return handleNeedRedirectException(req, contentType, nre);
         } catch (NoImageException x1) {
-            return new WADOStreamResponseObjectImpl(null, CONTENT_TYPE_JPEG,
+            return new WADOStreamResponseObjectImpl(null, contentType,
                     HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
             "Cant get jpeg from requested object");
         } catch (ImageCachingException x1) {
             return new WADOImageResponseObjectImpl(x1.getImage(), WADOCacheImpl.getWADOCache(), 
                     imageQuality != null ? imageQuality : WADOCacheImpl.getWADOCache().getImageQuality(),
-                    CONTENT_TYPE_JPEG, HttpServletResponse.SC_OK, "Warning: Caching failed!");
+                            contentType, HttpServletResponse.SC_OK, "Warning: Caching failed!");
         } catch (Exception x) {
             log.error("Exception in handleJpg: " + x.getMessage(), x);
-            return new WADOStreamResponseObjectImpl(null, CONTENT_TYPE_JPEG,
+            return new WADOStreamResponseObjectImpl(null, contentType,
                     HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
             "Unexpected error! Cant get jpeg");
         }
@@ -806,6 +813,7 @@ public class WADOSupport implements NotificationListener {
      *                Decimal string indicating the contrast of the image.
      * @param windowCenter
      *                Decimal string indicating the luminosity of the image.
+     * @param contentType 
      * @param readDicom
      *                Used to indicate if the image is read from the dicom file
      *                for this request.
@@ -815,9 +823,9 @@ public class WADOSupport implements NotificationListener {
      * @throws NoImageException
      * @throws ImageCachingException
      */
-    public File getJpg(String studyUID, String seriesUID, String instanceUID,
+    public File getImage(String studyUID, String seriesUID, String instanceUID,
             String rows, String columns, int frame, String region,
-            String windowWidth, String windowCenter, String imageQuality)
+            String windowWidth, String windowCenter, String imageQuality, String contentType)
     throws IOException, NeedRedirectionException, NoImageException,
     ImageCachingException {
         WADOCache cache = WADOCacheImpl.getWADOCache();
@@ -832,15 +840,15 @@ public class WADOSupport implements NotificationListener {
         
         file = cache.getImageFile(studyUID, seriesUID, instanceUID, rows,
                 columns, region, windowWidth, windowCenter, imageQuality,
-                suffix);
+                contentType, suffix);
         if (file == null) {
             bi = getBufferedImage(studyUID, seriesUID, instanceUID, rows,
-                    columns, frame, region, windowWidth, windowCenter);
+                    columns, frame, region, windowWidth, windowCenter, contentType);
             if (bi != null) {
                 try {
                     file = cache.putImage(bi, studyUID, seriesUID, instanceUID,
                             rows, columns, region, windowWidth, windowCenter,
-                            imageQuality, suffix);
+                            imageQuality, contentType, suffix);
                 } catch (Exception x) {
                     log.warn("Error caching image file! Return image without caching (Enable DEBUG for stacktrace)!");
                     log.debug("Stacktrace for caching error:",x);
@@ -855,11 +863,11 @@ public class WADOSupport implements NotificationListener {
 
     private BufferedImage getBufferedImage(String studyUID, String seriesUID,
             String instanceUID, String rows, String columns, int frame,
-            String region, String windowWidth, String windowCenter) throws IOException, NeedRedirectionException {
+            String region, String windowWidth, String windowCenter, String contentType) throws IOException, NeedRedirectionException {
         File dicomFile = getDICOMFile(studyUID, seriesUID, instanceUID);
         if (dicomFile != null) {
             return getImage(dicomFile, frame, rows, columns, region,
-                    windowWidth, windowCenter);
+                    windowWidth, windowCenter, contentType);
         } else {
             return null;
         }
@@ -1297,13 +1305,14 @@ public class WADOSupport implements NotificationListener {
      *                Decimal string representing the contrast of the image.
      * @param windowCenter
      *                Decimal string representing the luminosity of the image.
+     * @param contentType 
      * 
      * @return
      * @throws IOException
      */
     private BufferedImage getImage(File file, int frame, String rows,
             String columns, String region, String windowWidth,
-            String windowCenter) throws IOException {
+            String windowCenter, String contentType) throws IOException {
         ImageReader reader = getDicomImageReader();
         if (reader == null) {
             return null; // TODO more useful stuff
@@ -1339,14 +1348,13 @@ public class WADOSupport implements NotificationListener {
                     data.putDS(Tags.WindowCenter, windowCenter);
                 }
 
-                DcmImageReadParamImpl dcmParam = (DcmImageReadParamImpl) param;
                 if (isCompressed(data)) {
                     semaphoreAquired = DecompressCmd.acquireSemaphore();
                     log.info("start decompression of image: " + totHeight + "x" + totWidth +
                             " (current codec tasks: compress&decompress:" + DecompressCmd.getNrOfConcurrentCodec()+
                             " compress:" + DecompressCmd.getNrOfConcurrentDecompress()+")");
                 }
-                bi = reader.read(frame, dcmParam);
+                bi = reader.read(frame, param);
             } catch (Exception x) {
                 log.error("Can't read image:", x);
                 return null;
@@ -1355,7 +1363,7 @@ public class WADOSupport implements NotificationListener {
             if (renderOverlays) {
                 mergeOverlays(bi, reader, frame);
             }
-            return resize(bi, rows, columns, reader.getAspectRatio(frame));
+            return resize(bi, rows, columns, reader.getAspectRatio(frame), contentType);
         } finally {
             if (semaphoreAquired) {
                 DecompressCmd.finished();
@@ -1402,11 +1410,12 @@ public class WADOSupport implements NotificationListener {
      * @param columns
      *                Image width in pixel.
      * @param aspectRatio 
+     * @param contentType 
      * 
      * @return
      */
     private BufferedImage resize(BufferedImage bi, String rows, String columns,
-            float aspectRatio) {
+            float aspectRatio, String contentType) {
         int h = 0;
         int w = 0;
         if (rows == null && columns == null) {
@@ -1429,25 +1438,58 @@ public class WADOSupport implements NotificationListener {
                     !jpgWriterSupportsShortColormap && bi.getColorModel().getPixelSize() > 8 ||
                     bi.getColorModel().getColorSpace() instanceof SimpleYBRColorSpace;
         boolean rescale = w != bi.getWidth() || h != bi.getHeight();
-        if (!needRGB && !rescale)
-            return bi;
-
-        if (needRGB || bi.getSampleModel() instanceof BandedSampleModel) {
-            log.debug("Convert BufferedImage to TYPE_INT_RGB!");
-            // convert YBR to RGB to workaround jai-imageio-core issue #173:
-            // CLibJPEGImageWriter ignores CororSpace != sRGB
-            // convert RGB color-by-plane to TYPE_INT_RGB, otherwise
-            // scaleOp.filter(bi, null) will throw
-            // ImagingOpException("Unable to transform src image")
-            BufferedImage tmp = new BufferedImage(bi.getWidth(),
-                    bi.getHeight(), BufferedImage.TYPE_INT_RGB);
-            Graphics2D g = tmp.createGraphics();
-            try {
-                g.drawImage(bi, 0, 0, null);
-            } finally {
-                g.dispose();
+        log.debug("Image contentType:"+contentType);
+        if (CONTENT_TYPE_JPEG.equals(contentType)) {
+            if (!needRGB && !rescale)
+                return bi;
+            if (needRGB || bi.getSampleModel() instanceof BandedSampleModel) {
+                log.debug("Convert BufferedImage to TYPE_INT_RGB!");
+                // convert YBR to RGB to workaround jai-imageio-core issue #173:
+                // CLibJPEGImageWriter ignores CororSpace != sRGB
+                // convert RGB color-by-plane to TYPE_INT_RGB, otherwise
+                // scaleOp.filter(bi, null) will throw
+                // ImagingOpException("Unable to transform src image")
+                BufferedImage tmp = new BufferedImage(bi.getWidth(),
+                        bi.getHeight(), BufferedImage.TYPE_INT_RGB);
+                Graphics2D g = tmp.createGraphics();
+                try {
+                    g.drawImage(bi, 0, 0, null);
+                } finally {
+                    g.dispose();
+                }
+                bi = tmp;
             }
-            bi = tmp;
+        } else { //PNG
+            showMinMaxHist(bi, "Original:");
+            if (bi.getData().getNumBands() == 1) {
+                int pixSize = bi.getColorModel().getPixelSize() > 8 ? 16 : 8;
+                log.debug("Convert to "+pixSize+"bit GRAY BufferedImage for PNG!");
+                BufferedImage tmp = new BufferedImage(bi.getWidth(), bi.getHeight(), 
+                        pixSize == 16 ? BufferedImage.TYPE_USHORT_GRAY : BufferedImage.TYPE_BYTE_GRAY);
+                if (pixSize == 8) {
+                    Graphics2D g = tmp.createGraphics();
+                    try {
+                        g.drawImage(bi, 0, 0, null);
+                    } finally {
+                        g.dispose();
+                    }
+                } else {
+                    WritableRaster r = tmp.getRaster();
+                    Raster data = bi.getData();
+                    int shift = 16 - bi.getColorModel().getPixelSize();
+                    int v;
+                    for (int x = data.getMinX(), xLen = x+data.getWidth(); x < xLen ; x++) {
+                        for (int y = data.getMinY(), yLen = y+data.getHeight(); y < yLen ; y++) {
+                            v = data.getSample(x, y, 0);
+                            r.setSample(x, y, 0, v<<shift);
+                        }
+                    }
+                }
+                bi = tmp;
+                showMinMaxHist(bi, "Converted:");
+            } else {
+                log.debug("########### PNG: use original BufferedImage! numBands > 1");
+            }
         }
         if (!rescale)
             return bi;
@@ -1458,6 +1500,35 @@ public class WADOSupport implements NotificationListener {
                 AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
         BufferedImage biDest = scaleOp.filter(bi, null);
         return biDest;
+    }
+
+    private void showMinMaxHist(BufferedImage bi, String msg) {
+        if (log.isDebugEnabled()) {
+            log.debug("###############################################################################");
+            log.debug("##########"+msg);
+            log.debug("########## bi type:"+bi.getType());
+            log.debug("########## bi colorModel:"+bi.getColorModel());
+            log.debug("########## bi colorSpace:"+bi.getColorModel().getColorSpace());
+            log.debug("########## bi colorSpaceType:"+bi.getColorModel().getColorSpace().getType());
+            log.debug("########## bi sampleModel:"+bi.getSampleModel());
+            log.debug("########## bi bits/pixel:"+bi.getColorModel().getPixelSize());
+            log.debug("########## bi numBands:"+bi.getData().getNumBands());
+            if (log.isTraceEnabled()) { 
+                Raster data = bi.getData();
+                HashSet<Integer> hist = new HashSet<Integer>(10000);
+                int v, vmax = 0, vmin =Integer.MAX_VALUE;
+                for (int x = data.getMinX(), xLen = x+data.getWidth(); x < xLen ; x++) {
+                    for (int y = data.getMinY(), yLen = y+data.getHeight(); y < yLen ; y++) {
+                        v = data.getSample(x, y, 0);
+                        hist.add(v);
+                        if (v > vmax) vmax = v;
+                        if (v < vmin) vmin = v;
+                    }
+                }
+                log.trace("##########\n########## samples: min:"+vmin+" max:"+vmax+" nrOfDifferentValues:"+hist.size());
+            }
+            log.debug("###############################################################################");
+        }
     }
 
         /**

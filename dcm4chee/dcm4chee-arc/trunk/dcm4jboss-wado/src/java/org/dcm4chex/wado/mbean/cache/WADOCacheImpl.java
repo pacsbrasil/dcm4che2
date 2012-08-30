@@ -62,6 +62,7 @@ import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.dcm4chex.archive.util.CacheJournal;
 import org.dcm4chex.archive.util.FileSystemUtils;
 import org.dcm4chex.archive.util.FileUtils;
+import org.dcm4chex.wado.mbean.WADOSupport;
 
 /**
  * @author franz.willer
@@ -217,7 +218,7 @@ public class WADOCacheImpl implements WADOCache {
     }
 
     public void setImageWriterClass(String imageWriterClass) {
-        getImageWriterWriter(imageWriterClass).dispose();
+        getImageWriterWriter("JPEG", imageWriterClass).dispose();
         this.imageWriterClass = imageWriterClass;
     }
 
@@ -274,11 +275,11 @@ public class WADOCacheImpl implements WADOCache {
     public File getImageFile(String studyUID, String seriesUID,
             String instanceUID, String rows, String columns, String region,
             String windowWidth, String windowCenter, String imageQuality,
-            String suffix) {
+            String contentType, String suffix) {
         File file = this._getImageFile(rows + "-" + columns + "-" + region
                 + "-" + windowWidth + "-" + windowCenter + "-"
                 + maskNull(imageQuality, this.imageQuality), studyUID,
-                seriesUID, instanceUID, suffix, null);
+                seriesUID, instanceUID, suffix, contentType);
         if (log.isDebugEnabled())
             log.debug("check cache file(exist:" + file.exists() + "):" + file);
         if (file.exists()) {
@@ -330,12 +331,12 @@ public class WADOCacheImpl implements WADOCache {
     public File putImage(BufferedImage image, String studyUID,
             String seriesUID, String instanceUID, String rows, String columns,
             String region, String windowWidth, String windowCenter,
-            String imageQuality, String suffix) throws IOException {
+            String imageQuality, String contentType, String suffix) throws IOException {
         imageQuality = maskNull(imageQuality, this.imageQuality);
         File file = this._getImageFile(rows + "-" + columns + "-" + region
                 + "-" + windowWidth + "-" + windowCenter + "-" + imageQuality,
-                studyUID, seriesUID, instanceUID, suffix, null);
-        _writeImageFile(image, file, imageQuality);
+                studyUID, seriesUID, instanceUID, suffix, contentType);
+        _writeImageFile(image, file, contentType, imageQuality);
         try {
             journal.record(file);
         } catch (IOException e) {
@@ -614,6 +615,8 @@ public class WADOCacheImpl implements WADOCache {
             ext = contentType.substring(pos + 1);
             if (ext.equalsIgnoreCase("jpeg"))
                 ext = "jpg";
+            else if (ext.equalsIgnoreCase("png"))
+                ext = "png";
             else if (ext.equalsIgnoreCase("svg+xml"))
                 ext = "svg";
             // do some other mapping here;
@@ -632,7 +635,7 @@ public class WADOCacheImpl implements WADOCache {
      * 
      * @throws IOException
      */
-    private void _writeImageFile(BufferedImage bi, File file,
+    private void _writeImageFile(BufferedImage bi, File file, String contentType,
             String imageQuality) throws IOException {
         if (!file.getParentFile().exists()) {
             if (!file.getParentFile().mkdirs()) {
@@ -641,11 +644,16 @@ public class WADOCacheImpl implements WADOCache {
             }
         }
         try {
-            log.debug("Create JPEG (" + imageQuality
-                    + " quality) for WADO request. file: " + file);
-            createJPEG(bi, file, Float.parseFloat(imageQuality) / 100);
+            if (WADOSupport.CONTENT_TYPE_PNG.equals(contentType)) {
+                log.debug("Create PNG for WADO request. file: " + file);
+                writePNG(bi, file);
+            } else {
+                log.debug("Create JPEG (" + imageQuality
+                        + " quality) for WADO request. file: " + file);
+                    createJPEG(bi, file, Float.parseFloat(imageQuality) / 100);
+            }
         } catch (Throwable x) {
-            log.error("Can not create JPEG for WADO request. file:" + file);
+            log.error("Can not create Image file for WADO request. file:" + file);
             if (file.exists()) {
                 file.delete();
                 log.error("Cache File removed:" + file);
@@ -660,19 +668,20 @@ public class WADOCacheImpl implements WADOCache {
         }
     }
 
-    protected void createJPEG(BufferedImage bi, File file, float quality) throws IOException {
+    protected void createJPEG(BufferedImage bi, File file, float quality)
+            throws IOException {
         writeJPEGwithIIO(bi, new FileOutputStream(file), quality);
     }
-
+    
     public void writeJPEG(BufferedImage bi, OutputStream out, float quality) throws IOException {
         writeJPEGwithIIO(bi,out, quality);
     }
-
+    
     protected void writeJPEGwithIIO(BufferedImage bi, OutputStream out, float quality) throws IOException {
         ImageOutputStream ios = ImageIO.createImageOutputStream(out);
-        ImageWriter writer = getImageWriterWriter(imageWriterClass);
+        ImageWriter writer = getImageWriterWriter("JPEG", imageWriterClass);
         try {
-            writer.setOutput(out);
+            writer.setOutput(ios);
             ImageWriteParam iwparam = writer.getDefaultWriteParam();
             iwparam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
             String[] compressionTypes = iwparam.getCompressionTypes();
@@ -692,17 +701,42 @@ public class WADOCacheImpl implements WADOCache {
             writer.dispose();
         }
     }
+    
 
-    private ImageWriter getImageWriterWriter(String imageWriterClass) {
-        for (Iterator writers = ImageIO.getImageWritersByFormatName("JPEG"); writers
+    public void writePNG(BufferedImage bi, Object fileOrStream) throws IOException {
+        ImageOutputStream iout = ImageIO.createImageOutputStream(fileOrStream);
+        ImageWriter writer = getImageWriterWriter("PNG", null);
+        try {
+            writer.setOutput(iout);
+            ImageWriteParam iwparam = writer.getDefaultWriteParam();
+            iwparam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+            String[] compressionTypes = iwparam.getCompressionTypes();
+            if (compressionTypes != null && compressionTypes.length > 0) {
+                for (int i = 0; i < compressionTypes.length; i++) {
+                    if (compressionTypes[i].compareToIgnoreCase("HUFFMAN_ONLY") == 0) {
+                        iwparam.setCompressionType(compressionTypes[i]);
+                        break;
+                    }
+                }
+            }
+            writer.write(null, new IIOImage(bi, null, null), iwparam);
+        } finally {
+            iout.close();
+            writer.dispose();
+        }
+    }
+
+    private ImageWriter getImageWriterWriter(String formatName, String imageWriterClass) {
+        for (Iterator writers = ImageIO.getImageWritersByFormatName(formatName); writers
                 .hasNext();) {
             ImageWriter writer = (ImageWriter) writers.next();
-            if (writer.getClass().getName().equals(imageWriterClass)) {
+            if (imageWriterClass == null || writer.getClass().getName().equals(imageWriterClass)) {
                 return writer;
             }
         }
-        throw new ConfigurationException("No such ImageWriter - "
-                + imageWriterClass);
+        if (imageWriterClass != null)
+            throw new ConfigurationException("No such ImageWriter - " + imageWriterClass);
+        throw new ConfigurationException("No ImageWriter found for " + formatName);
     }
 
 
