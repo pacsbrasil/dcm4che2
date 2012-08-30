@@ -167,6 +167,8 @@ public class RejectionNoteScuService extends AbstractScheduledScuService impleme
                 refSeriesSeqItem = refSeriesSeq.getDicomObject(--j);
                 srcAet = refSeriesSeqItem.getString(
                         refSeriesSeqItem.resolveTag(PrivateTag.CallingAET, PrivateTag.CreatorID));
+                refSeriesSeqItem.remove(
+                        refSeriesSeqItem.resolveTag(PrivateTag.CallingAET, PrivateTag.CreatorID));
                 if (ignoreAets.contains(srcAet)) {
                     log.info("Series "+refSeriesSeqItem.getString(Tag.SeriesInstanceUID)+
                             " removed from RejectionNote! Source AET "+srcAet+
