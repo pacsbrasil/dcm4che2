@@ -1047,8 +1047,7 @@ public class TrashListPage extends Panel {
                 }
             };
             item.add(details);
-            details.add(new DicomObjectPanel("dicomobject", patModel
-                    .getDataset(), false));
+            details.add(new DicomObjectPanel("dicomobject", patModel, false));
             item.add(new StudyListView("studies", patModel.getStudies(), item));
         }
     }
@@ -1139,8 +1138,7 @@ public class TrashListPage extends Panel {
                 }
             };
             item.add(details);
-            details.add(new DicomObjectPanel("dicomobject", studyModel
-                    .getDataset(), false));
+            details.add(new DicomObjectPanel("dicomobject", studyModel, false));
             item.add(new SeriesListView("series", studyModel.getSeries(),
                     patientListItem));
         }
@@ -1232,8 +1230,7 @@ public class TrashListPage extends Panel {
                 }
             };
             item.add(details);
-            details.add(new DicomObjectPanel("dicomobject", seriesModel
-                    .getDataset(), false));
+            details.add(new DicomObjectPanel("dicomobject", seriesModel, false));
             item.add(new InstanceListView("instances", seriesModel
                     .getInstances(), patientListItem));
         }
@@ -1311,8 +1308,7 @@ public class TrashListPage extends Panel {
 
             };
             item.add(details);
-            details.add(new DicomObjectPanel("dicomobject", instModel
-                    .getDataset(), false));
+            details.add(new DicomObjectPanel("dicomobject", instModel, false));
         }
     }
 
