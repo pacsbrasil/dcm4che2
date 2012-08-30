@@ -206,7 +206,7 @@ public class ConfigBackupService extends ServiceMBeanSupport {
     		attrList = (List) attributesToStore.get(key);
         	String[] attrNames = getAttributeNames(name, attrList);
         	AttributeList attributes = server.getAttributes(name, attrNames);
-        	apm.store(name.getKeyPropertyListString(), attributes);
+        	apm.store(name.getDomain()+"_"+name.getKeyPropertyListString(), attributes);
     	}
     }
 
@@ -225,7 +225,7 @@ public class ConfigBackupService extends ServiceMBeanSupport {
     	for ( Iterator iter = attributesToStore.keySet().iterator() ; iter.hasNext() ; ) {
     		key = (String) iter.next();
     		name = getObjectName(key);
-    		attributes = apm.load(name.getKeyPropertyListString());
+    		attributes = apm.load(name.getDomain()+"_"+name.getKeyPropertyListString());
     		server.setAttributes(name, attributes);
     	}
     }
