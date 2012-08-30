@@ -235,10 +235,25 @@ public class SimpleEditDicomObjectPanel extends Panel {
     }
 
     public DicomObject getDicomObject() {
-    	for (int i = 0; i < tagPaths.length; i++)
-    		if (dcmObj.get(tagPaths[i]) == null)
-    			dcmObj.putNull(tagPaths[i], DicomElementModel.getVRof(dcmObj, tagPaths[i]));
+        int[] tagPath;
+    	for (int i = 0; i < tagPaths.length; i++) {
+    	    tagPath = tagPaths[i];
+    	    if ((tagPath.length | 0x01) == 1) {//normal tagPath?
+    		putNullIfMissing(tagPath);
+    	    } else {//handle compound (DA TM)
+    	        int[] ia = new int[tagPath.length-1];
+    	        System.arraycopy(tagPath, 0, ia, 0, ia.length);
+                putNullIfMissing(ia);//Date
+                ia[ia.length-1] = tagPath[ia.length];
+                putNullIfMissing(ia);//Time
+    	    }
+    	}
         return dcmObj;
+    }
+
+    private void putNullIfMissing(int[] tagPath) {
+        if (dcmObj.get(tagPath) == null)
+        	dcmObj.putNull(tagPath, DicomElementModel.getVRof(dcmObj, tagPath));
     }
 
     protected void onSubmit() {}
