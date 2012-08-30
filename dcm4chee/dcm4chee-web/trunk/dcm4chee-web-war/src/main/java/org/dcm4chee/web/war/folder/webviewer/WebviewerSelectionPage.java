@@ -38,8 +38,12 @@
 
 package org.dcm4chee.web.war.folder.webviewer;
 
+import org.apache.wicket.Component;
 import org.apache.wicket.PageMap;
 import org.apache.wicket.ResourceReference;
+import org.apache.wicket.ajax.AjaxEventBehavior;
+import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.WebPage;
@@ -62,7 +66,7 @@ public class WebviewerSelectionPage extends WebPage {
     
     private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
     
-    public WebviewerSelectionPage(AbstractDicomModel model, WebviewerLinkProvider[] providers) {
+    public WebviewerSelectionPage(AbstractDicomModel model, WebviewerLinkProvider[] providers, final ModalWindow modalWindow) {
         super();        
         if (WebviewerSelectionPage.BaseCSS != null)
             add(CSSPackageResource.getHeaderContribution(WebviewerSelectionPage.BaseCSS));
@@ -79,6 +83,15 @@ public class WebviewerSelectionPage extends WebPage {
                 ExternalLink link = new ExternalLink("link", url, providers[i].getName())
                     .setPopupSettings(new PopupSettings(PageMap.forName(providers[i].getName()), 
                         PopupSettings.RESIZABLE|PopupSettings.SCROLLBARS));
+                if (modalWindow != null) {
+                    link.add(new AjaxEventBehavior("onclick") {
+                        @Override
+                        protected void onEvent(AjaxRequestTarget target)
+                        {
+                            modalWindow.close(target);
+                        }
+                    });
+                }
                 mc.add(link);
                 rv.add(mc);
             }

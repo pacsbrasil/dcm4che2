@@ -121,7 +121,7 @@ public class Webviewer  {
     
                 @Override
                 public void onClick() {
-                    setResponsePage(new WebviewerSelectionPage(model, providers));
+                    setResponsePage(new WebviewerSelectionPage(model, providers, null));
                 }
             };
             link.setPopupSettings(new PopupSettings(PageMap.forName("webviewPage"), 
@@ -142,7 +142,7 @@ public class Webviewer  {
                           
                         @Override
                         public Page createPage() {
-                            return new WebviewerSelectionPage(model, providers);
+                            return new WebviewerSelectionPage(model, providers, modalWindow);
                         }
                     });
                     modalWindow.setTitle("");
