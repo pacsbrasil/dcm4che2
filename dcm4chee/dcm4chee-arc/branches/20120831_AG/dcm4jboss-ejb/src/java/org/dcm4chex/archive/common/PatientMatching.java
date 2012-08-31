@@ -397,7 +397,7 @@ public class PatientMatching implements Serializable{
             }
         }
         if (!appendNameSuffix)
-            regex.append(".*");
+            regex.append("?.*");
         return Pattern.compile(regex.toString());
     }
 

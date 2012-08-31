@@ -604,6 +604,27 @@ public class PatientMatchingTest extends TestCase {
 				pm.matches(existingPatientName, null, null, incomingPatientPatterns.iterator(),
 						null, null));
 	}
+
+	public void test_compilePNPattern_shouldMatch_whenExistingNameHasNoTrailingCarets() {
+		String familyName = "Smith";
+		String givenName = "John";
+		String middleName = null;
+		String prefix = null;
+		String suffix = null;
+
+		String existingPatientName = "Smith^John";
+
+		String s = "pid,issuer,ignore(\" |-|\\.|,|'|JR|SR\"),familyname,givenname(1)";
+		PatientMatching pm = new PatientMatching(s);
+
+		List<Pattern> incomingPatientPatterns = pm.compilePNPatterns(
+				familyName, givenName, middleName, prefix, suffix);
+
+		assertTrue("Matching pattern to " + existingPatientName + " not found in " +
+				patternsListToString(incomingPatientPatterns), 
+				pm.matches(existingPatientName, null, null, incomingPatientPatterns.iterator(),
+						null, null));
+	}
 	
 	public void test_matcher_shouldMatch_whenIncomingHasDateThatMatchesExisting() {
 		String familyName = "Smith";
