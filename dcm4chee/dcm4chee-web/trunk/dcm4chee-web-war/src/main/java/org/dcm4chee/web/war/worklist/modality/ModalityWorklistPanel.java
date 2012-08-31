@@ -219,7 +219,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         listPanel = new WebMarkupContainer("listPanel");
         add(listPanel);
         listPanel.setOutputMarkupId(true);
-        listPanel.add(new MWLItemListView("mwlitems", viewport.getMWLItemModels(), this));
+        listPanel.add(getMWLItemListView());
         
         confirm = new ConfirmationWindow<MWLItemModel>("confirm") {
 
@@ -239,7 +239,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         add(confirm);
 
     }
-    
+
     protected ViewPort initViewPort() {
         return ((AuthenticatedWebSession) getSession()).getMwViewPort();
     }
@@ -715,6 +715,10 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         return status;
     }
 
+    protected MWLItemListView getMWLItemListView() {
+        return new MWLItemListView("mwlitems", viewport.getMWLItemModels(), this);
+    }
+    
     //MwlActionProvider (details and edit)
     public void addMwlActions(final ListItem<MWLItemModel> item, WebMarkupContainer valueContainer, final MWLItemListView mwlListView) {
 

@@ -49,6 +49,7 @@ import javax.management.InstanceNotFoundException;
 import javax.management.MBeanException;
 import javax.management.ReflectionException;
 
+import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
 import org.apache.wicket.Page;
 import org.apache.wicket.ResourceReference;
@@ -355,7 +356,12 @@ public class Mpps2MwlLinkPage extends ModalWindow {
         protected WebMarkupContainer addExtendedStudySearch(final Form<?> form) {
             return null;
         }
-
+        
+        @Override
+        protected MWLItemListView getMWLItemListView() {
+            return new LinkMWLItemListView("mwlitems", getViewPort().getMWLItemModels(), this);
+        }
+        
         @Override
         public void addMwlActions(final ListItem<MWLItemModel> item, WebMarkupContainer valueContainer, final MWLItemListView mwlListView) {
             final MWLItemModel mwlItemModel = item.getModelObject();
@@ -471,6 +477,44 @@ public class Mpps2MwlLinkPage extends ModalWindow {
         }
     }
 
+    public class LinkMWLItemListView extends MWLItemListView {
+
+        private static final long serialVersionUID = 1L;
+        
+        private MwlActionProvider mwlActionProvider;
+        private WebMarkupContainer mwlitem;
+        
+        public LinkMWLItemListView(String id, List<MWLItemModel> list) {
+            super(id, list);
+        }
+
+        public LinkMWLItemListView(String id, List<MWLItemModel> list, MwlActionProvider mwlActionProvider) {
+            this(id, list);
+            this.mwlActionProvider = mwlActionProvider;
+        }
+        @Override
+        protected void populateItem(final ListItem<MWLItemModel> item) {
+
+            item.add(this.mwlitem = new WebMarkupContainer("mwlitem"));
+            this.mwlitem.add(new AttributeModifier("class", true, new Model<String>(getOddEvenClass(item))));     
+
+            TooltipBehaviour tooltip = new TooltipBehaviour("mw.content.data.");
+
+            this.mwlitem.add(new Label("patientName").add(tooltip))
+            .add(new Label("patientIDAndIssuer").add(tooltip))
+            .add(new DateTimeLabel("birthDate").setWithoutTime(true).add(tooltip))
+            .add(new Label("SPSDescription").add(tooltip))
+            .add(new Label("SPSModality").add(tooltip))
+            .add(new DateTimeLabel("startDate").add(tooltip))
+            .add(new Label("accessionNumber").add(tooltip))
+            .add(new Label("stationAET").add(tooltip))
+            .add(new Label("stationName").add(tooltip));
+            
+            if (mwlActionProvider != null)
+                mwlActionProvider.addMwlActions(item, mwlitem, LinkMWLItemListView.this);
+        }
+    }
+    
     @SuppressWarnings("unused") //used in a PropertyModel
     private class PpsInfoModel implements Serializable{
         private static final long serialVersionUID = 1L;

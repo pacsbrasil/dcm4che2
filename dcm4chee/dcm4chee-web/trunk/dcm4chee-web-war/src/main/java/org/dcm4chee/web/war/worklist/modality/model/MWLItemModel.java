@@ -106,6 +106,21 @@ public class MWLItemModel extends AbstractEditableDicomModel implements Serializ
     public String getPatientName() {
         return patAttrs.getString(Tag.PatientName);
     }
+    public String getPatientID() {
+        return patAttrs.getString(Tag.PatientID);
+    }
+    public String getIssuerOfPatientID() {
+        return patAttrs.getString(Tag.IssuerOfPatientID);
+    }
+    public String getPatientIDAndIssuer() {
+        String id = getPatientID();
+        String issuer = getIssuerOfPatientID();
+        if (issuer == null) {
+            return id == null ? "" : id; 
+        }
+        return id == null ? " / "+issuer : id+" / "+issuer;
+        
+    }
     public Date getBirthDate() {
         return patAttrs.getDate(Tag.PatientBirthDate);
     }

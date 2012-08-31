@@ -70,7 +70,7 @@ public class MWLItemListView extends PropertyListView<MWLItemModel> {
         this(id, list);
         this.mwlActionProvider = mwlActionProvider;
     }
-    private String getOddEvenClass(ListItem<?> item) {
+    protected String getOddEvenClass(ListItem<?> item) {
         return item.getIndex() % 2 == 0 ? "even" : "odd";
     }
     
