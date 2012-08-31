@@ -171,7 +171,7 @@
         <name>configName</name>
         <type>java.lang.String</type>
       </parameter>
-      <return-type>void</return-type>
+      <return-type>java.lang.String</return-type>
    </operation>
 
    <operation impact="ACTION">
@@ -183,7 +183,7 @@
         <name>configName</name>
         <type>java.lang.String</type>
       </parameter>
-      <return-type>void</return-type>
+      <return-type>java.lang.String</return-type>
    </operation>
 
 </mbean>

@@ -194,20 +194,32 @@ public class ConfigBackupService extends ServiceMBeanSupport {
      * @param configName
      * @throws Exception
      */
-    public void save(String configName) throws Exception {
+    public String save(String configName) throws Exception {
     	XMLAttributePersistenceManager apm = new XMLAttributePersistenceManager();
     	apm.create(versionPrefix+configName, null);
     	String key;
     	ObjectName name;
     	List attrList;
+        StringBuilder sb = new StringBuilder("Save configuration ")
+        .append(configName).append(":\n");
+    	int count = 0;
     	for ( Iterator iter = attributesToStore.keySet().iterator() ; iter.hasNext() ; ) {
-    		key = (String) iter.next();
-    		name = getObjectName(key);
-    		attrList = (List) attributesToStore.get(key);
-        	String[] attrNames = getAttributeNames(name, attrList);
-        	AttributeList attributes = server.getAttributes(name, attrNames);
-        	apm.store(name.getDomain()+"_"+name.getKeyPropertyListString(), attributes);
+    	    key = (String) iter.next();
+    	    name = getObjectName(key);
+    	    try {
+        	attrList = (List) attributesToStore.get(key);
+            	String[] attrNames = getAttributeNames(name, attrList);
+            	AttributeList attributes = server.getAttributes(name, attrNames);
+            	apm.store(name.getDomain()+"_"+name.getKeyPropertyListString(), attributes);
+            	count++;
+    	    } catch (Exception x) {
+		log.debug("Failed to save configuration of "+name+" !", x);
+		sb.append("WARNING: Attributes of ").append(name).append(" couldn't be saved!\n");
+    	    }
     	}
+    	if (count > 0)
+    	    sb.append("Attributes of ").append(count).append(" services saved!");
+    	return sb.toString();
     }
 
     /**
@@ -216,18 +228,30 @@ public class ConfigBackupService extends ServiceMBeanSupport {
      * @param configName
      * @throws Exception
      */
-    public void load(String configName) throws Exception {
+    public String load(String configName) throws Exception {
     	XMLAttributePersistenceManager apm = new XMLAttributePersistenceManager();
     	apm.create(versionPrefix+configName, null);
     	String key;
     	ObjectName name;
     	AttributeList attributes;
+        StringBuilder sb = new StringBuilder("Load configuration ")
+        .append(configName).append(":\n");
+        int count = 0;
     	for ( Iterator iter = attributesToStore.keySet().iterator() ; iter.hasNext() ; ) {
-    		key = (String) iter.next();
-    		name = getObjectName(key);
-    		attributes = apm.load(name.getDomain()+"_"+name.getKeyPropertyListString());
-    		server.setAttributes(name, attributes);
+    	    key = (String) iter.next();
+    	    name = getObjectName(key);
+            try {
+                attributes = apm.load(name.getDomain()+"_"+name.getKeyPropertyListString());
+                server.setAttributes(name, attributes);
+                count++;
+            } catch (Exception x) {
+                log.debug("Failed to load configuration of "+name+" !", x);
+                sb.append("WARNING: Attributes of ").append(name).append(" couldn't be updated!\n");
+            }
     	}
+        if (count > 0)
+            sb.append("Attributes of ").append(count).append(" services loaded!");
+        return sb.toString();
     }
 
     /**
