@@ -712,14 +712,14 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             Dataset coercedElements;
             try {
                 coercedElements = updateDB(store, ds, fspk, filePath,
-                        fileLength, md5sum, newSeries, clearExternalRetrieveAET);
+                        fileLength, md5sum, 0, newSeries, clearExternalRetrieveAET);
             } catch (NonUniquePatientIDException e) {
                 service.coercePatientID(ds);
                 coerced.putLO(Tags.PatientID, ds.getString(Tags.PatientID));
                 coerced.putLO(Tags.IssuerOfPatientID,
                         ds.getString(Tags.IssuerOfPatientID));
                 coercedElements = updateDB(store, ds, fspk, filePath,
-                        fileLength, md5sum, newSeries, clearExternalRetrieveAET);
+                        fileLength, md5sum, 0, newSeries, clearExternalRetrieveAET);
             }
             if(newSeries) {
                seriesStored = initSeriesStored(ds, callingAET, retrieveAET);
@@ -1084,7 +1084,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     }
 
     protected Dataset updateDB(Storage storage, Dataset ds, long fspk,
-            String filePath, long fileLength, byte[] md5,
+            String filePath, long fileLength, byte[] md5, int fileStatus,
             boolean updateStudyAccessTime, boolean clearExternalRetrieveAET)
             throws DcmServiceException, NonUniquePatientIDException {
         int retry = 0;
@@ -1093,12 +1093,12 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 if (serializeDBUpdate) {
                     synchronized (storage) {
                         return storage.store(ds, fspk, filePath, fileLength,
-                                md5, updateStudyAccessTime, clearExternalRetrieveAET,
+                                md5, fileStatus, updateStudyAccessTime, clearExternalRetrieveAET,
                                 service.patientMatching());
                     }
                 } else {
                     return storage.store(ds, fspk, filePath, fileLength,
-                            md5, updateStudyAccessTime, clearExternalRetrieveAET,
+                            md5, fileStatus, updateStudyAccessTime, clearExternalRetrieveAET,
                             service.patientMatching());
                 }
             } catch (NonUniquePatientIDException e) {

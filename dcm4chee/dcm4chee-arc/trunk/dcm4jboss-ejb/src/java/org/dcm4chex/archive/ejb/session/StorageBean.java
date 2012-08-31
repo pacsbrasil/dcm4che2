@@ -71,6 +71,8 @@ import org.dcm4che.dict.Tags;
 import org.dcm4che.net.DcmServiceException;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.Availability;
+import org.dcm4chex.archive.common.FileStatus;
+import org.dcm4chex.archive.common.FileSystemStatus;
 import org.dcm4chex.archive.common.PatientMatching;
 import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.ejb.interfaces.FileLocal;
@@ -185,15 +187,16 @@ public abstract class StorageBean implements SessionBean {
      * @ejb.interface-method
      */
     public org.dcm4che.data.Dataset store(org.dcm4che.data.Dataset ds,
-            long fspk, java.lang.String fileid, long size, byte[] md5,
+            long fspk, java.lang.String fileid, long size, byte[] md5, int fileStatus,
             boolean updateStudyAccessTime, boolean clearExternalRetrieveAET, PatientMatching matching) throws DcmServiceException, NonUniquePatientIDException {
-    	return store(ds, fspk, fileid, size, md5, updateStudyAccessTime, clearExternalRetrieveAET, matching, true);
+    	return store(ds, fspk, fileid, size, md5, fileStatus, updateStudyAccessTime, 
+    	        clearExternalRetrieveAET, matching, true);
     }
     /**
      * @ejb.interface-method
      */
     public org.dcm4che.data.Dataset store(org.dcm4che.data.Dataset ds,
-            long fspk, java.lang.String fileid, long size, byte[] md5,
+            long fspk, java.lang.String fileid, long size, byte[] md5, int fileStatus,
             boolean updateStudyAccessTime, boolean clearExternalRetrieveAET, PatientMatching matching,
             boolean canRollback) throws DcmServiceException, NonUniquePatientIDException {
         FileMetaInfo fmi = ds.getFileMetaInfo();
@@ -218,8 +221,7 @@ public abstract class StorageBean implements SessionBean {
             }
             if (fspk != -1) {
                 FileSystemLocal fs = fileSystemHome.findByPrimaryKey(new Long(fspk));
-                fileHome.create(fileid, tsuid, size, md5, 0,
-                        instance, fs);
+                fileHome.create(fileid, tsuid, size, md5, fileStatus, instance, fs);
                 instance.setAvailability(Math.min(fs.getAvailability(), prevAvailability));
                 instance.addRetrieveAET(fs.getRetrieveAET());
                 if (updateStudyAccessTime) {
