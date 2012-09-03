@@ -109,14 +109,14 @@ public class StudyListFilter implements Serializable {
     }
 
     public boolean isFiltered() {
-    	return patientName != null
-    			|| patientID != null 
-    			|| issuerOfPatientID != null 
-    			|| accessionNumber != null 
-                || studyInstanceUID != null
-                || !modality.equals("*")
-                || !sourceAET.equals("*")
-                || seriesInstanceUID != null
+    	return !QueryUtil.isUniversalMatch(getPatientName())
+    		|| !QueryUtil.isUniversalMatch(getPatientID()) 
+    		|| !QueryUtil.isUniversalMatch(getIssuerOfPatientID()) 
+    		|| !QueryUtil.isUniversalMatch(getAccessionNumber()) 
+                || !QueryUtil.isUniversalMatch(getStudyInstanceUID())
+                || !QueryUtil.isUniversalMatch(getModality())
+                || !QueryUtil.isUniversalMatch(getSourceAET())
+                || !QueryUtil.isUniversalMatch(getSeriesInstanceUID())
                 || studyDateMin != null
                 || studyDateMax != null 
                 || birthDateMin != null
