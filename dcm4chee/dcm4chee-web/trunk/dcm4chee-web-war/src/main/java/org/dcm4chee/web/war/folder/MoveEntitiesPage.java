@@ -38,23 +38,29 @@
 
 package org.dcm4chee.web.war.folder;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.wicket.AttributeModifier;
+import org.apache.wicket.MarkupContainer;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxFallbackLink;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.html.CSSPackageResource;
+import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
+import org.apache.wicket.markup.repeater.RepeatingView;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
@@ -132,6 +138,7 @@ public class MoveEntitiesPage extends SecureSessionCheckPage {
     private SeriesModel seriesModel;
     private SimpleEditDicomObjectPanel newSeriesPanel;
     
+    Set<? extends AbstractDicomModel> srcModels = null;
     private AbstractDicomModel destinationModel;
     private HashSet<AbstractDicomModel> modifiedModels = new HashSet<AbstractDicomModel>();
     private HashSet<AbstractDicomModel> emptySourceParents = new HashSet<AbstractDicomModel>();
@@ -139,6 +146,9 @@ public class MoveEntitiesPage extends SecureSessionCheckPage {
     private String infoMsgId;
     private IModel<String> selectedInfoModel;
     
+    private MarkupContainer previewOriginContainer;
+    private MarkupContainer previewDestinationContainer;
+
     private ModalWindow window;
     
     StudyListLocal dao = (StudyListLocal) JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
@@ -155,10 +165,10 @@ public class MoveEntitiesPage extends SecureSessionCheckPage {
         this.window = window;
         this.selected = selectedEntities;
         allPatients = all;
-        this.add(infoPanel = new InfoPanel());
         infoMsgId = checkSelection(selected);
+        prepareInfo(srcModels, destinationModel);
+        this.add(infoPanel = new InfoPanel());
         if (infoMsgId == null) {
-            infoPanel.setSrcInfo(selected);
             StringResourceModel titleModel = null;
             if (selected.hasPatients()) {
                 titleModel = new StringResourceModel("move.pageTitle_toPatient",this, new Model(selected.getPatients().iterator().next()));
@@ -178,6 +188,8 @@ public class MoveEntitiesPage extends SecureSessionCheckPage {
     }
     
     public String checkSelection(SelectedEntities selected) {
+        seriesModel = null;
+        studyModel = null;
         if (selected.getPpss().size() > 0) {
             return MSGID_ERR_SELECTION_MOVE_PPS;
         }
@@ -201,6 +213,7 @@ public class MoveEntitiesPage extends SecureSessionCheckPage {
                     }
                     SeriesModel sm = selected.getSeries().iterator().next();
                     needNewStudy(combine(null, sm.getDataset(), sm.getPPS().getStudy().getDataset()), patModel);
+                    srcModels = selected.getSeries();
                 } else if (selected.hasInstances()) {
                     for ( InstanceModel m : selected.getInstances()) {
                         if (Availability.valueOf(m.getAvailability()) != Availability.ONLINE) {
@@ -211,6 +224,7 @@ public class MoveEntitiesPage extends SecureSessionCheckPage {
                     InstanceModel im = selected.getInstances().iterator().next();
                     needNewStudy(combine(im.getDataset(), im.getSeries().getDataset(),im.getSeries().getPPS().getStudy().getDataset()), patModel);
                     needNewSeries(im, this.studyModel);
+                    srcModels = selected.getInstances();
                 } else {
                     return MSGID_ERR_SELECTION_MOVE_NO_SOURCE;
                 }
@@ -222,6 +236,7 @@ public class MoveEntitiesPage extends SecureSessionCheckPage {
                         return MSGID_ERR_SELECTION_MOVE_SAME_PARENT;
                     }
                 }
+                srcModels = selected.getStudies();
             }
             destinationModel = patModel;
             return null;
@@ -241,6 +256,7 @@ public class MoveEntitiesPage extends SecureSessionCheckPage {
                     }
                     needNewSeries(selected.getInstances().iterator().next(), 
                             selected.getStudies().iterator().next());
+                    srcModels = selected.getInstances();
                 } else {
                     return MSGID_ERR_SELECTION_MOVE_NO_SOURCE;
                 }
@@ -254,8 +270,10 @@ public class MoveEntitiesPage extends SecureSessionCheckPage {
                         return MSGID_ERR_SELECTION_MOVE_SAME_PARENT;
                     }
                 }
+                srcModels = selected.getSeries();
             }
             destinationModel = selected.getStudies().iterator().next();
+            prepareInfo(srcModels, destinationModel);
             return null;
         }
         // instances -> series
@@ -276,7 +294,9 @@ public class MoveEntitiesPage extends SecureSessionCheckPage {
                     return MSGID_ERR_SELECTION_MOVE_SAME_PARENT;
                 }
             }
+            srcModels =selected.getInstances();
             destinationModel = selected.getSeries().iterator().next();
+            prepareInfo(srcModels, destinationModel);
             return null;
         }
         return MSGID_ERR_SELECTION_MOVE_NO_SELECTION;
@@ -462,6 +482,8 @@ public class MoveEntitiesPage extends SecureSessionCheckPage {
             dao.removeStudy(studyModel.getPk());
             studyModel.getPatient().getStudies().remove(studyModel);
         }
+        seriesModel = null;
+        studyModel = null;
     }
 
     private boolean prepareForMove() {
@@ -492,6 +514,161 @@ public class MoveEntitiesPage extends SecureSessionCheckPage {
         {Tag.BodyPartExamined},{Tag.Laterality}};
     }
 
+    public void prepareInfo(Set<? extends AbstractDicomModel> models, AbstractDicomModel destinationModel2) {
+        previewOriginContainer = new WebMarkupContainer("previewOrigin") {
+            private static final long serialVersionUID = 1L;
+            @Override
+            public boolean isVisible() {
+                return infoMsgId == null;
+            }
+        };
+        previewOriginContainer.add(new Label("previewHeader", models == null ? 
+                new Model<String>("") : new ResourceModel("move.preview.header.origin")));
+        RepeatingView rvSrc = new RepeatingView("repeater");
+        previewOriginContainer.add(rvSrc);
+        previewDestinationContainer = new WebMarkupContainer("previewDest") {
+            private static final long serialVersionUID = 1L;
+            @Override
+            public boolean isVisible() {
+                return infoMsgId == null;
+            }
+        };
+        previewDestinationContainer.add(new Label("previewHeader", models == null ? 
+                new Model<String>("") : new ResourceModel("move.preview.header.dest")));
+        RepeatingView rvDest = new RepeatingView("repeater");
+        previewDestinationContainer.add(rvDest);
+        if (models != null) {
+            for (AbstractDicomModel m : models) {
+                modifiedModels.add(m.getParent());
+            }
+            selectedInfoModel = getSelectedInfoModel(models);
+            HashMap<String, List<AbstractDicomModel>> modelMap = getModelsByParents(models);
+            WebMarkupContainer mcDest = new WebMarkupContainer(rvDest.newChildId());
+            mcDest.add(new Label("descriptionLabel", getModelInfoString(destinationModel)).setEscapeModelStrings(false));
+            RepeatingView rvDestAction = new RepeatingView("actions");
+            mcDest.add(rvDestAction);
+            rvDest.add(mcDest);
+            if (studyModel != null) {
+                addAction(rvDestAction, getModelInfoString(studyModel), ImageManager.IMAGE_COMMON_ADD);
+            }
+            if (seriesModel != null) {
+                addAction(rvDestAction, getModelInfoString(seriesModel), ImageManager.IMAGE_COMMON_ADD);
+            }
+            WebMarkupContainer mc;
+            for (Entry<String, List<AbstractDicomModel>> e : modelMap.entrySet()) {
+                mc = new WebMarkupContainer(rvSrc.newChildId());
+                mc.add(new Label("descriptionLabel", e.getKey()).setEscapeModelStrings(false));
+                RepeatingView rvAction = new RepeatingView("actions");
+                mc.add(rvAction);
+                rvSrc.add(mc);
+                for (AbstractDicomModel m : e.getValue()) {
+                    String info = getModelInfoString(m);
+                    addAction(rvAction, info, ImageManager.IMAGE_COMMON_REMOVE);
+                    addAction(rvDestAction, info, ImageManager.IMAGE_COMMON_ADD);
+                }
+            }
+        }
+
+    }
+
+    private void addAction(RepeatingView rvAction, String info, ResourceReference image) {
+        WebMarkupContainer mcAction;
+        mcAction = new WebMarkupContainer(rvAction.newChildId());
+        mcAction.add(new Image("actionImg", image).add(new ImageSizeBehaviour("vertical-align: middle;")));
+        mcAction.add(new Label("actionLabel", info).setEscapeModelStrings(false));
+        rvAction.add(mcAction);
+    }
+
+    private String getModelInfoString(AbstractDicomModel m) {
+        int level = m.levelOfModel();
+        switch (level) {
+        case AbstractDicomModel.INSTANCE_LEVEL:
+            String inst = getString("move.instance");
+            InstanceModel im = (InstanceModel) m;
+            if (im.getDescription() != null) {
+                return inst+im.getDescription();
+            }
+            return inst+im.getSOPInstanceUID();
+        case AbstractDicomModel.SERIES_LEVEL:
+            String series = getString("move.series");
+            SeriesModel sm = (SeriesModel) m;
+            if (sm.getDescription() != null) {
+                return series+sm.getDescription();
+            }
+            return series+sm.getSeriesInstanceUID();
+        case AbstractDicomModel.STUDY_LEVEL:
+            String study = getString("move.study");
+            StudyModel stm = (StudyModel) m;
+            if (stm.getAccessionNumber() != null && stm.getAccessionNumber().trim().length() > 0) {
+                return study+stm.getAccessionNumber();
+            } else if (stm.getDescription() != null && stm.getDescription().trim().length() > 0) {
+                return study+stm.getDescription();
+            }
+            return study+stm.getStudyInstanceUID();
+        case AbstractDicomModel.PATIENT_LEVEL:
+            PatientModel pm = (PatientModel) m;
+            return getString("move.patient")+pm.getName()+" ("+pm.getIdAndIssuer()+")";
+        }
+        return "?";
+    }
+    
+    private HashMap<String,List<AbstractDicomModel>> getModelsByParents(Set<? extends AbstractDicomModel> selected) {
+        String key;
+        HashMap<String, List<AbstractDicomModel>> modelMap = new HashMap<String,List<AbstractDicomModel>>();
+        List<AbstractDicomModel> models;
+        for (AbstractDicomModel m : selected) {
+            key = getParentInfoString(m);
+            models = modelMap.get(key);
+            if (models == null) {
+                models = new ArrayList<AbstractDicomModel>();
+                modelMap.put(key, models);
+            }
+            models.add(m);
+        }
+        return modelMap;
+    }
+
+    private String getParentInfoString(AbstractDicomModel m) {
+        String key = null;
+        for ( AbstractDicomModel parent = m.getParent(); parent != null; parent = parent.getParent()){
+            if (parent.levelOfModel() != AbstractDicomModel.PPS_LEVEL)
+                key = getModelInfoString(parent) + (key == null ? "" : "<br/>"+key);
+        }
+        return key;
+    }
+    
+    private MultiResourceModel getSelectedInfoModel(Set<? extends AbstractDicomModel> selected) {
+        MultiResourceModel model = new MultiResourceModel();
+        int level = selected.iterator().next().levelOfModel();
+        String levelString = AbstractDicomModel.LEVEL_STRINGS[level];
+        String resourceKey = "move.selectedToMove_"+levelString.toLowerCase()+".text";
+        String key;
+        HashMap<String, IModel<AbstractDicomModel>> modelMap = new HashMap<String,IModel<AbstractDicomModel>>();
+        HashMap<String, Integer[]> paramMap = new HashMap<String,Integer[]>();
+        AbstractDicomModel mStudy;
+        Integer[] params;
+        for (AbstractDicomModel m : selected) {
+            mStudy = m;
+            while (mStudy.levelOfModel() > AbstractDicomModel.STUDY_LEVEL) {
+                mStudy = mStudy.getParent();
+            }
+            key = String.valueOf(mStudy.getParent().getPk()) + 
+                (level == AbstractDicomModel.STUDY_LEVEL ? "" : "_"+mStudy.getPk());
+            params = paramMap.get(key);
+            if (params == null) {
+                params = new Integer[]{1};
+                paramMap.put(key, params);
+                modelMap.put(key, new Model<AbstractDicomModel>(m));
+            } else {
+                params[0]++;
+            }
+        }
+        for (String k : paramMap.keySet()) {
+            model.addModel(new StringResourceModel(resourceKey, MoveEntitiesPage.this, modelMap.get(k), paramMap.get(k), "selected?"));
+        }
+        return model;
+    }
+
     private class InfoPanel extends Panel {
 
         private static final long serialVersionUID = 1L;
@@ -520,6 +697,9 @@ public class MoveEntitiesPage extends SecureSessionCheckPage {
             add( infoLabel = new Label("info", infoModel));
             infoLabel.setOutputMarkupId(true);
             infoLabel.setEscapeModelStrings(false);
+            
+            add(previewOriginContainer.setOutputMarkupId(true));
+            add(previewDestinationContainer.setOutputMarkupId(true));
             
             moveBtn = new IndicatingAjaxFallbackLink<Object>("moveBtn") {
                 
@@ -653,56 +833,6 @@ public class MoveEntitiesPage extends SecureSessionCheckPage {
             }
         }
         
-        public void setSrcInfo(SelectedEntities selected) {
-            if (selected.hasInstances()) {
-                addModifiedModels(selected.getInstances());
-                selectedInfoModel = getSelectedInfoModel(selected.getInstances());
-            } else if (selected.hasSeries()) {
-                addModifiedModels(selected.getSeries());
-                selectedInfoModel = getSelectedInfoModel(selected.getSeries());
-            } else if (selected.hasStudies()) {
-                addModifiedModels(selected.getStudies());
-                selectedInfoModel = getSelectedInfoModel(selected.getStudies());
-            }
-        }
-        
-        private void addModifiedModels(Set<? extends AbstractDicomModel> models) {
-            for (AbstractDicomModel m : models) {
-                modifiedModels.add(m.getParent());
-            }
-        }
-
-        private MultiResourceModel getSelectedInfoModel(Set<? extends AbstractDicomModel> selected) {
-            MultiResourceModel model = new MultiResourceModel();
-            int level = selected.iterator().next().levelOfModel();
-            String levelString = AbstractDicomModel.LEVEL_STRINGS[level];
-            String resourceKey = "move.selectedToMove_"+levelString.toLowerCase()+".text";
-            String key;
-            HashMap<String, IModel<AbstractDicomModel>> modelMap = new HashMap<String,IModel<AbstractDicomModel>>();
-            HashMap<String, Integer[]> paramMap = new HashMap<String,Integer[]>();
-            AbstractDicomModel mStudy;
-            Integer[] params;
-            for (AbstractDicomModel m : selected) {
-                mStudy = m;
-                while (mStudy.levelOfModel() > AbstractDicomModel.STUDY_LEVEL) {
-                    mStudy = mStudy.getParent();
-                }
-                key = String.valueOf(mStudy.getParent().getPk()) + 
-                    (level == AbstractDicomModel.STUDY_LEVEL ? "" : "_"+mStudy.getPk());
-                params = paramMap.get(key);
-                if (params == null) {
-                    params = new Integer[]{1};
-                    paramMap.put(key, params);
-                    modelMap.put(key, new Model<AbstractDicomModel>(m));
-                } else {
-                    params[0]++;
-                }
-            }
-            for (String k : paramMap.keySet()) {
-                model.addModel(new StringResourceModel(resourceKey, MoveEntitiesPage.this, modelMap.get(k), paramMap.get(k), "selected?"));
-            }
-            return model;
-        }
 
         private void addToTarget(AjaxRequestTarget target) {
             target.addComponent(infoLabel);
@@ -711,6 +841,8 @@ public class MoveEntitiesPage extends SecureSessionCheckPage {
             target.addComponent(cancelBtn);
             target.addComponent(yesBtn);
             target.addComponent(noBtn);
+            target.addComponent(previewOriginContainer);
+            target.addComponent(previewDestinationContainer);
         }
 
         private void updateModels() {
