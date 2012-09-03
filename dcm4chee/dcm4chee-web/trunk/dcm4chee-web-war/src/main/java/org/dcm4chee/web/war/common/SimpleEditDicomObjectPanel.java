@@ -99,6 +99,7 @@ public class SimpleEditDicomObjectPanel extends Panel {
     private Map<Integer,Map<String,Object>> presetChoices;
     private Map<Integer,String[]> choices = new HashMap<Integer, String[]>();
     private List<Integer> notEditable;
+    private List<Integer> requiredTags;
     
     private final BaseForm form;
     private TooltipBehaviour tooltipBehaviour = new TooltipBehaviour("dicom.");
@@ -109,6 +110,7 @@ public class SimpleEditDicomObjectPanel extends Panel {
     public SimpleEditDicomObjectPanel(String id, final ModalWindow window, AbstractDicomModel dcmModel, 
             String title, final int[][] tagPaths, final boolean close, IModel<Boolean> useFnGn) {
         super(id);
+        this.setOutputMarkupId(true);
         this.useFnGn = useFnGn;
         if (SimpleEditDicomObjectPanel.BaseCSS != null)
             add(CSSPackageResource.getHeaderContribution(SimpleEditDicomObjectPanel.BaseCSS));
@@ -218,6 +220,14 @@ public class SimpleEditDicomObjectPanel extends Panel {
         this.notEditable = notEditable;
     }
 
+    public List<Integer> getRequiredTags() {
+        return requiredTags;
+    }
+
+    public void setRequiredTags(List<Integer> tags) {
+        this.requiredTags = tags;
+    }
+    
     private void addHdrLabels(WebMarkupContainer table) {
         table.add(new Label("nameHdr", new ResourceModel("dicom.nameHdr")).add(tooltipBehaviour));
         table.add(new Label("valueHdr", new ResourceModel("dicom.valueHdr")).add(tooltipBehaviour));
@@ -311,6 +321,9 @@ public class SimpleEditDicomObjectPanel extends Panel {
             }
             if (notEditable != null && notEditable.contains(tagPath[tagPath.length-1])) {
                 c.setEnabled(false);
+            }
+            if (requiredTags != null && requiredTags.contains(tagPath[tagPath.length-1])) {
+                c.setRequired(true);
             }
             add(c);
             if (c instanceof FormComponentPanel) {

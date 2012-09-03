@@ -369,6 +369,7 @@ public class MoveEntitiesPage extends SecureSessionCheckPage {
                     setResponsePage(MoveEntitiesPage.this);
                 }
             };
+            newStudyPanel.setRequiredTags(Arrays.asList(Tag.StudyInstanceUID));
             presetStudy(presetDS, newStudyPanel);
     }
 
@@ -433,6 +434,7 @@ public class MoveEntitiesPage extends SecureSessionCheckPage {
                     setResponsePage(MoveEntitiesPage.this);
                 }
             };
+            newSeriesPanel.setRequiredTags(Arrays.asList(Tag.SeriesInstanceUID));
             DicomObject srcAttrs = combine(srcInstance.getDataset(), srcInstance.getSeries().getDataset(), 
                     srcInstance.getSeries().getPPS().getStudy().getDataset());
             presetSeries(srcAttrs, study.getDataset(), srcInstance.getSeries().getSourceAET(),newSeriesPanel);
