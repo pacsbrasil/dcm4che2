@@ -160,6 +160,7 @@ public class WebCfgService extends ServiceMBeanSupport implements
 
     private boolean autoUpdateModalities;
     private boolean autoUpdateStationNames;
+    private boolean autoUpdateDicomRoles;
     private Integer autoUpdateTimerId;
 
     private List<Integer> pagesizes = new ArrayList<Integer>();
@@ -536,6 +537,15 @@ public class WebCfgService extends ServiceMBeanSupport implements
 
     public void setAutoUpdateStationNames(boolean b) {
         autoUpdateStationNames = b;
+        updateAutoUpdateTimer();
+    }
+
+    public boolean isAutoUpdateDicomRoles() {
+        return autoUpdateDicomRoles;
+    }
+
+    public void setAutoUpdateDicomRoles(boolean b) {
+        autoUpdateDicomRoles = b;
         updateAutoUpdateTimer();
     }
 
@@ -1022,6 +1032,16 @@ public class WebCfgService extends ServiceMBeanSupport implements
         }
     }
 
+    public void updateDicomRoles() {
+    	try {
+    		log.info("Update Dicom Roles");
+    		((StudyPermissionsLocal) JNDIUtils.lookup(StudyPermissionsLocal.JNDI_NAME))
+    			.updateDicomRoles();   		
+        } catch (Exception x) {
+            log.error("Update Dicom Roles failed", x);
+        }
+    }
+
     private Date nextMidnight() {
         Calendar cal = Calendar.getInstance();
         cal.set(Calendar.HOUR_OF_DAY, 23);
@@ -1039,6 +1059,8 @@ public class WebCfgService extends ServiceMBeanSupport implements
                         updateModalities();
                     if (isAutoUpdateStationNames())
                         updateStationNames();
+                    if (isAutoUpdateDicomRoles())
+                        updateDicomRoles();
                 }
             }).start();
         } else if (id.equals(this.trashCleanerTimerId))
@@ -1058,7 +1080,7 @@ public class WebCfgService extends ServiceMBeanSupport implements
         try {
             if (server == null)
                 return;
-            if (autoUpdateModalities || autoUpdateStationNames) {
+            if (autoUpdateModalities || autoUpdateStationNames || autoUpdateDicomRoles) {
                 if (autoUpdateTimerId == null) {
                     log.info("Start AutoUpdate Scheduler with period of 24h at 23:59:59");
                     autoUpdateTimerId = (Integer) server
@@ -1082,11 +1104,6 @@ public class WebCfgService extends ServiceMBeanSupport implements
         } catch (Exception x) {
             log.error("Start AutoUpdate Scheduler failed!", x);
         }
-    }
-
-    public void updateDicomRoles() {
-        ((StudyPermissionsLocal) JNDIUtils
-                .lookup(StudyPermissionsLocal.JNDI_NAME)).updateDicomRoles();
     }
 
     private void configureTrashCleaner() {

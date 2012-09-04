@@ -451,6 +451,17 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isAutoUpdateDicomRoles"
+      setMethod="setAutoUpdateDicomRoles">
+      <description><![CDATA[Enable auto update of Dicom Roles from study permission table at midnight(23:59:59).
+      ]]></description>
+      <name>AutoUpdateDicomRoles</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getAutoExpandLevelChoices"
       setMethod="setAutoExpandLevelChoices">
       <description><![CDATA[List of Choices for 'Expand to' drop down box.<br/>

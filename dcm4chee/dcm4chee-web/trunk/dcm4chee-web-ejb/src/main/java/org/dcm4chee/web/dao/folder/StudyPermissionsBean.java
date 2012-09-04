@@ -79,7 +79,6 @@ public class StudyPermissionsBean implements StudyPermissionsLocal {
 
     private File dicomRolesFile;
 
-    @SuppressWarnings("unused")
     @PostConstruct
     private void config() {
         if (this.dicomRolesFile == null) {

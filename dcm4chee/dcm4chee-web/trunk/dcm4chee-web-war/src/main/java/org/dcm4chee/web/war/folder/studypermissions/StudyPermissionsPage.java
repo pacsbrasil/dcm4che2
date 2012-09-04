@@ -112,8 +112,6 @@ public class StudyPermissionsPage extends SecureSessionCheckPage {
 
         setOutputMarkupId(true);
 
-        ((StudyPermissionsLocal) JNDIUtils.lookup(StudyPermissionsLocal.JNDI_NAME)).updateDicomRoles();
-
         try {
             List<?> servers = MBeanServerFactory.findMBeanServer(null);
             MBeanServerConnection server = null;
