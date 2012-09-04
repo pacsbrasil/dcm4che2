@@ -355,7 +355,7 @@ public class WebCfgDelegate extends BaseCfgDelegate {
     public Date[] getPresetStudyDateRange() {
         try {
             String s = (String) server.getAttribute(serviceObjectName, "PresetStudyDate");
-            if (s == null) {
+            if (s == null || "NONE".equals(s)) {
                 return null;
             }
             int offset = Integer.parseInt(s);
