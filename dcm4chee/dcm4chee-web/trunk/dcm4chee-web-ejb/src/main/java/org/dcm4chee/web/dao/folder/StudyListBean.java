@@ -185,17 +185,21 @@ public class StudyListBean implements StudyListLocal {
 
     private static void appendFromClause(StringBuilder ql, StudyListFilter filter) {
         ql.append(" FROM Patient p");
-        if (!filter.isPatientQuery() ) 
+        if (!filter.isPatientQuery() ) {
             ql.append(" INNER JOIN p.studies s");
+            if ( filter.isExtendedQuery() && !QueryUtil.isUniversalMatch(filter.getStudyInstanceUID())) {
+                ql.append(", IN(s.series) series");
+            }
+        }
     }
-
+    
     private void appendWhereClause(StringBuilder ql, StudyListFilter filter, List<String> roles) {
         ql.append(" WHERE p.mergedWith IS NULL");
         if ( filter.isPatientQuery()) {
             appendPatFilter(ql, "p", filter);
         } else {
             if ( filter.isExtendedQuery() && !QueryUtil.isUniversalMatch(filter.getStudyInstanceUID())) {
-                ql.append(" AND s.studyInstanceUID = :studyInstanceUID");
+                ql.append(" AND s.studyInstanceUID = :studyInstanceUID OR EXISTS (SELECT rq FROM RequestAttributes rq WHERE rq.series = series AND rq.studyInstanceUID = :studyInstanceUID)");
             } else if (filter.isExtendedQuery() && !QueryUtil.isUniversalMatch(filter.getSeriesInstanceUID())) {
                 QueryUtil.appendSeriesInstanceUIDFilter(ql, filter.getSeriesInstanceUID());
             } else {
