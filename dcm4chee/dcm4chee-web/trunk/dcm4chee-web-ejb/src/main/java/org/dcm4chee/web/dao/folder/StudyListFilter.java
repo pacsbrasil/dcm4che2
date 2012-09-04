@@ -109,7 +109,11 @@ public class StudyListFilter implements Serializable {
     }
 
     public boolean isFiltered() {
-    	return !QueryUtil.isUniversalMatch(getPatientName())
+    	return  isPatientQuery()
+    	        || isPpsWithoutMwl()
+    	        || isWithoutPps()
+    	        || isUnconnectedMPPS()
+    	        || !QueryUtil.isUniversalMatch(getPatientName())
     		|| !QueryUtil.isUniversalMatch(getPatientID()) 
     		|| !QueryUtil.isUniversalMatch(getIssuerOfPatientID()) 
     		|| !QueryUtil.isUniversalMatch(getAccessionNumber()) 
