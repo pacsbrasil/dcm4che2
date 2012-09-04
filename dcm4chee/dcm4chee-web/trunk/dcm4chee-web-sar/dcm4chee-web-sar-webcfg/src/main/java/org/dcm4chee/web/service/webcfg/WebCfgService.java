@@ -1077,7 +1077,7 @@ public class WebCfgService extends ServiceMBeanSupport implements
     }
 
     private void updateAutoUpdateTimer() {
-        try {
+		try {
             if (server == null)
                 return;
             if (autoUpdateModalities || autoUpdateStationNames || autoUpdateDicomRoles) {
