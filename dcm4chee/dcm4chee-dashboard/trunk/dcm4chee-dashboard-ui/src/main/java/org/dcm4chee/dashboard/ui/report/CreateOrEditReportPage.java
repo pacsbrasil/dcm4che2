@@ -215,6 +215,7 @@ public class CreateOrEditReportPage extends SecureSessionCheckPage {
 	                                                            + (message == null ? "" : "<br />" + message))).setEscapeModelStrings(false);
                         resultMessage                       	
                         	.add(new AttributeModifier("class", true, new Model<String>(message == null ? "result-message" : "error-message")));
+                        target.addComponent(CreateOrEditReportForm.this);
                         target.addComponent(resultMessage);
                     }
                 }
@@ -222,6 +223,8 @@ public class CreateOrEditReportPage extends SecureSessionCheckPage {
                 @Override
                 protected void onError(AjaxRequestTarget target, Form<?> form) {
                     target.addComponent(form);
+                    resultMessage.setDefaultModel(new Model<String>(""));
+                    target.addComponent(resultMessage);
                 }
             });
 
