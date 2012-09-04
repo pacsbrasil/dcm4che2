@@ -76,6 +76,8 @@ public interface StudyListLocal {
     List<String> findStudyPermissionActions(String studyInstanceUID, List<String> roles);
     
     List<Series> findSeriesOfStudy(long pk);
+    List<Series> findSeriesOfStudyWithoutPPS(long pk);
+    
     int countSeriesOfStudy(long pk);
 
     List<Series> findSeriesOfMpps(String uid);

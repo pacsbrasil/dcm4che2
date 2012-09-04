@@ -259,13 +259,21 @@ public class PPSModel extends AbstractEditableDicomModel implements Serializable
     }
 
     public void expand() {
+        StudyListLocal dao = (StudyListLocal) JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
         String uid = getUid();
+        seriess.clear();
         if (uid != null) {
-            seriess.clear();
-            StudyListLocal dao = (StudyListLocal)
-                    JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
             for (Series ser : dao.findSeriesOfMpps(uid)) 
                 seriess.add(new SeriesModel(ser, this, ser.getCreatedTime()));
+        } else {
+            List<Series> series = dao.findSeriesOfStudyWithoutPPS(getParent().getPk());
+            SeriesModel seriesModel;
+            for (Series s : series) {
+                seriesModel = new SeriesModel(s, null, s.getCreatedTime());
+                if (seriesModel.containedBySamePPS(series1)) {
+                    seriess.add(seriesModel);
+                }
+            }
         }
     }
 

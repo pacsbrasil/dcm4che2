@@ -328,6 +328,13 @@ public class StudyListBean implements StudyListLocal {
                 .setParameter(1, pk)
                 .getResultList());
     }
+    
+    @SuppressWarnings("unchecked")
+    public List<Series> findSeriesOfStudyWithoutPPS(long pk) {
+        return sortSeries(em.createQuery("FROM Series s WHERE s.study.pk=?1 AND s.modalityPerformedProcedureStep IS NULL ORDER BY s.seriesNumber, s.pk")
+                .setParameter(1, pk)
+                .getResultList());
+    }
     public int countSeriesOfStudy(long pk) {
         return ((Number) em.createQuery("SELECT COUNT(s) FROM Series s WHERE s.study.pk=?1")
                 .setParameter(1, pk)

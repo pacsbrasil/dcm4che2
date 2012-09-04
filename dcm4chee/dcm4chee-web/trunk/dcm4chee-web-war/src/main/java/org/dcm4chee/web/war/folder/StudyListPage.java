@@ -1923,15 +1923,7 @@ public class StudyListPage extends Panel {
                    }
                 }
             };
-            cell.add(new ExpandCollapseLink("expand", ppsModel, ppsListItem) {
-
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                public boolean isVisible() {
-                    return ppsModel.getUid() != null && ppsModel.getSeries1() != null;
-                }
-            });
+            cell.add(new ExpandCollapseLink("expand", ppsModel, ppsListItem));
             row.add(cell);
             
             TooltipBehaviour tooltip = new TooltipBehaviour("folder.content.data.pps.");
