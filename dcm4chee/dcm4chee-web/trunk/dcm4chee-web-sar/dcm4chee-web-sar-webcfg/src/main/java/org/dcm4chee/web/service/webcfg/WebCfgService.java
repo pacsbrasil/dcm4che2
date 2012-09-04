@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -196,6 +197,8 @@ public class WebCfgService extends ServiceMBeanSupport implements
     
     private String zipEntryTemplate;
     private int bufferSize;
+    
+    private String presetStudyDateOffset;
 
     public WebCfgService() throws MalformedObjectNameException {
         timerServiceName = new ObjectName(DEFAULT_TIMER_SERVICE);
@@ -660,6 +663,20 @@ public class WebCfgService extends ServiceMBeanSupport implements
         }
         if (autoExpandLevelChoices.isEmpty())
             autoExpandLevelChoices.add(-1);
+    }
+   
+    public String getPresetStudyDate() {
+        return this.presetStudyDateOffset == null ? NONE : presetStudyDateOffset;
+    }
+    
+    public void setPresetStudyDate(String s) {
+        if (NONE.equals(s)) {
+            presetStudyDateOffset = null;
+        } else {
+            if (new Integer(s) < 0)
+                throw new IllegalArgumentException("Offset must not be negative!");
+            presetStudyDateOffset = s;
+        }
     }
 
     private String listAsString(List<String> list, String sep) {

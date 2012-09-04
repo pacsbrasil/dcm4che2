@@ -572,6 +572,19 @@
    </attribute>
 
    <attribute access="read-write"
+      getMethod="getPresetStudyDate"
+      setMethod="setPresetStudyDate">
+      <description><![CDATA[Preset Value of Study Date searchfields in folder.<br/>
+      	Format: NONE or n days before current date<br/>
+      	If n is given the date range is currentDay-n to currentDay, 0 means only current day.
+      ]]></description>
+      <name>PresetStudyDate</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getMpps2mwlPresetPatientname"
       setMethod="setMpps2mwlPresetPatientname">
       <description><![CDATA[Preset Value of Patient name searchfiled in MPPS to MWL Link dialog.<br/>

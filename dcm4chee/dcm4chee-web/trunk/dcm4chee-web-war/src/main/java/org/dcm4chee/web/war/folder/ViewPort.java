@@ -39,12 +39,14 @@
 package org.dcm4chee.web.war.folder;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.wicket.RequestCycle;
 import org.dcm4chee.web.common.secure.SecureSession;
 import org.dcm4chee.web.dao.folder.StudyListFilter;
 import org.dcm4chee.web.war.common.AbstractViewPort;
+import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
 import org.dcm4chee.web.war.folder.model.PatientModel;
 
 /**
@@ -61,8 +63,14 @@ public class ViewPort extends AbstractViewPort {
 	private boolean resetOnSearch;
     
     public StudyListFilter getFilter() {
-        if (filter == null) 
-            filter = new StudyListFilter(((SecureSession) RequestCycle.get().getSession()).getUsername()); 
+        if (filter == null) {
+            filter = new StudyListFilter(((SecureSession) RequestCycle.get().getSession()).getUsername());
+            Date[] studyDatePreset = WebCfgDelegate.getInstance().getPresetStudyDateRange();
+            if (studyDatePreset != null) {
+                filter.setStudyDateMin(studyDatePreset[0]);
+                filter.setStudyDateMax(studyDatePreset[1]);
+            }
+        }
         return filter;
     }
 
