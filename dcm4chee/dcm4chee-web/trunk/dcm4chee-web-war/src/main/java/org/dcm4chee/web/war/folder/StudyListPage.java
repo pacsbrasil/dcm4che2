@@ -633,7 +633,8 @@ public class StudyListPage extends Panel {
             }
             
         };
-        final DropDownChoice<Integer> queryType = new DropDownChoice<Integer>("queryType", searchOptionSelected, Arrays.asList(0,1,2,3,4,5));
+        final List<Integer> queryTypeChoices = getQueryTypeChoices();
+        final DropDownChoice<Integer> queryType = new DropDownChoice<Integer>("queryType", searchOptionSelected, queryTypeChoices);
         form.addComponent(queryType);
         form.addInternalLabel("queryType");
         queryType.setChoiceRenderer(new IChoiceRenderer<Integer>() {
@@ -658,7 +659,7 @@ public class StudyListPage extends Panel {
                 }
 
                 public String getIdValue(Integer object, int index) {
-                    return String.valueOf(index);
+                    return String.valueOf(queryTypeChoices.get(index));
                 }
                 
             });
@@ -671,6 +672,23 @@ public class StudyListPage extends Panel {
                     BaseForm.addFormComponentsToAjaxRequestTarget(target, form);
                 }
         });
+    }
+
+    private List<Integer> getQueryTypeChoices() {
+        final List<Integer> queryTypeChoices = new ArrayList<Integer>(5);
+        StudyPermissionHelper sph = StudyPermissionHelper.get();
+        if (sph.hasWebRole("FolderActions"))
+            queryTypeChoices.add(SEARCH_PATIENT);
+        queryTypeChoices.add(SEARCH_STUDY);
+        if (sph.hasWebRole("Mpps2MwlLink")) {
+            queryTypeChoices.add(SEARCH_PPS_WITHOUT_MWL);
+            queryTypeChoices.add(SEARCH_WITHOUT_PPS);
+        }
+        if (sph.hasWebRole("Mpps2MwlLinkEasy"))
+            queryTypeChoices.add(SEARCH_WITHOUT_MWL);
+        if (sph.hasWebRole("FolderActions"))
+            queryTypeChoices.add(SEARCH_UNCONNECTED_MPPS);
+        return queryTypeChoices;
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })

@@ -87,6 +87,7 @@ public class StudyPermissionHelper implements Serializable {
     private String newline = System.getProperty("line.separator");
 
     private List<String> dicomRoles = new ArrayList<String>();
+    private List<String> webRoles = new ArrayList<String>();
     private StudyPermissionRight studyPermissionRight = StudyPermissionRight.NONE;
     
     private boolean manageStudyPermissions;
@@ -249,6 +250,10 @@ public class StudyPermissionHelper implements Serializable {
     public boolean isHidePPSAllowed() {
         return hidePPSAllowed;
     }
+    
+    public boolean hasWebRole(String role) {
+        return webRoles.contains(role);
+    }
 
     public void setSSO(boolean sSO) {
         SSO = sSO;
@@ -305,6 +310,7 @@ public class StudyPermissionHelper implements Serializable {
         Iterator<org.apache.wicket.security.hive.authorization.Principal> i = webSubject.getPrincipals().iterator();
         while (i.hasNext()) {
             String rolename = i.next().getName();
+            webRoles.add(rolename);
             if (rolename.equals(studyPermissionsAll)) {
                 studyPermissionRight = StudyPermissionRight.ALL;
             } else if (studyPermissionRight == StudyPermissionRight.NONE && rolename.equals(studyPermissionsOwn)) {
