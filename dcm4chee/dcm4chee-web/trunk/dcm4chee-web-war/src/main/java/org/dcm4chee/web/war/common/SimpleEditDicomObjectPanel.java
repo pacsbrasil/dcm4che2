@@ -325,7 +325,7 @@ public class SimpleEditDicomObjectPanel extends Panel {
             if (requiredTags != null && requiredTags.contains(tagPath[tagPath.length-1])) {
                 c.setRequired(true);
             }
-            add(c);
+            add(c.setOutputMarkupId(true));
             if (c instanceof FormComponentPanel) {
                 setMarkupTagReferenceId("date_element"); 
             }

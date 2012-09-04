@@ -209,6 +209,10 @@ public class PatientModel extends AbstractEditableDicomModel implements Serializ
             throw new WicketExceptionWithMsgKey("PatientAlreadyExists");
         }
         dataset = pat.getAttributes();
+        if (getPk() == -1) {
+            setPk(pat.getPk());
+            createdTime = pat.getCreatedTime();
+        }
     }
     
     @Override

@@ -1016,6 +1016,7 @@ public class StudyListPage extends Panel {
                 if (!StudyPermissionHelper.get().isEditNewPatientID()) {
                     newPatientPanel.setNotEditable(Arrays.asList(Tag.PatientID, Tag.IssuerOfPatientID));
                 }
+                newPatientPanel.setRequiredTags(Arrays.asList(Tag.PatientName, Tag.PatientID));
                 modalWindow.setContent(newPatientPanel);
                 modalWindow.setTitle("");
                 modalWindow.show(target);
