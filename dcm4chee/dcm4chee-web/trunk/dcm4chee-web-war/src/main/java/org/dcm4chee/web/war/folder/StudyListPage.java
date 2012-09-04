@@ -643,7 +643,7 @@ public class StudyListPage extends Panel {
                 public Object getDisplayValue(Integer object) {
                         switch(object) {
                         case SEARCH_PATIENT:
-                            return form.getString("folder.searchOptions.patient");
+                            return form.getString("folder.searchOptions.patientOption");
                         case SEARCH_STUDY:
                             return form.getString("folder.searchOptions.study");
                         case SEARCH_PPS_WITHOUT_MWL:
