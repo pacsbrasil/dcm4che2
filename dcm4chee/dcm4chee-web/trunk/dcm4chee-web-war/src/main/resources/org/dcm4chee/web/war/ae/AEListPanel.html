@@ -16,12 +16,31 @@
 			<div wicket:id="echoPanel" >echoPanel</div>
 			<div wicket:id="confirm" >confirmDelete</div>
 			<div style="clear: both; margin-top: 5px;" />
+			<form wicket:id="form">
+	            <span wicket:id="type.filter.label" style="margin-left: 40px;" />
+	            <select wicket:id="type-selection" />
+	            <span wicket:id="titleSearch.label" style="margin-left: 40px;" />
+	            <input wicket:id="titleSearch" id="titleSearch" type="text" title="Title" />
+				<div class="viewport">
+					<div wicket:id="pagesize.label" style="float: left" />
+			      	<select wicket:id="pagesize" style="margin-left: 5px;"/>
+					<a wicket:id="prev" style="text-decoration: none;">
+						<img wicket:id="prevImg" />
+					</a>
+					<span wicket:id="viewport" />
+					<a wicket:id="next" style="text-decoration: none;">
+						<img wicket:id="nextImg" />
+					</a>
+				</div>
+				<button wicket:id="searchBtn">
+					<img wicket:id="searchImg" alt="Search" />
+					<span wicket:id="searchText" />
+				</button>
+			</form>
 			<button wicket:id="newAET">
 				<img wicket:id="newAETImg" alt="New AET" />
 				<span wicket:id="newAETText" />
 			</button>
-            <span wicket:id="type.filter.label" style="margin-left: 40px;" />
-            <select wicket:id="type-selection" />
 			<table rules="groups" class="content-table" style="clear: both; margin-top: 9px;">
 				<thead>
 				  <tr>

@@ -38,6 +38,7 @@
 
 package org.dcm4chee.web.war.ae;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
@@ -54,13 +55,18 @@ import org.apache.wicket.ajax.IAjaxCallDecorator;
 import org.apache.wicket.ajax.IAjaxIndicatorAware;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
+import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow.WindowClosedCallback;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.DropDownChoice;
+import org.apache.wicket.markup.html.form.Form;
+import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.image.Image;
+import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.OddEvenListItem;
 import org.apache.wicket.markup.html.list.PropertyListView;
@@ -82,6 +88,7 @@ import org.dcm4chee.usr.model.AETGroup;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.license.ae.AELicenseProviderManager;
 import org.dcm4chee.web.common.license.ae.spi.AELicenseProviderSPI;
+import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.common.markup.ModalWindowLink;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
 import org.dcm4chee.web.common.secure.SecurityBehavior;
@@ -108,7 +115,28 @@ public class AEListPanel extends Panel {
     private List<String> mppsEmulatedAETs;
     
     private final IModel<String> typeSelectionModel = new Model<String>();
+    
+    private IModel<Integer> pagesize = new IModel<Integer>() {
+        private static final long serialVersionUID = 1L;
 
+        private int pagesize = WebCfgDelegate.getInstance().getDefaultFolderPagesize();
+
+        public Integer getObject() {
+            return pagesize;
+        }
+        
+        public void setObject(Integer object) {
+            if (object != null)
+                pagesize = object;
+        }
+        
+        public void detach() {}
+    };
+    private Model<String> title = new Model<String>();
+    
+    private int offset = 0, total = -1;
+
+    @SuppressWarnings("unchecked")
     public AEListPanel(String id) {
         super(id);
         
@@ -173,6 +201,8 @@ public class AEListPanel extends Panel {
         add(newAET);
         newAET.add(new SecurityBehavior(getModuleName() + ":newAETLink"));
 
+        BaseForm form = new BaseForm("form");
+        add(form);
         String aeManagementDefault = WebCfgDelegate.getInstance().getAEManagementDefault();
         
         Set<String> aetTypeSet = new LinkedHashSet<String>();
@@ -187,23 +217,121 @@ public class AEListPanel extends Panel {
         if (!"ANY".equals(aeManagementDefault) && !"NONE".equals(aeManagementDefault))
             typeSelectionModel.setObject(aeManagementDefault);
         
-        add(new Label("type.filter.label", new StringResourceModel("ae.type.filter.label", AEListPanel.this, null, new Object[]{1} ) ) );
-        DropDownChoice<String> typeSelection = null;
-        add((typeSelection = new DropDownChoice<String>("type-selection",
-                typeSelectionModel,
-                aetTypes
-        ))
-        .setNullValid(true)
+        form.addComponent(new Label("type.filter.label", new StringResourceModel("ae.type.filter.label", AEListPanel.this, null, new Object[]{1} ) ) );
+        DropDownChoice<String> typeSelection = form.addDropDownChoice("type-selection", 
+                typeSelectionModel, new Model<ArrayList<String>>(new ArrayList<String>(aetTypes)), null, false);
+        typeSelection.setNullValid(true)
         .add(new AjaxFormComponentUpdatingBehavior("onchange") {
             
             private static final long serialVersionUID = 1L;
 
             @Override
             protected void onUpdate(AjaxRequestTarget target) {
+                offset = 0;
                 updateAETList();
                 target.addComponent(AEListPanel.this);
             }
-        }));
+        });
+        
+        form.addComponent(new Label("titleSearch.label", new ResourceModel("ae.search.title.label")));
+        form.addComponent(new TextField<String>("titleSearch", title));
+        
+        AjaxButton searchBtn = new AjaxButton("searchBtn") {
+            
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            protected void onSubmit(AjaxRequestTarget target, Form<?> arg1) {
+                offset = 0;
+                updateAETList();
+                target.addComponent(AEListPanel.this);
+            }
+        };
+        searchBtn.add(new Image("searchImg",ImageManager.IMAGE_COMMON_SEARCH)
+        .add(new ImageSizeBehaviour("vertical-align: middle;")));
+        searchBtn.add(new Label("searchText", new ResourceModel("ae.searchBtn.text"))
+        .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle;")))
+        .setOutputMarkupId(true));
+        form.addComponent(searchBtn);
+        form.setDefaultButton(searchBtn);
+       
+        form.addComponent(new Label("pagesize.label", new ResourceModel("ae.pagesize.label")));
+        form.addDropDownChoice("pagesize", pagesize, 
+                new Model<ArrayList<Integer>>(new ArrayList<Integer>(WebCfgDelegate.getInstance().getPagesizeList())),
+                null, false)
+                .setNullValid(false)
+                .add(new AjaxFormComponentUpdatingBehavior("onchange") {
+                    
+                    private static final long serialVersionUID = 1L;
+
+                    @Override
+                    protected void onUpdate(AjaxRequestTarget target) {
+                        offset = 0;
+                        updateAETList();
+                        target.addComponent(AEListPanel.this);
+                    }
+                });
+        form.addComponent(new Link<Object>("prev") {
+
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public void onClick() {
+                offset = Math.max(0, offset - pagesize.getObject());
+                updateAETList();               
+            }
+            
+            @Override
+            public boolean isVisible() {
+                return offset > 0;
+            }
+        }
+        .add(new Image("prevImg", ImageManager.IMAGE_COMMON_BACK)
+        .add(new ImageSizeBehaviour("vertical-align: middle;"))
+        .add(new TooltipBehaviour("ae.search.")))
+        );
+
+        form.addComponent(new Link<Object>("next") {
+
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public void onClick() {
+                offset = offset + pagesize.getObject();
+                updateAETList();
+            }
+
+            @Override
+            public boolean isVisible() {
+                return total > -1 && total - offset > pagesize.getObject();
+            }
+        }
+        .add(new Image("nextImg", ImageManager.IMAGE_COMMON_FORWARD)
+        .add(new ImageSizeBehaviour("vertical-align: middle;"))
+        .add(new TooltipBehaviour("ae.search.")))
+        );
+
+        //viewport label: use StringResourceModel with key substitution to select 
+        //property key according notSearched and getTotal.
+        Model<?> keySelectModel = new Model<Serializable>() {
+
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public Serializable getObject() {
+                return total < 0 ? "ae.search.notSearched" : 
+                    total == 0 ? "ae.search.noMatch" : "ae.search.found";
+            }
+        };
+        form.addComponent(new Label("viewport", new StringResourceModel("${}", AEListPanel.this, keySelectModel,new Object[]{"dummy"}){
+
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            protected Object[] getParameters() {
+                return new Object[]{offset+1, Math.min(offset + pagesize.getObject(), total), total};
+            }
+        }).setEscapeModelStrings(false));
         
         add( new Label("titleHdr.label", new ResourceModel("ae.titleHdr.label")));
         add( new Label("typeHdr.label", new ResourceModel("ae.typeHdr.label")));
@@ -320,21 +448,17 @@ public class AEListPanel extends Panel {
                 );
             }
         }));
-        if (!"NONE".equals(aeManagementDefault)) 
+        if (!"NONE".equals(aeManagementDefault)) {
             updateAETList();
+        }
     }
 
-    @Override
-    public void onBeforeRender() {
-        super.onBeforeRender();
-        updateAETList();
-    }
-    
     protected void updateAETList() {
         list.setModel(new ListModel<AE>());
         AEHomeLocal aeHome = (AEHomeLocal) JNDIUtils.lookup(AEHomeLocal.JNDI_NAME);
         List<AE> updatedList = new ArrayList<AE>();
-        updatedList.addAll(aeHome.findAll(typeSelectionModel.getObject()));
+        total = aeHome.count(typeSelectionModel.getObject(), title.getObject());
+        updatedList.addAll(aeHome.find(typeSelectionModel.getObject(), title.getObject(), offset, pagesize.getObject()));
         list.setModelObject(updatedList);
         mppsEmulatedAETs = AEDelegate.getInstance().getEmulatedAETs();
     }
