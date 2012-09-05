@@ -273,7 +273,6 @@ public class MoveEntitiesPage extends SecureSessionCheckPage {
                 srcModels = selected.getSeries();
             }
             destinationModel = selected.getStudies().iterator().next();
-            prepareInfo(srcModels, destinationModel);
             return null;
         }
         // instances -> series
@@ -296,7 +295,6 @@ public class MoveEntitiesPage extends SecureSessionCheckPage {
             }
             srcModels =selected.getInstances();
             destinationModel = selected.getSeries().iterator().next();
-            prepareInfo(srcModels, destinationModel);
             return null;
         }
         return MSGID_ERR_SELECTION_MOVE_NO_SELECTION;
@@ -494,6 +492,10 @@ public class MoveEntitiesPage extends SecureSessionCheckPage {
         } else if ((missingState & MISSING_SERIES) != 0) {
             this.addOrReplace(this.newSeriesPanel);
         } else {
+            if (studyModel != null || seriesModel != null) {
+                prepareInfo(srcModels, destinationModel);
+                this.infoPanel.addOrReplace(previewOriginContainer, previewDestinationContainer);
+            }
             this.addOrReplace(this.infoPanel);
             return false;
         }
@@ -527,7 +529,7 @@ public class MoveEntitiesPage extends SecureSessionCheckPage {
         previewOriginContainer.add(new Label("previewHeader", models == null ? 
                 new Model<String>("") : new ResourceModel("move.preview.header.origin")));
         RepeatingView rvSrc = new RepeatingView("repeater");
-        previewOriginContainer.add(rvSrc);
+        previewOriginContainer.add(rvSrc).setOutputMarkupId(true);
         previewDestinationContainer = new WebMarkupContainer("previewDest") {
             private static final long serialVersionUID = 1L;
             @Override
@@ -538,7 +540,7 @@ public class MoveEntitiesPage extends SecureSessionCheckPage {
         previewDestinationContainer.add(new Label("previewHeader", models == null ? 
                 new Model<String>("") : new ResourceModel("move.preview.header.dest")));
         RepeatingView rvDest = new RepeatingView("repeater");
-        previewDestinationContainer.add(rvDest);
+        previewDestinationContainer.add(rvDest).setOutputMarkupId(true);
         if (models != null) {
             for (AbstractDicomModel m : models) {
                 modifiedModels.add(m.getParent());
@@ -700,8 +702,8 @@ public class MoveEntitiesPage extends SecureSessionCheckPage {
             infoLabel.setOutputMarkupId(true);
             infoLabel.setEscapeModelStrings(false);
             
-            add(previewOriginContainer.setOutputMarkupId(true));
-            add(previewDestinationContainer.setOutputMarkupId(true));
+            add(previewOriginContainer);
+            add(previewDestinationContainer);
             
             moveBtn = new IndicatingAjaxFallbackLink<Object>("moveBtn") {
                 
