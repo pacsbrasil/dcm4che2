@@ -55,6 +55,8 @@ public interface AEHomeLocal {
 
     List<String> listAETitles();
 
+    int count(String filter, String title);
+    List<AE> find(String filter, String title, int index, int max);
     List<AE> findAll(String filter);
     
     AE findByTitle(String title);

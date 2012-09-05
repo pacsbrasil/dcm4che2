@@ -47,6 +47,7 @@ import javax.persistence.Query;
 import org.dcm4chee.archive.entity.AE;
 import org.dcm4chee.usr.dao.UserAccess;
 import org.dcm4chee.usr.util.JNDIUtils;
+import org.dcm4chee.web.dao.util.QueryUtil;
 import org.jboss.annotation.ejb.LocalBinding;
 
 /**
@@ -67,15 +68,45 @@ public class AEHomeBean implements AEHomeLocal {
                 .getResultList();
     }
 
+    public int count(String filter, String title) {
+        Query query = getQuery(filter, title, true);
+        return ((Number) query.getSingleResult()).intValue();
+    }
     @SuppressWarnings("unchecked")
-    public List<AE> findAll(String filter) {
-        String filterQuery = filter == null ? "" : 
-            "<NONE>".equals(filter) ? "WHERE aeGroup IS NULL" : "WHERE aeGroup = :filter";
-        Query query = em.createQuery("FROM AE ae " + filterQuery + " ORDER BY ae.title, ae.aeGroup");
-        if (filter != null && !"<NONE>".equals(filter)) query.setParameter("filter", filter);
+    public List<AE> find(String filter, String title, int index, int max) {
+        Query query = getQuery(filter, title, false);
+        query.setMaxResults(max).setFirstResult(index);
         List<AE> l = query.getResultList();
         em.clear();
         return l;
+    }
+    @SuppressWarnings("unchecked")
+    public List<AE> findAll(String filter) {
+        Query query = getQuery(filter, null, false);
+        List<AE> l = query.getResultList();
+        em.clear();
+        return l;
+    }
+
+    private Query getQuery(String filter, String title, boolean count) {
+        StringBuilder sb = new StringBuilder(count ? "SELECT count(ae)" : "SELECT ae");
+        sb.append(" FROM AE ae");
+        if (filter != null) {
+            sb.append("<NONE>".equals(filter) ? " WHERE aeGroup IS NULL" : " WHERE aeGroup = :filter");
+        }
+        title = QueryUtil.checkAutoWildcard(title, true);
+        if (title != null) {
+            sb.append(filter == null ? " WHERE" : " AND")
+            .append(" UPPER(title) LIKE :title");
+        }
+        if (!count)
+            sb.append(" ORDER BY ae.title, ae.aeGroup");
+        Query query = em.createQuery(sb.toString());
+        if (filter != null && !"<NONE>".equals(filter)) 
+            query.setParameter("filter", filter);
+        if (title != null) 
+            query.setParameter("title", QueryUtil.toLike(title.toUpperCase()));
+        return query;
     }
 
     public AE findByTitle(String title) {
