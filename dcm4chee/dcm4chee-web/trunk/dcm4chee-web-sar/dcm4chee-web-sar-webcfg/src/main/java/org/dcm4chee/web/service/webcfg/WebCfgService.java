@@ -718,7 +718,7 @@ public class WebCfgService extends ServiceMBeanSupport implements
             StringTokenizer st = new StringTokenizer(s, sep);
             String tk;
             while (st.hasMoreTokens()) {
-                tk = st.nextToken();
+                tk = st.nextToken().trim();
                 list.add(EMPTY.equals(tk) ? null : tk);
             }
         }
