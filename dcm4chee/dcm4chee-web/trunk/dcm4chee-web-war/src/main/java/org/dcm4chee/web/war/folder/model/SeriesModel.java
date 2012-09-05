@@ -244,6 +244,7 @@ public class SeriesModel extends AbstractEditableDicomModel implements Serializa
         availability = s.getAvailability().name();
         numberOfSeriesRelatedInstances = s.getNumberOfSeriesRelatedInstances();
         sourceAET = s.getSourceAET();
+        createdTime = s.getCreatedTime();
     }
     
     @Override

@@ -288,6 +288,7 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
             modalities = s.getModalitiesInStudy();
             numberOfStudyRelatedSeries = s.getNumberOfStudyRelatedSeries();
             numberOfStudyRelatedInstances = s.getNumberOfStudyRelatedInstances();
+            createdTime = s.getCreatedTime();
         }
     }
     
