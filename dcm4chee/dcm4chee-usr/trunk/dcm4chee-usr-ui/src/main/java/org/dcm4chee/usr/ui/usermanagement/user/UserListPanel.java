@@ -96,7 +96,6 @@ public class UserListPanel extends Panel {
     List<String> roleTypes;
 
     private String userId;
-    private boolean superuser;
 
     private ModalWindow addUserWindow;
     private ModalWindow changePasswordWindow;
@@ -171,12 +170,6 @@ public class UserListPanel extends Panel {
         RepeatingView roleRows = new RepeatingView("role-rows");
         addOrReplace(roleRows);
 
-        for (Role role : allRoles.getObject())
-        	if (role.isSuperuser())
-        			for (UserRoleAssignment ura : userAccess.getUser(userId).getRoles())
-        				if (ura.getRole().equals(role.getRolename()))
-        						this.superuser = true;
-
         for (int i = 0; i < this.allUsers.getObject().size(); i++) {
             
             final User user = this.allUsers.getObject().get(i);
@@ -185,13 +178,8 @@ public class UserListPanel extends Panel {
             roleRows.add((rowParent = new WebMarkupContainer(roleRows.newChildId())).add(new Label("userID", user.getUserID())));
 
             StringBuffer assignedRoles = new StringBuffer();
-            for (UserRoleAssignment ura : user.getRoles()) {
+            for (UserRoleAssignment ura : user.getRoles()) 
                 assignedRoles.append(ura.getRole()).append(", ");
-                if (!superuser)
-                	for (Role role : allRoles.getObject())
-                		if (role.isSuperuser() && role.getRolename().equals(ura.getRole()))
-                			rowParent.setVisible(false);
-            }
            	
             ChangePasswordLink changePasswordLink
                 = new ChangePasswordLink("change-password-link", this.changePasswordWindow, this.userId, user);
