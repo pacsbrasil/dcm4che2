@@ -95,7 +95,7 @@ public class PatientModel extends AbstractEditableDicomModel implements Serializ
                 mppsList = null;
             }
         } catch (Throwable ignore) {
-            log.info("Cannot get ModalityPerformedProcedureSteps of patient{}! Ignored", toString());
+            log.warn("Cannot get ModalityPerformedProcedureSteps of patient{}! Ignored", toString());
         }
     }
 
