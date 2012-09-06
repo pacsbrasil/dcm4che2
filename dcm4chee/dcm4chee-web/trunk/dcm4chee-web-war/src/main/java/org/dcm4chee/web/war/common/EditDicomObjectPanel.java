@@ -73,6 +73,7 @@ import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
+import org.dcm4chee.web.common.exceptions.WicketExceptionWithMsgKey;
 import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.common.markup.modal.MessageWindow;
 import org.dcm4chee.web.common.secure.SecurityBehavior;
@@ -151,6 +152,9 @@ public class EditDicomObjectPanel extends Panel {
                 try {
                     EditDicomObjectPanel.this.onSubmit();
                     window.close(target);
+                } catch (WicketExceptionWithMsgKey e) {
+                    resultMessage.setObject(this.getString(e.getMsgKey()));
+                    target.addComponent(form);
                 } catch (Exception e) {
                     resultMessage.setObject(e.getLocalizedMessage());
                     target.addComponent(form);

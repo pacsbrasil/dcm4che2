@@ -399,23 +399,29 @@ public class StudyListBean implements StudyListLocal {
 
     public Patient updatePatient(long pk, DicomObject attrs) {
         Patient patient;
+        String issuer = attrs.getString(Tag.IssuerOfPatientID);
+        StringBuilder sb = new StringBuilder("SELECT p FROM Patient p WHERE p.patientID=?1");
+        if (issuer == null || issuer.length() == 0) {
+            sb.append(" AND p.issuerOfPatientID IS NULL");
+        } else {
+            sb.append(" AND p.issuerOfPatientID=?2");
+        }
+        Query q = em.createQuery(sb.toString()).setParameter(1, attrs.getString(Tag.PatientID));
+        if (issuer != null)
+            q.setParameter(2, issuer);
+
         if (pk == -1) {
-            String issuer = attrs.getString(Tag.IssuerOfPatientID);
-            StringBuilder sb = new StringBuilder("SELECT p FROM Patient p WHERE p.patientID=?1");
-            if (issuer == null || issuer.length() == 0) {
-                sb.append(" AND p.issuerOfPatientID IS NULL");
-            } else {
-                sb.append(" AND p.issuerOfPatientID=?2");
-            }
-            Query q = em.createQuery(sb.toString()).setParameter(1, attrs.getString(Tag.PatientID));
-            if (issuer != null)
-                q.setParameter(2, issuer);
             if (q.getResultList().size() > 0)
                 return null;
             patient = new Patient();
             patient.setAttributes(attrs);
             em.persist(patient);
         } else {
+            @SuppressWarnings("unchecked")
+            List<Patient> pats = q.getResultList();
+            if (pats.size() > 1 || (pats.size() > 0 && pats.get(0).getPk() != pk)) {
+                return null;
+            }
             patient = em.find(Patient.class, pk);
             patient.setAttributes(attrs);
         }
