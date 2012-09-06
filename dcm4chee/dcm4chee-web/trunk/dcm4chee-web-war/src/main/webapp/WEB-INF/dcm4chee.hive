@@ -49,6 +49,7 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "M
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:mpps2MwlLinkWindow", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:linkPPSLink", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:unlinkPPSLink", "render, enable";
+	permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:emulatePPSLink", "render, enable";
 };
 grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "Mpps2MwlLinkEasy"
 {
