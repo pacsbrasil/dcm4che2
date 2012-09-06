@@ -85,13 +85,17 @@ public class PatientModel extends AbstractEditableDicomModel implements Serializ
         this.latestStudyFirst = latestStudyFirst;
         this.createdTime = patient.getCreatedTime();
         expandable = null;
-        mppsList = patient.getModalityPerformedProcedureSteps();
-        if (mppsList != null && !mppsList.isEmpty()) {
-            StudyModel study = new StudyModel(null, this, createdTime);
-            studies.add(study);
-            initMpps(study, mppsList);
-        } else {
-            mppsList = null;
+        try {
+            mppsList = patient.getModalityPerformedProcedureSteps();
+            if (mppsList != null && !mppsList.isEmpty()) {
+                StudyModel study = new StudyModel(null, this, createdTime);
+                studies.add(study);
+                initMpps(study, mppsList);
+            } else {
+                mppsList = null;
+            }
+        } catch (Throwable ignore) {
+            log.info("Cannot get ModalityPerformedProcedureSteps of patient{}! Ignored", toString());
         }
     }
 
@@ -181,7 +185,8 @@ public class PatientModel extends AbstractEditableDicomModel implements Serializ
         if (mppsList == null) {
             List<String> dicomSecurityRoles = StudyPermissionHelper.get().applyStudyPermissions() ? 
                     StudyPermissionHelper.get().getDicomRoles() : null;
-            for (Study study : dao.findStudiesOfPatient(getPk(), latestStudyFirst.getObject(), dicomSecurityRoles))     
+            for (Study study : dao.findStudiesOfPatient(getPk(), 
+                    latestStudyFirst == null ? false : latestStudyFirst.getObject(), dicomSecurityRoles))     
                 this.studies.add(new StudyModel(study, this, study.getCreatedTime(), 
                         dao.findStudyPermissionActions(study.getStudyInstanceUID(), 
                                 StudyPermissionHelper.get().getDicomRoles())));
@@ -241,6 +246,6 @@ public class PatientModel extends AbstractEditableDicomModel implements Serializ
     
     @Override
     public String toString() {
-        return "Patient: "+getName()+" (ID:"+getId()+")";
+        return "Patient: "+getName()+" (ID:"+getIdAndIssuer()+")";
     }
 }

@@ -81,7 +81,8 @@ public class TCModel extends InstanceModel {
         Series series = instance.getSeries();
         Study study = series.getStudy();
         Patient patient = study.getPatient();
-
+        patient.setModalityPerformedProcedureSteps(null);
+        
         SeriesModel seriesModel = new SeriesModel(series, null, null);
         seriesModel.setParent(new StudyModel(series.getStudy(),
                 new PatientModel(patient, null), null));
