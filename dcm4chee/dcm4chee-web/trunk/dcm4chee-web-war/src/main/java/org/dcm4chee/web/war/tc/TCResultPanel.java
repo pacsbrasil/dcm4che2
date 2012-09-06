@@ -56,6 +56,7 @@ import org.apache.wicket.PageParameters;
 import org.apache.wicket.ajax.AjaxEventBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
+import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxFallbackLink;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.extensions.markup.html.repeater.data.sort.OrderByBorder;
 import org.apache.wicket.extensions.markup.html.repeater.util.SortParam;
@@ -198,7 +199,7 @@ public class TCResultPanel extends Panel {
                    .add(new TooltipBehaviour("tc.result.table.","view"))
                 );
                 
-                final Component editLink = new AjaxLink<String>("tc-edit") {
+                final Component editLink = new IndicatingAjaxFallbackLink<String>("tc-edit") {
                     private static final long serialVersionUID = 1L;
                     @Override
                     public void onClick(AjaxRequestTarget target) {
@@ -230,7 +231,11 @@ public class TCResultPanel extends Panel {
                                            tc.getIssuerOfPatientId());
                                }
                                studyPanel.getViewPort().clear();
-                               studyWindow.setTitle(MessageFormat.format(getString("tc.result.studywindow.title"),tc.getTitle()));
+                               studyWindow.setTitle(new StringResourceModel("tc.result.studywindow.title", this, null,
+                                       new Object[]{maskNull(tc.getTitle(),"?"), 
+                                                   maskNull(tc.getAbstract(),"?"),
+                                                   maskNull(tc.getAuthor(),"?"), 
+                                                   maskNull(tc.getCreationDate(),tc.getCreatedTime())}));
                                studyWindow.setInitialWidth(1200);
                                studyWindow.setInitialHeight(600);
                                studyWindow.setMinimalWidth(800);
@@ -499,7 +504,10 @@ public class TCResultPanel extends Panel {
         }
     }
     
-    
+    private static Object maskNull(Object val, Object def) {
+        return val != null ? val : def;
+    }
+
     private static class TCStudyListPanel extends StudyListPage
     {
         private String stuid;
