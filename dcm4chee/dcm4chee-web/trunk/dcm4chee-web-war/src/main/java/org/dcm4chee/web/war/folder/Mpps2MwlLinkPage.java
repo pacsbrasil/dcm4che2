@@ -444,8 +444,11 @@ public class Mpps2MwlLinkPage extends ModalWindow {
                 Calendar calMin = Calendar.getInstance();
                 Calendar calMax = Calendar.getInstance();
                 if (startPreset.startsWith("mpps")) {
-                    calMin.setTime(ppsModel.getDatetime());
-                    calMax.setTime(ppsModel.getDatetime());
+                    Date d = ppsModel.getDatetime();
+                    if (d != null) {
+                        calMin.setTime(d);
+                        calMax.setTime(d);
+                    }
                 }
                 extendRange(startPreset, calMin, calMax);
                 calMin.set(Calendar.HOUR_OF_DAY, 0);

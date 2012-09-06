@@ -104,9 +104,18 @@ public class PPSModel extends AbstractEditableDicomModel implements Serializable
     }
 
     public Date getDatetime() {
-        return dataset != null 
-                ? toDate(Tag.PerformedProcedureStepStartDate, Tag.PerformedProcedureStepStartTime)
-                : series1 == null ? null : series1.getPPSStartDatetime();
+        if (dataset != null) { 
+            return toDate(Tag.PerformedProcedureStepStartDate, Tag.PerformedProcedureStepStartTime);
+        } else if (series1 == null) {
+            return createdTime;
+        } else {
+            Date d = series1.getPPSStartDatetime();
+            if (d == null)
+                d = series1.getDatetime();
+            if (d == null)
+                d = series1.getCreatedTime();
+            return d;
+        }
     }
 
     public String getAccessionNumber() {
