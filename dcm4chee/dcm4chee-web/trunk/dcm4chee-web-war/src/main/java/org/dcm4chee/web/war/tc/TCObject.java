@@ -530,13 +530,12 @@ public class TCObject implements Serializable {
                         } else if ("CODE".equalsIgnoreCase(valueType)) {
                             if (conceptName.equals(TCQueryFilterKey.Category
                                     .getCode())) {
-                                category = Category.get(getCodeValue(item)
-                                        .toCode());
+                                category = Category.get(toCode(getCodeValue(item)));
                             } else if (conceptName
                                     .equals(TCQueryFilterKey.AcquisitionModality
                                             .getCode())) {
                                 AcquisitionModality m = AcquisitionModality
-                                        .get(getCodeValue(item).toCode());
+                                        .get(toCode(getCodeValue(item)));
 
                                 if (m != null) {
                                     if (acquisitionModalities == null) {
@@ -550,11 +549,10 @@ public class TCObject implements Serializable {
                             } else if (conceptName
                                     .equals(TCQueryFilterKey.DiagnosisConfirmed
                                             .getCode())) {
-                                diagnosisConfirmed = YesNo.get(getCodeValue(
-                                        item).toCode());
+                                diagnosisConfirmed = YesNo.get(toCode(getCodeValue(item)));
                             } else if (conceptName
                                     .equals(TCQueryFilterKey.Level.getCode())) {
-                                level = Level.get(getCodeValue(item).toCode());
+                                level = Level.get(toCode(getCodeValue(item)));
                             } else if (conceptName
                                     .equals(TCQueryFilterKey.Anatomy.getCode())) {
                                 anatomy = TextOrCode.code(getCodeValue(item));
@@ -591,10 +589,14 @@ public class TCObject implements Serializable {
     }
 
     private DicomCode getCodeValue(DicomObject object) {
-        return object != null ? new DicomCode(
-                object.getNestedDicomObject(Tag.ConceptCodeSequence)) : null;
+        return object == null ? null : object.contains(Tag.ConceptCodeSequence) ?
+            new DicomCode(object.getNestedDicomObject(Tag.ConceptCodeSequence)) : null;
     }
     
+    public Code toCode(DicomCode c) {
+        return c == null ? null : c.toCode();
+    }
+
     private String toStringValue(Object value) {
         if (value instanceof List) {
             return concatStringValues((List<?>)value);

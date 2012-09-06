@@ -80,6 +80,7 @@ import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
+import org.dcm4chee.web.common.markup.modal.MessageWindow;
 import org.dcm4chee.web.common.secure.SecurityBehavior;
 import org.dcm4chee.web.common.webview.link.WebviewerLinkProvider;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
@@ -111,6 +112,8 @@ public class TCResultPanel extends Panel {
 
     private TCModel selected;
 
+    private MessageWindow msgWin = new MessageWindow("msgWin");
+    
     public TCResultPanel(final String id, final TCListModel model) {
         super(id, model != null ? model : new TCListModel());
 
@@ -120,6 +123,7 @@ public class TCResultPanel extends Panel {
         
         initWebviewerLinkProvider();
         
+        add(msgWin);
         final ModalWindow modalWindow = new ModalWindow("modal-window");
         add(modalWindow);
 
@@ -127,7 +131,7 @@ public class TCResultPanel extends Panel {
         final TCStudyListPanel studyPanel = new TCStudyListPanel(studyWindow.getContentId());
         studyWindow.setContent(studyPanel);
         add(studyWindow);
-          
+                  
         final SortableTCListProvider tclistProvider = new SortableTCListProvider(
                 (TCListModel) getDefaultModel());
 
@@ -245,10 +249,14 @@ public class TCResultPanel extends Panel {
                            else
                            {
                                log.warn("Showing TC referenced studies discarded: No referened study found!");
+                               msgWin.setInfoMessage(getString("tc.result.studywindow.noStudies"));
+                               msgWin.show(target);
                            }
                        }
                        catch (Exception e)
                        {
+                           msgWin.setErrorMessage(getString("tc.result.studywindow.failed"));
+                           msgWin.show(target);
                            log.error("Unable to show TC referenced studies!", e);
                        }
                    }
