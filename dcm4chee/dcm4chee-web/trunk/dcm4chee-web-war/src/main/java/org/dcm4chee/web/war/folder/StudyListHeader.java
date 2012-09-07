@@ -123,7 +123,7 @@ public class StudyListHeader extends Panel {
             public void setObject(Boolean arg0) {}
 
             public Boolean getObject() {
-                return viewport.getFilter().isUnconnectedMPPS();
+                return viewport.getFilter().getUnconnectedMPPSSearched();
             }
         };
         

@@ -77,10 +77,10 @@ public class StudyListFilter implements Serializable {
     private String sourceAET;
     private String seriesInstanceUID;
     private boolean patientQuery;
-    private boolean unconnectedMPPS;
     private boolean latestStudiesFirst;
-    private boolean ppsWithoutMwl;
-    private boolean withoutPps;
+    private boolean unconnectedMPPS, unconnectedMPPSSearched;
+    private boolean ppsWithoutMwl, ppsWithoutMwlSearched;
+    private boolean withoutPps, withoutPpsSearched;
     private boolean exactModalitiesInStudy;
     private boolean exactSeriesIuid;
     private int autoExpandLevel = -1;
@@ -102,6 +102,7 @@ public class StudyListFilter implements Serializable {
         latestStudiesFirst = false;
         ppsWithoutMwl = false;
         withoutPps = false;
+        unconnectedMPPS = false;
         exactModalitiesInStudy = false;
         exactSeriesIuid = false;
         fuzzyPN = false;
@@ -355,6 +356,24 @@ public class StudyListFilter implements Serializable {
         this.isSeriesIuidQuery = b;
     }
     
+    public boolean getUnconnectedMPPSSearched() {
+        return unconnectedMPPSSearched;
+    }
+
+    public boolean getPpsWithoutMwlSearched() {
+        return ppsWithoutMwlSearched;
+    }
+
+    public boolean getWithoutPpsSearched() {
+        return withoutPpsSearched;
+    }
+    
+    public void markSearchedOptions() {
+        unconnectedMPPSSearched = unconnectedMPPS;
+        ppsWithoutMwlSearched = ppsWithoutMwl;
+        withoutPpsSearched = withoutPps;
+    }
+
     public DicomObject getQueryDicomObject() {
         DicomObject obj = new BasicDicomObject();
         if (patientQuery) {

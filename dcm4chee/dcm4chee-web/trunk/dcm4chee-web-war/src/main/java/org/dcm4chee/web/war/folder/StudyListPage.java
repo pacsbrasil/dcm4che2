@@ -1351,6 +1351,7 @@ public class StudyListPage extends Panel {
         } else {
             queryStudies(target, filter);
         }
+        filter.markSearchedOptions();
     }
 
     private void queryUnconnectedMPPS(StudyListFilter filter) {
@@ -1928,7 +1929,14 @@ public class StudyListPage extends Panel {
                    }
                 }
             };
-            cell.add(new ExpandCollapseLink("expand", ppsModel, ppsListItem));
+            cell.add(new ExpandCollapseLink("expand", ppsModel, ppsListItem){
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public boolean isVisible() {
+                    return !viewport.getFilter().getUnconnectedMPPSSearched();
+                }
+            });
             row.add(cell);
             
             TooltipBehaviour tooltip = new TooltipBehaviour("folder.content.data.pps.");
