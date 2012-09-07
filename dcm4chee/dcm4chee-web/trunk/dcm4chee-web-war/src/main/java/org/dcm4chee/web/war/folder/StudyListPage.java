@@ -860,7 +860,7 @@ public class StudyListPage extends Panel {
             
             @Override
             public boolean isVisible() {
-                return (!notSearched && !(viewport.getOffset() == 0));
+                return (!disableSearch && !notSearched && !(viewport.getOffset() == 0));
             }
         }
         .add(new Image("prevImg", ImageManager.IMAGE_COMMON_BACK)
@@ -880,7 +880,7 @@ public class StudyListPage extends Panel {
 
             @Override
             public boolean isVisible() {
-                return (!notSearched && !(viewport.getTotal() - viewport.getOffset() <= pagesize.getObject()));
+                return (!disableSearch && !notSearched && !(viewport.getTotal() - viewport.getOffset() <= pagesize.getObject()));
             }
         }
         .add(new Image("nextImg", ImageManager.IMAGE_COMMON_FORWARD)
@@ -1070,7 +1070,6 @@ public class StudyListPage extends Panel {
         	
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-
             	confirmDelete.initContent(500, 280);
             	
                 MultiResourceModel remarkModel = new MultiResourceModel();
@@ -1592,7 +1591,7 @@ public class StudyListPage extends Panel {
                 private static final long serialVersionUID = 1L;
 
                 @Override
-                protected void onUpdate(AjaxRequestTarget target) {
+                protected void onUpdate(AjaxRequestTarget target) { 
                     target.addComponent(this.getParent());
                 }
             };
@@ -2687,6 +2686,10 @@ public class StudyListPage extends Panel {
             filter.setAutoWildcard(WebCfgDelegate.getInstance().getAutoWildcard());
             if (paras.containsKey("disableSearch")) {
                 disableSearch = Boolean.valueOf(paras.getString("disableSearch"));
+                form.get("pagesize").setVisible(!disableSearch);
+                form.get("pagesize.label").setVisible(!disableSearch);
+                form.get("viewport").setVisible(!disableSearch);
+                form.get("viewport-bottom").setVisible(!disableSearch);
             }
             if (disableSearch || paras.containsKey("showSearch")){
                 showSearch = disableSearch ? false : Boolean.valueOf(paras.getString("showSearch"));

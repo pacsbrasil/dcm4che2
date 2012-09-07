@@ -52,7 +52,9 @@ import java.util.Map;
 
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
+import org.apache.wicket.Page;
 import org.apache.wicket.PageParameters;
+import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxEventBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
@@ -61,10 +63,13 @@ import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.extensions.markup.html.repeater.data.sort.OrderByBorder;
 import org.apache.wicket.extensions.markup.html.repeater.util.SortParam;
 import org.apache.wicket.extensions.markup.html.repeater.util.SortableDataProvider;
+import org.apache.wicket.markup.html.CSSPackageResource;
+import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.navigation.paging.PagingNavigator;
 import org.apache.wicket.markup.html.panel.Panel;
+import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.markup.repeater.Item;
 import org.apache.wicket.markup.repeater.data.DataView;
 import org.apache.wicket.model.AbstractReadOnlyModel;
@@ -79,6 +84,7 @@ import org.dcm4chee.archive.entity.Instance;
 import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
+import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.markup.modal.MessageWindow;
 import org.dcm4chee.web.common.secure.SecurityBehavior;
@@ -90,6 +96,7 @@ import org.dcm4chee.web.war.StudyPermissionHelper;
 import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
 import org.dcm4chee.web.war.folder.StudyListPage;
 import org.dcm4chee.web.war.folder.ViewPort;
+import org.dcm4chee.web.war.folder.Mpps2MwlLinkPage.LinkPage;
 import org.dcm4chee.web.war.folder.webviewer.Webviewer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -127,9 +134,16 @@ public class TCResultPanel extends Panel {
         final ModalWindow modalWindow = new ModalWindow("modal-window");
         add(modalWindow);
 
+        final TCStudyListPage studyPage = new TCStudyListPage();
         final ModalWindow studyWindow = new ModalWindow("study-window");
-        final TCStudyListPanel studyPanel = new TCStudyListPanel(studyWindow.getContentId());
-        studyWindow.setContent(studyPanel);
+        studyWindow.setPageCreator(new ModalWindow.PageCreator() {
+            private static final long serialVersionUID = 1L;
+              
+            public Page createPage() {
+                return studyPage;
+            }
+        });
+
         add(studyWindow);
                   
         final SortableTCListProvider tclistProvider = new SortableTCListProvider(
@@ -227,14 +241,14 @@ public class TCResultPanel extends Panel {
                            {
                                if (refStudies.size()==1)
                                {
-                                   studyPanel.setStudyInstanceUID(refStudies.get(0).getStudyUID());
+                                   studyPage.setStudyInstanceUID(refStudies.get(0).getStudyUID());
                                }
                                else
                                {
-                                   studyPanel.setPatientIdAndIssuer(tc.getPatientId(), 
+                                   studyPage.setPatientIdAndIssuer(tc.getPatientId(), 
                                            tc.getIssuerOfPatientId());
                                }
-                               studyPanel.getViewPort().clear();
+                               studyPage.getStudyViewPort().clear();
                                studyWindow.setTitle(new StringResourceModel("tc.result.studywindow.title", this, null,
                                        new Object[]{maskNull(tc.getTitle(),"?"), 
                                                    maskNull(tc.getAbstract(),"?"),
@@ -516,16 +530,64 @@ public class TCResultPanel extends Panel {
         return val != null ? val : def;
     }
 
-    private static class TCStudyListPanel extends StudyListPage
-    {
+    private static class TCStudyListPage extends WebPage {
         private String stuid;
         private String patid;
         private String issuerOfPatId;
+        private StudyListPage studyListPage;
         private ViewPort viewPort;
+
+        private static final ResourceReference BASE_CSS = new CompressedResourceReference(
+                BaseWicketPage.class, "base-style.css");
+        private static final ResourceReference CSS = new CompressedResourceReference(
+                StudyListPage.class, "folder-style.css");
         
-        public TCStudyListPanel(final String id)
-        {
-            super(id);
+        public TCStudyListPage() {
+            studyListPage = new StudyListPage("tcStudyList") {
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                protected ViewPort getViewPort() {
+                    return getStudyViewPort();
+                }
+                
+                @Override
+                protected PageParameters getPageParameters() {
+                    PageParameters params = null;
+                    
+                    if (stuid!=null) {
+                        params = new PageParameters();
+                        params.put("studyIUID", stuid);
+                        params.put("disableSearch", "true");
+                        params.put("query", "true");
+                    } else if (patid!=null) {
+                        params = new PageParameters();
+                        params.put("patID", patid);
+                        if (issuerOfPatId!=null) {
+                            params.put("issuer", issuerOfPatId);
+                        }
+                        params.put("latestStudiesFirst", "true");
+                        params.put("hideSearch", "true");
+                        params.put("query", "true");
+                    }
+                    return params;
+                }
+                
+            };
+            add(studyListPage);
+            if (BASE_CSS != null) {
+                add(CSSPackageResource.getHeaderContribution(BASE_CSS));
+            }
+            if (CSS != null) {
+                add(CSSPackageResource.getHeaderContribution(CSS));
+            }
+        }
+        
+        protected ViewPort getStudyViewPort() {
+            if (viewPort==null) {
+                viewPort = new ViewPort();
+            }
+            return viewPort;
         }
         
         public String getStudyInstanceUID()
@@ -557,43 +619,6 @@ public class TCResultPanel extends Panel {
             this.issuerOfPatId=issuerOfPatId;
         }
         
-        @Override
-        protected ViewPort getViewPort()
-        {
-            if (viewPort==null)
-            {
-                viewPort = new ViewPort();
-            }
-            return viewPort;
-        }
-        
-        @Override
-        protected PageParameters getPageParameters()
-        {
-            PageParameters params = null;
-            
-            if (stuid!=null)
-            {
-                params = new PageParameters();
-                params.put("studyIUID", stuid);
-                params.put("disableSearch", "true");
-                params.put("query", "true");
-            }
-            else if (patid!=null)
-            {
-                params = new PageParameters();
-                params.put("patID", patid);
-                if (issuerOfPatId!=null)
-                {
-                    params.put("issuer", issuerOfPatId);
-                }
-                params.put("latestStudiesFirst", "true");
-                params.put("hideSearch", "true");
-                params.put("query", "true");
-            }
-            
-            return params;
-        }
     }
     
 
