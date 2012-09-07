@@ -575,21 +575,21 @@ public class TCResultPanel extends Panel {
             if (stuid!=null)
             {
                 params = new PageParameters();
-                params.put("studyIUID",stuid);
-                params.put("showSearch","false");
-                params.put("query","true");
+                params.put("studyIUID", stuid);
+                params.put("disableSearch", "true");
+                params.put("query", "true");
             }
             else if (patid!=null)
             {
                 params = new PageParameters();
-                params.put("patID",patid);
+                params.put("patID", patid);
                 if (issuerOfPatId!=null)
                 {
-                    params.put("issuer",issuerOfPatId);
+                    params.put("issuer", issuerOfPatId);
                 }
-                params.put("latestStudiesFirst","true");
-                params.put("showSearch","false");
-                params.put("query","true");
+                params.put("latestStudiesFirst", "true");
+                params.put("hideSearch", "true");
+                params.put("query", "true");
             }
             
             return params;

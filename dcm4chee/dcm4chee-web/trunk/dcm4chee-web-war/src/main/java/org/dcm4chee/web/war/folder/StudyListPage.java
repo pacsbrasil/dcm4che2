@@ -250,6 +250,7 @@ public class StudyListPage extends Panel {
     private IModel<Boolean> hidePPSModel = new Model<Boolean>();
     
     private boolean showSearch = true;
+    private boolean disableSearch = true;
     private boolean notSearched = true;
     private BaseForm form;
     private MessageWindow msgWin = new MessageWindow("msgWin");
@@ -326,6 +327,11 @@ public class StudyListPage extends Panel {
                 for (WebMarkupContainer wmc : searchTableComponents)
                     wmc.setVisible(showSearch);               
                 target.addComponent(form);
+            }
+            
+            @Override
+            public boolean isVisible() {
+                return !disableSearch;
             }
         }
         .add((new Image("searchToggleImg", new AbstractReadOnlyModel<ResourceReference>() {
@@ -2679,8 +2685,11 @@ public class StudyListPage extends Panel {
             filter.setWithoutPps(Boolean.valueOf(paras.getString("withoutPps")));
             filter.setExactModalitiesInStudy(Boolean.valueOf(paras.getString("exactModalitiesInStudy")));
             filter.setAutoWildcard(WebCfgDelegate.getInstance().getAutoWildcard());
-            if (paras.containsKey("showSearch")){
-                showSearch = Boolean.valueOf(paras.getString("showSearch"));
+            if (paras.containsKey("disableSearch")) {
+                disableSearch = Boolean.valueOf(paras.getString("disableSearch"));
+            }
+            if (disableSearch || paras.containsKey("showSearch")){
+                showSearch = disableSearch ? false : Boolean.valueOf(paras.getString("showSearch"));
                 for (WebMarkupContainer wmc : searchTableComponents)
                     wmc.setVisible(showSearch); 
             }
