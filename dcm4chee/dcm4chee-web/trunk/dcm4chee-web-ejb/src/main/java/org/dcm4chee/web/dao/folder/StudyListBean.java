@@ -96,7 +96,8 @@ public class StudyListBean implements StudyListLocal {
     public int count(StudyListFilter filter, List<String> roles) {
         if ((roles != null) && (roles.size() == 0)) return 0;
         StringBuilder ql = new StringBuilder(64);
-        ql.append("SELECT COUNT(*)");
+        ql.append("SELECT COUNT(DISTINCT ")
+        .append(filter.isPatientQuery() ? "p)" : "s)");
         appendFromClause(ql, filter);
         appendWhereClause(ql, filter, roles);
         Query query = em.createQuery(ql.toString());
@@ -108,7 +109,7 @@ public class StudyListBean implements StudyListLocal {
     public List<Patient> findPatients(StudyListFilter filter, int max, int index, List<String> roles) {
         if ((roles != null) && (roles.size() == 0)) return new ArrayList<Patient>();
         StringBuilder ql = new StringBuilder(64);
-        ql.append("SELECT p");
+        ql.append("SELECT DISTINCT p");
         if (!filter.isPatientQuery())
             ql.append(", s");
         appendFromClause(ql, filter);
