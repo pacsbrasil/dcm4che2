@@ -46,7 +46,6 @@ import org.dcm4che2.net.Association;
 import org.dcm4che2.net.DimseRSPHandler;
 import org.dcm4che2.net.TransferCapability;
 import org.dcm4che2.net.pdu.PresentationContext;
-import org.dcm4che2.util.UIDUtils;
 import org.dcm4chee.web.service.common.AbstractScuService;
 
 /**
@@ -55,7 +54,7 @@ import org.dcm4chee.web.service.common.AbstractScuService;
 public class MppsForwardService extends AbstractScuService {
 
 	private static final int[] MPPS_CREATE_TAGS = { Tag.SpecificCharacterSet,
-        Tag.SOPInstanceUID, Tag.Modality, Tag.ProcedureCodeSequence,
+        Tag.Modality, Tag.ProcedureCodeSequence,
         Tag.ReferencedPatientSequence, Tag.PatientName, Tag.PatientID,
         Tag.IssuerOfPatientID, Tag.PatientBirthDate, Tag.PatientSex,
         Tag.StudyID, Tag.PerformedStationAETitle, Tag.PerformedStationName,
@@ -67,7 +66,7 @@ public class MppsForwardService extends AbstractScuService {
         Tag.ScheduledStepAttributesSequence };
 
 	private static final int[] MPPS_SET_TAGS = { Tag.SpecificCharacterSet,
-        Tag.SOPInstanceUID, Tag.PerformedProcedureStepEndDate, 
+        Tag.PerformedProcedureStepEndDate, 
         Tag.PerformedProcedureStepEndTime, Tag.PerformedProcedureStepStatus, 
         Tag.PerformedSeriesSequence };
 
@@ -97,7 +96,7 @@ public class MppsForwardService extends AbstractScuService {
 	    	};
 	    	
 	    	String cuid = UID.ModalityPerformedProcedureStepSOPClass;
-	    	String iuid = UIDUtils.createUID();
+	    	String iuid = mpps.getString(Tag.SOPInstanceUID);
 	    	
 	    	mpps.putString(Tag.PerformedProcedureStepStatus, VR.CS, "IN PROGRESS");
 	    	as.ncreate(cuid, iuid, mpps.subSet(MPPS_CREATE_TAGS), pc.getTransferSyntax(), rspHandler);
