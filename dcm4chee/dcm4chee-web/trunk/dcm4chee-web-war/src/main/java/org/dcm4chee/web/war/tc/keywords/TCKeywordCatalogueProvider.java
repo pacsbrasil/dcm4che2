@@ -39,6 +39,7 @@ package org.dcm4chee.web.war.tc.keywords;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -75,6 +76,14 @@ public class TCKeywordCatalogueProvider {
     private final static String ID_DELIMITER = "$";
 
     private static TCKeywordCatalogueProvider instance;
+    
+    private static FilenameFilter xmlFilefilter = new FilenameFilter() {
+
+        public boolean accept(File dir, String name) {
+            return name.endsWith(".xml");
+        }
+        
+    };
 
     private final WebCfgDelegate configDelegate;
     
@@ -85,6 +94,11 @@ public class TCKeywordCatalogueProvider {
     private Map<TCQueryFilterKey, TCKeywordCatalogue> keysToCatalogues;
 
     private Map<String, String> keysToCatalogueIds;
+
+    private Map<File, Long> lastModified = new HashMap<File, Long>();
+
+    private long nextCheckCatalogueTimestamp;
+    private static final long RECHECK_DELAY = 3000;
     
     private TCKeywordCatalogueProvider() {
         configDelegate = WebCfgDelegate.getInstance();
@@ -120,20 +134,19 @@ public class TCKeywordCatalogueProvider {
     
     private void checkAndInitCatalogues()
     {
+        if (System.currentTimeMillis() < nextCheckCatalogueTimestamp) 
+            return;
+        nextCheckCatalogueTimestamp = System.currentTimeMillis() + RECHECK_DELAY;
         // if the custom catalogue path OR the number of catalogues (i.e files) has changed
         // -> need to read all catalogues again
         String confPath = configDelegate.getTCKeywordCataloguesPath();
-        if (!customCataloguePath.equals(confPath) ||
-            idsToCatalogues.size()-1!=getNumberOfCustomCatalogues(confPath))
-        {
+        Boolean needReloadAll = checkOutdated(confPath);
+        if (needReloadAll == Boolean.TRUE){
             customCataloguePath = confPath;
             idsToCatalogues = readAllCatalogues(confPath);
             keysToCatalogues = assignCatalogues(idsToCatalogues);
-            
             log.info("Full update of tc keyword catalogues and settings");
-        }
-        else
-        {
+        } else if (needReloadAll == Boolean.FALSE) {
             // check, if the one of the custom catalogue's source file has changed
             // -> if so, need to re-read the catalogue
             Map<String, File> toRead = null;
@@ -184,16 +197,16 @@ public class TCKeywordCatalogueProvider {
                     }
                 }
             }
-            
-            // and finally check, if the assignment of tc keys -> catalogues has changed
-            // if so, re-assign catalogues again
-            if (toRead!=null || !keysToCatalogueIds.equals(configDelegate.getTCKeywordCataloguesAsString()))
-            {
-                keysToCatalogues = assignCatalogues(idsToCatalogues);
-                
-                log.info("Updated teaching-file keyword catalogue assignments");
-            }
         }
+        // and finally check, if the assignment of tc keys -> catalogues has changed
+        // if so, re-assign catalogues again
+        if (needReloadAll == Boolean.FALSE || !keysToCatalogueIds.equals(configDelegate.getTCKeywordCataloguesAsString()))
+        {
+            keysToCatalogues = assignCatalogues(idsToCatalogues);
+            
+            log.info("Updated teaching-file keyword catalogue assignments");
+        }
+
     }
         
     
@@ -239,6 +252,7 @@ public class TCKeywordCatalogueProvider {
     private Map<String, TCKeywordCatalogue> readAllCatalogues(String customCataloguePath)
     {
         Map<String, TCKeywordCatalogue> catalogues = new HashMap<String, TCKeywordCatalogue>();
+        lastModified.clear();
         
         // read in ACR keyword catalogue
         ACRCatalogue acr = ACRCatalogue.getInstance();
@@ -264,32 +278,29 @@ public class TCKeywordCatalogueProvider {
             if (file.exists()) {
                 Map<String, TCKeywordCatalogue> catalogues = new HashMap<String, TCKeywordCatalogue>();
 
-                File[] candidates = file.isDirectory() ? file.listFiles()
-                        : new File[] { file };
+                File[] candidates = file.isDirectory() ? file.listFiles(xmlFilefilter) :
+                        file.getName().endsWith(".xml") ? new File[] { file } : null;
                 if (candidates != null) {
                     for (File f : candidates) {
-                        if (f.getAbsolutePath().endsWith(".xml")) {
-                            try 
+                        try 
+                        {
+                            TCKeywordCatalogue cat = readCustomCatalogue(f);
+                            
+                            if (cat!=null)
                             {
-                                TCKeywordCatalogue cat = readCustomCatalogue(f);
-                                
-                                if (cat!=null)
-                                {
-                                    catalogues.put(cat.getDesignatorId() + ID_DELIMITER + cat.getId(), cat);
+                                catalogues.put(cat.getDesignatorId() + ID_DELIMITER + cat.getId(), cat);
 
-                                    log.info("Added teaching-file keyword catalogue: "
-                                            + cat);
-                                }
-                            } 
-                            catch (Exception e) {
-                                log.error(
-                                        "Parsing teaching-file keyword catalogue failed! Invalid syntax in file "
-                                                + file.getAbsolutePath(), e);
+                                log.info("Added teaching-file keyword catalogue: "
+                                        + cat);
                             }
+                        } 
+                        catch (Exception e) {
+                            log.error(
+                                    "Parsing teaching-file keyword catalogue failed! Invalid syntax in file "
+                                            + file.getAbsolutePath(), e);
                         }
                     }
                 }
-
                 return catalogues;
             }
         }
@@ -316,6 +327,7 @@ public class TCKeywordCatalogueProvider {
             Document doc = dbf.newDocumentBuilder().parse(
                     fis);
 
+            lastModified.put(f, f.lastModified());
             if (doc.getElementsByTagName("simple-list").getLength() > 0) //$NON-NLS-1$
             {
                 TCKeywordCatalogueXMLList c = TCKeywordCatalogueXMLList.createInstance(doc);
@@ -346,29 +358,40 @@ public class TCKeywordCatalogueProvider {
         }
     }
     
-    private int getNumberOfCustomCatalogues(String path)
-    {
-        int n = 0;
+    /**
+     * null... all uptodate
+     * true... Need full reload
+     * false.. one ore more files are outdated
+     * @param path
+     * @return
+     */
+    private Boolean checkOutdated(String path) {
+        if (!customCataloguePath.equals(path))
+            return Boolean.TRUE;
+        if (path == null || path.trim().isEmpty())
+            return null;
         
-        if (path != null) {
-            File file = FileUtils.resolve(new File(path));
+        File file = FileUtils.resolve(new File(path));
 
-            if (file.exists()) {
-                File[] candidates = file.isDirectory() ? file.listFiles()
-                        : new File[] { file };
-                if (candidates != null) {
-                    for (File f : candidates) {
-                        if (f.getAbsolutePath().endsWith(".xml")) {
-                            n++;
-                        }
-                    }
+        Boolean result = null;
+        if (file.exists()) {
+            File[] candidates = file.isDirectory() ? file.listFiles(xmlFilefilter) :
+                    file.getName().endsWith(".xml") ? new File[] { file } :null;
+            if (candidates != null) {
+                if (lastModified.size() != candidates.length)
+                    return Boolean.TRUE;
+                Long lm;
+                for (File f : candidates) {
+                    lm =lastModified.get(f);
+                    if (lm == null)
+                        return Boolean.TRUE;
+                    if (f.lastModified() > lm)
+                        result = Boolean.FALSE;
                 }
             }
         }
-        
-        return n;
+        return result;
     }
-    
     
     private static interface ICustomTCKeywordCatalogue
     {
