@@ -822,15 +822,33 @@ div.tc-view-bibliography-options
 {
 	float: left;
 	margin-top: 0.1em;
-	width: 7em;
+	width: 7.25em;
+}
+
+.tc-view-overview-row-key-left-column
+{
+}
+
+.tc-view-overview-row-key-right-column
+{
+	width: 10.5em;
 }
 
 .tc-view-overview-row-value
 {
-	margin-left: 7.25em;
+	margin-left: 7.5em;
 	margin-right: 0.5em;
 	position: relative;
 	min-height: 1.7em;
+}
+
+.tc-view-overview-row-value-left-column
+{
+}
+
+.tc-view-overview-row-value-right-column
+{
+	margin-left: 10.75em;
 }
 
 .tc-view-overview-row-value:after 
