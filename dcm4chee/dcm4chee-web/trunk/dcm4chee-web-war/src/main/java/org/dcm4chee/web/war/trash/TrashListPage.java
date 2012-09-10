@@ -43,11 +43,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.ResourceReference;
@@ -55,9 +53,12 @@ import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.IAjaxCallDecorator;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
+import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
 import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxButton;
+import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
+import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow.WindowClosedCallback;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
@@ -114,6 +115,7 @@ import org.dcm4chee.web.war.common.IndicatingAjaxFormSubmitBehavior;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
 import org.dcm4chee.web.war.folder.DicomObjectPanel;
+import org.dcm4chee.web.war.folder.arr.AuditRecordRepositoryFacade;
 import org.dcm4chee.web.war.trash.delegate.StoreBridgeDelegate;
 import org.dcm4chee.web.war.trash.model.PrivInstanceModel;
 import org.dcm4chee.web.war.trash.model.PrivPatientModel;
@@ -147,7 +149,8 @@ public class TrashListPage extends Panel {
     private boolean showSearch = true;
     private boolean notSearched = true;
     private MessageWindow msgWin = new MessageWindow("msgWin");
-
+    private ModalWindow arrWindow = new ModalWindow("arrWindow");
+    
     private List<WebMarkupContainer> searchTableComponents = new ArrayList<WebMarkupContainer>();
 
     TrashListLocal dao = (TrashListLocal) JNDIUtils
@@ -165,6 +168,12 @@ public class TrashListPage extends Panel {
             add(CSSPackageResource.getHeaderContribution(TrashListPage.CSS));
 
         add(macb);
+
+        int[] winSize = WebCfgDelegate.getInstance().getWindowSize("arr");
+        arrWindow
+        	.setInitialWidth(winSize[0])
+        	.setInitialHeight(winSize[1])
+        	.setTitle("");
 
         final TrashListFilter filter = viewport.getFilter();
         final BaseForm form = new BaseForm("form",
@@ -214,6 +223,16 @@ public class TrashListPage extends Panel {
         form.add(new PatientListView("patients", viewport.getPatients()));
         msgWin.setTitle(MessageWindow.TITLE_WARNING);
         add(msgWin);
+        
+        add(arrWindow);
+        arrWindow.setWindowClosedCallback(new WindowClosedCallback() {
+            private static final long serialVersionUID = 1L;
+
+            public void onClose(AjaxRequestTarget target) {
+                getPage().setOutputMarkupId(true);
+                target.addComponent(getPage());
+            }            
+        });
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -1036,6 +1055,25 @@ public class TrashListPage extends Panel {
             }.add(new Image("detailImg",
                     ImageManager.IMAGE_COMMON_DICOM_DETAILS).add(
                     new ImageSizeBehaviour()).add(tooltip)));
+            row.add(new AjaxLink<Object>("arr") {
+                
+                private static final long serialVersionUID = 1L;
+                
+                @Override
+				public void onClick(final AjaxRequestTarget target) {
+                	arrWindow
+    	        		.setContent(new Label("content", 
+    	        				new Model<String>(new AuditRecordRepositoryFacade()
+    	        					.doSearch(AuditRecordRepositoryFacade.Level.PATIENT, 
+    	        							patModel.getId())))
+    	                .setEscapeModelStrings(false)
+    	                .add(new AttributeModifier("class", true, new Model<String>("arr"))))
+    	                .show(target);
+                }
+            }.add(new Image("arrImg",ImageManager.IMAGE_COMMON_ARR)
+            .add(new ImageSizeBehaviour())
+            .add(tooltip)
+            .add(new SecurityBehavior(getModuleName() + ":arrLink"))));
             row.add(selChkBox.add(tooltip));
             WebMarkupContainer details = new WebMarkupContainer("details") {
 
@@ -1127,6 +1165,25 @@ public class TrashListPage extends Panel {
             }.add(new Image("detailImg",
                     ImageManager.IMAGE_COMMON_DICOM_DETAILS).add(
                     new ImageSizeBehaviour()).add(tooltip)));
+            row.add(new AjaxLink<Object>("arr") {
+                
+                private static final long serialVersionUID = 1L;
+                
+                @Override
+				public void onClick(final AjaxRequestTarget target) {
+                	arrWindow
+    	        		.setContent(new Label("content", 
+    	        				new Model<String>(new AuditRecordRepositoryFacade()
+    	        					.doSearch(AuditRecordRepositoryFacade.Level.STUDY, 
+    	        							studyModel.getStudyInstanceUID())))
+    	                .setEscapeModelStrings(false)
+    	                .add(new AttributeModifier("class", true, new Model<String>("arr"))))
+    	                .show(target);
+                }
+            }.add(new Image("arrImg",ImageManager.IMAGE_COMMON_ARR)
+            .add(new ImageSizeBehaviour())
+            .add(tooltip)
+            .add(new SecurityBehavior(getModuleName() + ":arrLink"))));
             row.add(selChkBox.add(tooltip));
             WebMarkupContainer details = new WebMarkupContainer("details") {
 
@@ -1219,6 +1276,26 @@ public class TrashListPage extends Panel {
             }.add(new Image("detailImg",
                     ImageManager.IMAGE_COMMON_DICOM_DETAILS).add(
                     new ImageSizeBehaviour()).add(tooltip)));
+            row.add(new AjaxLink<Object>("arr") {
+                
+                private static final long serialVersionUID = 1L;
+                
+                @Override
+				public void onClick(final AjaxRequestTarget target) {
+                	arrWindow
+    	        		.setContent(new Label("content", 
+    	        				new Model<String>(new AuditRecordRepositoryFacade()
+    	        					.doSearch(AuditRecordRepositoryFacade.Level.SERIES, 
+    	        							((PrivStudyModel) seriesModel.getParent())
+    	        								.getStudyInstanceUID())))
+    	                .setEscapeModelStrings(false)
+    	                .add(new AttributeModifier("class", true, new Model<String>("arr"))))
+    	                .show(target);
+                }
+            }.add(new Image("arrImg",ImageManager.IMAGE_COMMON_ARR)
+            .add(new ImageSizeBehaviour())
+            .add(tooltip)
+            .add(new SecurityBehavior(getModuleName() + ":arrLink"))));
             row.add(selChkBox.add(tooltip));
             WebMarkupContainer details = new WebMarkupContainer("details") {
 
@@ -1296,6 +1373,26 @@ public class TrashListPage extends Panel {
             }.add(new Image("detailImg",
                     ImageManager.IMAGE_COMMON_DICOM_DETAILS).add(
                     new ImageSizeBehaviour()).add(tooltip)));
+            row.add(new AjaxLink<Object>("arr") {
+                
+                private static final long serialVersionUID = 1L;
+                
+                @Override
+				public void onClick(final AjaxRequestTarget target) {
+                	arrWindow
+    	        		.setContent(new Label("content", 
+    	        				new Model<String>(new AuditRecordRepositoryFacade()
+    	        					.doSearch(AuditRecordRepositoryFacade.Level.INSTANCE, 
+    	        							((PrivStudyModel) instModel.getParent().getParent())
+	        									.getStudyInstanceUID())))
+    	                .setEscapeModelStrings(false)
+    	                .add(new AttributeModifier("class", true, new Model<String>("arr"))))
+    	                .show(target);
+                }
+            }.add(new Image("arrImg",ImageManager.IMAGE_COMMON_ARR)
+            .add(new ImageSizeBehaviour())
+            .add(tooltip)
+            .add(new SecurityBehavior(getModuleName() + ":arrLink"))));
             row.add(selChkBox.add(tooltip));
             WebMarkupContainer details = new WebMarkupContainer("details") {
 

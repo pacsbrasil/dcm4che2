@@ -13,3 +13,5 @@ table.search-table div input.patient_fn {width:120px;}
 /* Date/Time field formatting */
 table.search-table div.dateTimeField span input {width: 69px;}
 table.search-table div.dateTimeField span input.timeField {width: 38px;}
+
+div.arr {color: #FFFFFF;}

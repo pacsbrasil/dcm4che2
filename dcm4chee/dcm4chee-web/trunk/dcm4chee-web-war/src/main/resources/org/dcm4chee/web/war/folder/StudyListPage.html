@@ -14,6 +14,7 @@
 	    <div wicket:id="msgWin" >MessageWindow</div>
 	    <div wicket:id="imgSelection" >ImageSelection</div>
 	    <div wicket:id="wadoImageWindow" >WadoWindow</div>
+	    <div wicket:id="arrWindow" >WadoWindow</div>
    		<div wicket:id="confirmSearch" />
 	    <form wicket:id="modalForm">
 	       <div wicket:id="linkPage" >LinkPage</div>
@@ -337,6 +338,7 @@
 			      	<a wicket:id="webview" href="#"><img wicket:id="webviewImg" alt="V" /></a>
 			      </td>
 			      <td>
+				      <a wicket:id="arr" href="#"><img wicket:id="arrImg" alt="A" /></a>
 			      </td>
 			      <td>
 			      	<input wicket:id="selected" type="checkbox" />
@@ -381,6 +383,7 @@
 			      	<a wicket:id="imgSelect" href="#">
 			      		<img wicket:id="selectImg" alt="S" />
 					</a>
+					<a wicket:id="arr" href="#"><img wicket:id="arrImg" alt="A" /></a>
 			      </td>
 			      <td>
 			      	<input wicket:id="selected" type="checkbox" />
@@ -421,10 +424,11 @@
 			        <a wicket:id="unlinkBtn" href="#"><img wicket:id="unlinkImg" alt="U" /></a>
 			      </td>
 			      <td>
-			      </td>
-			      <td>
 			        <a wicket:id="forward" href="#"><img wicket:id="forwardImg" alt="F" /></a>
 				  </td>
+			      <td>
+					<a wicket:id="arr" href="#"><img wicket:id="arrImg" alt="A" /></a>
+			      </td>
 			      <td>
 			      	<input wicket:id="selected" type="checkbox" />
 			      </td>
@@ -463,6 +467,7 @@
 			      	<a wicket:id="imgSelect" href="#">
 			      		<img wicket:id="selectImg" alt="S" />
 			      	</a>
+					<a wicket:id="arr" href="#"><img wicket:id="arrImg" alt="A" /></a>
 				  </td>
 			      <td>
 			      	<input wicket:id="selected" type="checkbox" />
@@ -481,7 +486,9 @@
 			      <td wicket:id="datetime">[Content Date/Time]</td>
 			      <td wicket:id="instanceNumber">[No]</td>
 			      <td wicket:id="sopClassUID" colspan="2">[SOP Class UID]</td>
-			      <td colspan="2"><div wicket:id="description" class="longText">[Description]</div></td>
+			      <td><div wicket:id="description" class="longText">[Description]</div></td>
+			      <td>
+			      </td>
 			      <td wicket:id="availability">[Availability]</td>
 			      <td>
 			        <a wicket:id="toggledetails" href="#"><img wicket:id="detailImg" alt="D" /></a>
@@ -492,14 +499,15 @@
 			      <td>
 			      </td>
 			      <td>
-			      </td>
-			      <td>
 			      	<a wicket:id="webview" href="#"><img wicket:id="webviewImg" alt="V" /></a>
 			      </td>
 			      <td>
 					<a wicket:id="wado" href="#">
 						<img wicket:id="wadoImg" alt="V" />
 					</a>
+			      </td>
+			      <td>
+					<a wicket:id="arr" href="#"><img wicket:id="arrImg" alt="A" /></a>
 			      </td>
 			      <td><input wicket:id="selected" type="checkbox" /></td>
 			    </tr>
@@ -527,11 +535,11 @@
 			      </td>
 			      <td>
 			      </td>
-			      <td>
-			      </td>
 	              <td>
 	                <a wicket:id="displayFile" href="#"><img wicket:id="displayFileImg" alt="F" /></a>
 	              </td>
+			      <td>
+			      </td>
 	 		      <td><input wicket:id="selected" type="checkbox" /></td>
 			    </tr>
 			    <tr wicket:id="details" class="file" style="border-top-style: none;">

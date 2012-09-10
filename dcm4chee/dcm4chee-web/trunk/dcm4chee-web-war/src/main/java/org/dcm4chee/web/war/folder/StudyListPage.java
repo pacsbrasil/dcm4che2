@@ -154,6 +154,8 @@ import org.dcm4chee.web.common.delegate.BaseCfgDelegate;
 import org.dcm4chee.web.common.exceptions.WicketExceptionWithMsgKey;
 import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.common.markup.DateTimeLabel;
+import org.dcm4chee.web.common.markup.IFramePage;
+import org.dcm4chee.web.common.markup.IFramePanel;
 import org.dcm4chee.web.common.markup.ModalWindowLink;
 import org.dcm4chee.web.common.markup.PopupLink;
 import org.dcm4chee.web.common.markup.SimpleDateTimeField;
@@ -182,6 +184,7 @@ import org.dcm4chee.web.war.common.UIDFieldBehavior;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 import org.dcm4chee.web.war.common.model.AbstractEditableDicomModel;
 import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
+import org.dcm4chee.web.war.folder.arr.AuditRecordRepositoryFacade;
 import org.dcm4chee.web.war.folder.delegate.ContentEditDelegate;
 import org.dcm4chee.web.war.folder.delegate.MppsEmulateDelegate;
 import org.dcm4chee.web.war.folder.delegate.TarRetrieveDelegate;
@@ -264,6 +267,7 @@ public class StudyListPage extends Panel {
     private ImageSelectionWindow imageSelectionWindow = new ImageSelectionWindow("imgSelection");
     private ModalWindow wadoImageWindow = new ModalWindow("wadoImageWindow");
 	private ConfirmationWindow<Form<?>> confirmSearch;
+	private ModalWindow arrWindow = new ModalWindow("arrWindow");
 	
     private WebviewerLinkProvider[] webviewerLinkProviders;
     
@@ -277,6 +281,7 @@ public class StudyListPage extends Panel {
 
     public StudyListPage(final String id) {
         super(id);
+        
         hidePPSModel.setObject(StudyPermissionHelper.get().isHidePPSAllowed() ? 
                 WebCfgDelegate.getInstance().getDefaultHidePPS() : false);
         if (StudyListPage.CSS != null)
@@ -360,6 +365,12 @@ public class StudyListPage extends Panel {
         addNavigation(form);
         addActions(form);
         
+        int[] winSize = WebCfgDelegate.getInstance().getWindowSize("arr");
+        arrWindow
+        	.setInitialWidth(winSize[0])
+        	.setInitialHeight(winSize[1])
+        	.setTitle("");
+
         header = new StudyListHeader("thead", form, viewport, hidePPSModel);
         form.add(header);
         form.add(new PatientListView("patients", viewport.getPatients()));
@@ -383,6 +394,16 @@ public class StudyListPage extends Panel {
         imageSelectionWindow.add(new SecurityBehavior(getModuleName() + ":imageSelectionWindow"));
         add(wadoImageWindow);
         wadoImageWindow.add(new SecurityBehavior(getModuleName() + ":wadoImageWindow"));
+        
+        add(arrWindow);
+        arrWindow.setWindowClosedCallback(new WindowClosedCallback() {
+            private static final long serialVersionUID = 1L;
+
+            public void onClose(AjaxRequestTarget target) {
+                getPage().setOutputMarkupId(true);
+                target.addComponent(getPage());
+            }            
+        });
     }
 
     private void initWebviewerLinkProvider() {
@@ -1642,6 +1663,25 @@ public class StudyListPage extends Panel {
                     .add(tooltip));
             row.add(Webviewer.getLink(patModel, webviewerLinkProviders, studyPermissionHelper, tooltip, modalWindow)
                     .add(new SecurityBehavior(getModuleName() + ":webviewerPatientLink")));
+            row.add(new AjaxLink<Object>("arr") {
+                
+                private static final long serialVersionUID = 1L;
+                
+                @Override
+				public void onClick(final AjaxRequestTarget target) {
+                	arrWindow
+    	        		.setContent(new Label("content", 
+    	        				new Model<String>(new AuditRecordRepositoryFacade()
+    	        					.doSearch(AuditRecordRepositoryFacade.Level.PATIENT, 
+    	        							patModel.getId())))
+    	                .setEscapeModelStrings(false)
+    	                .add(new AttributeModifier("class", true, new Model<String>("arr"))))
+    	                .show(target);
+                }
+            }.add(new Image("arrImg",ImageManager.IMAGE_COMMON_ARR)
+            .add(new ImageSizeBehaviour())
+            .add(tooltip)
+            .add(new SecurityBehavior(getModuleName() + ":arrLink"))));
             row.add(selChkBox.add(tooltip));
             WebMarkupContainer details = new WebMarkupContainer("details") {
 
@@ -1772,9 +1812,26 @@ public class StudyListPage extends Panel {
                 .setVisible(studyPermissionHelper.checkPermission(studyModel, StudyPermission.READ_ACTION))
                 .add(new SecurityBehavior(getModuleName() + ":imageSelectionStudyLink"))
             );
-            
+            row.add(new AjaxLink<Object>("arr") {
+                
+                private static final long serialVersionUID = 1L;
+                
+                @Override
+				public void onClick(final AjaxRequestTarget target) {
+                	arrWindow
+    	        		.setContent(new Label("content", 
+    	        				new Model<String>(new AuditRecordRepositoryFacade()
+    	        					.doSearch(AuditRecordRepositoryFacade.Level.STUDY, 
+    	        							studyModel.getStudyInstanceUID())))
+    	                .setEscapeModelStrings(false)
+    	                .add(new AttributeModifier("class", true, new Model<String>("arr"))))
+    	                .show(target);
+                }
+            }.add(new Image("arrImg",ImageManager.IMAGE_COMMON_ARR)
+            .add(new ImageSizeBehaviour())
+            .add(tooltip)
+            .add(new SecurityBehavior(getModuleName() + ":arrLink"))));
             row.add(selChkBox.add(tooltip));
-            
             WebMarkupContainer details = new WebMarkupContainer("details") {
                 
                 private static final long serialVersionUID = 1L;
@@ -2097,9 +2154,26 @@ public class StudyListPage extends Panel {
             .add(new ImageSizeBehaviour())
             .add(tooltip))
             .setVisible(ppsModel.getDataset() != null));
-
+            row.add(new AjaxLink<Object>("arr") {
+                
+                private static final long serialVersionUID = 1L;
+                
+                @Override
+				public void onClick(final AjaxRequestTarget target) {
+                	arrWindow
+    	        		.setContent(new Label("content", 
+    	        				new Model<String>(new AuditRecordRepositoryFacade()
+    	        					.doSearch(AuditRecordRepositoryFacade.Level.PPS, 
+    	        							ppsModel.getStudy().getStudyInstanceUID())))
+    	                .setEscapeModelStrings(false)
+    	                .add(new AttributeModifier("class", true, new Model<String>("arr"))))
+    	                .show(target);
+                }
+            }.add(new Image("arrImg",ImageManager.IMAGE_COMMON_ARR)
+            .add(new ImageSizeBehaviour())
+            .add(tooltip)
+            .add(new SecurityBehavior(getModuleName() + ":arrLink"))));
             row.add(selChkBox.add(tooltip));
-            
             WebMarkupContainer details = new WebMarkupContainer("details") {
                 
                 private static final long serialVersionUID = 1L;
@@ -2221,6 +2295,26 @@ public class StudyListPage extends Panel {
                 .setVisible(studyPermissionHelper.checkPermission(seriesModel, StudyPermission.READ_ACTION))
                 .add(new SecurityBehavior(getModuleName() + ":imageSelectionSeriesLink"))
             );
+            row.add(new AjaxLink<Object>("arr") {
+                
+                private static final long serialVersionUID = 1L;
+                
+                @Override
+				public void onClick(final AjaxRequestTarget target) {
+                	arrWindow
+    	        		.setContent(new Label("content", 
+    	        				new Model<String>(new AuditRecordRepositoryFacade()
+    	        					.doSearch(AuditRecordRepositoryFacade.Level.SERIES, 
+    	        							((StudyModel) seriesModel.getParent().getParent())
+    	        								.getStudyInstanceUID())))
+    	                .setEscapeModelStrings(false)
+    	                .add(new AttributeModifier("class", true, new Model<String>("arr"))))
+    	                .show(target);
+                }
+            }.add(new Image("arrImg",ImageManager.IMAGE_COMMON_ARR)
+            .add(new ImageSizeBehaviour())
+            .add(tooltip)
+            .add(new SecurityBehavior(getModuleName() + ":arrLink"))));
             final WebMarkupContainer details = new WebMarkupContainer("details") {
                 
                 private static final long serialVersionUID = 1L;
@@ -2341,7 +2435,26 @@ public class StudyListPage extends Panel {
                 .setVisible(studyPermissionHelper.checkPermission(instModel, StudyPermission.READ_ACTION))
                 .add(new SecurityBehavior(getModuleName() + ":wadoImageInstanceLink"))
             );
-
+            row.add(new AjaxLink<Object>("arr") {
+                
+                private static final long serialVersionUID = 1L;
+                
+                @Override
+				public void onClick(final AjaxRequestTarget target) {
+                	arrWindow
+    	        		.setContent(new Label("content", 
+    	        				new Model<String>(new AuditRecordRepositoryFacade()
+    	        					.doSearch(AuditRecordRepositoryFacade.Level.INSTANCE, 
+    	        							((StudyModel) instModel.getParent().getParent().getParent())
+	        									.getStudyInstanceUID())))
+    	                .setEscapeModelStrings(false)
+    	                .add(new AttributeModifier("class", true, new Model<String>("arr"))))
+    	                .show(target);
+                }
+            }.add(new Image("arrImg",ImageManager.IMAGE_COMMON_ARR)
+            .add(new ImageSizeBehaviour())
+            .add(tooltip)
+            .add(new SecurityBehavior(getModuleName() + ":arrLink"))));
             row.add(selChkBox.add(tooltip));
             WebMarkupContainer details = new WebMarkupContainer("details") {
                 

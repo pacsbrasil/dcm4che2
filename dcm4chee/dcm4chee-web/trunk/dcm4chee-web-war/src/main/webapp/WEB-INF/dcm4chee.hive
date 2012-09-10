@@ -67,6 +67,13 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "H
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:hidePPSLevel", "render, enable";
 };
 
+grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "QueryARR"
+{
+// KEY: swarm.principal.QueryARR
+    permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:arrLink", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:trash:arrLink", "render, enable";
+};
+
 grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "StudyPermissionsAll"
 {
 // KEY: swarm.principal.StudyPermissionsAll

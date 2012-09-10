@@ -31,3 +31,5 @@ table.search-table td.modality {width: 90px;}
 table.search-table input.accnr {width: 150px;}
 /* QueryType select */
 table.search-table tr.search-table-footer td.queryType {text-align: right;}
+
+div.arr {color: #FFFFFF;}

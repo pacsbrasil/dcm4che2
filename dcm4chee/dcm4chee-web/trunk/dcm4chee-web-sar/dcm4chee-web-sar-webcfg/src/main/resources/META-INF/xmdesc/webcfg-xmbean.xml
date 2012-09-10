@@ -318,6 +318,7 @@
       	Format: &lt;name&gt;:&lt;width&gt;x&lt;height&gt;<br/>
       	<dl><dt>Following window names can be used:</dt>
       	<dd>default:   default size</dd>
+		<dd>arr:    ARR window in Folder and Trash</dd>
       	<dd>export:    Export window in Folder</dd>
       	<dd>dcmEdit:   Dicom Edit window in Folder</dd>
       	<dd>dcmFileDisplay:   Dicom object from file window in Folder</dd>
@@ -351,6 +352,7 @@
       <descriptors>
          <value value="
          	default:800x600
+         	arr:1024x768
          	export:650x500
          	aeEdit:960x700
          	mwEdit:1024x768
