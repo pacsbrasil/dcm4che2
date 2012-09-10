@@ -119,8 +119,10 @@ public abstract class TCQueryFilterValue<T> implements Serializable {
                             + conceptNameValueParam.getKey() + ")");
                     sb.append(" AND (concept_name.codingSchemeDesignator = :"
                             + conceptNameDesignatorParam.getKey() + ")");
-                    sb.append(" AND (upper(concept_code.codeMeaning) LIKE :"
+                    sb.append(" AND ((upper(concept_code.codeMeaning) LIKE :"
                             + conceptCodeMeaningParam.getKey() + ")");
+                    sb.append(" OR (upper(concept_code.codeValue) LIKE :"
+                    		+ conceptCodeMeaningParam.getKey() + "))");
                     sb.append(")");
 
                     return new QueryParam[] { searchStringParam,
