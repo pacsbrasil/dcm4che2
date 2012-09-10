@@ -58,6 +58,7 @@ import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxEventBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
+import org.apache.wicket.behavior.IBehavior;
 import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxFallbackLink;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.extensions.markup.html.repeater.data.sort.OrderByBorder;
@@ -77,6 +78,9 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
+import org.apache.wicket.security.actions.WaspAction;
+import org.apache.wicket.security.actions.WaspActionFactory;
+import org.apache.wicket.security.checks.ISecurityCheck;
 import org.apache.wicket.security.components.SecureComponentHelper;
 import org.apache.wicket.util.convert.IConverter;
 import org.apache.wicket.util.convert.converters.DateConverter;
@@ -364,7 +368,7 @@ public class TCResultPanel extends Panel {
                         boolean edit = WebCfgDelegate.getInstance().getTCEditOnDoubleClick();
                         if (edit)
                         {
-                            edit = SecureComponentHelper.isAuthenticated(editLink);
+                            edit = SecureComponentHelper.isActionAuthorized(editLink,"render");
                         }
                         
                         openTC(selected, edit, target);
