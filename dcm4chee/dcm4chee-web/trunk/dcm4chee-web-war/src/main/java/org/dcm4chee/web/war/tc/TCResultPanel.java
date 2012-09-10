@@ -38,7 +38,6 @@
 package org.dcm4chee.web.war.tc;
 
 import java.text.DateFormat;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -59,11 +58,11 @@ import org.apache.wicket.ajax.AjaxEventBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.behavior.IBehavior;
-import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxFallbackLink;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.extensions.markup.html.repeater.data.sort.OrderByBorder;
 import org.apache.wicket.extensions.markup.html.repeater.util.SortParam;
 import org.apache.wicket.extensions.markup.html.repeater.util.SortableDataProvider;
+import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
@@ -78,12 +77,10 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
-import org.apache.wicket.security.actions.WaspAction;
-import org.apache.wicket.security.actions.WaspActionFactory;
-import org.apache.wicket.security.checks.ISecurityCheck;
 import org.apache.wicket.security.components.SecureComponentHelper;
 import org.apache.wicket.util.convert.IConverter;
 import org.apache.wicket.util.convert.converters.DateConverter;
+import org.apache.wicket.util.time.Duration;
 import org.dcm4chee.archive.entity.Instance;
 import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.icons.ImageManager;
@@ -100,7 +97,6 @@ import org.dcm4chee.web.war.StudyPermissionHelper;
 import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
 import org.dcm4chee.web.war.folder.StudyListPage;
 import org.dcm4chee.web.war.folder.ViewPort;
-import org.dcm4chee.web.war.folder.Mpps2MwlLinkPage.LinkPage;
 import org.dcm4chee.web.war.folder.webviewer.Webviewer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -167,6 +163,9 @@ public class TCResultPanel extends Panel {
             protected void populateItem(final Item<TCModel> item) {
                 final TCModel tc = item.getModelObject();
 
+                final StringBuilder jsStopEventPropagationInline = new StringBuilder(
+                		"var event=arguments[0] || window.event; if (event.stopPropagation) {event.stopPropagation();} else {event.cancelBubble=True;};");
+                
                 item.setOutputMarkupId(true);
                 item.add(new TCMultiLineLabel("title", tc.getTitle(), 80));
                 item.add(new TCMultiLineLabel("abstract", tc.getAbstract(), 80));
@@ -209,29 +208,54 @@ public class TCResultPanel extends Panel {
                         .add(new SecurityBehavior(TCPanel.getModuleName()
                                 + ":webviewerInstanceLink")));
 
-                item.add(new AjaxLink<String>("tc-view") {
-                        private static final long serialVersionUID = 1L;
-                        @Override
-                        public void onClick(AjaxRequestTarget target) {
-                            openTC(tc, false, target);
-                        }
+                final Component viewLink = new AjaxLink<String>("tc-view") {
+                    private static final long serialVersionUID = 1L;
+                    @Override
+                    public void onClick(AjaxRequestTarget target) {
+                        openTC(tc, false, target);
                     }
-                   .add(new Image("tcViewImg", ImageManager.IMAGE_COMMON_DICOM_DETAILS)
-                   .add(new ImageSizeBehaviour("vertical-align: middle;")))
-                   .add(new TooltipBehaviour("tc.result.table.","view"))
-                );
-                
-                final Component editLink = new IndicatingAjaxFallbackLink<String>("tc-edit") {
+                    protected void onComponentTag(ComponentTag tag)
+                    {
+                    	super.onComponentTag(tag);
+                    	tag.put("ondblclick",jsStopEventPropagationInline);
+                    }
+                }
+               .add(new Image("tcViewImg", ImageManager.IMAGE_COMMON_DICOM_DETAILS)
+               .add(new ImageSizeBehaviour("vertical-align: middle;")))
+               .add(new TooltipBehaviour("tc.result.table.","view"))
+               .setOutputMarkupId(true);
+               
+        	   //avoid to call onClick multiple times
+               AjaxEventBehavior viewBehavior = findEventBehavior(viewLink.getBehaviors(), "onclick");
+               if (viewBehavior!=null)
+               {
+            	   viewBehavior.setThrottleDelay(Duration.milliseconds(2500));
+               }
+               
+               final Component editLink = new AjaxLink<String>("tc-edit") {
                     private static final long serialVersionUID = 1L;
                     @Override
                     public void onClick(AjaxRequestTarget target) {
                         openTC(tc, true, target);
                     }
+                    protected void onComponentTag(ComponentTag tag)
+                    {
+                    	super.onComponentTag(tag);
+                    	tag.put("ondblclick",jsStopEventPropagationInline);
+                    }
                 }
                .add(new Image("tcEditImg", ImageManager.IMAGE_COMMON_DICOM_EDIT)
                .add(new ImageSizeBehaviour("vertical-align: middle;")))
                .add(new TooltipBehaviour("tc.result.table.","edit"))
-               .add(new SecurityBehavior(TCPanel.getModuleName() + ":editTC"));
+               .add(new SecurityBehavior(TCPanel.getModuleName() + ":editTC"))
+               .setOutputMarkupId(true);
+               
+        	   //avoid to call onClick multiple times
+               AjaxEventBehavior editBehavior = findEventBehavior(editLink.getBehaviors(), "onclick");
+               if (editBehavior!=null)
+               {
+            	   editBehavior.setThrottleDelay(Duration.milliseconds(2500));
+               }
                
                final Component studyLink = new AjaxLink<String>("tc-study") {
                    private static final long serialVersionUID = 1L;
@@ -278,14 +302,29 @@ public class TCResultPanel extends Panel {
                            log.error("Unable to show TC referenced studies!", e);
                        }
                    }
+	               	@Override
+                    protected void onComponentTag(ComponentTag tag)
+                    {
+                    	super.onComponentTag(tag);
+                    	tag.put("ondblclick",jsStopEventPropagationInline);
+                    }
                }
               .add(new Image("tcStudyImg", ImageManager.IMAGE_COMMON_SEARCH)
               .add(new ImageSizeBehaviour("vertical-align: middle;")))
               .add(new TooltipBehaviour("tc.result.table.","showStudy"))
-              .add(new SecurityBehavior(TCPanel.getModuleName() + ":showTCStudy"));
+              .add(new SecurityBehavior(TCPanel.getModuleName() + ":showTCStudy"))
+              .setOutputMarkupId(true);
                
-                item.add(editLink);
-                item.add(studyLink);
+       	      //avoid to call onClick multiple times
+              AjaxEventBehavior studyBehavior = findEventBehavior(studyLink.getBehaviors(), "onclick");
+              if (studyBehavior!=null)
+              {
+           	     studyBehavior.setThrottleDelay(Duration.milliseconds(2500));
+              }
+              
+              item.add(viewLink);
+              item.add(editLink);
+              item.add(studyLink);
                 
                 item.add(new AttributeModifier("class", true,
                         new AbstractReadOnlyModel<String>() {
@@ -528,6 +567,24 @@ public class TCResultPanel extends Panel {
                         .setBaseUrl(baseUrls.get(names.get(i)));
             }
         }
+    }
+    
+    private AjaxEventBehavior findEventBehavior(List<IBehavior> list, String event)
+    {
+    	if (list!=null)
+    	{
+    		for (IBehavior b : list)
+    		{
+    			if (b instanceof AjaxEventBehavior)
+    			{
+    				if (((AjaxEventBehavior)b).getEvent().equalsIgnoreCase(event))
+    				{
+    					return (AjaxEventBehavior) b;
+    				}
+    			}
+    		}
+    	}
+    	return null;
     }
     
     private static Object maskNull(Object val, Object def) {
