@@ -317,14 +317,10 @@ public abstract class PrivateManagerBean implements SessionBean {
         try {
             Collection c = privPatHome.findByPrivateType(privateType);
             for (Iterator iter = c.iterator(); iter.hasNext();) {
-                privPatHome.remove(((PrivatePatientLocal) iter.next()).getPk());
+            	deletePrivatePatient(((PrivatePatientLocal) iter.next()).getPk());
             }
-        } catch (EJBException e) {
-            throw new RemoteException(e.getMessage());
-        } catch (RemoveException e) {
-            throw new RemoteException(e.getMessage());
         } catch (FinderException e) {
-            throw new RemoteException(e.getMessage());
+            throw new RemoteException("Can't find patients with type " + privateType, e);
         }
     }
 
@@ -395,13 +391,13 @@ public abstract class PrivateManagerBean implements SessionBean {
 
             return dss;
         } catch (CreateException e) {
-            throw new RemoteException(e.getMessage());
+            throw new RemoteException("Can't delete instances, first instance is " + iuids[0] , e);
         } catch (EJBException e) {
-            throw new RemoteException(e.getMessage());
+            throw new RemoteException("Can't delete instances, first instance is " + iuids[0] , e);
         } catch (FinderException e) {
-            throw new RemoteException(e.getMessage());
+            throw new RemoteException("Can't delete instances, first instance is " + iuids[0] , e);
         } catch (RemoveException e) {
-            throw new RemoteException(e.getMessage());
+            throw new RemoteException("Can't delete instances, first instance is " + iuids[0] , e);
         }
     }
 
