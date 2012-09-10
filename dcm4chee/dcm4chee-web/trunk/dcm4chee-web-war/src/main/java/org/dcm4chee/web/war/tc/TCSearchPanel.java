@@ -69,6 +69,7 @@ import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue;
 import org.dcm4chee.web.war.common.AutoSelectInputTextBehaviour;
 import org.dcm4chee.web.war.tc.TCObject.DicomCode;
+import org.dcm4chee.web.war.tc.TCObject.ITextOrCode;
 import org.dcm4chee.web.war.tc.TCUtilities.NullDropDownItem;
 import org.dcm4chee.web.war.tc.keywords.TCKeyword;
 import org.slf4j.Logger;
@@ -473,19 +474,31 @@ public abstract class TCSearchPanel extends Panel {
     
     private Object getConvertedKeywordInputValue(Object value)
     {
+    	DicomCode code = null;
+    	String text = null;
+    	
         if (value instanceof TCKeyword)
         {
             TCKeyword kw = (TCKeyword) value;
             
-            if (kw != null) {
-                DicomCode code = kw.getCode();
-                if (kw.isValid() && code != null) {
-                    return code.toCode();
-                } else {
-                    String s = kw.getName();
-                    return s != null && s.length() > 0 ? s : null;
-                }
+            if (kw != null && kw.isValid()) {
+                code = kw.getCode();
+                text = kw.getName();
             }
+        }
+        else if (value instanceof ITextOrCode)
+        {
+        	code = ((ITextOrCode)value).getCode();
+        	text = ((ITextOrCode)value).getText();
+        }
+        
+        if (code!=null)
+        {
+        	return code.toCode();
+        }
+        else if (text!=null && text.length()>0)
+        {
+        	return text;
         }
 
         return value;
