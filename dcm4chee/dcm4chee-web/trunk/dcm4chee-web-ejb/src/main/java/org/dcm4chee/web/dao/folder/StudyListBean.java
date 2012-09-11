@@ -109,7 +109,7 @@ public class StudyListBean implements StudyListLocal {
     public List<Patient> findPatients(StudyListFilter filter, int max, int index, List<String> roles) {
         if ((roles != null) && (roles.size() == 0)) return new ArrayList<Patient>();
         StringBuilder ql = new StringBuilder(64);
-        ql.append("SELECT DISTINCT p");
+        ql.append("SELECT p");
         if (!filter.isPatientQuery())
             ql.append(", s");
         appendFromClause(ql, filter);
