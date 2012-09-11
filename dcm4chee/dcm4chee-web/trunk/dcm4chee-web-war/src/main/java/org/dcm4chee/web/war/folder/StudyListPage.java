@@ -901,12 +901,6 @@ public class StudyListPage extends Panel {
 
             @Override
             public boolean isVisible() {
-                log.info("#######disableSearch:"+disableSearch);
-                log.info("#######notSearched:"+notSearched);
-                log.info("#######viewport.getTotal() - viewport.getOffset():"+(viewport.getTotal() - viewport.getOffset()));
-                log.info("#######pagesize.getObject():"+pagesize.getObject());
-                log.info("#######(viewport.getTotal() - viewport.getOffset() <= pagesize.getObject()):"+(viewport.getTotal() - viewport.getOffset() <= pagesize.getObject()));
-                log.info("#######isVisible:"+(!disableSearch && !notSearched && !(viewport.getTotal() - viewport.getOffset() <= pagesize.getObject())));
                 return (!disableSearch && !notSearched && !(viewport.getTotal() - viewport.getOffset() <= pagesize.getObject()));
             }
         }
