@@ -47,7 +47,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.wicket.model.IModel;
 import org.dcm4chee.web.common.delegate.BaseCfgDelegate;
 import org.dcm4chee.web.service.common.RetryIntervalls;
 import org.slf4j.Logger;
@@ -78,6 +77,10 @@ public class WebCfgDelegate extends BaseCfgDelegate {
 
     public String getDicomSecurityServletUrl() {
         return getString("dicomSecurityServletUrl");
+    }
+
+    public String getArrUrl() {
+        return getString("arrURL");
     }
 
     public boolean getManageUsers() {

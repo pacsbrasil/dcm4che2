@@ -114,9 +114,10 @@ public class WebCfgService extends ServiceMBeanSupport implements
             "Series", "Instance" };
 
     private String dicomSecurityServletUrl;
-
     private String wadoBaseURL;
     private String ridBaseURL;
+    private String arrURL;
+    
     private List<String> webviewerNames;
     private Map<String, String> webviewerBaseUrls = new HashMap<String, String>();
 
@@ -233,6 +234,14 @@ public class WebCfgService extends ServiceMBeanSupport implements
 
     public void setRIDBaseURL(String url) {
         this.ridBaseURL = url;
+    }
+
+    public String getArrURL() {
+        return arrURL;
+    }
+
+    public void setArrURL(String url) {
+        this.arrURL = url;
     }
 
     public String getInstalledWebViewer() {

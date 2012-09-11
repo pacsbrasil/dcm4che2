@@ -70,6 +70,19 @@
          <value value="NONE"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="getArrURL"
+      setMethod="setArrURL">
+      <description><![CDATA[
+        URL for the location of the Audit Record Repository's xml service <br/> 
+        used to retireve and display entries in the folder.]]>
+      </description>
+      <name>arrURL</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="http://localhost:8080/dcm4chee-arr/xml"/>
+      </descriptors>
+   </attribute>
    <attribute access="read-only" getMethod="getInstalledWebViewer" >
       <description>Name(s) of installed WebViewer</description>
       <name>InstalledWebViewer</name>

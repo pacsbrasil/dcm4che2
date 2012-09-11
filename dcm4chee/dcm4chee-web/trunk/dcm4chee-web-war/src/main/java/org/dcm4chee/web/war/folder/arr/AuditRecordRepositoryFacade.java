@@ -19,6 +19,7 @@ import javax.xml.transform.stream.StreamSource;
 import org.apache.wicket.RequestCycle;
 import org.apache.wicket.protocol.http.WebApplication;
 import org.apache.wicket.protocol.http.WebRequest;
+import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.InputSource;
@@ -35,7 +36,7 @@ public class AuditRecordRepositoryFacade {
 		InputStream in = null;
 		try {
 			urlConnection = (HttpURLConnection) 
-					new URL("http://localhost:8080/dcm4chee-arr/xml?" 
+					new URL(WebCfgDelegate.getInstance().getArrUrl() + "?" 
 							+ processParameters(queryType, queryParameter))
 					.openConnection();
 			WebRequest webRequest = ((WebRequest) RequestCycle.get().getRequest());
