@@ -1,5 +1,6 @@
 package org.dcm4chee.web.war.tc;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -16,6 +17,7 @@ import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
 import org.dcm4che2.io.DicomInputStream;
 import org.dcm4chee.archive.entity.Code;
+import org.dcm4chee.web.common.util.FileUtils;
 import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue.AcquisitionModality;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue.Category;
@@ -100,13 +102,10 @@ public class TCObject implements Serializable {
         String fileID = model.getFileId();
 
         DicomInputStream dis = null;
-
         try {
-            dis = new DicomInputStream(
-                    fsID.startsWith("tar:") ? TarRetrieveDelegate.getInstance()
-                            .retrieveFileFromTar(fsID, fileID)
-                            : new java.io.File(fsID, fileID));
-
+        	dis = new DicomInputStream(fsID.startsWith("tar:") ? 
+        			TarRetrieveDelegate.getInstance().retrieveFileFromTar(fsID, fileID) :
+        				FileUtils.resolve(new File(fsID, fileID)));
             return new TCObject(dis.readDicomObject());
         } finally {
             if (dis != null) {

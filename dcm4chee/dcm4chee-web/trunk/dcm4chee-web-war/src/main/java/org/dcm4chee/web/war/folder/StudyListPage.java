@@ -2399,7 +2399,6 @@ public class StudyListPage extends Panel {
                         target.addComponent(patientListItem);
                     }
                 }
-
             }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
             .add(new ImageSizeBehaviour())
             .add(tooltip)));

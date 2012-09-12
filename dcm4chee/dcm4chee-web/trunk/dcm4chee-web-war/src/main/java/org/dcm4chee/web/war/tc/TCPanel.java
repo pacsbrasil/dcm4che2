@@ -101,7 +101,10 @@ public class TCPanel extends Panel {
         }
 
         final ModalWindow viewDialog = new ModalWindow("tc-view-dialog") {
-            @Override
+
+			private static final long serialVersionUID = 1L;
+
+			@Override
             public void show(AjaxRequestTarget target)
             {
                 if (isShown()==false)
@@ -192,7 +195,10 @@ public class TCPanel extends Panel {
                     final TCViewPanel viewPanel = !edit ?
                             new TCViewPanel(viewDialog.getContentId(), model, tc) :
                             new TCViewEditablePanel(viewDialog.getContentId(), model, tc) {
-                                @Override
+
+								private static final long serialVersionUID = 1L;
+
+								@Override
                                 protected void onClose(AjaxRequestTarget target, boolean save)
                                 {
                                     viewDialog.close(target);
