@@ -84,6 +84,7 @@ public class TCPanel extends Panel {
     private TCPopupManager popupManager;
     
     private TCSearchPanel searchPanel;
+    private TCResultPanel listPanel;
     
     public TCPanel(final String id) {
         super(id);
@@ -101,10 +102,9 @@ public class TCPanel extends Panel {
         }
 
         final ModalWindow viewDialog = new ModalWindow("tc-view-dialog") {
+            private static final long serialVersionUID = 1L;
 
-			private static final long serialVersionUID = 1L;
-
-			@Override
+            @Override
             public void show(AjaxRequestTarget target)
             {
                 if (isShown()==false)
@@ -162,10 +162,9 @@ public class TCPanel extends Panel {
                 }
             }
         };
-
         final TCDetailsPanel detailsPanel = new TCDetailsPanel("details-panel");
         final TCListModel listModel = new TCListModel();
-        final TCResultPanel listPanel = new TCResultPanel("result-panel",
+        listPanel = new TCResultPanel("result-panel",
                 listModel) {
 
             private static final long serialVersionUID = 1L;
@@ -195,10 +194,9 @@ public class TCPanel extends Panel {
                     final TCViewPanel viewPanel = !edit ?
                             new TCViewPanel(viewDialog.getContentId(), model, tc) :
                             new TCViewEditablePanel(viewDialog.getContentId(), model, tc) {
+				private static final long serialVersionUID = 1L;
 
-								private static final long serialVersionUID = 1L;
-
-								@Override
+				@Override
                                 protected void onClose(AjaxRequestTarget target, boolean save)
                                 {
                                     viewDialog.close(target);
@@ -239,6 +237,14 @@ public class TCPanel extends Panel {
                 }
             }
         };
+        viewDialog.setCloseButtonCallback(new ModalWindow.CloseButtonCallback() {
+            private static final long serialVersionUID = 1L;
+            
+            public boolean onCloseButtonClicked(AjaxRequestTarget target) {
+                target.addComponent(listPanel);
+                return true;
+            }
+        });
 
         add(macb);
         add((searchPanel=new TCSearchPanel("search-panel") {
