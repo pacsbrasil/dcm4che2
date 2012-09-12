@@ -291,7 +291,7 @@ div.tc-keyword-input-btn-container:after
 div.tc-keyword-input-text-container 
 {
     position: relative;
-    min-width: 20em;
+    min-width: 18em;
     margin-right: 22px;
 }
 
