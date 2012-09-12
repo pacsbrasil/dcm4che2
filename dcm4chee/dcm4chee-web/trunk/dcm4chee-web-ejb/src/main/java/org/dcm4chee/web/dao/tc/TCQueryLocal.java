@@ -38,6 +38,7 @@
 package org.dcm4chee.web.dao.tc;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.ejb.Local;
 
@@ -68,4 +69,6 @@ public interface TCQueryLocal {
     
     Instance findInstanceByUID(String uid);
 
+    Map<String, Integer> findMultiframeInstances(
+    		String stuid, String suid, String...iuids);
 }

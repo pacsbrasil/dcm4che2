@@ -76,13 +76,13 @@ public class TCDetailsImagesTab extends Panel {
         final int rows = 5;
 
         final ReferencedImageProvider imageProvider = new ReferencedImageProvider();
-        GridView<TCReferencedInstance> view = new GridView<TCReferencedInstance>(
+        GridView<TCReferencedImage> view = new GridView<TCReferencedImage>(
                 "details-image-row", imageProvider) {
 
             private static final long serialVersionUID = 1L;
 
             @Override
-            protected void populateItem(final Item<TCReferencedInstance> item) {
+            protected void populateItem(final Item<TCReferencedImage> item) {
                 TCReferencedInstance ref = item.getModelObject();
 
                 if (WADODelegate.getInstance().getRenderType(ref.getClassUID()) == WADODelegate.IMAGE) {
@@ -98,7 +98,7 @@ public class TCDetailsImagesTab extends Panel {
             }
 
             @Override
-            protected void populateEmptyItem(final Item<TCReferencedInstance> item) {
+            protected void populateEmptyItem(final Item<TCReferencedImage> item) {
                 item.add(new Image("image",
                         ImageManager.IMAGE_TC_IMAGE_PLACEHOLDER)
                         .setOutputMarkupId(true));
@@ -130,14 +130,14 @@ public class TCDetailsImagesTab extends Panel {
         return (TCObject) getDefaultModelObject();
     }
 
-    public class ReferencedImageProvider implements IDataProvider<TCReferencedInstance> {
+    public class ReferencedImageProvider implements IDataProvider<TCReferencedImage> {
 
         private static final long serialVersionUID = 1L;
 
         @SuppressWarnings({ "unchecked" })
         @Override
-        public Iterator<TCReferencedInstance> iterator(int first, int count) {
-            List<TCReferencedInstance> images = getTCObject().getReferencedImages();
+        public Iterator<TCReferencedImage> iterator(int first, int count) {
+            List<TCReferencedImage> images = getTCObject().getReferencedImages();
             if (images != null) {
                 return images.subList(first, first + count).iterator();
             } else {
@@ -147,13 +147,13 @@ public class TCDetailsImagesTab extends Panel {
 
         @Override
         public int size() {
-            List<TCReferencedInstance> images = getTCObject().getReferencedImages();
+            List<TCReferencedImage> images = getTCObject().getReferencedImages();
             return images != null ? images.size() : 0;
         }
 
         @Override
-        public IModel<TCReferencedInstance> model(TCReferencedInstance object) {
-            return new Model<TCReferencedInstance>(object);
+        public IModel<TCReferencedImage> model(TCReferencedImage object) {
+            return new Model<TCReferencedImage>(object);
         }
 
         @Override

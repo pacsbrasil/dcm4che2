@@ -79,16 +79,17 @@ public class TCReferencedSeries implements TCImageViewSeries {
         
         return null;
     }
-    @Override
-    public List<TCReferencedInstance> getImages()
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+	@Override
+    public List<TCReferencedImage> getImages()
     {
         if (notImages==null)
         {
-            return getInstances();
+            return (List)getInstances();
         }
         else
         {
-            List<TCReferencedInstance> images = new ArrayList<TCReferencedInstance>(instances);
+            List<TCReferencedImage> images = new ArrayList<TCReferencedImage>((List)instances);
             images.removeAll(notImages);
             return images;
         }
@@ -115,5 +116,20 @@ public class TCReferencedSeries implements TCImageViewSeries {
                 }
             }
         }
+    }
+    public void removeInstance(TCReferencedInstance instance)
+    {
+    	if (instances!=null)
+    	{
+    		instances.remove(instance);
+    		if (notImages!=null)
+    		{
+    			notImages.remove(instance);
+    			if (notImages.isEmpty())
+    			{
+    				notImages = null;
+    			}
+    		}
+    	}
     }
 }

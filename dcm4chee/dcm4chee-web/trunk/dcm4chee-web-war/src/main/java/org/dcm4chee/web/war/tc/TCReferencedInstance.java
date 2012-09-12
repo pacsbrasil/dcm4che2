@@ -1,16 +1,15 @@
 package org.dcm4chee.web.war.tc;
 
+import java.io.Serializable;
+
 import org.dcm4chee.web.war.folder.delegate.WADODelegate;
-import org.dcm4chee.web.war.tc.imageview.TCImageViewImage;
 
 /**
  * @author Bernhard Ableitinger <bernhard.ableitinger@agfa.com>
  * @version $Revision$ $Date$
  * @since May 04, 2011
  */
-public class TCReferencedInstance implements TCImageViewImage {
-
-    private static final long serialVersionUID = 1L;
+public class TCReferencedInstance implements Serializable {
 
     private TCReferencedSeries series;
     private String iuid;
@@ -22,7 +21,6 @@ public class TCReferencedInstance implements TCImageViewImage {
         this.series = series;
     }
 
-    @Override
     public TCReferencedSeries getSeries()
     {
         return series;
@@ -36,17 +34,19 @@ public class TCReferencedInstance implements TCImageViewImage {
         return series.getSeriesUID();
     }
 
-    @Override
     public String getInstanceUID() {
         return iuid;
     }
 
-    @Override
     public String getClassUID() {
         return cuid;
     }
-
+    
     public boolean isImage() {
+    	return isImage(cuid);
+    }
+
+    public static boolean isImage(String cuid) {
         return WADODelegate.IMAGE == WADODelegate.getInstance()
                 .getRenderType(cuid);
     }

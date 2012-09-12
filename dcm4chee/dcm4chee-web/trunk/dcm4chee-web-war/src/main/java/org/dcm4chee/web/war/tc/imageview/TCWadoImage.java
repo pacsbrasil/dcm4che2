@@ -153,7 +153,8 @@ public class TCWadoImage extends WebComponent
             {
                 return getWadoUrl(image.getSeries().getStudy().getStudyUID(),
                         image.getSeries().getSeriesUID(), 
-                        image.getInstanceUID(), 
+                        image.getInstanceUID(),
+                        image.getFrameNumber(),
                         requestedSize);
             }
             
@@ -181,10 +182,15 @@ public class TCWadoImage extends WebComponent
         
         public static String getWadoUrl(String stuid, String suid, String iuid)
         {
-            return getWadoUrl(stuid, suid, iuid, null);
+        	return getWadoUrl(stuid, suid, iuid, -1);
         }
         
-        public static String getWadoUrl(String stuid, String suid, String iuid, TCWadoImageSize requestedSize)
+        public static String getWadoUrl(String stuid, String suid, String iuid, int frameNumber)
+        {
+            return getWadoUrl(stuid, suid, iuid, frameNumber, null);
+        }
+        
+        public static String getWadoUrl(String stuid, String suid, String iuid, int frameNumber, TCWadoImageSize requestedSize)
         {
             StringBuilder sb = new StringBuilder();
             sb.append(WadoImage.getDefaultWadoBaseUrl());
@@ -193,6 +199,12 @@ public class TCWadoImage extends WebComponent
             sb.append("&studyUID=").append(stuid);
             sb.append("&seriesUID=").append(suid);
             sb.append("&objectUID=").append(iuid);
+            
+            if (frameNumber>0)
+            {
+            	sb.append("&frameNumber=").append(frameNumber);
+            }
+            
             if (requestedSize != null) {
                 int width = requestedSize.getWidth();
                 int height = requestedSize.getHeight();

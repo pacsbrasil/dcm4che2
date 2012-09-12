@@ -6,8 +6,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.wicket.Component;
 import org.dcm4che2.data.BasicDicomObject;
@@ -17,8 +19,10 @@ import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
 import org.dcm4che2.io.DicomInputStream;
 import org.dcm4chee.archive.entity.Code;
+import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.web.common.util.FileUtils;
 import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
+import org.dcm4chee.web.dao.tc.TCQueryLocal;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue.AcquisitionModality;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue.Category;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue.Level;
@@ -91,7 +95,7 @@ public class TCObject implements Serializable {
     
     private List<TCReferencedInstance> instanceRefs;
     
-    private List<TCReferencedInstance> imageRefs;
+    private List<TCReferencedImage> imageRefs;
     
     protected TCObject(DicomObject object) {
         parse(object);
@@ -248,11 +252,11 @@ public class TCObject implements Serializable {
         return instanceRefs;
     }
     
-    public List<TCReferencedInstance> getReferencedImages()
+    public List<TCReferencedImage> getReferencedImages()
     {
         if (imageRefs==null)
         {
-            imageRefs = new ArrayList<TCReferencedInstance>();
+            imageRefs = new ArrayList<TCReferencedImage>();
             
             List<TCReferencedStudy> studies = getReferencedStudies();
 
@@ -260,7 +264,7 @@ public class TCObject implements Serializable {
             {
                 for (TCReferencedSeries series : study.getSeries())
                 {
-                    for (TCReferencedInstance image : series.getImages())
+                    for (TCReferencedImage image : series.getImages())
                     {
                     	if (image.isImage() && !imageRefs.contains(image))
                         {
@@ -401,9 +405,11 @@ public class TCObject implements Serializable {
                                         .get(Tag.ReferencedSOPSequence);
                                 instanceCount = instanceSeq != null ? instanceSeq
                                         .countItems() : -1;
-
+                                
                                 if (instanceCount > 0) {
                                     study.addSeries(series);
+                                    
+                                    Map<String, TCReferencedImage> images = null;
                                     
                                     for (int k = 0; k < instanceCount; k++) {
                                         DicomObject instanceRef = instanceSeq
@@ -412,9 +418,47 @@ public class TCObject implements Serializable {
                                                 .getString(Tag.ReferencedSOPInstanceUID);
                                         String cuid = instanceRef
                                                 .getString(Tag.ReferencedSOPClassUID);
-
-                                        series.addInstance(
+                                        
+                                        if (TCReferencedInstance.isImage(cuid))
+                                        {
+                                        	TCReferencedImage image = new TCReferencedImage(series, iuid, cuid);
+                                        	series.addInstance(image);
+                                        	
+                                        	if (images==null)
+                                        	{
+                                        		images = new HashMap<String, TCReferencedImage>();
+                                        	}
+                                        	
+                                        	images.put(iuid, image);
+                                        }
+                                        else
+                                        {
+                                        	series.addInstance(
                                                 new TCReferencedInstance(series, iuid, cuid));
+                                        }
+                                    }
+                                    
+                                    if (images!=null && !images.isEmpty())
+                                    {
+                                        TCQueryLocal ejb = (TCQueryLocal) JNDIUtils
+                                                .lookup(TCQueryLocal.JNDI_NAME);
+                                        Map<String, Integer> frames = ejb.findMultiframeInstances(
+                                        		stuid, suid, images.keySet().toArray(new String[0]));
+                                        
+                                        if (frames!=null && !frames.isEmpty())
+                                        {
+                                        	for (Map.Entry<String, Integer> me : frames.entrySet())
+                                        	{
+                                        		TCReferencedImage image = images.get(me.getKey());
+                                        		series.removeInstance(image);
+                                        		
+                                        		for (int n=1; n<=me.getValue(); n++)
+                                        		{
+                                        			series.addInstance(new TCReferencedImage(
+                                        					series, image.getInstanceUID(), image.getClassUID(), n));
+                                        		}
+                                        	}
+                                        }
                                     }
                                 }
                             }

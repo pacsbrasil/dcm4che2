@@ -64,7 +64,7 @@ public class TCViewImagesTab extends AbstractTCViewTab
     @Override
     public String getTabTitle()
     {
-        List<TCReferencedInstance> images = getTC().getReferencedImages();
+        List<TCReferencedImage> images = getTC().getReferencedImages();
         return MessageFormat.format(
                 getString("tc.view.images.tab.title"),
                 images!=null?images.size():0);
@@ -73,7 +73,7 @@ public class TCViewImagesTab extends AbstractTCViewTab
     @Override
     public boolean hasContent()
     {
-        List<TCReferencedInstance> images = getTC().getReferencedImages();
+        List<TCReferencedImage> images = getTC().getReferencedImages();
         return images!=null && !images.isEmpty();
     }
     

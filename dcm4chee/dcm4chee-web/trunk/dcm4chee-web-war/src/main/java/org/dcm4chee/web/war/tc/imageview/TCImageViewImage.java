@@ -8,6 +8,10 @@ import java.io.Serializable;
  */
 public interface TCImageViewImage extends Serializable 
 {
+	public int getFrameNumber();
+	
+	public boolean isFrameOfMultiframeImage();
+	
     public String getInstanceUID();
     
     public String getClassUID();

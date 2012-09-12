@@ -111,8 +111,10 @@ public class TCLazyWadoImage extends Image {
         {
             tag.put("data-original",TCWadoImage.getWadoUrl(
                     image.getSeries().getStudy().getStudyUID(), 
-                    image.getSeries().getSeriesUID(), 
-                    image.getInstanceUID(), requestedSize));
+                    image.getSeries().getSeriesUID(),
+                    image.getInstanceUID(),
+                    image.getFrameNumber(),
+                    requestedSize));
         }
         
         //set width attribute, if available

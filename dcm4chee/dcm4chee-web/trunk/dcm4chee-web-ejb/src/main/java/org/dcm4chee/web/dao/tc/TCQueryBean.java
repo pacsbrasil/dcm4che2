@@ -38,8 +38,10 @@
 package org.dcm4chee.web.dao.tc;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -48,6 +50,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
+import org.dcm4che2.data.Tag;
 import org.dcm4chee.archive.entity.File;
 import org.dcm4chee.archive.entity.Instance;
 import org.dcm4chee.archive.entity.Series;
@@ -282,5 +285,55 @@ public class TCQueryBean implements TCQueryLocal {
         Query q = em.createQuery("FROM Instance i LEFT JOIN FETCH i.series s LEFT JOIN FETCH s.study WHERE i.sopInstanceUID = :iuid");
         q.setParameter("iuid", iuid);
         return (Instance) q.getSingleResult();
+    }
+    
+    @SuppressWarnings("unchecked")
+	public Map<String, Integer> findMultiframeInstances(String stuid, String suid, String...iuids)
+    {
+    	if (iuids!=null && iuids.length>0)
+    	{
+    		// compile HQL query string
+	    	StringBuilder queryString = new StringBuilder("FROM Instance i WHERE i.series.study.studyInstanceUID=:stuid AND i.series.seriesInstanceUID=:suid AND i.sopInstanceUID IN (");
+	    	queryString.append("'").append(iuids[0]).append("'");
+	    	for (int i=1; i<iuids.length; i++)
+	    	{
+	    		queryString.append(",'").append(iuids[i]).append("'");
+	    	}
+	    	queryString.append(")");
+	    	
+	    	log.info("Executing HQL query: " + queryString.toString());
+	    	
+	    	Query query = em.createQuery(queryString.toString());
+	    	query.setParameter("stuid",stuid);
+	    	query.setParameter("suid",suid);
+	    	
+	    	// actually execute query
+	    	List<Instance> result = (List<Instance>)query.getResultList();
+	    	
+	    	// compile result
+	    	if (result!=null)
+	    	{
+	    		int size = result.size();
+	    		log.info("Found " + size + " instancess..");
+	    		if (size>0)
+	    		{
+	    			Map<String, Integer> map = new HashMap<String, Integer>(size);
+	    			for (Instance i : result)
+	    			{
+	    				int frames = i.getAttributes(false).getInt(Tag.NumberOfFrames);
+	    				if (frames>0)
+	    				{
+	    					log.info(i.getSOPInstanceUID() + " has " + frames + " frames...");
+	    					
+	    					map.put(i.getSOPInstanceUID(), frames);
+	    				}
+	    			}
+	    			return map;
+	    		}
+	    	}
+    		
+    	}
+    	
+    	return Collections.emptyMap();
     }
 }
