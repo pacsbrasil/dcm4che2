@@ -11,6 +11,12 @@
 			<wicket:message key="application.browser_title">DCM4CHEE WEB</wicket:message>
 		</title>
 	</head>
+	
+	<!-- Needed to use wicket:head tag explicitly, as directly under head won't work ;-( -->
+	<wicket:head>
+		<meta http-equiv="X-UA-Compatible" content="IE=edge"/> <!-- don't use IE compatibility view -->
+	</wicket:head>
+	
 	<body>
 		<wicket:extend> </wicket:extend>
 	</body>
