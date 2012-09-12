@@ -207,8 +207,7 @@ public class Mpps2MwlLinkPage extends ModalWindow {
 
         comp = c;
         if (WebCfgDelegate.getInstance().isMpps2mwlAutoQuery() ) {
-            target.appendJavascript("hideMask();document.getElementById('" + linkPanel.getSearchButton().getMarkupId() +
-                "').click();");
+            linkPanel.doSearch(target);
         }
         super.show(target);
     }

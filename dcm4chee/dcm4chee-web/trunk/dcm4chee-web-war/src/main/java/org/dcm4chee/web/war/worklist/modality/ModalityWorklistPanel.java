@@ -434,7 +434,6 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 doSearch(target);
-                BaseForm.addFormComponentsToAjaxRequestTarget(target, form);
             }
             
         });
@@ -445,7 +444,6 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             @Override
             public void onSubmit(AjaxRequestTarget target, final Form<?> form) {
                 doSearch(target);
-                BaseForm.addFormComponentsToAjaxRequestTarget(target, form);
             }
             
             @Override
@@ -835,11 +833,12 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         valueContainer.add(removeMWLItem);
     }
 
-    private void doSearch(AjaxRequestTarget target) {
+    public void doSearch(AjaxRequestTarget target) {
         viewport.setOffset(0);
         viewport.getFilter().setAutoWildcard(WebCfgDelegate.getInstance().getAutoWildcard());
         queryMWLItems(target);
         Auditlog.logQuery(true, UID.ModalityWorklistInformationModelFIND, viewport.getFilter().getQueryDicomObject());
+        BaseForm.addFormComponentsToAjaxRequestTarget(target, form);
     }
 
     private void addAfterQueryComponents(final AjaxRequestTarget target) {
