@@ -1,5 +1,6 @@
 package org.dcm4chee.web.war.tc;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -14,6 +15,7 @@ import org.dcm4che2.io.DicomInputStream;
 import org.dcm4che2.util.DateUtils;
 import org.dcm4che2.util.UIDUtils;
 import org.dcm4chee.archive.entity.Code;
+import org.dcm4chee.web.common.util.FileUtils;
 import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue.AcquisitionModality;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue.Category;
@@ -25,9 +27,11 @@ import org.dcm4chee.web.war.tc.keywords.TCKeywordCatalogueProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class TCEditableObject extends TCObject 
-{
-    private final static Logger log = LoggerFactory.getLogger(TCEditableObject.class);
+public class TCEditableObject extends TCObject {
+	
+	private static final long serialVersionUID = 1L;
+
+	private final static Logger log = LoggerFactory.getLogger(TCEditableObject.class);
 
     private DicomObject ds;
     private boolean modified;
@@ -43,13 +47,10 @@ public class TCEditableObject extends TCObject
         String fileID = model.getFileId();
 
         DicomInputStream dis = null;
-
         try {
-            dis = new DicomInputStream(
-                    fsID.startsWith("tar:") ? TarRetrieveDelegate.getInstance()
-                            .retrieveFileFromTar(fsID, fileID)
-                            : new java.io.File(fsID, fileID));
-
+        	dis = new DicomInputStream(fsID.startsWith("tar:") ? 
+        			TarRetrieveDelegate.getInstance().retrieveFileFromTar(fsID, fileID) :
+        				FileUtils.resolve(new File(fsID, fileID)));
             return new TCEditableObject(dis.readDicomObject());
         } finally {
             if (dis != null) {
