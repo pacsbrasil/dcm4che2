@@ -42,6 +42,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.PageParameters;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AbstractAjaxTimerBehavior;
@@ -55,6 +56,7 @@ import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
+import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.util.ListModel;
 import org.apache.wicket.resource.loader.ClassStringResourceLoader;
 import org.apache.wicket.security.components.SecureWebPage;
@@ -169,6 +171,8 @@ public class TCImageViewPage extends SecureWebPage
         imagesPanel.setVisible(false);
         
         add(titleLabel);
+        add(new Label("diagnosisWarning", new ResourceModel("warning.diagnosis.text"))
+        	.add(new AttributeModifier("class", true, new Model<String>("diagnosis-warning"))));
         add(imagesPanel);
         add(indicatingPanel);     
         add(new StartImageLoadBehavior(stuid, suid, iuid));
@@ -313,7 +317,10 @@ public class TCImageViewPage extends SecureWebPage
     }
     
     public class StartImageLoadBehavior extends AbstractDefaultAjaxBehavior {
-        private String iuid;
+
+		private static final long serialVersionUID = 1L;
+		
+		private String iuid;
         private String suid;
         private String stuid;
         
@@ -368,7 +375,10 @@ public class TCImageViewPage extends SecureWebPage
                         imagesPanel.add(new TCImageViewPanel(
                                 "tc-images-view-images-panel-content",
                                 dataModel) {
-                            @Override
+
+                        	private static final long serialVersionUID = 1L;
+
+							@Override
                             protected TCPopupManager getPopupManager()
                             {
                                 return popupManager;

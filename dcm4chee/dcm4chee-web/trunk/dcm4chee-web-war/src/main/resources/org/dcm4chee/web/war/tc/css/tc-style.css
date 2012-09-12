@@ -90,7 +90,10 @@
     font-weight: bold;
 }
 
-
+div.diagnosis-warning  {
+	color: #FF0000;
+	font-size: 12px;
+}
 
 /******************************************************  
  * style of SEARCH elements 
