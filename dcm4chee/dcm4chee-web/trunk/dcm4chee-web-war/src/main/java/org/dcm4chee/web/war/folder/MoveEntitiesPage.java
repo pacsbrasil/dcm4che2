@@ -548,15 +548,15 @@ public class MoveEntitiesPage extends SecureSessionCheckPage {
             selectedInfoModel = getSelectedInfoModel(models);
             HashMap<String, List<AbstractDicomModel>> modelMap = getModelsByParents(models);
             WebMarkupContainer mcDest = new WebMarkupContainer(rvDest.newChildId());
-            mcDest.add(new Label("descriptionLabel", getModelInfoString(destinationModel)).setEscapeModelStrings(false));
+            mcDest.add(new Label("descriptionLabel", getModelInfoString(destinationModel, false)).setEscapeModelStrings(false));
             RepeatingView rvDestAction = new RepeatingView("actions");
             mcDest.add(rvDestAction);
             rvDest.add(mcDest);
             if (studyModel != null) {
-                addAction(rvDestAction, getModelInfoString(studyModel), ImageManager.IMAGE_COMMON_ADD);
+                addAction(rvDestAction, getModelInfoString(studyModel, false), ImageManager.IMAGE_COMMON_ADD);
             }
             if (seriesModel != null) {
-                addAction(rvDestAction, getModelInfoString(seriesModel), ImageManager.IMAGE_COMMON_ADD);
+                addAction(rvDestAction, getModelInfoString(seriesModel, false), ImageManager.IMAGE_COMMON_ADD);
             }
             WebMarkupContainer mc;
             for (Entry<String, List<AbstractDicomModel>> e : modelMap.entrySet()) {
@@ -566,9 +566,8 @@ public class MoveEntitiesPage extends SecureSessionCheckPage {
                 mc.add(rvAction);
                 rvSrc.add(mc);
                 for (AbstractDicomModel m : e.getValue()) {
-                    String info = getModelInfoString(m);
-                    addAction(rvAction, info, ImageManager.IMAGE_COMMON_REMOVE);
-                    addAction(rvDestAction, info, ImageManager.IMAGE_COMMON_ADD);
+                    addAction(rvAction, getModelInfoString(m, false), ImageManager.IMAGE_COMMON_REMOVE);
+                    addAction(rvDestAction, getModelInfoString(m, true), ImageManager.IMAGE_COMMON_ADD);
                 }
             }
         }
@@ -583,7 +582,7 @@ public class MoveEntitiesPage extends SecureSessionCheckPage {
         rvAction.add(mcAction);
     }
 
-    private String getModelInfoString(AbstractDicomModel m) {
+    private String getModelInfoString(AbstractDicomModel m, boolean uidChange) {
         int level = m.levelOfModel();
         switch (level) {
         case AbstractDicomModel.INSTANCE_LEVEL:
@@ -592,14 +591,20 @@ public class MoveEntitiesPage extends SecureSessionCheckPage {
             if (im.getDescription() != null) {
                 return inst+im.getDescription();
             }
-            return inst+im.getSOPInstanceUID();
+            if (im.getInstanceNumber() != null) {
+                return inst+"#"+im.getInstanceNumber();
+            }
+            return inst+im.getSOPInstanceUID()+(uidChange ? getString("move.willbechanged") :"");
         case AbstractDicomModel.SERIES_LEVEL:
             String series = getString("move.series");
             SeriesModel sm = (SeriesModel) m;
             if (sm.getDescription() != null) {
                 return series+sm.getDescription();
             }
-            return series+sm.getSeriesInstanceUID();
+            if (sm.getSeriesNumber() != null) {
+                return series+"#"+sm.getSeriesNumber();
+            }
+            return series+sm.getSeriesInstanceUID()+(uidChange ? getString("move.willbechanged") : "");
         case AbstractDicomModel.STUDY_LEVEL:
             String study = getString("move.study");
             StudyModel stm = (StudyModel) m;
@@ -636,7 +641,7 @@ public class MoveEntitiesPage extends SecureSessionCheckPage {
         String key = null;
         for ( AbstractDicomModel parent = m.getParent(); parent != null; parent = parent.getParent()){
             if (parent.levelOfModel() != AbstractDicomModel.PPS_LEVEL)
-                key = getModelInfoString(parent) + (key == null ? "" : "<br/>"+key);
+                key = getModelInfoString(parent, false) + (key == null ? "" : "<br/>"+key);
         }
         return key;
     }
