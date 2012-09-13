@@ -201,6 +201,7 @@ public class InstanceViewPage extends SecureSessionCheckPage {
         private Model<Integer> rowsModel;
         private FrameModel frameModel;
         private Model<Boolean> origSizeModel = new Model<Boolean>(false);
+        private Model<Boolean> usePngModel = new Model<Boolean>(false);
         
         public ImageController(String id, int width, int height) {
             super(id);
@@ -251,6 +252,17 @@ public class InstanceViewPage extends SecureSessionCheckPage {
                 }
                 
             }.add(new TooltipBehaviour("folder.instanceview.")).setVisible(largeImg));
+            add(new Label("pngLabel", new ResourceModel("folder.instanceview.pngLabel"))
+            .setVisible(largeImg));
+            add(new AjaxCheckBox("png", usePngModel){
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                protected void onUpdate(AjaxRequestTarget target) {
+                    target.addComponent(wadoImg);
+                }
+                
+            }.add(new TooltipBehaviour("folder.instanceview.")));
         }
 
         private void initModels(int width, int height) {
@@ -283,6 +295,8 @@ public class InstanceViewPage extends SecureSessionCheckPage {
                 baseWadoURL.append("&rows=").append(rowsModel.getObject());
             if (!origSizeModel.getObject() && columnsModel.getObject() != null)
                 baseWadoURL.append("&columns=").append(columnsModel.getObject());
+            if (usePngModel.getObject())
+                baseWadoURL.append("&contentType=image/png");
             return baseWadoURL.toString();
         }
         
