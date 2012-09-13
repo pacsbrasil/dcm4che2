@@ -52,6 +52,7 @@ import java.util.StringTokenizer;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
@@ -617,6 +618,8 @@ public class WADOCacheImpl implements WADOCache {
                 ext = "jpg";
             else if (ext.equalsIgnoreCase("png"))
                 ext = "png";
+            else if (ext.equalsIgnoreCase("png16"))
+                ext = "png16";
             else if (ext.equalsIgnoreCase("svg+xml"))
                 ext = "svg";
             // do some other mapping here;
@@ -644,7 +647,7 @@ public class WADOCacheImpl implements WADOCache {
             }
         }
         try {
-            if (WADOSupport.CONTENT_TYPE_PNG.equals(contentType)) {
+            if (WADOSupport.CONTENT_TYPE_PNG.equals(contentType) || WADOSupport.CONTENT_TYPE_PNG16.equals(contentType)) {
                 log.debug("Create PNG for WADO request. file: " + file);
                 writePNG(bi, file);
             } else {

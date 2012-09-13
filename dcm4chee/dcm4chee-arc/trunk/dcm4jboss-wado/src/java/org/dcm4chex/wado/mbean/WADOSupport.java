@@ -144,9 +144,9 @@ public class WADOSupport implements NotificationListener {
 
     public static final String CONTENT_TYPE_JPEG = "image/jpeg";
     public static final String CONTENT_TYPE_PNG = "image/png";
+    public static final String CONTENT_TYPE_PNG16 = "image/png16";
 
     public static final String CONTENT_TYPE_DICOM = "application/dicom";
-
     public static final String CONTENT_TYPE_DICOM_XML = "application/dicom+xml";
 
     public static final String CONTENT_TYPE_HTML = "text/html";
@@ -325,7 +325,9 @@ public class WADOSupport implements NotificationListener {
         // Try to short-circuit the case where we want to retrieve
         // an existing icon - we dont need to query the database for that
         if( !disableCache && req.getContentTypes() != null &&
-             (req.getContentTypes().contains(CONTENT_TYPE_JPEG) || req.getContentTypes().contains(CONTENT_TYPE_PNG))) {
+             (req.getContentTypes().contains(CONTENT_TYPE_JPEG) || 
+                     req.getContentTypes().contains(CONTENT_TYPE_PNG) || 
+                     req.getContentTypes().contains(CONTENT_TYPE_PNG16))) {
             WADOResponseObject scResp = tryToShortCircuitIconCacheLookup(req);
             if(scResp != null) {
                 return scResp;
@@ -371,7 +373,8 @@ public class WADOSupport implements NotificationListener {
                     + req.getRequest().getParameter("contentType"));
         }
         req.setObjectInfo(objectDs);
-        if (CONTENT_TYPE_JPEG.equals(contentType) || CONTENT_TYPE_PNG.equals(contentType)) {
+        if (CONTENT_TYPE_JPEG.equals(contentType) || CONTENT_TYPE_PNG.equals(contentType)
+                || CONTENT_TYPE_PNG16.equals(contentType)) {
             return this.handleImage(req, contentType);
         } else if (CONTENT_TYPE_DICOM.equals(contentType)) {
             return handleDicom(req); // audit log is done in handleDicom to
@@ -439,7 +442,8 @@ public class WADOSupport implements NotificationListener {
                     suffix = "-" + frame;
                 }
             }
-            String contentType = req.getContentTypes().contains(CONTENT_TYPE_JPEG) ? CONTENT_TYPE_JPEG : CONTENT_TYPE_PNG;
+            String contentType = req.getContentTypes().contains(CONTENT_TYPE_JPEG) ? CONTENT_TYPE_JPEG : 
+                req.getContentTypes().contains(CONTENT_TYPE_PNG) ? CONTENT_TYPE_PNG : CONTENT_TYPE_PNG16;
             File file = WADOCacheImpl.getWADOCache().getImageFile(req.getStudyUID(),
                             req.getSeriesUID(), req.getObjectUID(),
                             req.getRows(),req.getColumns(), req.getRegion(),
@@ -449,7 +453,7 @@ public class WADOSupport implements NotificationListener {
                 if(log.isDebugEnabled())
                     log.debug("short-circuit sucessful!: " + file);
                 return new WADOStreamResponseObjectImpl(
-                            new FileInputStream(file), CONTENT_TYPE_JPEG,
+                            new FileInputStream(file), contentType,
                             HttpServletResponse.SC_OK, null);
             }
 
@@ -535,6 +539,7 @@ public class WADOSupport implements NotificationListener {
         } else if ( getImageSopCuids().containsValue(sopCuid) ){
             types.add(CONTENT_TYPE_JPEG);
             types.add(CONTENT_TYPE_PNG);
+            types.add(CONTENT_TYPE_PNG16);
         } else if ( getEncapsulatedSopCuids().containsValue(sopCuid) ){
             String mime = objectDs.getString(Tags.MIMETypeOfEncapsulatedDocument);
             if (mime == null) {
@@ -546,8 +551,9 @@ public class WADOSupport implements NotificationListener {
             types.add(CONTENT_TYPE_MPEG);
         }
         types.add(CONTENT_TYPE_DICOM);
-        if (!NONE.equals(contentTypeDicomXML))
+        if (!NONE.equals(contentTypeDicomXML)) {
             types.add(CONTENT_TYPE_DICOM_XML);
+        }
         return types;
     }
 
@@ -849,6 +855,16 @@ public class WADOSupport implements NotificationListener {
                     file = cache.putImage(bi, studyUID, seriesUID, instanceUID,
                             rows, columns, region, windowWidth, windowCenter,
                             imageQuality, contentType, suffix);
+                    if (log.isTraceEnabled() && CONTENT_TYPE_PNG16.equals(contentType)) {
+                        for (Iterator<ImageReader> it = ImageIO.getImageReadersByFormatName("PNG") ; it.hasNext() ; ) {
+                            ImageReader reader = it.next();
+                            reader.setInput(ImageIO.createImageInputStream(file));
+                            BufferedImage b = reader.read(0);
+                            showMinMaxHist(b, "cached file:");
+                            break;
+                        }
+                    }
+
                 } catch (Exception x) {
                     log.warn("Error caching image file! Return image without caching (Enable DEBUG for stacktrace)!");
                     log.debug("Stacktrace for caching error:",x);
@@ -890,8 +906,9 @@ public class WADOSupport implements NotificationListener {
                         req.getObjectUID(), true);
                 ds.putAll(dsCoerce);
             }
+            Dataset ds1 = req.isExcludePrivate() ? ds.excludePrivate() : ds;
             if (log.isDebugEnabled()) {
-                log.debug("Dataset for XSLT Transformation: {}", ds);
+                log.debug("Dataset for XSLT Transformation: {}", ds1);
                 log.debug("Use XSLT stylesheet:" + xslURL);
             }
             TransformerHandler th = getTransformerHandler(xslURL);
@@ -899,7 +916,7 @@ public class WADOSupport implements NotificationListener {
                 Transformer t = th.getTransformer();
                 t.setParameter("srImageRows", srImageRows);
             }
-            DatasetXMLResponseObject res = new DatasetXMLResponseObject(ds, th,
+            DatasetXMLResponseObject res = new DatasetXMLResponseObject(ds1, th,
                     dict);
             WADOTransformResponseObjectImpl resp = new WADOTransformResponseObjectImpl(
                     res, contentType, HttpServletResponse.SC_OK, null);
@@ -1459,7 +1476,17 @@ public class WADOSupport implements NotificationListener {
                 }
                 bi = tmp;
             }
-        } else { //PNG
+        } else if (CONTENT_TYPE_PNG.equals(contentType)) {
+            BufferedImage tmp = new BufferedImage(bi.getWidth(),
+                    bi.getHeight(), BufferedImage.TYPE_INT_RGB);
+            Graphics2D g = tmp.createGraphics();
+            try {
+                g.drawImage(bi, 0, 0, null);
+            } finally {
+                g.dispose();
+            }
+            bi = tmp;
+        } else { //PNG16
             showMinMaxHist(bi, "Original:");
             if (bi.getData().getNumBands() == 1) {
                 int pixSize = bi.getColorModel().getPixelSize() > 8 ? 16 : 8;
@@ -1476,12 +1503,9 @@ public class WADOSupport implements NotificationListener {
                 } else {
                     WritableRaster r = tmp.getRaster();
                     Raster data = bi.getData();
-                    int shift = 16 - bi.getColorModel().getPixelSize();
-                    int v;
                     for (int x = data.getMinX(), xLen = x+data.getWidth(); x < xLen ; x++) {
                         for (int y = data.getMinY(), yLen = y+data.getHeight(); y < yLen ; y++) {
-                            v = data.getSample(x, y, 0);
-                            r.setSample(x, y, 0, v<<shift);
+                            r.setSample(x, y, 0, data.getSample(x, y, 0));
                         }
                     }
                 }

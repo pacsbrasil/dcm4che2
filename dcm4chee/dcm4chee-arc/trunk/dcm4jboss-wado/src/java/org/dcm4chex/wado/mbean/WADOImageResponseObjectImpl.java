@@ -77,7 +77,8 @@ public class WADOImageResponseObjectImpl extends BasicWADOResponseObject {
 	 */
 	public void execute( OutputStream out ) throws TransformerConfigurationException, SAXException, IOException {
 		try {
-		    if (WADOSupport.CONTENT_TYPE_PNG.equals(getContentType())) {
+		    if (WADOSupport.CONTENT_TYPE_PNG.equals(getContentType()) ||
+		            WADOSupport.CONTENT_TYPE_PNG16.equals(getContentType())) {
                         cache.writePNG(bi, out);
 		    } else {
 		        cache.writeJPEG(bi, out, Float.parseFloat(imageQuality) / 100);

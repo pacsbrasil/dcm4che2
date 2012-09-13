@@ -5,7 +5,7 @@
 <mbean>
   <description><![CDATA[<b>WADO Service</b><br/>
   Provides a Web Enabled DICOM Server to allow <b>W</b>eb <b>A</b>ccess for <b>D</b>ICOM persistent <b>O</b>bjects.<br/>
-  Supported mime-types are <tt>application/dicom</tt> and <tt>image/jpeg</tt>.<br>
+  Supported mime-types are <tt>application/dicom</tt> ,<tt>image/jpeg</tt> ,<tt>image/png</tt>.<br>
   Supported Optional request parameter: <i>rows, column, frameNumber, transferSyntax</i> and <i>contentType</i>.
   <p>
   <dl> 
@@ -15,8 +15,15 @@
   (it is NOT allowed to omit these parameters due to WADO specification)</dd>
   <dd>Redirect: If this WADO service handles a request for an object that is external retrievable,
   a client- or server side redirect can be initiated (see <tt>useClientRedirect</tt>).</dd>
+  <dd> special mime types: 
+  		<tt>image/png16</tt>: Get 16 bit grayscale PNG without applied LUT's
+  		<tt>application/dicom+xml</tt>: get XML representation (dcm4che14 format) of dicom header (note: '+' is %2B in URL).
+  		This XML can be transformed with an XSL stylesheet configured by <code>DicomXslURL</code>MBean attribute. 
+  		With the URL parameter <code>privateTags=no</code> the private tags will be removed from output. 
+  <dd>
   </dl>
-  </p>]]>
+  </p>
+  ]]>
   </description>
 
   <descriptors>
