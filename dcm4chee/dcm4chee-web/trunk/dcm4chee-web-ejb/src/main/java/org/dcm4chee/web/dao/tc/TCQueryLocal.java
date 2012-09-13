@@ -68,6 +68,10 @@ public interface TCQueryLocal {
     Series findSeriesByUID(String suid);
     
     Instance findInstanceByUID(String uid);
+    
+    Map<String, Integer> findMultiframeInstances(String stuid);
+    
+    Map<String, Integer> findMultiframeInstances(String stuid, String suid);
 
     Map<String, Integer> findMultiframeInstances(
     		String stuid, String suid, String...iuids);

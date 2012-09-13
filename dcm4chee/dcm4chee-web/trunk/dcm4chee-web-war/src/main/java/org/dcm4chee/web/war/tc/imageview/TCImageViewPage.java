@@ -40,6 +40,7 @@ package org.dcm4chee.web.war.tc.imageview;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.wicket.AttributeModifier;
@@ -72,6 +73,7 @@ import org.dcm4chee.web.dao.tc.TCQueryLocal;
 import org.dcm4chee.web.war.StudyPermissionHelper;
 import org.dcm4chee.web.war.tc.TCPanel;
 import org.dcm4chee.web.war.tc.TCPopupManager;
+import org.dcm4chee.web.war.tc.TCReferencedImage;
 import org.dcm4chee.web.war.tc.TCReferencedInstance;
 import org.dcm4chee.web.war.tc.TCReferencedSeries;
 import org.dcm4chee.web.war.tc.TCReferencedStudy;
@@ -186,21 +188,38 @@ public class TCImageViewPage extends SecureWebPage
         Instance instance = dao.findInstanceByUID(iuid);
         if (instance!=null)
         {
-            TCReferencedStudy study = new TCReferencedStudy(
-                    instance.getSeries().getStudy().getStudyInstanceUID());
-            TCReferencedSeries series = new TCReferencedSeries(
-                    instance.getSeries().getSeriesInstanceUID(), study);
-            TCReferencedInstance image = new TCReferencedInstance(series,
-                    instance.getSOPInstanceUID(), instance.getSOPClassUID());
+        	String cuid = instance.getSOPClassUID();
+        	
+        	if (TCReferencedInstance.isImage(cuid))
+        	{
+	            TCReferencedStudy study = new TCReferencedStudy(
+	                    instance.getSeries().getStudy().getStudyInstanceUID());
+	            TCReferencedSeries series = new TCReferencedSeries(
+	                    instance.getSeries().getSeriesInstanceUID(), study);
+	            
+	            // fetch number of frames
+	            Map<String, Integer> images = dao.findMultiframeInstances(
+	            		study.getStudyUID(), series.getSeriesUID(), iuid);
+	            
+	            int nFrames = images!=null && !images.isEmpty() ? images.get(iuid).intValue() : -1;
+	            
+	            if (nFrames<=0)
+	            {
+	            	series.addInstance(new TCReferencedImage(series, iuid, cuid));
+	            }
+	            else
+	            {
+	            	for (int i=1; i<=nFrames; i++)
+	            	{
+	            		series.addInstance(new TCReferencedImage(series, iuid, cuid, i));
+	            	}
+	            }
 
-            if (image.isImage())
-            {
-                series.addInstance(image);
-                study.addSeries(series);
-                
-                return new ListModel<TCReferencedStudy>(
-                        Collections.singletonList(study));
-            }
+	            study.addSeries(series);
+	                
+	            return new ListModel<TCReferencedStudy>(
+	                        Collections.singletonList(study));
+        	}
             else
             {
                 throw new Exception("Instance " + iuid + " is not an image!");
@@ -225,10 +244,29 @@ public class TCImageViewPage extends SecureWebPage
             Set<Instance> instances = series.getInstances();
             if (instances!=null)
             {
+            	// fetch number of frames per instance
+            	Map<String, Integer> frames = dao.findMultiframeInstances(refStudy.getStudyUID(), suid);
+            	
                 for (Instance instance : instances)
                 {
-                    refSeries.addInstance(new TCReferencedInstance(refSeries,
-                            instance.getSOPInstanceUID(), instance.getSOPClassUID()));
+                	String cuid = instance.getSOPClassUID();
+                	String iuid = instance.getSOPInstanceUID();
+                	
+                	if (TCReferencedInstance.isImage(cuid))
+                	{
+                		Integer nFrames = frames!=null ? frames.get(iuid) : -1;
+                		if (nFrames==null || nFrames<=0)
+                		{
+                			refSeries.addInstance(new TCReferencedImage(refSeries, iuid, cuid));
+                		}
+                		else
+                		{
+                			for (int i=1; i<=nFrames; i++)
+                			{
+                				refSeries.addInstance(new TCReferencedImage(refSeries, iuid, cuid, i)); 
+                			}
+                		}
+                	}
                 }
             }
 
@@ -273,10 +311,29 @@ public class TCImageViewPage extends SecureWebPage
                     Set<Instance> instances = s.getInstances();
                     if (instances!=null)
                     {
+                    	// fetch number of frames per instance
+                    	Map<String, Integer> frames = dao.findMultiframeInstances(refStudy.getStudyUID(), s.getSeriesInstanceUID());
+                    	
                         for (Instance instance : instances)
                         {
-                            refSeries.addInstance(new TCReferencedInstance(refSeries,
-                                    instance.getSOPInstanceUID(), instance.getSOPClassUID()));
+                        	String cuid = instance.getSOPClassUID();
+                        	String iuid = instance.getSOPInstanceUID();
+                        	
+                        	if (TCReferencedInstance.isImage(cuid))
+                        	{
+                        		Integer nFrames = frames!=null ? frames.get(iuid) : -1;
+                        		if (nFrames==null || nFrames<=0)
+                        		{
+                        			refSeries.addInstance(new TCReferencedImage(refSeries, iuid, cuid));
+                        		}
+                        		else
+                        		{
+                        			for (int i=1; i<=nFrames; i++)
+                        			{
+                        				refSeries.addInstance(new TCReferencedImage(refSeries, iuid, cuid, i)); 
+                        			}
+                        		}
+                        	}
                         }
                     }
                     

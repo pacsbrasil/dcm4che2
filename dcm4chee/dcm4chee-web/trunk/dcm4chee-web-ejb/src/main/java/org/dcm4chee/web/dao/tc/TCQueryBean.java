@@ -287,6 +287,46 @@ public class TCQueryBean implements TCQueryLocal {
         return (Instance) q.getSingleResult();
     }
     
+    
+    @SuppressWarnings("unchecked")
+	public Map<String, Integer> findMultiframeInstances(String stuid)
+    {
+    	if (stuid!=null)
+    	{
+    		// compile HQL query
+	    	Query query = em.createQuery("FROM Instance i WHERE i.series.study.studyInstanceUID=:stuid");
+	    	query.setParameter("stuid",stuid);
+	    	
+	    	// actually execute query
+	    	List<Instance> result = (List<Instance>)query.getResultList();
+	    	
+	    	// compile result
+	    	return findMultiframeInstances(result);
+    	}
+    	
+    	return Collections.emptyMap();
+    }
+    
+    @SuppressWarnings("unchecked")
+	public Map<String, Integer> findMultiframeInstances(String stuid, String suid)
+    {
+    	if (stuid!=null && suid!=null)
+    	{
+    		// compile HQL query
+	    	Query query = em.createQuery("FROM Instance i WHERE i.series.study.studyInstanceUID=:stuid AND i.series.seriesInstanceUID=:suid");
+	    	query.setParameter("stuid",stuid);
+	    	query.setParameter("suid",suid);
+	    	
+	    	// actually execute query
+	    	List<Instance> result = (List<Instance>)query.getResultList();
+	    	
+	    	// compile result
+	    	return findMultiframeInstances(result);
+    	}
+    	
+    	return Collections.emptyMap();
+    }
+    
     @SuppressWarnings("unchecked")
 	public Map<String, Integer> findMultiframeInstances(String stuid, String suid, String...iuids)
     {
@@ -300,9 +340,7 @@ public class TCQueryBean implements TCQueryLocal {
 	    		queryString.append(",'").append(iuids[i]).append("'");
 	    	}
 	    	queryString.append(")");
-	    	
-	    	log.info("Executing HQL query: " + queryString.toString());
-	    	
+
 	    	Query query = em.createQuery(queryString.toString());
 	    	query.setParameter("stuid",stuid);
 	    	query.setParameter("suid",suid);
@@ -311,27 +349,29 @@ public class TCQueryBean implements TCQueryLocal {
 	    	List<Instance> result = (List<Instance>)query.getResultList();
 	    	
 	    	// compile result
-	    	if (result!=null)
-	    	{
-	    		int size = result.size();
-	    		log.info("Found " + size + " instancess..");
-	    		if (size>0)
-	    		{
-	    			Map<String, Integer> map = new HashMap<String, Integer>(size);
-	    			for (Instance i : result)
-	    			{
-	    				int frames = i.getAttributes(false).getInt(Tag.NumberOfFrames);
-	    				if (frames>0)
-	    				{
-	    					log.info(i.getSOPInstanceUID() + " has " + frames + " frames...");
-	    					
-	    					map.put(i.getSOPInstanceUID(), frames);
-	    				}
-	    			}
-	    			return map;
-	    		}
-	    	}
-    		
+	    	return findMultiframeInstances(result);
+    	}
+    	
+    	return Collections.emptyMap();
+    }
+    
+    
+    private Map<String, Integer> findMultiframeInstances(List<Instance> instances)
+    {
+    	if (instances!=null && !instances.isEmpty())
+    	{
+    		Map<String, Integer> map = new HashMap<String, Integer>();
+    		for (Instance i : instances)
+    		{
+    			int frames = i.getAttributes(false).getInt(Tag.NumberOfFrames);
+    			if (frames>0)
+    			{
+    				log.info(i.getSOPInstanceUID() + " has " + frames + " frames...");
+
+    				map.put(i.getSOPInstanceUID(), frames);
+    			}
+    		}
+    		return map;
     	}
     	
     	return Collections.emptyMap();
