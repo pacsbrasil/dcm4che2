@@ -89,6 +89,7 @@ import org.dcm4che2.net.PDVOutputStream;
 import org.dcm4che2.net.TransferCapability;
 import org.dcm4che2.net.UserIdentity;
 import org.dcm4che2.net.service.StorageCommitmentService;
+import org.dcm4che2.util.Anonymizer;
 import org.dcm4che2.util.CloseUtils;
 import org.dcm4che2.util.StringUtils;
 import org.dcm4che2.util.UIDUtils;
@@ -223,6 +224,8 @@ public class DcmSnd extends StorageCommitmentService {
     private int batchSize = 0;
     
     private int lastSentFile = 0;
+
+	private Anonymizer anonymizer;
 
     public DcmSnd() {
         this("DCMSND");
@@ -563,6 +566,13 @@ public class DcmSnd extends StorageCommitmentService {
                 "or 00100010.");
         opts.addOption(OptionBuilder.create("set"));
 
+        OptionBuilder.withArgName("salt");
+        OptionBuilder.hasArgs();
+        OptionBuilder.withDescription("Anonymize the files.  Set to 0 for a random anonymization (not repeatable) or 1 for a daily anonymization or another" +
+            " value for a specific salt for reproducible anonymization (useful for allowing studies to be sent at a later date and still correctly named/associated)");
+        OptionBuilder.withLongOpt("anonymize");
+        opts.addOption(OptionBuilder.create("a"));
+
         OptionBuilder.withArgName("sx1[:sx2[:sx3]");
         OptionBuilder.hasArgs();
         OptionBuilder.withValueSeparator(':');
@@ -789,6 +799,8 @@ public class DcmSnd extends StorageCommitmentService {
             dcmsnd.setShutdownDelay(
                     parseInt(cl.getOptionValue("shutdowndelay"),
                     "illegal argument of option -shutdowndelay", 1, 10000));
+        if (cl.hasOption("anonymize"))
+        	dcmsnd.setAnonymize(Long.parseLong(cl.getOptionValue("anonymize")));
         if (cl.hasOption("rcvpdulen"))
             dcmsnd.setMaxPDULengthReceive(
                     parseInt(cl.getOptionValue("rcvpdulen"),
@@ -958,7 +970,11 @@ public class DcmSnd extends StorageCommitmentService {
         }
     }
 
-    public void addCoerceAttr(int tag, String val) {
+    private void setAnonymize(long salt) {
+    	this.anonymizer = new Anonymizer(salt);
+	}
+
+	public void addCoerceAttr(int tag, String val) {
         if (coerceAttrs == null)
             coerceAttrs = new BasicDicomObject();
         if (val.length() == 0)
@@ -1170,7 +1186,7 @@ public class DcmSnd extends StorageCommitmentService {
 
     public void send() {
     	int i = 0, n = files.size();
-        for ( ; i < n && (batchSize==0 || i < batchSize); ++i) {
+        for ( ; (i+lastSentFile) < n && (batchSize==0 || i < batchSize); ++i) {
             FileInfo info = files.get(i + lastSentFile);
             TransferCapability tc = assoc.getTransferCapabilityAsSCU(info.cuid);
             if (tc == null) {
@@ -1344,6 +1360,7 @@ public class DcmSnd extends StorageCommitmentService {
                     attrs = dis.readDicomObject();
                     suffixUIDs(attrs);
                     coerceAttrs(attrs);
+                    anonymize(attrs);
                     DicomOutputStream dos = new DicomOutputStream(out);
                     dos.writeDataset(attrs, tsuid);
                     if (dis.tag() >= Tag.PixelData) {
@@ -1392,6 +1409,12 @@ public class DcmSnd extends StorageCommitmentService {
                 }
             }
         }
+
+		private void anonymize(DicomObject attrs) {
+			if( anonymizer!=null ) {
+				anonymizer.anonymize(attrs);
+			}
+		}
 
     }
 
