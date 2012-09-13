@@ -245,7 +245,7 @@ public class TCImageViewPanel extends Panel
         sbuf.append("$('#").append(currentImage.getMarkupId(true)).append("')");
         sbuf.append(".attr('src','");
         sbuf.append(TCWadoImage.getWadoUrl(image.getSeries().getStudy().getStudyUID(),
-                image.getSeries().getSeriesUID(),image.getInstanceUID()));
+                image.getSeries().getSeriesUID(),image.getInstanceUID(),image.getFrameNumber()));
         sbuf.append("');\n");
                         
         return sbuf.toString();
