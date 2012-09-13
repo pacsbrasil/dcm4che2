@@ -177,6 +177,12 @@ public class UserListPanel extends Panel {
             WebMarkupContainer rowParent;
             roleRows.add((rowParent = new WebMarkupContainer(roleRows.newChildId())).add(new Label("userID", user.getUserID())));
 
+            for (Role role : allRoles.getObject())
+            	if (role.isSuperuser())
+            		for (UserRoleAssignment ura : user.getRoles())
+            			if (ura.getRole().equals(role.getRolename()))
+            				rowParent.add(new SecurityBehavior(getModuleName() + ":superuserUserRow"));
+
             StringBuffer assignedRoles = new StringBuffer();
             for (UserRoleAssignment ura : user.getRoles()) 
                 assignedRoles.append(ura.getRole()).append(", ");
