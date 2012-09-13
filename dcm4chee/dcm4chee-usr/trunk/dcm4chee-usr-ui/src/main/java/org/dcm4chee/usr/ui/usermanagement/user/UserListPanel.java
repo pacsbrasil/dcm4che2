@@ -120,8 +120,8 @@ public class UserListPanel extends Panel {
             changePasswordWindow.setInitialHeight(winSize[1]);
         }
                
-        this.allUsers = new ListModel<User>(getAllUsers());
-        this.allRoles = new ListModel<Role>(getAllRoles());
+        this.allUsers = new ListModel<User>(userAccess.getAllUsers());
+        this.allRoles = new ListModel<Role>(userAccess.getAllRoles());
         
         add(this.confirmationWindow = new ConfirmationWindow<User>("confirmation-window") {
 
@@ -132,7 +132,7 @@ public class UserListPanel extends Panel {
                 ((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME)).deleteUser(userObject.getUserID());
                 Auditlog.logSoftwareConfiguration(true, "User "+userObject.getUserID()+" deleted.");
                 target.addComponent(UserListPanel.this);
-                allUsers.setObject(getAllUsers());
+                allUsers.setObject(userAccess.getAllUsers());
             }
         });
         
@@ -164,8 +164,8 @@ public class UserListPanel extends Panel {
     protected void onBeforeRender() {
         super.onBeforeRender();
 
-        this.allUsers.setObject(getAllUsers());
-        this.allRoles.setObject(getAllRoles());
+        this.allUsers.setObject(userAccess.getAllUsers());
+        this.allRoles.setObject(userAccess.getAllRoles());
 
         RepeatingView roleRows = new RepeatingView("role-rows");
         addOrReplace(roleRows);
@@ -247,18 +247,6 @@ public class UserListPanel extends Panel {
                 
             rowParent.add(new Label("assigned-roles", assignedRoles.toString()));            
         }
-    }
-    private List<User> getAllUsers() {
-        List<User> allUsers = new ArrayList<User>();
-        allUsers.addAll(((UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME))
-                .getAllUsers(((SecureSession) RequestCycle.get().getSession()).getUsername()));
-        return allUsers;
-    }
-    
-    private List<Role> getAllRoles() {
-        List<Role> allRolenames = new ArrayList<Role>(2);
-        allRolenames.addAll(userAccess.getAllRoles());
-        return allRolenames;
     }
     
     public static String getModuleName() {

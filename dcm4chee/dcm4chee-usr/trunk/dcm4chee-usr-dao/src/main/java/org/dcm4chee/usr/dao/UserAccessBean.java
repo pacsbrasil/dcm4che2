@@ -170,30 +170,7 @@ public class UserAccessBean implements UserAccess {
 
     // TODO: change this to generic version using JPA 2.0 implementation
     @SuppressWarnings("unchecked")
-    public List<User> getAllUsers(String userID) {
-        
-        List<String> myRoles = (List<String>) 
-            this.em.createQuery("SELECT DISTINCT ura.role FROM UserRoleAssignment ura WHERE ura.userID = :userID")
-            .setParameter("userID", userID)
-            .getResultList();
-        
-        List<Role> allRoles = getAllRoles();      
-        boolean superuser = false;
-        List<String> superusers = new ArrayList<String>();
-        for (Role role : allRoles) 
-            if (role.isSuperuser()) {
-                superusers.add(role.getRolename());
-                if (myRoles.contains(role.getRolename()))
-                    superuser = true;
-            }
-
-        if (!superuser && (superusers.size() > 0)) 
-            return this.em.createQuery("SELECT DISTINCT u FROM User u LEFT JOIN FETCH u.roles r " +
-                    "WHERE u.roles IS EMPTY OR r.role NOT IN (:superusers) " + 
-                    "ORDER BY u.userID")
-                .setParameter("superusers", superusers)
-                .getResultList();
-        
+    public List<User> getAllUsers() {        
         return this.em.createQuery("SELECT DISTINCT u FROM User u LEFT JOIN FETCH u.roles ORDER BY u.userID")
             .getResultList();
     }

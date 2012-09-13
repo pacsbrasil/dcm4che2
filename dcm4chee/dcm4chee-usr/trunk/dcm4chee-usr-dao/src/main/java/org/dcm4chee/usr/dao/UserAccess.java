@@ -60,7 +60,7 @@ public interface UserAccess {
     public String getUserRoleName();
     public String getAdminRoleName();
     
-    public List<User> getAllUsers(String userID);
+    public List<User> getAllUsers();
     public User getUser(String userId);
     public User getUserIgnoreCase(String userId);
     public void createUser(User user);
