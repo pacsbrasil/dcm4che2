@@ -91,7 +91,11 @@ public class MppsForwardService extends AbstractScuService {
 	    		
 				@Override
 	            public void onDimseRSP(Association as, DicomObject cmd, DicomObject data) {
-	            	result.append(cmd.toString()); 
+					result.append(cmd.toString());
+					if (cmd.getString(Tag.ErrorID) != null)
+						result.append("FORWARDING FAILED");
+					else
+						result.append("COMPLETED SUCCESSFULLY");
 	            }
 	    	};
 	    	
@@ -105,7 +109,7 @@ public class MppsForwardService extends AbstractScuService {
 	    	as.nset(cuid, iuid, mpps.subSet(MPPS_SET_TAGS), pc.getTransferSyntax(), rspHandler);  	
 	    	as.waitForDimseRSP();
 	    	
-	    	return result.toString() + "COMPLETED SUCCESSFULLY";
+	    	return result.toString();
         } finally {
             try {
                 as.release(true);

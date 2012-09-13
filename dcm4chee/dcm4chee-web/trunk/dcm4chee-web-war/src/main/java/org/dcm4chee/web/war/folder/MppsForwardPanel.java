@@ -192,7 +192,7 @@ public class MppsForwardPanel extends Panel {
                 try {
                 	result = MppsForwardDelegate.getInstance()
                 		.forwardMPPS(ppsModel, destinationAET.getTitle());
-                	success = true;
+                	success = result.endsWith("COMPLETED SUCCESSFULLY");
             	} catch (Exception e) {
             		log.error("Error forwarding mpps", e);
             		result = "Error: " + e.getCause().getMessage();
@@ -224,7 +224,7 @@ public class MppsForwardPanel extends Panel {
                 modalWindow.close(target);
             }
         }).setOutputMarkupId(true).add(FocusOnLoadBehaviour.newSimpleFocusBehaviour());
-       
+
         setOutputMarkupId(true);
     }
     
