@@ -252,8 +252,7 @@ public class InstanceViewPage extends SecureSessionCheckPage {
                 }
                 
             }.add(new TooltipBehaviour("folder.instanceview.")).setVisible(largeImg));
-            add(new Label("pngLabel", new ResourceModel("folder.instanceview.pngLabel"))
-            .setVisible(largeImg));
+            add(new Label("pngLabel", new ResourceModel("folder.instanceview.pngLabel")));
             add(new AjaxCheckBox("png", usePngModel){
                 private static final long serialVersionUID = 1L;
 
