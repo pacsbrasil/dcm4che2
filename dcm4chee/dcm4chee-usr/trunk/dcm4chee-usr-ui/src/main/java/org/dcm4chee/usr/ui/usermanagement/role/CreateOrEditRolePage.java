@@ -140,16 +140,9 @@ public class CreateOrEditRolePage extends SecureSessionCheckPage {
                 descriptionTextField.setModelObject(role.getDescription());
                 superuserCheckbox.setModelObject(role.isSuperuser());
             }
-            superuserCheckbox.add(new SecurityBehavior(getModuleName() + ":superuserCheckbox"));
-            superuserContainer.add(superuserCheckbox);
-            
-            superuserContainer.setVisible(false);
-            for (Role role1 : userAccess.getAllRoles())
-            	if (role1.isSuperuser())
-            			for (UserRoleAssignment ura : userAccess
-            					.getUser(((SecureSession) getSession()).getUsername()).getRoles())
-            				if (ura.getRole().equals(role1.getRolename()))
-            					superuserContainer.setVisible(true);
+            superuserContainer
+            	.add(superuserCheckbox)
+            	.add(new SecurityBehavior(getModuleName() + ":superuserCheckbox"));            
             
             final StringBuffer webRoleUuid = new StringBuffer();
             final StringBuffer dicomRoleUuid = new StringBuffer();
