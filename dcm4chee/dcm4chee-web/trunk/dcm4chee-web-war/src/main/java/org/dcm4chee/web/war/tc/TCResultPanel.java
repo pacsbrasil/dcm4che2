@@ -276,6 +276,8 @@ public class TCResultPanel extends Panel {
                                    studyPage.setPatientIdAndIssuer(tc.getPatientId(), 
                                            tc.getIssuerOfPatientId());
                                }
+                           }
+                           if (studyPage.getStudyInstanceUID() != null || studyPage.getPatientId() != null) {
                                studyPage.getStudyViewPort().clear();
                                studyWindow.setTitle(new StringResourceModel("tc.result.studywindow.title", this, null,
                                        new Object[]{maskNull(tc.getTitle(),"?"), 
@@ -287,24 +289,19 @@ public class TCResultPanel extends Panel {
                                studyWindow.setMinimalWidth(800);
                                studyWindow.setMinimalHeight(400);
                                studyWindow.show(target);
-                           }
-                           else
-                           {
+                           } else {
                                log.warn("Showing TC referenced studies discarded: No referened study found!");
                                msgWin.setInfoMessage(getString("tc.result.studywindow.noStudies"));
                                msgWin.show(target);
                            }
-                       }
-                       catch (Exception e)
-                       {
+                       } catch (Exception e) {
                            msgWin.setErrorMessage(getString("tc.result.studywindow.failed"));
                            msgWin.show(target);
                            log.error("Unable to show TC referenced studies!", e);
                        }
                    }
 	               	@Override
-                    protected void onComponentTag(ComponentTag tag)
-                    {
+                    protected void onComponentTag(ComponentTag tag) {
                     	super.onComponentTag(tag);
                     	tag.put("ondblclick",jsStopEventPropagationInline);
                     }
@@ -628,7 +625,7 @@ public class TCResultPanel extends Panel {
                             params.put("issuer", issuerOfPatId);
                         }
                         params.put("latestStudiesFirst", "true");
-                        params.put("hideSearch", "true");
+                        params.put("disableSearch", "true");
                         params.put("query", "true");
                     }
                     return params;

@@ -79,8 +79,11 @@ public class TCModel extends InstanceModel {
         }
 
         Series series = instance.getSeries();
+        series.getAttributes(false).copyTo(dataset);
         Study study = series.getStudy();
+        study.getAttributes(false).copyTo(dataset);
         Patient patient = study.getPatient();
+        patient.getAttributes().copyTo(dataset);
         patient.setModalityPerformedProcedureSteps(null);
         
         SeriesModel seriesModel = new SeriesModel(series, null, null);
