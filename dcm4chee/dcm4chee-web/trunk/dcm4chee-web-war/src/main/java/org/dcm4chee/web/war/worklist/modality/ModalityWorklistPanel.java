@@ -62,6 +62,7 @@ import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxButton;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow.WindowClosedCallback;
 import org.apache.wicket.markup.ComponentTag;
+import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Button;
@@ -72,6 +73,7 @@ import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.panel.Panel;
+import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.IModel;
@@ -115,6 +117,7 @@ import org.dcm4chee.web.war.common.IndicatingAjaxFormSubmitBehavior;
 import org.dcm4chee.web.war.common.UIDFieldBehavior;
 import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
 import org.dcm4chee.web.war.folder.DicomObjectPanel;
+import org.dcm4chee.web.war.folder.StudyListPage;
 import org.dcm4chee.web.war.folder.delegate.MwlScuDelegate;
 import org.dcm4chee.web.war.worklist.modality.MWLItemListView.MwlActionProvider;
 import org.dcm4chee.web.war.worklist.modality.model.MWLItemModel;
@@ -129,6 +132,7 @@ import org.slf4j.LoggerFactory;
 public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
 
     private static final long serialVersionUID = 1L;
+    private static final ResourceReference CSS = new CompressedResourceReference(StudyListPage.class, "folder-style.css");
     
     private static Logger log = LoggerFactory.getLogger(ModalityWorklistPanel.class);
     
@@ -163,6 +167,9 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
     public ModalityWorklistPanel(final String id) {
         super(id);
 
+        if (ModalityWorklistPanel.CSS != null)
+            add(CSSPackageResource.getHeaderContribution(ModalityWorklistPanel.CSS));
+            
         add(macb);
         
         msgWin.setTitle(new ResourceModel("mw.search.msg.title").wrapOnAssignment(this));
