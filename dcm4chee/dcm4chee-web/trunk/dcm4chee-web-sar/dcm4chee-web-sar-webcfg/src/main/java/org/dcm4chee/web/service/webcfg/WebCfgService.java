@@ -980,11 +980,10 @@ public class WebCfgService extends ServiceMBeanSupport implements
     }
 
     private LinkedHashMap<String, String> parseKeywordCatalogues(String s, boolean exclusive) {
-        StringTokenizer st = new StringTokenizer(s, "\t\r\n;");
-
         LinkedHashMap<String, String> map = new LinkedHashMap<String, String>();
-
-        while (st.hasMoreTokens()) {
+        if (s == null || NONE.equals(s.trim()))
+            return map;
+        for (StringTokenizer st = new StringTokenizer(s, "\t\r\n;") ; st.hasMoreTokens() ;) {
             String entry = st.nextToken().trim();
             String[] parts = entry.split(":");
             String[] catparts = parts[1].split(",");
