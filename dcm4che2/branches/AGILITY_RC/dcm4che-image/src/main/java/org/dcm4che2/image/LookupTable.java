@@ -657,7 +657,7 @@ public abstract class LookupTable {
         if (data == null) {
             throw new IllegalArgumentException("Missing LUT Data!");
         }
-        int len = desc[0] == 0 ? 0x10000 : desc[0];
+        int len = desc[0] == 0 ? 0x10000 : desc[0] < 0 ? desc[0] & 0xFFFF : desc[0];
         int off = desc[1];
         int bits = desc[2];
         if( off>0x7F00 && (signed || inBits < 16) ) {
