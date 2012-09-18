@@ -57,4 +57,5 @@ public class PrivateTags {
     public static final int InstanceUpdated = 0x00430016;
     public static final int WorkItemSeq = 0x00430020;
     public static final int Dcm4cheURIReferencedTransferSyntaxUID = 0x00430030;
+    public static final int InstanceContainsPostPixelData = 0x00430040;
 }
