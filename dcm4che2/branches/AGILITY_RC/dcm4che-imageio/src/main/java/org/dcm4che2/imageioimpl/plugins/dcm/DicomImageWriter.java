@@ -264,14 +264,13 @@ public class DicomImageWriter extends ImageWriter {
         ((ImageOutputStream) output).flush();
     }
 
-    public void writePostPixeldata(DicomObject dobj, String transfersynatx) throws IOException{        
+    public void writePostPixeldata(DicomObject dobj, String transferSyntax) throws IOException{        
         Object output = getOutput();
         dos = new DicomOutputStream((ImageOutputStream) output);
         dos.setAutoFinish(false);
-        dos.writeDataset(dobj, transfersynatx);
+        dos.writeDataset(dobj, transferSyntax);
         
-        dos.flush();
-        ((ImageOutputStream) output).flush();
+        finishStream();
     }
 
     /**
@@ -330,8 +329,18 @@ public class DicomImageWriter extends ImageWriter {
      */
     @Override
     public void endWriteSequence() throws IOException {
+    	endWriteSequence(true);
+    }
+
+    public void endWriteSequence(boolean finish) throws IOException {
         if (encapsulated)
             dos.writeHeader(Tag.SequenceDelimitationItem, null, 0);
+        if (finish) {
+        	finishStream();
+        }
+    }
+
+	protected void finishStream() throws IOException {
         dos.finish();
         ((ImageOutputStream) output).flush();
         dos = null;
