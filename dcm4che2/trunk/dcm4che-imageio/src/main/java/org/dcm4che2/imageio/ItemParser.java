@@ -131,7 +131,7 @@ public class ItemParser implements StreamSegmentMapper {
 
     private int[] basicOffsetTable;
 
-    private byte[] soi = new byte[2];
+    private final byte[] soi = new byte[2];
 
     private boolean lastItemSeen = false;
 
@@ -310,7 +310,15 @@ public class ItemParser implements StreamSegmentMapper {
 
     public byte[] readFrame(SegmentedImageInputStream siis, int frame)
             throws IOException {
-        Item item = getFirstItemOfFrame(frame);
+        int frameSize = getFrameLength(frame);
+        byte[] data = new byte[frameSize];
+        seekFrame(siis, frame);
+        siis.readFully(data);
+        return data;
+    }
+
+	protected int getFrameLength(int frame) throws IOException {
+		Item item = getFirstItemOfFrame(frame);
         int frameSize = item.length;
         int firstItemOfNextFrameIndex = frame + 1 < numberOfFrames
                 ? items.indexOf(getFirstItemOfFrame(frame + 1))
@@ -318,11 +326,8 @@ public class ItemParser implements StreamSegmentMapper {
         for (int i = items.indexOf(item) + 1; i < firstItemOfNextFrameIndex; i++) {
             frameSize += items.get(i).length;
         }
-        byte[] data = new byte[frameSize];
-        seekFrame(siis, frame);
-        siis.readFully(data);
-        return data;
-    }
+		return frameSize;
+	}   
 
     /**
      * seekFrame to right frame in order for ImageInputStream to read 
@@ -333,14 +338,7 @@ public class ItemParser implements StreamSegmentMapper {
      */
     public int seekImageFrameBeforeReadStream(SegmentedImageInputStream siis, int frame)
     throws IOException {
-        Item item = getFirstItemOfFrame(frame);
-        int frameSize = item.length;
-        int firstItemOfNextFrameIndex = frame + 1 < numberOfFrames
-                ? items.indexOf(getFirstItemOfFrame(frame + 1))
-                : getNumberOfDataFragments();
-        for (int i = items.indexOf(item) + 1; i < firstItemOfNextFrameIndex; i++) {
-            frameSize += items.get(i).length;
-        }
+        int frameSize = getFrameLength(frame);
         seekFrame(siis, frame);
         return frameSize;
     }

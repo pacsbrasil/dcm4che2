@@ -61,10 +61,16 @@ public class SizeSkipInputHandler implements DicomInputHandler {
 	public SizeSkipInputHandler(DicomInputHandler subHandler) {
 		this.subHandler = subHandler;
 	}
-	
+
 	public boolean readValue(DicomInputStream in) throws IOException {
 		boolean skip = isSkip(in);
-		if(!skip) return subHandler.readValue(in);
+		if(!skip){
+			if (subHandler != null){						
+				return subHandler.readValue(in);
+			}else{
+				return in.readValue(in);
+			}
+		}
 		in.getDicomObject().add(new SkippedDicomElement(in.tag(), in.vr(), false, in.valueLength(), in.getStreamPosition()));
 		in.skip(in.valueLength());
 		return true;

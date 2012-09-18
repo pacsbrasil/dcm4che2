@@ -226,13 +226,13 @@ public class DicomImageWriter extends ImageWriter {
     }
 
     /**
-     * Start writing the intiial sequence.
+     * Start writing the initial sequence.
      */
     @Override
     public void prepareWriteSequence(IIOMetadata metadata) throws IOException {
-        if (dos != null)
-            throw new IOException(
-                    "Already written the DICOM object header - can't write it again.");
+        if (dos != null){
+            throw new IOException("Already written the DICOM object header - can't write it again.");
+        }
         DicomStreamMetaData dmeta = (DicomStreamMetaData) metadata;
         DicomObject dobj = dmeta.getDicomObject();
         Object output = getOutput();
@@ -262,6 +262,15 @@ public class DicomImageWriter extends ImageWriter {
         }
         dos.flush();
         ((ImageOutputStream) output).flush();
+    }
+    
+    public void writePostPixeldata(DicomObject dobj, String transferSyntax) throws IOException{        
+        Object output = getOutput();
+        dos = new DicomOutputStream((ImageOutputStream) output);
+        dos.setAutoFinish(false);
+        dos.writeDataset(dobj, transferSyntax);
+        
+        finishStream();
     }
 
     /**
@@ -320,13 +329,23 @@ public class DicomImageWriter extends ImageWriter {
      */
     @Override
     public void endWriteSequence() throws IOException {
+    	endWriteSequence(true);
+    }
+
+    public void endWriteSequence(boolean finish) throws IOException {
         if (encapsulated)
             dos.writeHeader(Tag.SequenceDelimitationItem, null, 0);
-        dos.finish();
+        if (finish) {
+        	finishStream();
+        }
+    }
+
+	protected void finishStream() throws IOException {
+		dos.finish();
         ((ImageOutputStream) output).flush();
         dos = null;
         output = null;
         writer = null;
-    }
+	}
 
 }

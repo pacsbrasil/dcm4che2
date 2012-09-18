@@ -50,7 +50,7 @@ import java.util.Iterator;
  */
 public class CombineDicomObject extends AbstractDicomObject {
 	DicomObject ds1, ds2;
-	
+
 	public CombineDicomObject(DicomObject ds1, DicomObject ds2) {
 		this.ds1 = ds1;
 		this.ds2 = ds2;
@@ -78,7 +78,7 @@ public class CombineDicomObject extends AbstractDicomObject {
 	}
 
 	public Iterator<DicomElement> iterator() {
-        return iterator(0, 0xffffffff);
+		return iterator(0, 0xffffffff);
 	}
 
 	public Iterator<DicomElement> iterator(int fromTag, int toTag) {
@@ -128,6 +128,21 @@ public class CombineDicomObject extends AbstractDicomObject {
 
 	public boolean contains(int tag) {
 		return ds1.contains(tag) || ds2.contains(tag);
+	}
+
+	@Override
+	public DicomObject subSet(DicomObject filter) {
+		return new CombineDicomObject(ds1.subSet(filter), ds2.subSet(filter));
+	}
+
+	@Override
+	public DicomObject subSet(int fromTag, int toTag) {
+		return new CombineDicomObject(ds1.subSet(fromTag, toTag), ds2.subSet(fromTag, toTag));
+	}
+
+	@Override
+	public DicomObject subSet(int[] tags) {
+		return new CombineDicomObject(ds1.subSet(tags), ds2.subSet(tags));
 	}
 
 	public boolean accept(Visitor visitor) {

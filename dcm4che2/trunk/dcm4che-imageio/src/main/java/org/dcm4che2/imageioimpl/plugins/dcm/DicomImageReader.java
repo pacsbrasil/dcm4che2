@@ -69,8 +69,11 @@ import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.spi.ImageReaderSpi;
 import javax.imageio.stream.ImageInputStream;
 
+import org.dcm4che2.data.BasicDicomObject;
+import org.dcm4che2.data.CombineDicomObject;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.TransferSyntax;
 import org.dcm4che2.data.UID;
 import org.dcm4che2.data.VR;
 import org.dcm4che2.image.ByteLookupTable;
@@ -116,7 +119,7 @@ public class DicomImageReader extends ImageReader {
     private DicomInputStream dis;
 
     private DicomObject ds;
-
+   
     private int width;
 
     private int height;
@@ -139,7 +142,7 @@ public class DicomImageReader extends ImageReader {
 
     private boolean bigEndian;
 
-    private boolean swapByteOrder;
+    private boolean swapByteOrder;   
 
     private long pixelDataPos;
 
@@ -281,6 +284,7 @@ public class DicomImageReader extends ImageReader {
             throw new IllegalStateException("Input not set!");
         }
         if (ds != null) {
+        	streamMetaData.setDicomObject(ds);
             return;
         }
         dis = new DicomInputStream(iis);
@@ -327,7 +331,54 @@ public class DicomImageReader extends ImageReader {
                 clampPixelValues = allocated == 16 && stored < 12
                         && UID.JPEGExtended24.equals(tsuid);
             }
-        }
+        } 
+    }
+    
+    public void readPostPixeldata() throws IOException{
+    	readMetaData();
+    	long currentPosition = dis.getStreamPosition();
+    	   	
+    	DicomObject postPixelDs = new BasicDicomObject();
+    	    	
+    	if (pixelDataPos > 0){
+    		// There is pixeldata
+    		if (pixelDataLen >= 0){
+    			// last call already read the tag, but we want to init a new InputStream from here
+    	    	dis.reset();
+    	    	
+    			// there is uncompressed pixeldata
+    			long startPosition = pixelDataPos + pixelDataLen;  
+    			iis.seek(startPosition);
+    		} else {    	    			
+    			// via siis
+    			int imageIndex = frames - 1;
+    			imageIndex = (imageIndex < 0) ? 0:imageIndex;
+    			if (siis == null){
+    				initCompressedImageReader(imageIndex);	
+    			} 
+    			itemParser.seekFooter();
+    		}
+    	} else {
+    		// last call already read the tag, but we want to init a new InputStream from here
+        	dis.reset();
+    	}
+    	
+    	// Not reusing the earlier dicom input stream as it has a stop tag handler and we want to go past the pixeldata.
+    	DicomInputStream postDis = new DicomInputStream(iis, TransferSyntax.valueOf(tsuid));       
+        if( isSkipLargePrivate() ) {
+        	DicomInputHandler dih = new SizeSkipInputHandler(null);
+        	postDis.setHandler(dih);
+        }        
+        
+		postPixelDs = postDis.readDicomObject();
+    	if (postPixelDs != null && !postPixelDs.isEmpty()) {
+    		// Note the postPixelDs.copyTo(ds) does not work because the copy does not handle the 
+    		// SkippedDicomElements correctly    		
+    		ds = new CombineDicomObject(ds, postPixelDs);    		
+    	}
+    	
+    	// reset the stream
+    	iis.seek(currentPosition);
     }
 
     /**
