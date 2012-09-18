@@ -26,22 +26,6 @@
             <xsl:with-param name="ambulantStatus" select="string(field[15]/text())"/>
         </xsl:call-template>
         <!-- Admission ID, Issuer -->
-        <attr tag="00380010" vr="LO">
-            <xsl:value-of select="string(field[19]/text())"/>
-        </attr>
-        <xsl:variable name="issuerOfAdmissionID"
-                      select="string(field[19]/component[3]/text())" />
-        <xsl:if test="$issuerOfAdmissionID">
-            <!-- Issuer of Admission ID Sequence -->
-            <attr tag="00380014" vr="SQ">
-                <item>
-                    <!-- Local Namespace Entity ID -->
-                    <attr tag="00400031" vr="UT">
-                        <xsl:value-of select="$issuerOfAdmissionID" />
-                    </attr>
-                </item>
-            </attr>
-        </xsl:if>
         <xsl:call-template name="cx2attrs">
             <xsl:with-param name="idtag" select="'00380010'"/>
             <xsl:with-param name="istag" select="'00380011'"/>
