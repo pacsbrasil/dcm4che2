@@ -226,13 +226,13 @@ public class DicomImageWriter extends ImageWriter {
     }
 
     /**
-     * Start writing the intiial sequence.
+     * Start writing the initial sequence.
      */
     @Override
     public void prepareWriteSequence(IIOMetadata metadata) throws IOException {
-        if (dos != null)
-            throw new IOException(
-                    "Already written the DICOM object header - can't write it again.");
+        if (dos != null){
+            throw new IOException("Already written the DICOM object header - can't write it again.");
+        }
         DicomStreamMetaData dmeta = (DicomStreamMetaData) metadata;
         DicomObject dobj = dmeta.getDicomObject();
         Object output = getOutput();
@@ -260,6 +260,16 @@ public class DicomImageWriter extends ImageWriter {
             if( bytes>1 ) vr = VR.OW;
             dos.writeHeader(Tag.PixelData, vr, size);
         }
+        dos.flush();
+        ((ImageOutputStream) output).flush();
+    }
+
+    public void writePostPixeldata(DicomObject dobj, String transfersynatx) throws IOException{        
+        Object output = getOutput();
+        dos = new DicomOutputStream((ImageOutputStream) output);
+        dos.setAutoFinish(false);
+        dos.writeDataset(dobj, transfersynatx);
+        
         dos.flush();
         ((ImageOutputStream) output).flush();
     }
