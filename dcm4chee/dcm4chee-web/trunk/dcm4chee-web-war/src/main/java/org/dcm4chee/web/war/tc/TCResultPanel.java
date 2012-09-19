@@ -57,7 +57,6 @@ import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxEventBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.IAjaxCallDecorator;
-import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.behavior.IBehavior;
 import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxLink;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
@@ -564,24 +563,6 @@ public class TCResultPanel extends Panel {
                         .setBaseUrl(baseUrls.get(names.get(i)));
             }
         }
-    }
-    
-    private AjaxEventBehavior findEventBehavior(List<IBehavior> list, String event)
-    {
-    	if (list!=null)
-    	{
-    		for (IBehavior b : list)
-    		{
-    			if (b instanceof AjaxEventBehavior)
-    			{
-    				if (((AjaxEventBehavior)b).getEvent().equalsIgnoreCase(event))
-    				{
-    					return (AjaxEventBehavior) b;
-    				}
-    			}
-    		}
-    	}
-    	return null;
     }
     
     private void selectTC(final Item<TCModel> item, final TCModel tc,
