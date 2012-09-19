@@ -56,8 +56,10 @@ import org.apache.wicket.PageParameters;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxEventBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.IAjaxCallDecorator;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.behavior.IBehavior;
+import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxLink;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.extensions.markup.html.repeater.data.sort.OrderByBorder;
 import org.apache.wicket.extensions.markup.html.repeater.util.SortParam;
@@ -208,10 +210,11 @@ public class TCResultPanel extends Panel {
                         .add(new SecurityBehavior(TCPanel.getModuleName()
                                 + ":webviewerInstanceLink")));
 
-                final Component viewLink = new AjaxLink<String>("tc-view") {
+                final Component viewLink = new IndicatingAjaxLink<String>("tc-view") {
                     private static final long serialVersionUID = 1L;
                     @Override
                     public void onClick(AjaxRequestTarget target) {
+                        selectTC(item, tc, target);
                         openTC(tc, false, target);
                     }
                     protected void onComponentTag(ComponentTag tag)
@@ -219,29 +222,41 @@ public class TCResultPanel extends Panel {
                     	super.onComponentTag(tag);
                     	tag.put("ondblclick",jsStopEventPropagationInline);
                     }
+                    @Override
+                    protected IAjaxCallDecorator getAjaxCallDecorator() {
+                        try {
+                            return TCPanel.getMaskingBehaviour().getAjaxCallDecorator();
+                        } catch (Exception e) {
+                            log.error("Failed to get IAjaxCallDecorator: ", e);
+                        }
+                        return null;
+                    }
                 }
                .add(new Image("tcViewImg", ImageManager.IMAGE_COMMON_DICOM_DETAILS)
                .add(new ImageSizeBehaviour("vertical-align: middle;")))
                .add(new TooltipBehaviour("tc.result.table.","view"))
                .setOutputMarkupId(true);
                
-        	   //avoid to call onClick multiple times
-               AjaxEventBehavior viewBehavior = findEventBehavior(viewLink.getBehaviors(), "onclick");
-               if (viewBehavior!=null)
-               {
-            	   viewBehavior.setThrottleDelay(Duration.milliseconds(2500));
-               }
-               
-               final Component editLink = new AjaxLink<String>("tc-edit") {
+               final Component editLink = new IndicatingAjaxLink<String>("tc-edit") {
                     private static final long serialVersionUID = 1L;
                     @Override
                     public void onClick(AjaxRequestTarget target) {
+                        selectTC(item, tc, target);
                         openTC(tc, true, target);
                     }
                     protected void onComponentTag(ComponentTag tag)
                     {
                     	super.onComponentTag(tag);
                     	tag.put("ondblclick",jsStopEventPropagationInline);
+                    }
+                    @Override
+                    protected IAjaxCallDecorator getAjaxCallDecorator() {
+                        try {
+                            return TCPanel.getMaskingBehaviour().getAjaxCallDecorator();
+                        } catch (Exception e) {
+                            log.error("Failed to get IAjaxCallDecorator: ", e);
+                        }
+                        return null;
                     }
                 }
                .add(new Image("tcEditImg", ImageManager.IMAGE_COMMON_DICOM_EDIT)
@@ -250,17 +265,11 @@ public class TCResultPanel extends Panel {
                .add(new SecurityBehavior(TCPanel.getModuleName() + ":editTC"))
                .setOutputMarkupId(true);
                
-        	   //avoid to call onClick multiple times
-               AjaxEventBehavior editBehavior = findEventBehavior(editLink.getBehaviors(), "onclick");
-               if (editBehavior!=null)
-               {
-            	   editBehavior.setThrottleDelay(Duration.milliseconds(2500));
-               }
-               
-               final Component studyLink = new AjaxLink<String>("tc-study") {
+               final Component studyLink = new IndicatingAjaxLink<String>("tc-study") {
                    private static final long serialVersionUID = 1L;
                    @Override
                    public void onClick(AjaxRequestTarget target) { 
+                       selectTC(item, tc, target);
                        try
                        {
                            TCObject tcObject = TCObject.create(tc);
@@ -300,11 +309,20 @@ public class TCResultPanel extends Panel {
                            log.error("Unable to show TC referenced studies!", e);
                        }
                    }
-	               	@Override
-                    protected void onComponentTag(ComponentTag tag) {
-                    	super.onComponentTag(tag);
-                    	tag.put("ondblclick",jsStopEventPropagationInline);
-                    }
+                   @Override
+                   protected void onComponentTag(ComponentTag tag) {
+                       super.onComponentTag(tag);
+                       tag.put("ondblclick",jsStopEventPropagationInline);
+                   }
+                   @Override
+                   protected IAjaxCallDecorator getAjaxCallDecorator() {
+                       try {
+                           return TCPanel.getMaskingBehaviour().getAjaxCallDecorator();
+                       } catch (Exception e) {
+                           log.error("Failed to get IAjaxCallDecorator: ", e);
+                       }
+                       return null;
+                   }
                }
               .add(new Image("tcStudyImg", ImageManager.IMAGE_COMMON_SEARCH)
               .add(new ImageSizeBehaviour("vertical-align: middle;")))
@@ -312,13 +330,6 @@ public class TCResultPanel extends Panel {
               .add(new SecurityBehavior(TCPanel.getModuleName() + ":showTCStudy"))
               .setOutputMarkupId(true);
                
-       	      //avoid to call onClick multiple times
-              AjaxEventBehavior studyBehavior = findEventBehavior(studyLink.getBehaviors(), "onclick");
-              if (studyBehavior!=null)
-              {
-           	     studyBehavior.setThrottleDelay(Duration.milliseconds(2500));
-              }
-              
               item.add(viewLink);
               item.add(editLink);
               item.add(studyLink);
@@ -382,18 +393,7 @@ public class TCResultPanel extends Panel {
                     @Override
                     protected void onEvent(AjaxRequestTarget target)
                     {
-                        Component[] toUpdate = selectTC(tc);
-                        
-                        if (toUpdate!=null && toUpdate.length>0)
-                        {
-                            for (Component c : toUpdate)
-                            {
-                                target.addComponent(c);
-                            }
-                        }
-                        
-                        target.appendJavascript("selectTC('"+item.getMarkupId()+
-                                "','mouse-out-selected','even-mouse-out','odd-mouse-out')");
+                        selectTC(item, tc, target);
                     }
                 });
                 
@@ -584,6 +584,22 @@ public class TCResultPanel extends Panel {
     	return null;
     }
     
+    private void selectTC(final Item<TCModel> item, final TCModel tc,
+            AjaxRequestTarget target) {
+        Component[] toUpdate = selectTC(tc);
+        
+        if (toUpdate!=null && toUpdate.length>0)
+        {
+            for (Component c : toUpdate)
+            {
+                target.addComponent(c);
+            }
+        }
+        
+        target.appendJavascript("selectTC('"+item.getMarkupId()+
+                "','mouse-out-selected','even-mouse-out','odd-mouse-out')");
+    }
+
     private static Object maskNull(Object val, Object def) {
         return val != null ? val : def;
     }
