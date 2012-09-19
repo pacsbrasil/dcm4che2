@@ -283,8 +283,7 @@ public class DicomImageReader extends ImageReader {
         if (iis == null) {
             throw new IllegalStateException("Input not set!");
         }
-        if (ds != null) {
-        	streamMetaData.setDicomObject(ds);
+        if (ds != null) {        
             return;
         }
         dis = new DicomInputStream(iis);
@@ -375,6 +374,7 @@ public class DicomImageReader extends ImageReader {
     		// Note the postPixelDs.copyTo(ds) does not work because the copy does not handle the 
     		// SkippedDicomElements correctly    		
     		ds = new CombineDicomObject(ds, postPixelDs);    		
+        	streamMetaData.setDicomObject(ds);
     	}
     	
     	// reset the stream
