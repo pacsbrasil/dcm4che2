@@ -128,7 +128,7 @@ public class TCUtilities
     
     public static TCInput createInput(final String componentId,
             TCQueryFilterKey key, Object value) {
-        return createInput(componentId, key, value, false);
+        return createInput(componentId, key, value, true);
     }
     
     public static TCInput createInput(final String componentId,
