@@ -42,6 +42,6 @@ public class TCImagePage extends WebPage
             settings.setHeight(height);
         }
         
-        return TCUtilities.getOpenWindowJavascript(this, title, settings);
+        return TCUtilities.getOpenWindowJavascript(this, title, settings, false);
     }
 }

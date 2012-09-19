@@ -69,12 +69,12 @@ public class TCUtilities
         else return o1.equals(o2);
     }
 
-    public static String getOpenWindowJavascript(Page page, String title)
+    public static String getOpenWindowJavascript(Page page, String title, boolean includeReturnStatement)
     {
-        return getOpenWindowJavascript(page, title, new TCPopupSettings());
+        return getOpenWindowJavascript(page, title, new TCPopupSettings(), includeReturnStatement);
     }
 
-    public static String getOpenWindowJavascript(Page page, String title, TCPopupSettings settings)
+    public static String getOpenWindowJavascript(Page page, String title, TCPopupSettings settings, boolean includeReturnStatement)
     {
         settings.setTarget("'" + RequestCycle.get().urlFor(page) + "'");
 
@@ -99,6 +99,18 @@ public class TCUtilities
         
         StringBuffer sbuf = new StringBuffer(
                 settings.getPopupJavaScript());
+        
+        final String returnStatement = "return false;";
+        int i = sbuf.indexOf(returnStatement);
+        if (!includeReturnStatement && i>=0)
+        {
+        	sbuf.delete(i, i+returnStatement.length());
+        }
+        else if (includeReturnStatement && i<0)
+        {
+        	sbuf.append(returnStatement);
+        }
+        
         
         sbuf.insert(0, "try {\n");
         sbuf.append("} catch(e) {\n    console.error(e);\n}");

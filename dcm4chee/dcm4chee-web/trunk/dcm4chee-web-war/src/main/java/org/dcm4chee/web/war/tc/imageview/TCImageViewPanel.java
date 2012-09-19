@@ -9,9 +9,8 @@ import java.util.regex.Pattern;
 
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
-import org.apache.wicket.RequestCycle;
+import org.apache.wicket.ajax.AjaxEventBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
-import org.apache.wicket.ajax.calldecorator.AjaxCallDecorator;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.image.Image;
@@ -127,16 +126,17 @@ public class TCImageViewPanel extends Panel
             }
         };
         list.setMarkupId("tc-view-images-thumbnail-container");
-                
+        
         currentImage = new TCWadoImage("tc-view-images-container-content-image", list.getCurrentImageModel());
         currentImage.setOutputMarkupId(true);
-        currentImage.add(new AttributeModifier("ondblclick",true,new AbstractReadOnlyModel<String>() {
-            @Override
-            public String getObject()
-            {
-                return new TCImagePage(list.getCurrentImageModel()).getOpenInWindowJavascript(null);
-            }
-        }));
+        currentImage.add(new AjaxEventBehavior("ondblclick") {
+			private static final long serialVersionUID = -60699490892951485L;
+			@Override
+			public void onEvent(AjaxRequestTarget target)
+        	{
+				target.appendJavascript(new TCImagePage(list.getCurrentImageModel()).getOpenInWindowJavascript(null));
+        	}
+        });
         
         numberLabel = new Label("tc-view-images-numberOf", new AbstractReadOnlyModel<String>() {
             @Override
