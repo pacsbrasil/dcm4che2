@@ -2596,6 +2596,11 @@ public class StudyListPage extends Panel {
            @Override
            protected void onSubmit() {
                model.update(getDicomObject());
+               AbstractEditableDicomModel m = (AbstractEditableDicomModel)model.getParent();
+               while (m.levelOfModel() > AbstractDicomModel.PATIENT_LEVEL) {
+                   m.refresh();
+                   m = (AbstractEditableDicomModel)m.getParent();
+               }
                try {
                    ContentEditDelegate.getInstance().doAfterDicomEdit(model);
                } catch (Exception x) {

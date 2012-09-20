@@ -62,6 +62,7 @@ import org.dcm4chee.archive.entity.Series;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.archive.entity.StudyPermission;
 import org.dcm4chee.web.dao.util.QueryUtil;
+import org.dcm4chee.web.dao.util.UpdateDerivedFieldsUtil;
 import org.jboss.annotation.ejb.LocalBinding;
 
 /**
@@ -471,6 +472,7 @@ public class StudyListBean implements StudyListLocal {
     public Series updateSeries(long pk, DicomObject attrs) {
         Series series = em.find(Series.class, pk);
         series.setAttributes(attrs);
+        new UpdateDerivedFieldsUtil(em).updateDerivedFieldsOfStudy(series.getStudy());
         return series;
     }
     public Series addSeries(long studyPk, DicomObject attrs) {
@@ -494,6 +496,9 @@ public class StudyListBean implements StudyListLocal {
     public Instance updateInstance(long pk, DicomObject attrs) {
         Instance inst = em.find(Instance.class, pk);
         inst.setAttributes(attrs);
+        UpdateDerivedFieldsUtil util = new UpdateDerivedFieldsUtil(em);
+        util.updateDerivedFieldsOfSeries(inst.getSeries());
+        util.updateDerivedFieldsOfStudy(inst.getSeries().getStudy());
         return inst;
     }
 

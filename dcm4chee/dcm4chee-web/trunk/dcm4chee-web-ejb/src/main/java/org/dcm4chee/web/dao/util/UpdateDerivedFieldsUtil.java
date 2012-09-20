@@ -80,6 +80,7 @@ public class UpdateDerivedFieldsUtil {
         }
         updateNumberOfStudyRelatedSeriesAndInstances(study);
         updateModalitiesInStudy(study);
+        updateCUIDsInStudy(study);
         updateAvailability(study);
         em.merge(study);
     }
@@ -126,6 +127,26 @@ public class UpdateDerivedFieldsUtil {
         return true;
     }
 
+    public boolean updateCUIDsInStudy(Study study) {
+        String cuids = "";
+        if (study.getNumberOfStudyRelatedInstances() > 0) {
+            Query qM = em.createQuery("SELECT DISTINCT i.sopClassUID FROM Instance i WHERE i.series.study.pk = :pk");
+            qM.setParameter("pk", study.getPk());
+            List<?> uids = qM.getResultList();
+            StringBuffer sb = new StringBuffer();
+            for (Iterator<?> it = uids.iterator() ; it.hasNext() ; ) {
+                sb.append(it.next()).append('\\');
+            }
+            if (sb.length() > 0)
+                cuids = sb.substring(0, sb.length()-1);
+        }
+        if (cuids.equals(study.getSopClassesInStudy())) {
+            return false;
+        }
+        study.setSopClassesInStudy(cuids);
+        return true;
+    }
+    
     private boolean updateAvailability(Study study) {
         Availability availability = null;
         if (study.getNumberOfStudyRelatedInstances() > 0) {
