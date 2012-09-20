@@ -118,14 +118,15 @@ public class StudyListFilter implements Serializable {
     		|| !QueryUtil.isUniversalMatch(getPatientID()) 
     		|| !QueryUtil.isUniversalMatch(getIssuerOfPatientID()) 
     		|| !QueryUtil.isUniversalMatch(getAccessionNumber()) 
-                || !QueryUtil.isUniversalMatch(getStudyInstanceUID())
                 || !QueryUtil.isUniversalMatch(getModality())
                 || !QueryUtil.isUniversalMatch(getSourceAET())
-                || !QueryUtil.isUniversalMatch(getSeriesInstanceUID())
                 || studyDateMin != null
                 || studyDateMax != null 
-                || birthDateMin != null
-                || birthDateMax != null;
+                || 
+                (isExtendedQuery() && (birthDateMin != null || birthDateMax != null
+                || !QueryUtil.isUniversalMatch(getSeriesInstanceUID())
+                || !QueryUtil.isUniversalMatch(getStudyInstanceUID())
+                ));
     }
     
     public String getPatientName() {
