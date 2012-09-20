@@ -37,6 +37,7 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.web.war.tc;
 
+import java.lang.reflect.Field;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -288,14 +289,25 @@ public class TCResultPanel extends Panel {
                            if (studyPage.getStudyInstanceUID() != null || studyPage.getPatientId() != null) {
                                studyPage.getStudyViewPort().clear();
                                studyWindow.setTitle(new StringResourceModel("tc.result.studywindow.title", this, null,
-                                       new Object[]{maskNull(tc.getTitle(),"?"), 
-                                                   maskNull(tc.getAbstract(),"?"),
-                                                   maskNull(tc.getAuthor(),"?"), 
-                                                   maskNull(tc.getCreationDate(),tc.getCreatedTime())}));
+                                       new Object[]{maskNull(cutAtISOControl(tc.getTitle(), 40),"?"), 
+                                                   maskNull(cutAtISOControl(tc.getAbstract(),25),"?"),
+                                                   maskNull(cutAtISOControl(tc.getAuthor(), 20),"?"), 
+                                                   maskNull(tc.getCreationDate(),tc.getCreatedTime())})); 
                                studyWindow.setInitialWidth(1200);
                                studyWindow.setInitialHeight(600);
                                studyWindow.setMinimalWidth(800);
                                studyWindow.setMinimalHeight(400);
+                               if (studyWindow.isShown()) {
+                                   log.warn("###### StudyView is already shown ???!!!");
+                                   try {
+                                       Field showField = ModalWindow.class.getDeclaredField("shown");
+                                       showField.setAccessible(true);
+                                       showField.set(studyWindow, false);
+                                   } catch (Exception e) {
+                                       log.error("Failed to reset shown Field from ModalWindow!");
+                                   }
+                                   log.info("###### studyWindow.isShown():"+studyWindow.isShown());
+                               }
                                studyWindow.show(target);
                            } else {
                                log.warn("Showing TC referenced studies discarded: No referened study found!");
@@ -583,6 +595,17 @@ public class TCResultPanel extends Panel {
 
     private static Object maskNull(Object val, Object def) {
         return val != null ? val : def;
+    }
+    
+    private static String cutAtISOControl(String s, int maxlen) {
+        if (s == null)
+            return null;
+        for (int i = 0, len = Math.min(s.length(), maxlen) ; i < len ; i++) {
+            if (Character.isISOControl(s.charAt(i))) {
+                return s.substring(0, i)+"..";
+            }
+        }
+        return s.length() > maxlen ? s.substring(0, maxlen)+".." : s;
     }
 
     private static class TCStudyListPage extends WebPage {
