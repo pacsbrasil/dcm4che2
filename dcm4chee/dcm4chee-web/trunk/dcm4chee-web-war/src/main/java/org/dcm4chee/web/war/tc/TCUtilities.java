@@ -22,6 +22,7 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.PropertyModel;
 import org.dcm4chee.archive.entity.Code;
 import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
+import org.dcm4chee.web.war.common.AutoSelectInputTextBehaviour;
 import org.dcm4chee.web.war.tc.TCObject.DicomCode;
 import org.dcm4chee.web.war.tc.TCObject.ITextOrCode;
 import org.dcm4chee.web.war.tc.keywords.TCKeyword;
@@ -306,6 +307,7 @@ public class TCUtilities
                     textUpdated(SelfUpdatingTextField.this.text);
                 }
             });
+            add(new AutoSelectInputTextBehaviour());
         }
 
         public String getText(){ return text; }
@@ -328,6 +330,7 @@ public class TCUtilities
                     textUpdated(SelfUpdatingTextArea.this.text);
                 }
             });
+            add(new AutoSelectInputTextBehaviour());
         }
 
         public String getText(){ return text; }

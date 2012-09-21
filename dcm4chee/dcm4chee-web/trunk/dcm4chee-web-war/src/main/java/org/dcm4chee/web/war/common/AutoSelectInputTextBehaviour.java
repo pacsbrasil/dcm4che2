@@ -13,7 +13,6 @@ public class AutoSelectInputTextBehaviour extends AbstractBehavior
     @Override
     public void onComponentTag(final Component component, final ComponentTag tag)
     {
-        tag.put("onblur","this.selectionStart=this.selectionEnd=-1");
         tag.put("onfocus","this.select()");
     }
 }
