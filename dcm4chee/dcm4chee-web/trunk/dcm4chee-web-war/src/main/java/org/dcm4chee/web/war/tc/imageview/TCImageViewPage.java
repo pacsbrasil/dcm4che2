@@ -254,7 +254,12 @@ public class TCImageViewPage extends SecureWebPage
                 	
                 	if (TCReferencedInstance.isImage(cuid))
                 	{
-                		Integer nFrames = frames!=null ? frames.get(iuid) : -1;
+                		Integer nFrames = null;
+                		if (frames!=null && !frames.isEmpty())
+                		{
+                			nFrames = frames.get(iuid);
+                		}
+                		
                 		if (nFrames==null || nFrames<=0)
                 		{
                 			refSeries.addInstance(new TCReferencedImage(refSeries, iuid, cuid));
@@ -321,7 +326,12 @@ public class TCImageViewPage extends SecureWebPage
                         	
                         	if (TCReferencedInstance.isImage(cuid))
                         	{
-                        		Integer nFrames = frames!=null ? frames.get(iuid) : -1;
+                        		Integer nFrames = null;
+                        		if (frames!=null && !frames.isEmpty())
+                        		{
+                        			nFrames = frames.get(iuid);
+                        		}
+                        		
                         		if (nFrames==null || nFrames<=0)
                         		{
                         			refSeries.addInstance(new TCReferencedImage(refSeries, iuid, cuid));
