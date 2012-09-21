@@ -481,7 +481,7 @@ public abstract class TCSearchPanel extends Panel {
         {
             TCKeyword kw = (TCKeyword) value;
             
-            if (kw != null && kw.isValid()) {
+            if (kw != null) {
                 code = kw.getCode();
                 text = kw.getName();
             }
