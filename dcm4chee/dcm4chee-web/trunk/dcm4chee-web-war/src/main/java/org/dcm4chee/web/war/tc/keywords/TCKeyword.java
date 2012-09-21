@@ -126,4 +126,12 @@ public class TCKeyword implements ITextOrCode {
             return keyword.code != null && code.equals(keyword.code);
         }
     }
+    
+    @Override
+    public int hashCode() {
+        if (code == null) {
+            return name == null ? super.hashCode() : name.hashCode();
+        }
+        return code.hashCode();
+    }
 }

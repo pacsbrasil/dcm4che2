@@ -186,7 +186,7 @@ public class ACRCatalogue extends TCKeywordCatalogue {
 
         String[] data = ACRData.rawdataAnatomy;
 
-        ACRKeywordNode root = ACRKeywordNode.createRoot("-1");
+        ACRKeywordNode root = ACRKeywordNode.createRoot("root-0");
 
         for (String s : data) {
             root.addToSubtree(createAnatomyNode(s));
@@ -203,7 +203,7 @@ public class ACRCatalogue extends TCKeywordCatalogue {
         ACRKeywordNode[] roots = new ACRKeywordNode[datas.length];
 
         for (int i = 0; i < datas.length; i++) {
-            roots[i] = ACRKeywordNode.createRoot("-1");
+            roots[i] = ACRKeywordNode.createRoot("root-"+i);
 
             String[] data = datas[i];
 

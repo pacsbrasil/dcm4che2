@@ -74,8 +74,8 @@ public class ACRKeywordNode extends TCKeywordNode {
         String nodeId = node.getId();
         String parentId = nodeId.substring(0, nodeId.length() - 1);
 
-        if (parentId.length() == 0) {
-            parentId = "-1";
+        if (parentId.length() == 0 && id.startsWith("root-")) {
+            parentId = id;
         }
 
         if (id.equalsIgnoreCase(parentId)) {

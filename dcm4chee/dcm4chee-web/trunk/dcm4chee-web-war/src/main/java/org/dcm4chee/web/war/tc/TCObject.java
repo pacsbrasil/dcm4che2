@@ -890,6 +890,21 @@ public class TCObject implements Serializable {
 
             return false;
         }
+        @Override
+        public boolean equals(Object o) {
+            if (o != null && (o instanceof DicomCode)) {
+                DicomCode code = (DicomCode) o;
+                return value.equals(code.value)
+                        && designator.equals(code.designator)
+                        && (version == null || version.equals(code.version));
+            }
+
+            return false;
+        }
+        @Override
+        public int hashCode() {
+            return (value+"_"+designator+"_"+version).hashCode();
+        }
     }
     
     public interface ITextOrCode extends Serializable {
