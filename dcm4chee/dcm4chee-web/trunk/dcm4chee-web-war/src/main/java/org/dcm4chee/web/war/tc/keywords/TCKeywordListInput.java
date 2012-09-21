@@ -168,14 +168,6 @@ public class TCKeywordListInput extends AbstractTCKeywordInput {
             protected String getNullValidKey() {
                 return "tc.search.null.text";
             }
-            @Override
-            protected void onComponentTag(ComponentTag tag)
-            {
-                super.onComponentTag(tag);
-                
-                //(WEB-429) workaround: disable browser-native drag and drop
-                tag.put("onmousedown", "return false;");
-            }
         };
         keywordList.setOutputMarkupId(true);
         keywordList.setNullValid(true);
