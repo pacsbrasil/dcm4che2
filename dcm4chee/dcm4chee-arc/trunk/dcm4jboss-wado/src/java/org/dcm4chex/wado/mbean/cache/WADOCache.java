@@ -257,7 +257,10 @@ public interface WADOCache {
     public void setImageQuality(String imageQuality);
 
     public String getImageWriterClass();
+    public void setImageWriterClass(String imageWriterClass);
 
-	public void setImageWriterClass(String imageWriterClass);
+    public String getPNGImageWriterClass();
+    public void setPNGImageWriterClass(String imageWriterClass);
 
+    public String showImageWriter(String formatName);
 }

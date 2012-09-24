@@ -109,6 +109,7 @@ public class WADOCacheImpl implements WADOCache {
     private String imageQuality = DEFAULT_IMAGE_QUALITY;
 
     protected String imageWriterClass;
+    protected String pngImageWriterClass;
 
     protected WADOCacheImpl() {
     }
@@ -221,6 +222,15 @@ public class WADOCacheImpl implements WADOCache {
     public void setImageWriterClass(String imageWriterClass) {
         getImageWriterWriter("JPEG", imageWriterClass).dispose();
         this.imageWriterClass = imageWriterClass;
+    }
+
+    public final String getPNGImageWriterClass() {
+        return pngImageWriterClass;
+    }
+
+    public void setPNGImageWriterClass(String imageWriterClass) {
+        getImageWriterWriter("PNG", imageWriterClass).dispose();
+        this.pngImageWriterClass = imageWriterClass;
     }
 
     private static WADOCacheImpl createWADOCache() {
@@ -708,7 +718,7 @@ public class WADOCacheImpl implements WADOCache {
 
     public void writePNG(BufferedImage bi, Object fileOrStream) throws IOException {
         ImageOutputStream iout = ImageIO.createImageOutputStream(fileOrStream);
-        ImageWriter writer = getImageWriterWriter("PNG", null);
+        ImageWriter writer = getImageWriterWriter("PNG", pngImageWriterClass);
         try {
             writer.setOutput(iout);
             ImageWriteParam iwparam = writer.getDefaultWriteParam();
@@ -733,7 +743,9 @@ public class WADOCacheImpl implements WADOCache {
         for (Iterator writers = ImageIO.getImageWritersByFormatName(formatName); writers
                 .hasNext();) {
             ImageWriter writer = (ImageWriter) writers.next();
+            log.info("##### found image writer for "+formatName+":"+writer);
             if (imageWriterClass == null || writer.getClass().getName().equals(imageWriterClass)) {
+                log.info("##### Use image writer for "+formatName+":"+writer);
                 return writer;
             }
         }
@@ -742,5 +754,13 @@ public class WADOCacheImpl implements WADOCache {
         throw new ConfigurationException("No ImageWriter found for " + formatName);
     }
 
-
+    public String showImageWriter(String formatName) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Available image writer for ").append(formatName).append(":\n");
+        for (Iterator writers = ImageIO.getImageWritersByFormatName(formatName); writers.hasNext();) {
+            ImageWriter writer = (ImageWriter) writers.next();
+            sb.append(writer.getClass().getName()).append("\n");
+        }
+        return sb.toString();
+    }
 }

@@ -140,6 +140,13 @@ public class WADOService extends AbstractCacheService {
         cache.setImageWriterClass(imageWriterClass);
     }
 
+    public String getPNGImageWriterClass() {
+        return cache.getPNGImageWriterClass();
+    }
+    public void setPNGImageWriterClass(String imageWriterClass) {
+        cache.setPNGImageWriterClass(imageWriterClass);
+    }
+    
     public boolean isJpgWriterSupportsByteColormap() {
         return support.isJpgWriterSupportsByteColormap();
     }
@@ -509,6 +516,10 @@ public class WADOService extends AbstractCacheService {
         return resp;
     }
 
+    public String showImageWriter(String formatName) {
+        return cache.showImageWriter(formatName);
+    }
+    
     private void logExport(WADORequestObject reqObj, WADOResponseObject resp) {
         try {
             HttpUserInfo userInfo = new HttpUserInfo(reqObj.getRequest(),

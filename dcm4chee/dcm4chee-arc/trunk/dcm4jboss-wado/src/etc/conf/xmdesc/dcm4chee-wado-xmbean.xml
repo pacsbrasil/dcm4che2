@@ -217,6 +217,20 @@ date, 'HH' by the current hour and 'mm' by the current minute.<br/>
     </descriptors>
   </attribute>
 
+  <attribute access="read-write" getMethod="getPNGImageWriterClass"
+    setMethod="setPNGImageWriterClass">
+    <description><![CDATA[Class name of used PNG Encoder, implementing
+      <code>javax.imageio.ImageWriter</code> <br/>
+      e.g.: com.sun.media.imageioimpl.plugins.png.CLibPNGImageWriter ]]>
+    </description>
+    <name>PNGImageWriterClass</name>
+    <type>java.lang.String</type>
+    <descriptors>
+      <value
+        value="com.sun.media.imageioimpl.plugins.png.CLibPNGImageWriter" />
+    </descriptors>
+  </attribute>
+
   <attribute access="read-write" getMethod="isClientRedirect"
     setMethod="setClientRedirect">
     <description>Enables client side redirection if requested
@@ -495,6 +509,17 @@ configured <i>DeleterThreshold</i>.]]>
    <operation impact="ACTION">
       <description>Clear Cache</description>
       <name>clearCache</name>
+      <return-type>java.lang.String</return-type>
+   </operation>
+
+   <operation impact="ACTION">
+      <description>Show available ImageWriter for given format name</description>
+      <name>showImageWriter</name>
+      <parameter>
+        <description>Format name (e.g. JPEG, PNG,..).</description>
+        <name>formatName</name>
+        <type>java.lang.String</type>
+      </parameter>
       <return-type>java.lang.String</return-type>
    </operation>
    
