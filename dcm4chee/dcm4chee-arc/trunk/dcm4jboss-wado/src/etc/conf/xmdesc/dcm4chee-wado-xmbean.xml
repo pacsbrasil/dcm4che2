@@ -16,10 +16,15 @@
   <dd>Redirect: If this WADO service handles a request for an object that is external retrievable,
   a client- or server side redirect can be initiated (see <tt>useClientRedirect</tt>).</dd>
   <dd> special mime types: 
-  		<tt>image/png16</tt>: Get 16 bit grayscale PNG without applied LUT's
-  		<tt>application/dicom+xml</tt>: get XML representation (dcm4che14 format) of dicom header (note: '+' is %2B in URL).
-  		This XML can be transformed with an XSL stylesheet configured by <code>DicomXslURL</code>MBean attribute. 
-  		With the URL parameter <code>privateTags=no</code> the private tags will be removed from output. 
+      <dl>
+  		<dt>image/png16:</dt> 
+  		<dd>Get 16 bit grayscale PNG without applied LUT's</dd>
+  		<dt>application/dicom+xml:</dt> 
+  		<dd>get XML representation (dcm4che14 format) of dicom header (note: '+' is %2B in URL).</dd>
+  	    <dd>This XML can be transformed with an XSL stylesheet configured by <code>DicomXslURL</code>MBean attribute.</dd> 
+  		<dd>With the URL parameter <code>privateTags=no</code> the private tags will be removed from output.</dd>
+  		</dd>
+  	  </dl> 
   <dd>
   </dl>
   </p>
@@ -221,13 +226,13 @@ date, 'HH' by the current hour and 'mm' by the current minute.<br/>
     setMethod="setPNGImageWriterClass">
     <description><![CDATA[Class name of used PNG Encoder, implementing
       <code>javax.imageio.ImageWriter</code> <br/>
-      e.g.: com.sun.media.imageioimpl.plugins.png.CLibPNGImageWriter ]]>
+      e.g.: com.sun.imageio.plugins.png.PNGImageWriter, com.sun.media.imageioimpl.plugins.png.CLibPNGImageWriter ]]>
     </description>
     <name>PNGImageWriterClass</name>
     <type>java.lang.String</type>
     <descriptors>
       <value
-        value="com.sun.media.imageioimpl.plugins.png.CLibPNGImageWriter" />
+        value="com.sun.imageio.plugins.png.PNGImageWriter" />
     </descriptors>
   </attribute>
 

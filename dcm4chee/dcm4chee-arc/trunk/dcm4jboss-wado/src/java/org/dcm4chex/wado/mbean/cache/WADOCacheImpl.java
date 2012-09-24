@@ -722,16 +722,6 @@ public class WADOCacheImpl implements WADOCache {
         try {
             writer.setOutput(iout);
             ImageWriteParam iwparam = writer.getDefaultWriteParam();
-            iwparam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-            String[] compressionTypes = iwparam.getCompressionTypes();
-            if (compressionTypes != null && compressionTypes.length > 0) {
-                for (int i = 0; i < compressionTypes.length; i++) {
-                    if (compressionTypes[i].compareToIgnoreCase("HUFFMAN_ONLY") == 0) {
-                        iwparam.setCompressionType(compressionTypes[i]);
-                        break;
-                    }
-                }
-            }
             writer.write(null, new IIOImage(bi, null, null), iwparam);
         } finally {
             iout.close();
@@ -743,9 +733,8 @@ public class WADOCacheImpl implements WADOCache {
         for (Iterator writers = ImageIO.getImageWritersByFormatName(formatName); writers
                 .hasNext();) {
             ImageWriter writer = (ImageWriter) writers.next();
-            log.info("##### found image writer for "+formatName+":"+writer);
             if (imageWriterClass == null || writer.getClass().getName().equals(imageWriterClass)) {
-                log.info("##### Use image writer for "+formatName+":"+writer);
+                log.debug("##### Use image writer for "+formatName+":"+writer);
                 return writer;
             }
         }
