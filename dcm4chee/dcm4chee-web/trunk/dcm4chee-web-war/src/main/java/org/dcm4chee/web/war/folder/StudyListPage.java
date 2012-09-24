@@ -1853,7 +1853,6 @@ public class StudyListPage extends Panel {
 
                 @Override
                 public void onClick(AjaxRequestTarget target) {
-                    log.info("#### linkStudyBtn clicked!");
                     if (tooOld) {
                         int[] winSize = WebCfgDelegate.getInstance().getWindowSize("linkToOld");
                         confirmLinkMppsStudy.setInitialWidth(winSize[0]).setInitialHeight(winSize[1]);
@@ -1863,7 +1862,6 @@ public class StudyListPage extends Panel {
                     } else {
                         setMppsLinkWindow().show(target, studyModel, form);
                     }
-                    log.info("#### linkStudyBtn onClick finished!");
                 }
 
                 @Override
