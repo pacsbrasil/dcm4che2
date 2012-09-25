@@ -299,7 +299,7 @@ public class RetrieveInfo {
         return entry;
     }
 
-    public final Collection<List<FileInfo>> getLocalFiles() {
+    public Collection<List<FileInfo>> getLocalFiles() {
         return localFilesByIuid.values();
     }
 
