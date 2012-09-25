@@ -38,7 +38,9 @@
  * ***** END LICENSE BLOCK ***** */
 package in.raster.mayam.model.table;
 
+import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.model.StudyModel;
+import java.util.MissingResourceException;
 import java.util.Vector;
 import javax.swing.table.AbstractTableModel;
 
@@ -107,6 +109,24 @@ public class StudyListModel extends AbstractTableModel {
     }
 
     public String getColumnName(int column) {
+        try{
+            java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("in/raster/mayam/form/i18n/Bundle",ApplicationContext.currentLocale); // NOI18N
+            switch(column){
+                case 0:
+                    return bundle.getString("studyListTable.PatientID.text");
+                case 1:
+                    return bundle.getString("studyListTable.PatientName.text");
+                case 2:
+                    return bundle.getString("studyListTable.Dob.text");
+                case 3:
+                    return bundle.getString("studyListTable.AccessionNumber.text");
+                case 6:
+                    return bundle.getString("studyListTable.Modality.text");
+            }
+        } catch(MissingResourceException exception){
+            return columnName[column];
+        }
+
         return columnName[column];
     }
 

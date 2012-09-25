@@ -532,8 +532,8 @@ public class DatabaseHandler {
             addNewLocale("cs_CZ");
             addNewLocale("el_GR");
             addNewLocale("de_DE");
+            addNewLocale("sr_RS");
             conn.commit();
-
         } catch (Exception e) {
             e.printStackTrace();
         }
