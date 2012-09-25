@@ -67,7 +67,6 @@ public class InternationalizationForm extends javax.swing.JPanel {
 
         localeLabel = new javax.swing.JLabel();
         localeCombo = new javax.swing.JComboBox();
-        restartMessageLabel = new javax.swing.JLabel();
         headerLabel = new javax.swing.JLabel();
         countryLabel = new javax.swing.JLabel();
         countryCombo = new javax.swing.JComboBox();
@@ -84,9 +83,6 @@ public class InternationalizationForm extends javax.swing.JPanel {
                 localeComboActionPerformed(evt);
             }
         });
-
-        restartMessageLabel.setForeground(java.awt.Color.green);
-        restartMessageLabel.setText(bundle.getString("InternationalizationForm.restartMessageLabel.text_1")); // NOI18N
 
         headerLabel.setBackground(new java.awt.Color(0, 0, 0));
         headerLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14));
@@ -123,17 +119,14 @@ public class InternationalizationForm extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .add(77, 77, 77)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(restartMessageLabel)
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(languageLabel)
-                            .add(countryLabel)
-                            .add(localeLabel))
-                        .add(30, 30, 30)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                            .add(localeCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(languageCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(countryCombo, 0, 212, Short.MAX_VALUE))))
+                    .add(languageLabel)
+                    .add(countryLabel)
+                    .add(localeLabel))
+                .add(30, 30, 30)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                    .add(localeCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(languageCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(countryCombo, 0, 212, Short.MAX_VALUE))
                 .addContainerGap(66, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -152,9 +145,7 @@ public class InternationalizationForm extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(localeCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(localeLabel))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 122, Short.MAX_VALUE)
-                .add(restartMessageLabel)
-                .addContainerGap())
+                .addContainerGap(144, Short.MAX_VALUE))
         );
 
         layout.linkSize(new java.awt.Component[] {countryCombo, languageCombo, localeCombo}, org.jdesktop.layout.GroupLayout.VERTICAL);
@@ -197,7 +188,6 @@ public class InternationalizationForm extends javax.swing.JPanel {
     private javax.swing.JLabel languageLabel;
     private javax.swing.JComboBox localeCombo;
     private javax.swing.JLabel localeLabel;
-    private javax.swing.JLabel restartMessageLabel;
     // End of variables declaration//GEN-END:variables
 
 }

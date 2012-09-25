@@ -1252,4 +1252,16 @@ public class MainScreen extends javax.swing.JFrame {
         }        
         return mainScreenObj;
     }
+
+     public void reInitComponents(){
+        mainScreenObj.getContentPane().removeAll();
+        initComponents();
+        initQR();
+        restartReceiver();
+        showLocalDBStorage();
+        showThumbnails();
+        initNetworkQueue();
+        initSendingProgress();
+    }
+
 }

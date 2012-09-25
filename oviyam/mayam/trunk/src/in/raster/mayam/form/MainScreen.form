@@ -1,4 +1,4 @@
-<?xml version="1.1" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.6" maxVersion="1.7" type="org.netbeans.modules.form.forminfo.JFrameFormInfo">
   <NonVisualComponents>
@@ -219,7 +219,6 @@
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
-    <AuxValue name="FormSettings_formBundle" type="java.lang.String" value="in/raster/mayam/form/i18n/Bundle"/>
     <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
@@ -271,7 +270,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jSplitPane1" alignment="0" pref="1254" max="32767" attributes="0"/>
+                          <Component id="jSplitPane1" alignment="0" pref="1262" max="32767" attributes="0"/>
                           <Component id="localDatabaseLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
@@ -361,7 +360,7 @@
                                   <Component id="seriesLabel" alignment="1" pref="330" max="32767" attributes="1"/>
                               </Group>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="windowingPanelCanvas" pref="916" max="32767" attributes="0"/>
+                              <Component id="windowingPanelCanvas" pref="922" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -370,9 +369,9 @@
                           <Group type="102" alignment="0" attributes="1">
                               <Component id="seriesLabel" min="-2" pref="20" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="thumbnailScroll" pref="495" max="32767" attributes="0"/>
+                              <Component id="thumbnailScroll" pref="494" max="32767" attributes="0"/>
                           </Group>
-                          <Component id="windowingPanelCanvas" alignment="0" pref="521" max="32767" attributes="2"/>
+                          <Component id="windowingPanelCanvas" alignment="0" pref="520" max="32767" attributes="2"/>
                       </Group>
                     </DimensionLayout>
                   </Layout>
@@ -391,12 +390,12 @@
                       <Layout>
                         <DimensionLayout dim="0">
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <EmptySpace min="0" pref="916" max="32767" attributes="0"/>
+                              <EmptySpace min="0" pref="922" max="32767" attributes="0"/>
                           </Group>
                         </DimensionLayout>
                         <DimensionLayout dim="1">
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <EmptySpace min="0" pref="521" max="32767" attributes="0"/>
+                              <EmptySpace min="0" pref="520" max="32767" attributes="0"/>
                           </Group>
                         </DimensionLayout>
                       </Layout>
@@ -414,9 +413,6 @@
                         <Container class="javax.swing.JPanel" name="thumbnailDisplay">
                           <Properties>
                             <Property name="autoscrolls" type="boolean" value="true"/>
-                            <Property name="cursor" type="java.awt.Cursor" editor="org.netbeans.modules.form.editors2.CursorEditor">
-                              <Color id="Default Cursor"/>
-                            </Property>
                             <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                               <Dimension value="[1000, 1000]"/>
                             </Property>
@@ -462,53 +458,6 @@
               </Border>
             </Property>
           </Properties>
-
-          <Layout>
-            <DimensionLayout dim="0">
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" attributes="0">
-                      <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
-                      <Component id="importButton" linkSize="3" min="-2" pref="83" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="exportButton" linkSize="3" min="-2" pref="85" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="cdImportButton" linkSize="3" min="-2" pref="52" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="deleteButton" linkSize="3" min="-2" pref="83" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="metaDataButton" linkSize="3" min="-2" pref="100" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="sendButton" linkSize="3" min="-2" pref="69" max="-2" attributes="0"/>
-                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Component id="queryRetrieveButton" linkSize="3" min="-2" pref="82" max="-2" attributes="0"/>
-                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Component id="viewerButton" linkSize="3" min="-2" pref="77" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="queueButton" linkSize="3" min="-2" pref="72" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" pref="558" max="-2" attributes="0"/>
-                  </Group>
-              </Group>
-            </DimensionLayout>
-            <DimensionLayout dim="1">
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="queueButton" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="viewerButton" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="queryRetrieveButton" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="sendButton" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="metaDataButton" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="deleteButton" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="cdImportButton" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="exportButton" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="importButton" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace max="32767" attributes="0"/>
-                  </Group>
-              </Group>
-            </DimensionLayout>
-          </Layout>
           <SubComponents>
             <Component class="javax.swing.JButton" name="importButton">
               <Properties>

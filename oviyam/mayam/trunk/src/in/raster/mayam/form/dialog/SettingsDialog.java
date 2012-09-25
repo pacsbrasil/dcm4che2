@@ -42,6 +42,7 @@ package in.raster.mayam.form.dialog;
 import in.raster.mayam.form.*;
 import in.raster.mayam.context.ApplicationContext;
 import java.awt.CardLayout;
+import java.util.Locale;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import javax.swing.tree.DefaultTreeModel;
@@ -260,6 +261,10 @@ public class SettingsDialog extends javax.swing.JDialog {
         ApplicationContext.databaseRef.insertLayoutDetail(Integer.parseInt(s[1]), Integer.parseInt(s[2]), s[0]);
         m.restartReceiver();
         layoutManagerPanel1.updateSeriesDisplayModification();
+        //String appLocale[]= ApplicationContext.databaseRef.getActiveLanguageAndCountry();
+        //ApplicationContext.currentLocale=new Locale(appLocale[0],appLocale[1]);
+        ApplicationContext.setAppLocale();
+        MainScreen.getInstance().reInitComponents();
         doClose(RET_OK);
     }//GEN-LAST:event_okButtonActionPerformed
 
