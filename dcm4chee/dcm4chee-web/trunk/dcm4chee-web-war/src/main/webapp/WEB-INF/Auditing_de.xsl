@@ -21,6 +21,7 @@
 		<table border="0" cellpadding="5" cellspacing="3" width="100%">
 		  	<tr bgcolor="AAAAAA">
 		  		<th><font color="{$thColor}">Datum</font></th>
+		  		<th><font color="{$thColor}">Aktion</font></th>
 		  		<th><font color="{$thColor}">Operation</font></th>
 		  		<th><font color="{$thColor}">Benutzer</font></th>
 		  		<th><font color="{$thColor}">Ziel</font></th>
@@ -138,6 +139,26 @@
 						<xsl:value-of select="$time" />
 					</td>
 					<td>
+						<!-- E V E N T   A C T I O N -->
+						<xsl:choose>
+							<xsl:when test="EventIdentification/@EventActionCode='C'">
+					        	<font color="{$fontcolor}">Erstellen</font>
+					        </xsl:when>
+							<xsl:when test="EventIdentification/@EventActionCode='R'">
+					        	<font color="{$fontcolor}">Lesen</font>
+					        </xsl:when>
+							<xsl:when test="EventIdentification/@EventActionCode='U'">
+					        	<font color="{$fontcolor}">Ändern</font>
+					        </xsl:when>
+							<xsl:when test="EventIdentification/@EventActionCode='D'">
+					        	<font color="{$fontcolor}">Löschen</font>
+					        </xsl:when>
+							<xsl:when test="EventIdentification/@EventActionCode='E'">
+					        	<font color="{$fontcolor}">Ausführen</font>
+					        </xsl:when>
+						</xsl:choose>
+					</td>
+					<td>
 						<!-- O P E R A T I O N -->
 						<xsl:choose>
 							<xsl:when test="EventIdentification/EventID/@code='110103'">
@@ -156,7 +177,14 @@
 					        	<font color="{$fontcolor}">Data Import</font>
 					        </xsl:when>
 					        <xsl:otherwise>
-					          <xsl:value-of select="EventIdentification/EventID/@code"/>
+					        	<xsl:choose>
+									<xsl:when test="EventIdentification/EventID/@displayName">
+						        		<xsl:value-of select="EventIdentification/EventID/@displayName"/>
+						        	</xsl:when>
+						        	<xsl:otherwise>
+						          		<xsl:value-of select="EventIdentification/EventID/@code"/>
+						        	</xsl:otherwise>
+								</xsl:choose>
 					        </xsl:otherwise>
 						</xsl:choose>
 						<!-- EventTypeCode  -->
