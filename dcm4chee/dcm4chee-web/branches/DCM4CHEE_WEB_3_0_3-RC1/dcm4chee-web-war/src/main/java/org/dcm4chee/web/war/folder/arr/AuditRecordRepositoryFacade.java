@@ -100,13 +100,14 @@ public class AuditRecordRepositoryFacade {
 	}
 
 	private String transform(String input) {
-		try {			
+		try {
 			StreamResult result = new StreamResult(new StringWriter());
 			TransformerFactory.newInstance()
 		       	.newTransformer(new StreamSource(
 		       			((WebApplication) RequestCycle.get().getApplication())
 		       			.getServletContext().getResource(
-		       					RequestCycle.get().getSession().getLocale().equals("de") ? 
+		       					RequestCycle.get().getSession().getLocale().getLanguage()
+		       						.equals("de") ? 
 		       							"/WEB-INF/Auditing_de.xsl" : 
 		       								"/WEB-INF/Auditing_en.xsl")
 		       			.openStream()))
