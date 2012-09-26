@@ -19,7 +19,7 @@
 		<xsl:variable name="empty_string"/>
 		
 		<table border="0" cellpadding="5" cellspacing="3" width="100%">
-		  	<tr bgcolor="AAAAAA">
+		  	<tr bgcolor="AAAAAA" align="left">
 		  		<th><font color="{$thColor}">Datum</font></th>
 		  		<th><font color="{$thColor}">Aktion</font></th>
 		  		<th><font color="{$thColor}">Operation</font></th>
