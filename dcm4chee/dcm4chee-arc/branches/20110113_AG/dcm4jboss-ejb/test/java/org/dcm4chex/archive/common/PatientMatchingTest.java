@@ -714,6 +714,74 @@ public class PatientMatchingTest extends TestCase {
 						birthdate, "F"));
 	}
 	
+	public void test_matcher_shouldMatch_whenCheckPNorDOB_andPNDifferentButDOBMatches() {
+		String familyName = "Smith";
+		String givenName = "John";
+		String middleName = "Frederick";
+		String prefix = "DR.";
+		String suffix = "PH.D.";
+		String birthdate = "19730920";
+		String sex = "M";
+		String existingPatientName = makePersonName(familyName, givenName, middleName, prefix, suffix);
+		String currentDefault = "pid,issuer,ignore(\" |-|\\.|,|'|JR|SR\"),familyname,givenname(1)";
+		String s = currentDefault + "|birthdate";
+
+		PatientMatching pm = new PatientMatching(s);
+		
+		List<Pattern> incomingPatientPatterns = pm.compilePNPatterns(
+				familyName, "Kyle", middleName, prefix, suffix);
+		
+		assertTrue("Matching pattern to " + existingPatientName + " not found in " +
+				patternsListToString(incomingPatientPatterns), 
+				pm.matches(existingPatientName, birthdate, sex, incomingPatientPatterns.iterator(),
+						birthdate, sex));
+	}
+	
+	public void test_matcher_shouldNotMatch_whenCheckPNorDOB_andPNAndDOBDifferent() {
+		String familyName = "Smith";
+		String givenName = "John";
+		String middleName = "Frederick";
+		String prefix = "DR.";
+		String suffix = "PH.D.";
+		String birthdate = "19730920";
+		String sex = "M";
+		String existingPatientName = makePersonName(familyName, givenName, middleName, prefix, suffix);
+		String currentDefault = "pid,issuer,ignore(\" |-|\\.|,|'|JR|SR\"),familyname,givenname(1)";
+		String s = currentDefault + "|birthdate";
+
+		PatientMatching pm = new PatientMatching(s);
+		
+		List<Pattern> incomingPatientPatterns = pm.compilePNPatterns(
+				familyName, "Kyle", middleName, prefix, suffix);
+		
+		assertFalse("No matches should be found because name and birth date do not match", 
+				pm.matches(existingPatientName, birthdate, sex, incomingPatientPatterns.iterator(),
+						"19730922", sex));
+	}
+	
+	public void test_matcher_shouldMatch_whenCheckPNorOptionalDOB_andPNDifferentAndNoIncomingDOB() {
+		String familyName = "Smith";
+		String givenName = "John";
+		String middleName = "Frederick";
+		String prefix = "DR.";
+		String suffix = "PH.D.";
+		String birthdate = "19730920";
+		String sex = "M";
+		String existingPatientName = makePersonName(familyName, givenName, middleName, prefix, suffix);
+		String currentDefault = "pid,issuer,ignore(\" |-|\\.|,|'|JR|SR\"),familyname,givenname(1)";
+		String s = currentDefault + "|birthdate?,sex";
+
+		PatientMatching pm = new PatientMatching(s);
+		
+		List<Pattern> incomingPatientPatterns = pm.compilePNPatterns(
+				familyName, "Kyle", middleName, prefix, suffix);
+
+		assertTrue("Matching pattern to " + existingPatientName + " not found in " +
+				patternsListToString(incomingPatientPatterns),  
+				pm.matches(existingPatientName, birthdate, sex, incomingPatientPatterns.iterator(),
+						null, sex));
+	}
+	
 	public void test_compilePNPattern_shouldMatch_whenIncomingHasFamilyName_andExistingHasInitial() {
 		String familyName = "Smith";
 		String givenName = "John";
@@ -947,7 +1015,9 @@ public class PatientMatchingTest extends TestCase {
 			if ( sb.length() > 0 ) {
 				sb.append("|");
 			}
-			sb.append(pattern.pattern());
+			if (pattern != null) {
+				sb.append(pattern.pattern());
+			}
 		}
 		
 		return sb.toString();
