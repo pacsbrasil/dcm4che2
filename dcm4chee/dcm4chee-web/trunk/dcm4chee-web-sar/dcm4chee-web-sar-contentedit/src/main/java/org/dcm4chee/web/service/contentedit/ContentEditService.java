@@ -770,7 +770,7 @@ public class ContentEditService extends ServiceMBeanSupport {
             refSeriesSeqItem = new BasicDicomObject();
             refSeriesSeq.addDicomObject(refSeriesSeqItem);
             refSeriesSeqItem.putString(Tag.SeriesInstanceUID, VR.UI, instances.getKey().getSeriesInstanceUID());
-            refSeriesSeqItem.putString(refSeriesSeqItem.resolveTag(PrivateTag.CallingAET, PrivateTag.CreatorID), 
+            refSeriesSeqItem.putString(refSeriesSeqItem.resolveTag(PrivateTag.CallingAET, PrivateTag.CreatorID, true), 
                     VR.AE, instances.getKey().getSourceAET());
             refSopSeq = refSeriesSeqItem.putSequence(Tag.ReferencedSOPSequence);
             for ( Instance inst : instances.getValue()) {
