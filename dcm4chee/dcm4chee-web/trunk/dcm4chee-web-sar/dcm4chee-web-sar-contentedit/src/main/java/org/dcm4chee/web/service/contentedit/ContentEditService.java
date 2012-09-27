@@ -485,7 +485,7 @@ public class ContentEditService extends ServiceMBeanSupport {
                     } else {
                         seriesAttrs = seriesEntry.getKey().getAttributes(false);
                         seriesAttrs.putString(Tag.SeriesInstanceUID, VR.UI, UIDUtils.createUID());
-                        seriesAttrs.putString(seriesAttrs.resolveTag(PrivateTag.CallingAET, PrivateTag.CreatorID), 
+                        seriesAttrs.putString(seriesAttrs.resolveTag(PrivateTag.CallingAET, PrivateTag.CreatorID, true), 
                                 VR.AE, seriesEntry.getKey().getSourceAET());
                     }
                     for ( Instance i : seriesEntry.getValue()) {
