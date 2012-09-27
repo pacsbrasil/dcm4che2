@@ -420,6 +420,15 @@ public class TCResultPanel extends Panel {
                         
                         openTC(selected, edit, target);
                     }
+                    @Override
+                    protected IAjaxCallDecorator getAjaxCallDecorator() {
+                        try {
+                            return TCPanel.getMaskingBehaviour().getAjaxCallDecorator();
+                        } catch (Exception e) {
+                            log.error("Failed to get IAjaxCallDecorator: ", e);
+                        }
+                        return null;
+                    }
                 });
             }
         };
