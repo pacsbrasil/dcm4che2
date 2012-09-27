@@ -46,6 +46,8 @@ import java.util.List;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
+import org.jfree.util.Log;
+
 /**
  * @author Bernhard Ableitinger <bernhard.ableitinger@agfa.com>
  * @version $Revision$ $Date$
@@ -191,7 +193,7 @@ public class TCKeywordNode implements TreeNode, Serializable {
     }
     @Override
     public int hashCode() {
-        return keyword == null ? this.hashCode() : keyword.hashCode();
+        return keyword == null ? super.hashCode() : keyword.hashCode();
     }
 
     /* ************** ITreeNode ******************* */
