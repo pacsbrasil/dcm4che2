@@ -191,7 +191,7 @@ public class TCKeywordNode implements TreeNode, Serializable {
     }
     @Override
     public int hashCode() {
-        return keyword == null ? this.hashCode() : keyword.hashCode();
+        return keyword == null ? super.hashCode() : keyword.hashCode();
     }
 
     /* ************** ITreeNode ******************* */
