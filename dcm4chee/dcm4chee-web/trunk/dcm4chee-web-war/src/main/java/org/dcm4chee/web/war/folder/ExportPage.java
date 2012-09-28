@@ -528,7 +528,7 @@ public class ExportPage extends SecureSessionCheckPage implements CloseRequestSu
     }
 
     private void writeDicomFile(java.io.File dcmFile, DicomObject blobAttrs, OutputStream out, byte[] buf) throws FileNotFoundException, IOException {
-        DicomInputStream dis = new DicomInputStream(new FileInputStream(FileUtils.resolve(dcmFile)));
+		DicomInputStream dis = new DicomInputStream(new FileInputStream(FileUtils.resolve(dcmFile)));
         dis.setHandler(new StopTagInputHandler(Tag.PixelData));
         DicomObject attrs = dis.readDicomObject();
         if (!blobAttrs.getString(Tag.SOPInstanceUID).equals(attrs.getString(Tag.MediaStorageSOPInstanceUID))) {
@@ -542,7 +542,10 @@ public class ExportPage extends SecureSessionCheckPage implements CloseRequestSu
             attrs.putString(Tag.MediaStorageSOPClassUID, VR.UI, blobAttrs.getString(Tag.SOPClassUID));
         }
         blobAttrs.copyTo(attrs);
-        DicomOutputStream dos = new DicomOutputStream(out);
+
+        @SuppressWarnings("resource")
+		DicomOutputStream dos = new DicomOutputStream(out);
+        
         dos.setAutoFinish(false);//we have an DeflaterOutputStream
         dos.writeDicomFile(attrs);
         if (dis.tag() >= Tag.PixelData) {
@@ -553,6 +556,7 @@ public class ExportPage extends SecureSessionCheckPage implements CloseRequestSu
             len = dis.read(buf);
             out.write(buf, 0, len);
         }
+        dis.close();
     }
     
     private void initDestinationAETs() {
