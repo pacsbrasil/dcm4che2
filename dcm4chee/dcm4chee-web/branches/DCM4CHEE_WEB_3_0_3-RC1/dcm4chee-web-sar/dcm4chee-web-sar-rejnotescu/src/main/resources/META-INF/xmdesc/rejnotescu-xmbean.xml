@@ -46,7 +46,7 @@
       getMethod="getIgnoreSourceAETs"
       setMethod="setIgnoreSourceAETs">
       <description><![CDATA[Source AE title(s) for CalledAETs that should be ignored.<br/>
-      	Series with source AET specified in the ignore list will be removed from the Rejection Note sent to the callingAET.<br/>
+      	Series with source AET specified in the ignore list will be removed from the Rejection Note sent to the calledAET.<br/>
       	Format: &lt;calledAET&gt;:&lt;sourceAET 1&gt;[,&lt;sourceAET 2&gt;[,..[,&lt;sourceAET n&gt;]]]<br/>
       	Example:CENTRAL:CENTRAL,TEST<br/>
       	If a Rejection Note is sent to CENTRAL, all referenced series with source AET CENTRAL or TEST 
