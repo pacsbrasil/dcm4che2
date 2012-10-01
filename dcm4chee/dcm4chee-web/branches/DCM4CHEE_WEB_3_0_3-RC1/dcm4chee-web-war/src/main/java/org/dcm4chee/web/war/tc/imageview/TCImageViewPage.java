@@ -150,14 +150,14 @@ public class TCImageViewPage extends SecureWebPage
         final String iuid = params!=null ? params.getString("iuid") : null;
         
         Label titleLabel = new Label("app_browser_title", new Model<String>(
-                getLocalizedString("application.browser_title","Image Viewer")));
+                getLocalizedString("application.browser_title","Image Viewer (Not for diagnostic use!)")));
         
         indicatingModel = new Model<String>(getLocalizedString("loading.images.text"));
         indicatingLabel = new Label("tc-images-view-indicating-label", indicatingModel);
         indicatingLabel.setOutputMarkupId(true);
         
         indicatingImage = new Image("tc-images-view-indicating-image", 
-                new ResourceReference(TCPanel.class, "theme/images/load-indicator-large.gif"));
+                new ResourceReference(TCPanel.class, "css/theme/images/load-indicator-large.gif"));
         indicatingImage.setOutputMarkupId(true);
         
         indicatingPanel = new WebMarkupContainer("tc-images-view-indicating-panel");
