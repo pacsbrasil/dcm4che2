@@ -52,6 +52,18 @@ public class TCPopupManager implements Serializable
         return popupsShown!=null ? popupsShown.contains(popup) : false;
     }
     
+    public void hideAllPopups(AjaxRequestTarget target)
+    {
+    	if (popupsShown!=null && !popupsShown.isEmpty())
+    	{
+    		List<AbstractTCPopup> list = new ArrayList<AbstractTCPopup>(popupsShown);
+    		for (AbstractTCPopup popup : list)
+    		{
+    			popup.hide(target);
+    		}
+    	}
+    }
+    
     private void popupShown(AbstractTCPopup popup)
     {
         if (popupsShown==null)
