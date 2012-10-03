@@ -188,100 +188,103 @@ public abstract class TCSearchPanel extends Panel {
                         }
                     }
 
-                    Object anatomyInputValue = getConvertedKeywordInputValue(
-                            anatomyInput.getValue());
-                    if (anatomyInputValue != null) {
-                        if (Code.class.equals(anatomyInputValue.getClass())) {
-                            filter.setAnatomyCode((Code) anatomyInputValue);
-                        } else if (String.class.equals(anatomyInputValue
-                                .getClass())) {
-                            filter.setAnatomy((String) anatomyInputValue);
-                        }
+                    if (showAdvancedOptions)
+                    {
+	                    Object anatomyInputValue = getConvertedKeywordInputValue(
+	                            anatomyInput.getValue());
+	                    if (anatomyInputValue != null) {
+	                        if (Code.class.equals(anatomyInputValue.getClass())) {
+	                            filter.setAnatomyCode((Code) anatomyInputValue);
+	                        } else if (String.class.equals(anatomyInputValue
+	                                .getClass())) {
+	                            filter.setAnatomy((String) anatomyInputValue);
+	                        }
+	                    }
+	
+	                    Object pathologyInputValue = getConvertedKeywordInputValue(
+	                            pathologyInput.getValue());
+	                    if (pathologyInputValue != null) {
+	                        if (Code.class.equals(pathologyInputValue.getClass())) {
+	                            filter.setPathologyCode((Code) pathologyInputValue);
+	                        } else if (String.class.equals(pathologyInputValue
+	                                .getClass())) {
+	                            filter.setPathology((String) pathologyInputValue);
+	                        }
+	                    }
+	
+	                    Object findingInputValue = getConvertedKeywordInputValue(
+	                            findingInput.getValue());
+	                    if (findingInputValue != null) {
+	                        if (Code.class.equals(findingInputValue.getClass())) {
+	                            filter.setFindingCode((Code) findingInputValue);
+	                        } else if (String.class.equals(findingInputValue
+	                                .getClass())) {
+	                            filter.setFinding((String) findingInputValue);
+	                        }
+	                    }
+	
+	                    Object diagnosisInputValue = getConvertedKeywordInputValue(
+	                            diagnosisInput.getValue());
+	                    if (diagnosisInputValue != null) {
+	                        if (Code.class.equals(diagnosisInputValue.getClass())) {
+	                            filter.setDiagnosisCode((Code) diagnosisInputValue);
+	                        } else if (String.class.equals(diagnosisInputValue
+	                                .getClass())) {
+	                            filter.setDiagnosis((String) diagnosisInputValue);
+	                        }
+	                    }
+	
+	                    Object diffDiagnosisInputValue = getConvertedKeywordInputValue(
+	                            diffDiagnosisInput.getValue());
+	                    if (diffDiagnosisInputValue != null) {
+	                        if (Code.class.equals(diffDiagnosisInputValue
+	                                .getClass())) {
+	                            filter.setDiffDiagnosisCode((Code) diffDiagnosisInputValue);
+	                        } else if (String.class.equals(diffDiagnosisInputValue
+	                                .getClass())) {
+	                            filter.setDiffDiagnosis((String) diffDiagnosisInputValue);
+	                        }
+	                    }
+	
+	                    filter.setAcquisitionModality(modalityChoice
+	                            .getModelObject());
+	                    filter.setPatientSex(patientSexChoice.getModelObject());
+	                    filter.setCategory(categoryChoice.getModelObject());
+	                    filter.setLevel(levelChoice.getModelObject());
+	                    filter.setDiagnosisConfirmed(diagnosisConfirmedChoice
+	                            .getModelObject());
+	
+	                    Option selectedOption = optionGroup.getModelObject();
+	                    if (selectedOption != null) {
+	                        if (Option.History.equals(selectedOption)) {
+	                            filter.setHistory(textText
+	                                    .getDefaultModelObjectAsString());
+	                        } else if (Option.AuthorName.equals(selectedOption)) {
+	                            filter.setAuthorName(textText
+	                                    .getDefaultModelObjectAsString());
+	                        } else if (Option.AuthorContact.equals(selectedOption)) {
+	                            filter.setAuthorContact(textText
+	                                    .getDefaultModelObjectAsString());
+	                        } else if (Option.AuthorAffiliation
+	                                .equals(selectedOption)) {
+	                            filter.setAuthorAffiliation(textText
+	                                    .getDefaultModelObjectAsString());
+	                        } else if (Option.Title.equals(selectedOption)) {
+	                            filter.setTitle(textText
+	                                    .getDefaultModelObjectAsString());
+	                        } else if (Option.Abstract.equals(selectedOption)) {
+	                            filter.setAbstract(textText
+	                                    .getDefaultModelObjectAsString());
+	                        } else if (Option.PatientSpecies.equals(selectedOption)) {
+	                            filter.setPatientSpecies(textText
+	                                    .getDefaultModelObjectAsString());
+	                        } else if (Option.Discussion.equals(selectedOption)) {
+	                            filter.setDiscussion(textText
+	                                    .getDefaultModelObjectAsString());
+	                        }
+	                    }
                     }
-
-                    Object pathologyInputValue = getConvertedKeywordInputValue(
-                            pathologyInput.getValue());
-                    if (pathologyInputValue != null) {
-                        if (Code.class.equals(pathologyInputValue.getClass())) {
-                            filter.setPathologyCode((Code) pathologyInputValue);
-                        } else if (String.class.equals(pathologyInputValue
-                                .getClass())) {
-                            filter.setPathology((String) pathologyInputValue);
-                        }
-                    }
-
-                    Object findingInputValue = getConvertedKeywordInputValue(
-                            findingInput.getValue());
-                    if (findingInputValue != null) {
-                        if (Code.class.equals(findingInputValue.getClass())) {
-                            filter.setFindingCode((Code) findingInputValue);
-                        } else if (String.class.equals(findingInputValue
-                                .getClass())) {
-                            filter.setFinding((String) findingInputValue);
-                        }
-                    }
-
-                    Object diagnosisInputValue = getConvertedKeywordInputValue(
-                            diagnosisInput.getValue());
-                    if (diagnosisInputValue != null) {
-                        if (Code.class.equals(diagnosisInputValue.getClass())) {
-                            filter.setDiagnosisCode((Code) diagnosisInputValue);
-                        } else if (String.class.equals(diagnosisInputValue
-                                .getClass())) {
-                            filter.setDiagnosis((String) diagnosisInputValue);
-                        }
-                    }
-
-                    Object diffDiagnosisInputValue = getConvertedKeywordInputValue(
-                            diffDiagnosisInput.getValue());
-                    if (diffDiagnosisInputValue != null) {
-                        if (Code.class.equals(diffDiagnosisInputValue
-                                .getClass())) {
-                            filter.setDiffDiagnosisCode((Code) diffDiagnosisInputValue);
-                        } else if (String.class.equals(diffDiagnosisInputValue
-                                .getClass())) {
-                            filter.setDiffDiagnosis((String) diffDiagnosisInputValue);
-                        }
-                    }
-
-                    filter.setAcquisitionModality(modalityChoice
-                            .getModelObject());
-                    filter.setPatientSex(patientSexChoice.getModelObject());
-                    filter.setCategory(categoryChoice.getModelObject());
-                    filter.setLevel(levelChoice.getModelObject());
-                    filter.setDiagnosisConfirmed(diagnosisConfirmedChoice
-                            .getModelObject());
-
-                    Option selectedOption = optionGroup.getModelObject();
-                    if (selectedOption != null) {
-                        if (Option.History.equals(selectedOption)) {
-                            filter.setHistory(textText
-                                    .getDefaultModelObjectAsString());
-                        } else if (Option.AuthorName.equals(selectedOption)) {
-                            filter.setAuthorName(textText
-                                    .getDefaultModelObjectAsString());
-                        } else if (Option.AuthorContact.equals(selectedOption)) {
-                            filter.setAuthorContact(textText
-                                    .getDefaultModelObjectAsString());
-                        } else if (Option.AuthorAffiliation
-                                .equals(selectedOption)) {
-                            filter.setAuthorAffiliation(textText
-                                    .getDefaultModelObjectAsString());
-                        } else if (Option.Title.equals(selectedOption)) {
-                            filter.setTitle(textText
-                                    .getDefaultModelObjectAsString());
-                        } else if (Option.Abstract.equals(selectedOption)) {
-                            filter.setAbstract(textText
-                                    .getDefaultModelObjectAsString());
-                        } else if (Option.PatientSpecies.equals(selectedOption)) {
-                            filter.setPatientSpecies(textText
-                                    .getDefaultModelObjectAsString());
-                        } else if (Option.Discussion.equals(selectedOption)) {
-                            filter.setDiscussion(textText
-                                    .getDefaultModelObjectAsString());
-                        }
-                    }
-
+                    
                     Component[] toUpdate = doSearch(filter);
 
                     if (toUpdate != null && target != null) {
