@@ -309,6 +309,9 @@ public class WebCfgService extends ServiceMBeanSupport implements
     }
 
     public void setIssuerOfPatientID(String issuerOfPatientID) {
+        if (issuerOfPatientID.trim().length() == 0) {
+            throw new IllegalArgumentException("Issuer of patient ID must not be empty!");
+        }
         this.issuerOfPatientID = issuerOfPatientID;
     }
 
