@@ -325,7 +325,7 @@ public class FileDataSource implements DataSource {
                     // write empty Basic Offset Table
                     ds.writeHeader(out, enc, Tags.Item, VRs.NONE, 0);
                     // skip Basic Offset Table
-                    dis.skipBytes(itemlen);
+                    dis.skipBytes(parser.getReadLength());
                     // WARN frames spanning multiple data fragments not supported
                     // assume one item per frame
                     int frameIndex = 0;
