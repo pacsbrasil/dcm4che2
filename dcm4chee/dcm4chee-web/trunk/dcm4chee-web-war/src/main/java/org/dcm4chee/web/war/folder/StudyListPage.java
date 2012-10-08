@@ -266,8 +266,14 @@ public class StudyListPage extends Panel {
     private ConfirmationWindow<AbstractEditableDicomModel> confirmEdit;
     private ImageSelectionWindow imageSelectionWindow = new ImageSelectionWindow("imgSelection");
     private ModalWindow wadoImageWindow = new ModalWindow("wadoImageWindow");
-	private ConfirmationWindow<Form<?>> confirmSearch;
-	private ModalWindow arrWindow = new ModalWindow("arrWindow");
+    private ConfirmationWindow<Form<?>> confirmSearch;
+    private ModalWindow arrWindow = new ModalWindow("arrWindow");
+
+    private ExternalLink egg;
+    public static final ResourceReference SOKOBAN_SVG = 
+        new ResourceReference(StudyListPage.class, "sokoban.svg");
+    public static final ResourceReference EGG_PNG = 
+        new ResourceReference(StudyListPage.class, "egg.png");
 	
     private WebviewerLinkProvider[] webviewerLinkProviders;
     
@@ -742,6 +748,7 @@ public class StudyListPage extends Panel {
                 notSearched = true;
                 hidePPSModel.setObject(false);
                 form.setOutputMarkupId(true);
+                egg.setVisible(false);
                 target.addComponent(form);
             }
         };
@@ -754,18 +761,22 @@ public class StudyListPage extends Panel {
         );
         form.addComponent(resetBtn);
 
+        egg = new ExternalLink("egg",getRequestCycle().urlFor(SOKOBAN_SVG).toString());
+        egg.add(new Image("eggImg",EGG_PNG));
+        form.addComponent(egg.setOutputMarkupPlaceholderTag(true)
+                .setOutputMarkupId(true).setVisible(false));
         IndicatingAjaxButton searchBtn = new IndicatingAjaxButton("searchBtn") {
 
             private static final long serialVersionUID = 1L;
             
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-            	if (!viewport.getFilter().isFiltered()) {
-            		viewport.setResetOnSearch(true);
-            		confirmSearch.confirm(target, new StringResourceModel("folder.message.confirmSearch", this, null), form);
-            	} else {
-            		doSearch(target, form, true);
-            	}
+                if (!viewport.getFilter().isFiltered()) {
+                    viewport.setResetOnSearch(true);
+                    confirmSearch.confirm(target, new StringResourceModel("folder.message.confirmSearch", this, null), form);
+                } else {
+                    doSearch(target, form, true);
+                }
             }
             
             @Override
@@ -858,13 +869,19 @@ public class StudyListPage extends Panel {
     }
 
     protected void doSearch(AjaxRequestTarget target, Form<?> form, boolean reset) {
-    	if (reset) {
-    		viewport.setOffset(0);
-    		viewport.getFilter().setAutoWildcard(WebCfgDelegate.getInstance().getAutoWildcard());
-    	}
-    	query(target);
-    	Auditlog.logQuery(true, UID.StudyRootQueryRetrieveInformationModelFIND, viewport.getFilter().getQueryDicomObject());
-    	target.addComponent(form);
+            String p = viewport.getFilter().getPatientID();
+            if ( p != null && "SOKOBAN".equalsIgnoreCase(p)) {
+                egg.setVisible(true);
+                viewport.getFilter().setPatientID(null);
+            } else {
+                if (reset) {
+                    viewport.setOffset(0);
+                    viewport.getFilter().setAutoWildcard(WebCfgDelegate.getInstance().getAutoWildcard());
+                }
+                query(target);
+                Auditlog.logQuery(true, UID.StudyRootQueryRetrieveInformationModelFIND, viewport.getFilter().getQueryDicomObject());
+            }
+            target.addComponent(form);
 	}
 
 	private void addViewPort(final WebMarkupContainer parent) {
