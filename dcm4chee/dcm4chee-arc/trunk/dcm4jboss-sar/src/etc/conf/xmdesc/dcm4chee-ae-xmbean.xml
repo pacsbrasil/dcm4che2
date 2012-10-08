@@ -185,6 +185,7 @@
          dcm4chee.archive:service=StudyMgtScu#CallingAETitle
          dcm4chee.archive:service=UPSScp#CalledAETitles
          dcm4chee.archive:service=UPSScp#CallingAETitles
+		 dcm4chee.archive:service=WADOService#FetchDestinationAET
          dcm4chee.archive:service=XDS-I#DocRepositoryAET
          dcm4chee.web:service=AttributesModificationSCU#CallingAETitle
          dcm4chee.web:service=AttributesModificationSCU#CalledAETitles
