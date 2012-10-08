@@ -28,10 +28,12 @@ public class DocumentRepositoryService
 
     static {
         URL url = null;
+        String wsdl = null;
         try {
-            url = new URL("http://localhost:8080/dcm4chee-xdsb-repository?wsdl");
+            wsdl = System.getProperty("org.dcm4chee.xds.repo.wsdl-url", "http://localhost:8080/dcm4chee-xdsb-repository?wsdl");
+            url = new URL(wsdl);
         } catch (MalformedURLException e) {
-            log.error("Could not create XDSB repository URL.", e);
+            log.error("Could not create XDSB repository URL. wsdl:"+wsdl, e);
         }
         DOCUMENTREPOSITORYSERVICE_WSDL_LOCATION = url;
     }
