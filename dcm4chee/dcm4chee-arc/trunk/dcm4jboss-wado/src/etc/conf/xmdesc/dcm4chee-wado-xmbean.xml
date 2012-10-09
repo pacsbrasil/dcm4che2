@@ -21,7 +21,8 @@
   		<dd>Get 16 bit grayscale PNG without applied LUT's</dd>
   		<dt>application/dicom+xml:</dt> 
   		<dd>get XML representation (dcm4che14 format) of dicom header (note: '+' is %2B in URL).</dd>
-  	    <dd>This XML can be transformed with an XSL stylesheet configured by <code>DicomXslURL</code>MBean attribute.</dd> 
+  	    <dd>This XML can be transformed with an XSL stylesheet configured by <code>DicomXslURL</code> MBean attribute.</dd> 
+  	    <dd>Use DicomXslURL=NONE to get the xml without transformation</dd> 
   		<dd>With the URL parameter <code>privateTags=no</code> the private tags will be removed from output.</dd>
   		</dd>
   	  </dl> 
@@ -323,13 +324,14 @@ date, 'HH' by the current hour and 'mm' by the current minute.<br/>
 
   <attribute access="read-write" getMethod="getDicomXslURL"
     setMethod="setDicomXslURL">
-    <description><![CDATA[Filepath or URL to XSLT stylesheet to render attributes of DICOM object as HTML<br/>
+    <description><![CDATA[Filepath or URL to XSLT stylesheet to transform xml output of requests with contentType application/dicom+xml<br/>
       A relative path name (filepath or File URL) is resolved relative to <i>&lt;archive-install-directory&gt;</i>/server/default/
-      (Use NONE to disable this transformation). ]]></description>
+      Use NONE to disable this transformation for pure xml representation of requested DICOM object (dcm4che14 format).<br />
+      Use <i>conf/dcm4chee-wado/dicom_html.xsl</i> to render attributes of DICOM object as HTML.]]></description>
     <name>DicomXslURL</name>
     <type>java.lang.String</type>
     <descriptors>
-      <value value="conf/dcm4chee-wado/dicom_html.xsl" />
+      <value value="NONE" />
     </descriptors>
   </attribute>
 
