@@ -594,6 +594,7 @@ public class SVGCreator implements XMLResponseObject{
 	
 	protected void addSVGStart() throws SAXException {
         AttributesImpl attr = new AttributesImpl();
+        util.addAttribute( attr, "xmlns", "http://www.w3.org/2000/svg" );
         util.addAttribute( attr, "xmlns:xlink", "http://www.w3.org/1999/xlink" );
         //util.addAttribute( attr, "onload", "initialize(evt)" );
         
