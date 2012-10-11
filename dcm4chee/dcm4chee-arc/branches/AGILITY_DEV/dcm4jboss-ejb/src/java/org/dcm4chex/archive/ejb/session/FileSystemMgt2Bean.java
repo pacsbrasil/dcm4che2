@@ -37,7 +37,6 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chex.archive.ejb.session;
 
-import java.io.File;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -590,13 +589,6 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
         Collection<DeleteStudyOrder> orders = new ArrayList<DeleteStudyOrder>(sofs.size());
         for (Iterator<StudyOnFileSystemLocal> iter = sofs.iterator(); iter.hasNext();) {
             StudyOnFileSystemLocal sof = iter.next();
-            String sofDirectory = sof.getFileSystem().getDirectoryPath();
-            File directoryCheck = toFile(sofDirectory);
-            if (!directoryCheck.exists()) {
-                log.warn("Unable to locate directory " + directoryCheck + ", ignoring scheduled deletion request for studyUID: " 
-                        + suid + " on file system");
-                continue;
-            }
             StudyLocal study = sof.getStudy();
             DeleteStudyOrder deleteStudyOrder = new DeleteStudyOrder(
                     sof.getPk(), study.getPk(), sof.getFileSystem().getPk(),
@@ -1283,20 +1275,6 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
     private void logOrderInfoMsg(DeleteStudyOrder order, String msg) {
        log.info( "Study "+order.getStudyIUID()+" [pk=" + order.getStudyPk() + 
            "] on FileSystem[pk="+ order.getFsPk()+ "] "+msg);
-    }
-    
-    // This code is taken from org.dcm4chex.archive.util.FileUtils.java
-    // It would be good in the future to refactor FileUtils into the ejb project.
-    //
-    private File resolve(File f) {
-        if (f.isAbsolute())
-            return f;
-        File serverHomeDir = new File(System.getProperty("jboss.server.home.dir"));
-        return new File(serverHomeDir, f.getPath());
-    }
-
-    private File toFile(String unixPath) {
-        return resolve(new File(unixPath.replace('/', File.separatorChar)));
     }
 }
 
