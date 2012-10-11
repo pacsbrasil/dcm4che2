@@ -593,6 +593,25 @@ public class StudyListPage extends Panel {
 
             @Override
             protected void onUpdate(AjaxRequestTarget target) {
+                for (PatientModel patientModel : viewport.getPatients()) {
+                    study: for (StudyModel studyModel : patientModel.getStudies()) {
+                        if (hidePPSModel.getObject()) {
+                            for (PPSModel ppsModel : studyModel.getPPSs()) {
+                                if (!ppsModel.isCollapsed()) {
+                                    continue study;
+                                }
+                            }
+                            studyModel.collapse();
+                        } else {
+                            if (studyModel.isCollapsed()) {
+                                studyModel.expand();
+                                for (PPSModel ppsModel : studyModel.getPPSs()) {
+                                    ppsModel.collapse();
+                                }
+                            }
+                        }
+                    }
+                }
                 target.addComponent(form);
             }
             @Override
@@ -1521,21 +1540,23 @@ public class StudyListPage extends Panel {
                 boolean woMwl = filter.isPpsWithoutMwl();
                 boolean woPps = filter.isWithoutPps();
                 if (woMwl || woPps) {
-                    m.expand();
-                    PPSModel pps;
-                    for (Iterator<PPSModel> it = m.getPPSs().iterator() ; it.hasNext() ; ) {
-                        pps = it.next();
-                        if (pps.getDataset() == null) {
-                            if (woPps) {
-                                pps.getNumberOfSeries();
-                                pps.getNumberOfInstances();
+                    if (!hidePPSModel.getObject()) {
+                        m.expand();
+                        PPSModel pps;
+                        for (Iterator<PPSModel> it = m.getPPSs().iterator() ; it.hasNext() ; ) {
+                            pps = it.next();
+                            if (pps.getDataset() == null) {
+                                if (woPps) {
+                                    pps.getNumberOfSeries();
+                                    pps.getNumberOfInstances();
+                                    pps.collapse();
+                                } else
+                                    it.remove();
+                            } else if (woMwl && pps.getAccessionNumber()==null) {
                                 pps.collapse();
-                            } else
+                            } else {
                                 it.remove();
-                        } else if (woMwl && pps.getAccessionNumber()==null) {
-                            pps.collapse();
-                        } else {
-                            it.remove();
+                            }
                         }
                     }
                 } else if (StudyPermissionHelper.get().isEasyLink()) {
