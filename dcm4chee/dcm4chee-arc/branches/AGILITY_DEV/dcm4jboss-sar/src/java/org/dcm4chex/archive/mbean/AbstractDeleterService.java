@@ -481,6 +481,14 @@ public abstract class AbstractDeleterService extends ServiceMBeanSupport {
             DeleteStudyOrder order;
             while (iter.hasNext() && (dontCheckMax || result[0] < maxSize )) {
                 order = iter.next();
+                FileSystemDTO fsDto = fsMgt.getFileSystem(order.getFsPk());
+                String sofDirectory = fsDto.getDirectoryPath();
+                File directoryCheck = FileUtils.toFile(sofDirectory);
+                if (!directoryCheck.exists()) {
+                    log.warn("Unable to locate directory " + directoryCheck + ", ignoring scheduled deletion request for studyUID: " 
+                            + order.getStudyIUID() + " on file system");
+                    continue;
+                }
                 if (!checkExternalRetrievable(order))
                     continue;
                 if (fsMgt.markStudyOnFSRecordForDeletion(order, true)) {
