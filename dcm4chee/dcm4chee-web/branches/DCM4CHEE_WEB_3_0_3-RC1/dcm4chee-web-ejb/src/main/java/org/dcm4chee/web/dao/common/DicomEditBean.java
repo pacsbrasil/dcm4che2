@@ -65,6 +65,7 @@ import org.dcm4chee.archive.entity.BaseEntity;
 import org.dcm4chee.archive.entity.File;
 import org.dcm4chee.archive.entity.Instance;
 import org.dcm4chee.archive.entity.MPPS;
+import org.dcm4chee.archive.entity.OtherPatientID;
 import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.PrivateFile;
 import org.dcm4chee.archive.entity.PrivateInstance;
@@ -359,13 +360,29 @@ public class DicomEditBean implements DicomEditLocal {
         }
         if (pPat == null) {
             pPat = new PrivatePatient();
-            pPat.setAttributes(patient.getAttributes());
+            pPat.setAttributes(getAttrsWithUpdatedOtherPatientIDs(patient));
             pPat.setPrivateType(DELETED);
             em.persist(pPat);
         }
         return pPat;
     }
 
+    private DicomObject getAttrsWithUpdatedOtherPatientIDs(Patient patient) {
+        DicomObject attributes = patient.getAttributes();
+        attributes.remove(Tag.OtherPatientIDsSequence);
+        Set<OtherPatientID> otherPIDs = patient.getOtherPatientIDs();
+        if (otherPIDs != null && otherPIDs.size() > 0) {
+            DicomElement oPidSeq = attributes.putSequence(Tag.OtherPatientIDsSequence);
+            DicomObject item;
+            for (OtherPatientID opid : otherPIDs) {
+                item = new BasicDicomObject();
+                item.putString(Tag.PatientID, VR.LO, opid.getPatientID());
+                item.putString(Tag.IssuerOfPatientID, VR.LO, opid.getIssuerOfPatientID());
+                oPidSeq.addDicomObject(item);
+            }
+        }
+        return attributes;
+    }
     private void deletePatient(Patient patient) {
         log.info("Delete Patient:{}",patient);
         Set<MPPS> mppss = patient.getModalityPerformedProcedureSteps();
