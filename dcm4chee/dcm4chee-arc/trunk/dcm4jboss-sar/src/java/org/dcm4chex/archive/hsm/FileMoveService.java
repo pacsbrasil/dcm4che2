@@ -207,14 +207,45 @@ public class FileMoveService extends AbstractDeleterService implements MessageLi
             FileSystemDTO fsDTO = getDestinationFilesystem(fileSystemMgt());
             if (fsDTO == null)
                 return "Dest FS not found!";
-            File dir = FileUtils.toFile(fsDTO.getDirectoryPath());
-            return dir.isDirectory() ? FileUtils.formatSize(FileSystemUtils.freeSpace(dir.getPath())-getMinFreeDiskSpaceBytes())
-                                     : "UNKNOWN";
+            String dirPath = fsDTO.getDirectoryPath();
+            if (dirPath.startsWith("tar:"))
+                dirPath = dirPath.substring(4);
+            File dir = FileUtils.toFile(dirPath);
+            return dir.isDirectory() ? FileUtils.formatSize(FileSystemUtils.freeSpace(dir.getPath()) - getMinFreeDiskSpaceOnDestFS())
+                                     : hsmModuleServicename == null ? "UNKNOWN" : "n.a. (HSM)";
 
         } catch (Exception x) {
             log.error("Failed to get UsableDiskSpaceStringOnDest!", x);
             return ERROR ;
         }
+    }
+    
+    public long getUsableDiskSpaceOnDest() {
+        try {
+            if (destFsGroup == null) 
+                return -1;
+            if (destFsGroup.indexOf('@') == -1)
+                return (Long) server.getAttribute(new ObjectName(getFileSystemMgtServiceNamePrefix()+destFsGroup), "UsableDiskSpace");
+            FileSystemDTO fsDTO = getDestinationFilesystem(fileSystemMgt());
+            if (fsDTO == null)
+                return -2;
+            String dirPath = fsDTO.getDirectoryPath();
+            if (dirPath.startsWith("tar:"))
+                dirPath = dirPath.substring(4);
+            File dir = FileUtils.toFile(dirPath);
+            return dir.isDirectory() ? FileSystemUtils.freeSpace(dir.getPath()) - getMinFreeDiskSpaceOnDestFS()
+                                     : hsmModuleServicename == null ? -1 : Long.MAX_VALUE;
+
+        } catch (Exception x) {
+            log.error("Failed to get UsableDiskSpaceOnDest!", x);
+            return -3;
+        }
+    }
+    
+    private long getMinFreeDiskSpaceOnDestFS() throws Exception {
+        int pos = destFsGroup.indexOf('@');
+        String fsGrp = (pos == -1) ? destFsGroup : destFsGroup.substring(++pos);
+        return (Long) server.getAttribute(new ObjectName(getFileSystemMgtServiceNamePrefix()+fsGrp), "MinimumFreeDiskSpaceBytes");
     }
 
     public String getDestFileStatus() {
@@ -390,6 +421,16 @@ public class FileMoveService extends AbstractDeleterService implements MessageLi
                 throw new RuntimeException("No destination file system (with free disk space) available!");
             }
             FileDTO[] files = mgt.getFilesOfStudy(order);
+            long availOnDest = getUsableDiskSpaceOnDest();
+            log.debug("Available disk space on destination FS:"+availOnDest);
+            for (int i = 0 ; i < files.length && availOnDest > 0; i++) {
+                availOnDest -= files[i].getFileSize();
+            }
+            log.debug("Expected available disk space on destination FS after move:"+availOnDest);
+            if (availOnDest < 0) {
+                log.error("Not enough space left on destination filesystem to move study ("+order.getStudyIUID()+")!");
+                throw new RuntimeException("Not enough space left on destination filesystem!");
+            }
             File[] srcFiles;
             log.info("Move "+ files.length +" files of study "+order.getStudyIUID()+" to Filesystem:"+fsDTO);
             if (files.length > 0) {
