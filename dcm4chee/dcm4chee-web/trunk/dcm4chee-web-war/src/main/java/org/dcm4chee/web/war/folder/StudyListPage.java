@@ -629,7 +629,7 @@ public class StudyListPage extends Panel {
 
             @Override
             public boolean isEnabled() {
-                return !viewport.getFilter().isPatientQuery();
+                return !viewport.getFilter().isPatientQuery() && !viewport.getFilter().isUnconnectedMPPS();
             }
         };
         form.addComponent(autoExpand);
