@@ -46,6 +46,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.persistence.TemporalType;
 
+import org.apache.commons.lang.StringUtils;
 import org.dcm4che2.data.PersonName;
 import org.dcm4che2.data.Tag;
 import org.dcm4chee.archive.conf.AttributeFilter;
@@ -123,6 +124,9 @@ public class QueryUtil {
     }
     public static boolean isUniversalMatch(String s) {
         return s == null || s.length() == 0  || s.equals("*");
+    }
+    public static boolean isUniversalPNMatch(String s) {
+        return s == null || s.length() == 0 || s.equals("*") || s.equals("*^*");
     }
     public static boolean isUniversalMatch(String[] sa) {
         if (sa == null || sa.length == 0)
