@@ -114,7 +114,7 @@ public class StudyListFilter implements Serializable {
     	        || isPpsWithoutMwl()
     	        || isWithoutPps()
     	        || isUnconnectedMPPS()
-    	        || !QueryUtil.isUniversalMatch(getPatientName())
+    	        || !QueryUtil.isUniversalPNMatch(getPatientName())
     		|| !QueryUtil.isUniversalMatch(getPatientID()) 
     		|| !QueryUtil.isUniversalMatch(getIssuerOfPatientID()) 
     		|| !QueryUtil.isUniversalMatch(getAccessionNumber()) 

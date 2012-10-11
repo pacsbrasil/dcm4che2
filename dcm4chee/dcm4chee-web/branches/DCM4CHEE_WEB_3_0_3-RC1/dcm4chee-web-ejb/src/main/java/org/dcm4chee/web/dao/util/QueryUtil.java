@@ -124,6 +124,9 @@ public class QueryUtil {
     public static boolean isUniversalMatch(String s) {
         return s == null || s.length() == 0  || s.equals("*");
     }
+    public static boolean isUniversalPNMatch(String s) {
+        return s == null || s.length() == 0 || s.equals("*") || s.equals("*^*");
+    }
     public static boolean isUniversalMatch(String[] sa) {
         if (sa == null || sa.length == 0)
             return true;
