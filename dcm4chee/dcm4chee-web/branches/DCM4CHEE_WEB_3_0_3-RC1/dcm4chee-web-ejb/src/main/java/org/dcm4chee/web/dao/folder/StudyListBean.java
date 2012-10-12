@@ -547,6 +547,20 @@ public class StudyListBean implements StudyListLocal {
                 .setParameter(1, studyPk).getSingleResult()) > 0l;
     }
 
+    public boolean exists(long pk, int levelOfModel) {
+        try {
+            switch (levelOfModel) {
+                case 0: return em.find(Patient.class, pk) != null;
+                case 1: return em.find(Study.class, pk) != null;
+                case 2: return em.find(MPPS.class, pk) != null;
+                case 3: return em.find(Series.class, pk) != null;
+                case 4: return em.find(Instance.class, pk) != null;
+                default: return false;
+            }
+        } catch (Exception x) {
+            return false;
+        }
+    }
     private String[] appendUIDs(String[] studyIuids, String[] seriesIuids,
             String[] sopIuids, StringBuilder sb) {
         String[] uids;
