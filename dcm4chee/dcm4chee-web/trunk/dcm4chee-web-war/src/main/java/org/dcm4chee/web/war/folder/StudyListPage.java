@@ -1685,9 +1685,11 @@ public class StudyListPage extends Panel {
 
                 @Override
                 public void onClick(AjaxRequestTarget target) {
-                    patModel.setDetails(!patModel.isDetails());
-                    if (target != null) {
-                        target.addComponent(item);
+                    if (checkExists(patModel, target)) {
+                        patModel.setDetails(!patModel.isDetails());
+                        if (target != null) {
+                            target.addComponent(item);
+                        }
                     }
                 }
             }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
@@ -1706,7 +1708,7 @@ public class StudyListPage extends Panel {
                 private static final long serialVersionUID = 1L;
                 
                 @Override
-				public void onClick(final AjaxRequestTarget target) {
+		public void onClick(final AjaxRequestTarget target) {
                 	arrWindow
     	        		.setContent(new Label("content", 
     	        				new Model<String>(new AuditRecordRepositoryFacade()
@@ -1809,9 +1811,11 @@ public class StudyListPage extends Panel {
 
                 @Override
                 public void onClick(AjaxRequestTarget target) {
-                    studyModel.setDetails(!studyModel.isDetails());
-                    if (target != null) {
-                        target.addComponent(patientListItem);
+                    if (checkExists(studyModel, target)) {
+                        studyModel.setDetails(!studyModel.isDetails());
+                        if (target != null) {
+                            target.addComponent(patientListItem);
+                        }
                     }
                 }
             }
@@ -1830,9 +1834,11 @@ public class StudyListPage extends Panel {
 
                 @Override
                 public void onClick(AjaxRequestTarget target) {
-                    int[] winSize = WebCfgDelegate.getInstance().getWindowSize("imgSelect");
-                    imageSelectionWindow.setInitialWidth(winSize[0]).setInitialHeight(winSize[1]);
-                    imageSelectionWindow.show(target, studyModel);
+                    if (checkExists(studyModel, target)) {
+                        int[] winSize = WebCfgDelegate.getInstance().getWindowSize("imgSelect");
+                        imageSelectionWindow.setInitialWidth(winSize[0]).setInitialHeight(winSize[1]);
+                        imageSelectionWindow.show(target, studyModel);
+                    }
                 }
                 @Override
                 protected IAjaxCallDecorator getAjaxCallDecorator() {
@@ -1855,15 +1861,14 @@ public class StudyListPage extends Panel {
                 private static final long serialVersionUID = 1L;
                 
                 @Override
-				public void onClick(final AjaxRequestTarget target) {
-                	arrWindow
-    	        		.setContent(new Label("content", 
-    	        				new Model<String>(new AuditRecordRepositoryFacade()
-    	        					.doSearch(AuditRecordRepositoryFacade.Level.STUDY, 
-    	        							studyModel.getStudyInstanceUID())))
-    	                .setEscapeModelStrings(false)
-    	                .add(new AttributeModifier("class", true, new Model<String>("arr"))))
-    	                .show(target);
+                public void onClick(final AjaxRequestTarget target) {
+                    arrWindow.setContent(new Label("content", 
+                            new Model<String>(new AuditRecordRepositoryFacade()
+                            .doSearch(AuditRecordRepositoryFacade.Level.STUDY, 
+                                    studyModel.getStudyInstanceUID())))
+                    .setEscapeModelStrings(false)
+                    .add(new AttributeModifier("class", true, new Model<String>("arr"))))
+                    .show(target);
                 }
             }.add(new Image("arrImg",ImageManager.IMAGE_COMMON_ARR)
             .add(new ImageSizeBehaviour())
@@ -1891,14 +1896,16 @@ public class StudyListPage extends Panel {
 
                 @Override
                 public void onClick(AjaxRequestTarget target) {
-                    if (tooOld) {
-                        int[] winSize = WebCfgDelegate.getInstance().getWindowSize("linkToOld");
-                        confirmLinkMppsStudy.setInitialWidth(winSize[0]).setInitialHeight(winSize[1]);
-                        confirmLinkMppsStudy.confirm(target, 
-                                new StringResourceModel("folder.message.tooOld.link",this, null), 
-                                studyModel);
-                    } else {
-                        setMppsLinkWindow().show(target, studyModel, form);
+                    if (checkExists(studyModel, target)) {
+                        if (tooOld) {
+                            int[] winSize = WebCfgDelegate.getInstance().getWindowSize("linkToOld");
+                            confirmLinkMppsStudy.setInitialWidth(winSize[0]).setInitialHeight(winSize[1]);
+                            confirmLinkMppsStudy.confirm(target, 
+                                    new StringResourceModel("folder.message.tooOld.link",this, null), 
+                                    studyModel);
+                        } else {
+                            setMppsLinkWindow().show(target, studyModel, form);
+                        }
                     }
                 }
 
@@ -1938,7 +1945,9 @@ public class StudyListPage extends Panel {
 
                 @Override
                 public void onClick(AjaxRequestTarget target) {     
-                    confirmUnlinkMppsStudy.confirm(target, new StringResourceModel((tooOld ? "folder.message.tooOld.unlink" : "folder.message.confirmUnlink"),this, null,new Object[]{studyModel}), studyModel);
+                    if (checkExists(studyModel, target)) {
+                        confirmUnlinkMppsStudy.confirm(target, new StringResourceModel((tooOld ? "folder.message.tooOld.unlink" : "folder.message.confirmUnlink"),this, null,new Object[]{studyModel}), studyModel);
+                    }
                 }
 
                 @Override
@@ -2053,9 +2062,11 @@ public class StudyListPage extends Panel {
 
                 @Override
                 public void onClick(AjaxRequestTarget target) {
-                    ppsModel.setDetails(!ppsModel.isDetails());
-                    if (target != null) {
-                        target.addComponent(StudyListPage.this.get("form"));
+                    if (checkExists(ppsModel, target)) {
+                        ppsModel.setDetails(!ppsModel.isDetails());
+                        if (target != null) {
+                            target.addComponent(StudyListPage.this.get("form"));
+                        }
                     }
                 }
 
@@ -2077,17 +2088,17 @@ public class StudyListPage extends Panel {
 
                 @Override
                 public void onClick(AjaxRequestTarget target) {
-                    log.debug("#### linkBtn clicked!");
-                    if (tooOld) {
-                        int[] winSize = WebCfgDelegate.getInstance().getWindowSize("linkToOld");
-                        confirmLinkMpps.setInitialWidth(winSize[0]).setInitialHeight(winSize[1]);
-                        confirmLinkMpps.confirm(target, 
-                                new StringResourceModel("folder.message.tooOld.link",this, null), 
-                                ppsModel);
-                    } else {
-                        setMppsLinkWindow().show(target, ppsModel, form);
+                    if (checkExists(ppsModel, target)) {
+                        if (tooOld) {
+                            int[] winSize = WebCfgDelegate.getInstance().getWindowSize("linkToOld");
+                            confirmLinkMpps.setInitialWidth(winSize[0]).setInitialHeight(winSize[1]);
+                            confirmLinkMpps.confirm(target, 
+                                    new StringResourceModel("folder.message.tooOld.link",this, null), 
+                                    ppsModel);
+                        } else {
+                            setMppsLinkWindow().show(target, ppsModel, form);
+                        }
                     }
-                    log.debug("#### linkBtn onClick finished!");
                 }
 
                 @Override
@@ -2128,7 +2139,9 @@ public class StudyListPage extends Panel {
 
                 @Override
                 public void onClick(AjaxRequestTarget target) {     
-                    confirmUnlinkMpps.confirm(target, new StringResourceModel((tooOld ? "folder.message.tooOld.unlink" : "folder.message.confirmUnlink"),this, null,new Object[]{ppsModel}), ppsModel);
+                    if (checkExists(ppsModel, target)) {
+                        confirmUnlinkMpps.confirm(target, new StringResourceModel((tooOld ? "folder.message.tooOld.unlink" : "folder.message.confirmUnlink"),this, null,new Object[]{ppsModel}), ppsModel);
+                    }
                 }
 
                 @Override
@@ -2182,28 +2195,29 @@ public class StudyListPage extends Panel {
 
                 @Override
                 public void onClick(AjaxRequestTarget target) {
+                    if (checkExists(ppsModel, target)) {
                 	modalWindow.setContent(new MppsForwardPanel("content", modalWindow, ppsModel));
-                    modalWindow.setTitle("");
-                    modalWindow.show(target);
+                        modalWindow.setTitle("");
+                        modalWindow.show(target);
+                    }
                 }
             }.add(new Image("forwardImg", ImageManager.IMAGE_FOLDER_MPPS_FORWARD)
             .add(new ImageSizeBehaviour())
             .add(tooltip))
             .setVisible(ppsModel.getDataset() != null));
             row.add(new AjaxLink<Object>("arr") {
-                
+
                 private static final long serialVersionUID = 1L;
-                
+
                 @Override
-				public void onClick(final AjaxRequestTarget target) {
-                	arrWindow
-    	        		.setContent(new Label("content", 
-    	        				new Model<String>(new AuditRecordRepositoryFacade()
-    	        					.doSearch(AuditRecordRepositoryFacade.Level.PPS, 
-    	        							ppsModel.getStudy().getStudyInstanceUID())))
-    	                .setEscapeModelStrings(false)
-    	                .add(new AttributeModifier("class", true, new Model<String>("arr"))))
-    	                .show(target);
+                public void onClick(final AjaxRequestTarget target) {
+                    arrWindow.setContent(new Label("content", 
+                            new Model<String>(new AuditRecordRepositoryFacade()
+                            .doSearch(AuditRecordRepositoryFacade.Level.PPS, 
+                                    ppsModel.getStudy().getStudyInstanceUID())))
+                    .setEscapeModelStrings(false)
+                    .add(new AttributeModifier("class", true, new Model<String>("arr"))))
+                    .show(target);
                 }
             }.add(new Image("arrImg",ImageManager.IMAGE_COMMON_ARR)
             .add(new ImageSizeBehaviour())
@@ -2292,9 +2306,11 @@ public class StudyListPage extends Panel {
 
                 @Override
                 public void onClick(AjaxRequestTarget target) {
-                    seriesModel.setDetails(!seriesModel.isDetails());
-                    if (target != null) {
-                        target.addComponent(patientListItem);
+                    if (checkExists(seriesModel, target)) {
+                        seriesModel.setDetails(!seriesModel.isDetails());
+                        if (target != null) {
+                            target.addComponent(patientListItem);
+                        }
                     }
                 }
 
@@ -2311,9 +2327,11 @@ public class StudyListPage extends Panel {
 
                 @Override
                 public void onClick(AjaxRequestTarget target) {
-                    int[] winSize = WebCfgDelegate.getInstance().getWindowSize("imgSelect");
-                    imageSelectionWindow.setInitialWidth(winSize[0]).setInitialHeight(winSize[1]);
-                    imageSelectionWindow.show(target, seriesModel);
+                    if (checkExists(seriesModel, target)) {
+                        int[] winSize = WebCfgDelegate.getInstance().getWindowSize("imgSelect");
+                        imageSelectionWindow.setInitialWidth(winSize[0]).setInitialHeight(winSize[1]);
+                        imageSelectionWindow.show(target, seriesModel);
+                    }
                 }
                 @Override
                 protected IAjaxCallDecorator getAjaxCallDecorator() {
@@ -2332,20 +2350,19 @@ public class StudyListPage extends Panel {
                 .add(new SecurityBehavior(getModuleName() + ":imageSelectionSeriesLink"))
             );
             row.add(new AjaxLink<Object>("arr") {
-                
+
                 private static final long serialVersionUID = 1L;
-                
+
                 @Override
-				public void onClick(final AjaxRequestTarget target) {
-                	arrWindow
-    	        		.setContent(new Label("content", 
-    	        				new Model<String>(new AuditRecordRepositoryFacade()
-    	        					.doSearch(AuditRecordRepositoryFacade.Level.SERIES, 
-    	        							((StudyModel) seriesModel.getParent().getParent())
-    	        								.getStudyInstanceUID())))
-    	                .setEscapeModelStrings(false)
-    	                .add(new AttributeModifier("class", true, new Model<String>("arr"))))
-    	                .show(target);
+                public void onClick(final AjaxRequestTarget target) {
+                    arrWindow.setContent(new Label("content", 
+                            new Model<String>(new AuditRecordRepositoryFacade()
+                            .doSearch(AuditRecordRepositoryFacade.Level.SERIES, 
+                                    ((StudyModel) seriesModel.getParent().getParent())
+                                    .getStudyInstanceUID())))
+                    .setEscapeModelStrings(false)
+                    .add(new AttributeModifier("class", true, new Model<String>("arr"))))
+                    .show(target);
                 }
             }.add(new Image("arrImg",ImageManager.IMAGE_COMMON_ARR)
             .add(new ImageSizeBehaviour())
@@ -2430,9 +2447,11 @@ public class StudyListPage extends Panel {
 
                 @Override
                 public void onClick(AjaxRequestTarget target) {
-                    instModel.setDetails(!instModel.isDetails());
-                    if (target != null) {
-                        target.addComponent(patientListItem);
+                    if (checkExists(instModel, target)) {
+                        instModel.setDetails(!instModel.isDetails());
+                        if (target != null) {
+                            target.addComponent(patientListItem);
+                        }
                     }
                 }
             }.add(new Image("detailImg",ImageManager.IMAGE_COMMON_DICOM_DETAILS)
@@ -2450,18 +2469,20 @@ public class StudyListPage extends Panel {
 
                 @Override
                 public void onClick(AjaxRequestTarget target) {
-                    int[] winSize = WebCfgDelegate.getInstance().getWindowSize("wado");
-                    wadoImageWindow.setInitialWidth(winSize[0]).setInitialHeight(winSize[1]);
-                    wadoImageWindow.setPageCreator(new ModalWindow.PageCreator() {
-                          
-                        private static final long serialVersionUID = 1L;
-                          
-                        @Override
-                        public Page createPage() {
-                            return new InstanceViewPage(wadoImageWindow, instModel);                        
-                        }
-                    });
-                    wadoImageWindow.show(target);
+                    if (checkExists(instModel, target)) {
+                        int[] winSize = WebCfgDelegate.getInstance().getWindowSize("wado");
+                        wadoImageWindow.setInitialWidth(winSize[0]).setInitialHeight(winSize[1]);
+                        wadoImageWindow.setPageCreator(new ModalWindow.PageCreator() {
+                              
+                            private static final long serialVersionUID = 1L;
+                              
+                            @Override
+                            public Page createPage() {
+                                return new InstanceViewPage(wadoImageWindow, instModel);                        
+                            }
+                        });
+                        wadoImageWindow.show(target);
+                    }
                 }
             }
                 .add(new Image("wadoImg",ImageManager.IMAGE_FOLDER_WADO)
@@ -2471,20 +2492,19 @@ public class StudyListPage extends Panel {
                 .add(new SecurityBehavior(getModuleName() + ":wadoImageInstanceLink"))
             );
             row.add(new AjaxLink<Object>("arr") {
-                
+
                 private static final long serialVersionUID = 1L;
-                
+
                 @Override
-				public void onClick(final AjaxRequestTarget target) {
-                	arrWindow
-    	        		.setContent(new Label("content", 
-    	        				new Model<String>(new AuditRecordRepositoryFacade()
-    	        					.doSearch(AuditRecordRepositoryFacade.Level.INSTANCE, 
-    	        							((StudyModel) instModel.getParent().getParent().getParent())
-	        									.getStudyInstanceUID())))
-    	                .setEscapeModelStrings(false)
-    	                .add(new AttributeModifier("class", true, new Model<String>("arr"))))
-    	                .show(target);
+                public void onClick(final AjaxRequestTarget target) {
+                    arrWindow.setContent(new Label("content", 
+                            new Model<String>(new AuditRecordRepositoryFacade()
+                            .doSearch(AuditRecordRepositoryFacade.Level.INSTANCE, 
+                                    ((StudyModel) instModel.getParent().getParent().getParent())
+                                    .getStudyInstanceUID())))
+                    .setEscapeModelStrings(false)
+                    .add(new AttributeModifier("class", true, new Model<String>("arr"))))
+                    .show(target);
                 }
             }.add(new Image("arrImg",ImageManager.IMAGE_COMMON_ARR)
             .add(new ImageSizeBehaviour())
@@ -2584,16 +2604,18 @@ public class StudyListPage extends Panel {
 
             @Override
             public void onClick(AjaxRequestTarget target) {
-                if (tooOld) {
-                    confirmEdit.confirm(target, 
-                            new StringResourceModel("folder.message.tooOld.edit", this, null), 
-                            model);
-                    confirmEdit.show(target);
-                } else {
-                    modalWindow.setContent(getEditDicomObjectPanel(model));
-                    modalWindow.setTitle("");
-                    modalWindow.show(target);
-                    super.onClick(target);
+                if (checkExists(model, target)) {
+                    if (tooOld) {
+                        confirmEdit.confirm(target, 
+                                new StringResourceModel("folder.message.tooOld.edit", this, null), 
+                                model);
+                        confirmEdit.show(target);
+                    } else {
+                        modalWindow.setContent(getEditDicomObjectPanel(model));
+                        modalWindow.setTitle("");
+                        modalWindow.show(target);
+                        super.onClick(target);
+                    }
                 }
             }
             
@@ -2715,35 +2737,35 @@ public class StudyListPage extends Panel {
 
             @Override
             public void onClick(AjaxRequestTarget target) {
-
-                modalWindow
-                .setPageCreator(new ModalWindow.PageCreator() {
-                    
-                    private static final long serialVersionUID = 1L;
-                      
-                    @Override
-                    public Page createPage() {
-                        return new StudyPermissionsPage(model);
-                    }
-                });
-
-                modalWindow.setWindowClosedCallback(new ModalWindow.WindowClosedCallback() {              
-                    
-                    private static final long serialVersionUID = 1L;
-
-                    @Override
-                    public void onClose(AjaxRequestTarget target) {
-                        updateStudyPermissions();
-                        query(target); 
-                        modalWindow.getPage().setOutputMarkupId(true);
-                        target.addComponent(modalWindow.getPage());
-                        target.addComponent(header);
-                    }
-                });
-                modalWindow.add(new ModalWindowLink.DisableDefaultConfirmBehavior());
-                modalWindow.setTitle("");
-                modalWindow.setCloseButtonCallback(null);
-                modalWindow.show(target);
+                if (checkExists(model, target)) {
+                    modalWindow.setPageCreator(new ModalWindow.PageCreator() {
+                        
+                        private static final long serialVersionUID = 1L;
+                          
+                        @Override
+                        public Page createPage() {
+                            return new StudyPermissionsPage(model);
+                        }
+                    });
+    
+                    modalWindow.setWindowClosedCallback(new ModalWindow.WindowClosedCallback() {              
+                        
+                        private static final long serialVersionUID = 1L;
+    
+                        @Override
+                        public void onClose(AjaxRequestTarget target) {
+                            updateStudyPermissions();
+                            query(target); 
+                            modalWindow.getPage().setOutputMarkupId(true);
+                            target.addComponent(modalWindow.getPage());
+                            target.addComponent(header);
+                        }
+                    });
+                    modalWindow.add(new ModalWindowLink.DisableDefaultConfirmBehavior());
+                    modalWindow.setTitle("");
+                    modalWindow.setCloseButtonCallback(null);
+                    modalWindow.show(target);
+                }
             }
             
             @Override
@@ -2793,12 +2815,14 @@ public class StudyListPage extends Panel {
         
         @Override
         public void onClick(AjaxRequestTarget target) {
-            if (model.isCollapsed()) model.expand();
-            else model.collapse();
-            if (target != null) {
-                target.addComponent(patientListItem);
-                if (expandLevelChanged(model))
-                    target.addComponent(header);
+            if (checkExists(model, target)) {
+                if (model.isCollapsed()) model.expand();
+                else model.collapse();
+                if (target != null) {
+                    target.addComponent(patientListItem);
+                    if (expandLevelChanged(model))
+                        target.addComponent(header);
+                }
             }
         }
     }
@@ -2935,5 +2959,23 @@ public class StudyListPage extends Panel {
         if (++pos2 < pattern.length())
             sb.append(pattern.substring(pos2));
         return sb.toString();
+    }
+    
+    private boolean checkExists(AbstractDicomModel m, AjaxRequestTarget target) {
+        if (dao.exists(m.getPk(), m.levelOfModel()))
+            return true;
+        msgWin.show(target, "Element doesn't exist anymore!");
+        AbstractDicomModel p = m.getParent();
+        while (p != null && !dao.exists(p.getPk(), p.levelOfModel())) {
+            m = p;
+            p = m.getParent();
+        }
+        if (p == null) {
+            viewport.getPatients().remove((PatientModel) m);
+        } else {
+            p.getDicomModelsOfNextLevel().remove(m);
+        }
+        target.addComponent(form);
+        return false;
     }
 }

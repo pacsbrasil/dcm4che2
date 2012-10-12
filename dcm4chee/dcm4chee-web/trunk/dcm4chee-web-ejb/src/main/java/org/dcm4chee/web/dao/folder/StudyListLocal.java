@@ -120,4 +120,6 @@ public interface StudyListLocal {
     List<Instance> getDownloadableInstances(String[] studyIuids, String[] seriesIuids, String[] sopIuids);
     
     boolean hasStudyForeignPpsInfo(long studyPk);
+    
+    boolean exists(long pk, int levelOfModel);
 }
