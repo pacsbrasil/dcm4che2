@@ -99,6 +99,7 @@ public class ImageSelectionWindow extends ModalWindow {
     
     private static Logger log = LoggerFactory.getLogger(ImageSelectionWindow.class);
 
+    private ArrayList<AbstractDicomModel> collapsedModels = new ArrayList<AbstractDicomModel>();
     private HashMap<AbstractDicomModel, Boolean> modifiedModels = new HashMap<AbstractDicomModel, Boolean>();
     
     public ImageSelectionWindow(String id, String titleResource) {
@@ -120,21 +121,27 @@ public class ImageSelectionWindow extends ModalWindow {
         this.study = study;
         this.series = null;
         seriesList.clear();
-        if (study.isCollapsed())
+        if (study.isCollapsed()) {
+            collapsedModels.add(study);
             study.expand();
+        }
         List<PPSModel> ppss = study.getPPSs();
         List<SeriesModel> seriess;
         SeriesModel series;
         PPSModel pps;
         for (int i = 0 ; i < ppss.size() ; i++) {
             pps = ppss.get(i);
-            if (pps.isCollapsed())
+            if (pps.isCollapsed()) {
+                collapsedModels.add(pps);
                 pps.expand();
+            }
             seriess = pps.getSeries();
             for (int j = 0 ; j < seriess.size() ; j++) {
                 series = seriess.get(j);
-                if (series.isCollapsed())
+                if (series.isCollapsed()) {
+                    collapsedModels.add(series);
                     series.expand();
+                }
                 addInstances(series);
             }
         }
@@ -375,6 +382,10 @@ public class ImageSelectionWindow extends ModalWindow {
         for (AbstractDicomModel m : modifiedModels.keySet()) 
             m.setSelected(!m.isSelected());
         modifiedModels.clear();
+        for (AbstractDicomModel m : collapsedModels) {
+            m.collapse();
+        }
+        collapsedModels.clear();
     }
     
     private void collapseUnselected() {
