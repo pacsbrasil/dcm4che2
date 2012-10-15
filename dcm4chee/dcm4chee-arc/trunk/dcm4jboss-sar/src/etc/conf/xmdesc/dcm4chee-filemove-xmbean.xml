@@ -350,7 +350,7 @@
  
    <attribute access="read-write" getMethod="isKeepMovedFilesOnError" setMethod="setKeepMovedFilesOnError">
       <description>Keep successfully moved files if one or more files failed. (not supported on tar file systems!). 
-	      If disabled the whole Move order is roll backed if one file failed!
+	      If disabled the whole Move order is rolled back if one file failed!
       </description>
       <name>KeepMovedFilesOnError</name>
       <type>boolean</type>
