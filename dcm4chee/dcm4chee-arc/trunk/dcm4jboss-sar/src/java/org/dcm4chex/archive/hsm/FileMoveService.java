@@ -45,6 +45,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.MessageDigest;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -420,24 +421,28 @@ public class FileMoveService extends AbstractDeleterService implements MessageLi
             if (fsDTO == null) {
                 throw new RuntimeException("No destination file system (with free disk space) available!");
             }
-            FileDTO[] files = mgt.getFilesOfStudy(order);
+            FileDTO[][] files = mgt.getFilesOfStudy(order);
             long availOnDest = getUsableDiskSpaceOnDest();
             log.debug("Available disk space on destination FS:"+availOnDest);
             for (int i = 0 ; i < files.length && availOnDest > 0; i++) {
-                availOnDest -= files[i].getFileSize();
+                for (int j = 0 ; j < files[i].length && availOnDest > 0; j++) {
+                    availOnDest -= files[i][j].getFileSize();
+                }
             }
             log.debug("Expected available disk space on destination FS after move:"+availOnDest);
             if (availOnDest < 0) {
                 log.error("Not enough space left on destination filesystem to move study ("+order.getStudyIUID()+")!");
                 throw new RuntimeException("Not enough space left on destination filesystem!");
             }
-            File[] srcFiles;
+            File[] srcFiles = null;
             log.info("Move "+ files.length +" files of study "+order.getStudyIUID()+" to Filesystem:"+fsDTO);
             if (files.length > 0) {
                 String destPath = fsDTO.getDirectoryPath();
                 if (destPath.startsWith("tar:")) {
-                    srcFiles = copyTar(files, destPath, fsDTO.getPk());
-                    mgt.moveFiles(order, files, destFileStatus, keepSrcFiles, false);
+                    for (int i=0 ; i < files.length ; i++) {
+                        srcFiles = copyTar(files[i], destPath, fsDTO.getPk());
+                    }
+                    List<FileDTO> failed =  mgt.moveFiles(order, files, destFileStatus, keepSrcFiles, false);
                 } else {
                     srcFiles = copyFiles(files, destPath, fsDTO.getPk());
                     List<FileDTO> failed = mgt.moveFiles(order, files, destFileStatus, keepSrcFiles, keepMovedFilesOnError);
@@ -452,15 +457,18 @@ public class FileMoveService extends AbstractDeleterService implements MessageLi
                             }
                             
                         } else {
-                            int j = 0;
-                            FileDTO failedDto = failed.get(j);
-                            for (int i = 0 ; i < srcFiles.length ; i++) {
-                                if (failedDto != null && files[i].getPk() == failedDto.getPk()) {
-                                    deleteFile(FileUtils.toFile(failedDto.getDirectoryPath() + 
-                                            '/' + failedDto.getFilePath()) );
-                                    failedDto = ++j < failed.size() ? failed.get(j) : null;
-                                } else {
-                                    deleteFile(srcFiles[i]);
+                            int k = 0, s = 0;
+                            FileDTO failedDto = failed.get(k);
+                            for (int i = 0 ; i < files.length ; i++) {
+                                for (int j = 0 ; j < files[i].length ; j++) {
+                                    if (failedDto != null && files[i][j].getPk() == failedDto.getPk()) {
+                                        deleteFile(FileUtils.toFile(failedDto.getDirectoryPath() + 
+                                                '/' + failedDto.getFilePath()) );
+                                        failedDto = ++k < failed.size() ? failed.get(k) : null;
+                                    } else {
+                                        deleteFile(srcFiles[s]);
+                                    }
+                                    s++;
                                 }
                             }
                         }
@@ -476,7 +484,6 @@ public class FileMoveService extends AbstractDeleterService implements MessageLi
                     } catch (Exception x) {
                         log.warn("Remove StudyOnFS record failed for "+order, x);
                     }
-                    
                 }
             }
         } catch (ConcurrentStudyStorageException x) {
@@ -500,41 +507,45 @@ public class FileMoveService extends AbstractDeleterService implements MessageLi
             log.error("Failed to delete file:"+f);
     }
     
-    private File[] copyFiles(FileDTO[] files, String dirPath, long destFsPk) throws Exception {
+    private File[] copyFiles(FileDTO[][] files, String dirPath, long destFsPk) throws Exception {
         byte[] buffer = new byte[bufferSize];
         Exception ex = null;
         MessageDigest digest = null;
-        File[] srcFiles = new File[files.length];
+        List<File> srcFiles = new ArrayList<File>();
         if (verifyCopy)
             digest = MessageDigest.getInstance("MD5");
         FileDTO dtoSrc;
+        File file;
         for (int i = 0 ; i < files.length ; i++) {
-            dtoSrc = files[i];
-            srcFiles[i] = FileUtils.toFile(dtoSrc.getDirectoryPath() + '/' + dtoSrc.getFilePath());
-            File dst = FileUtils.toFile(dirPath + '/' + dtoSrc.getFilePath());
-            try {
-                copy(srcFiles[i], dst, buffer);
-                byte[] md5sum0 = dtoSrc.getFileMd5();
-                if (md5sum0 != null && digest != null) {
-                    byte[] md5sum = MD5Utils.md5sum(dst, digest, buffer);
-                    if (!Arrays.equals(md5sum0, md5sum)) {
-                        String prompt = "md5 sum of copy " + dst
-                                + " differs from md5 sum in DB for file " + srcFiles[i];
-                        log.warn(prompt);
-                        throw new IOException(prompt);
+            for (int j = 0 ; j < files[i].length ; j++) {
+                dtoSrc = files[i][j];
+                file = FileUtils.toFile(dtoSrc.getDirectoryPath() + '/' + dtoSrc.getFilePath());
+                srcFiles.add(file);
+                File dst = FileUtils.toFile(dirPath + '/' + dtoSrc.getFilePath());
+                try {
+                    copy(file, dst, buffer);
+                    byte[] md5sum0 = dtoSrc.getFileMd5();
+                    if (md5sum0 != null && digest != null) {
+                        byte[] md5sum = MD5Utils.md5sum(dst, digest, buffer);
+                        if (!Arrays.equals(md5sum0, md5sum)) {
+                            String prompt = "md5 sum of copy " + dst
+                                    + " differs from md5 sum in DB for file " + file;
+                            log.warn(prompt);
+                            throw new IOException(prompt);
+                        }
                     }
+                    dtoSrc.setFileSystemPk(destFsPk);
+                    dtoSrc.setDirectoryPath(dirPath);
+                } catch (Exception e) {
+                    deleteFile(dst);
+                    ex = e;
                 }
-                dtoSrc.setFileSystemPk(destFsPk);
-                dtoSrc.setDirectoryPath(dirPath);
-            } catch (Exception e) {
-                deleteFile(dst);
-                ex = e;
             }
         }
         if (ex != null) {
             throw ex;
         }
-        return srcFiles;
+        return (File[]) srcFiles.toArray(new File[srcFiles.size()]);
     }
 
     private void copy(File src, File dst, byte[] buffer) throws IOException {
