@@ -847,13 +847,19 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
     /**    
      * @ejb.interface-method
      */
-    public FileDTO[] getFilesOfStudy(DeleteStudyOrder order) throws ConcurrentStudyStorageException {
+    public FileDTO[][] getFilesOfStudy(DeleteStudyOrder order) throws ConcurrentStudyStorageException {
         try {
             long fsPk = order.getFsPk();
             StudyLocal study = studyHome.findByPrimaryKey(order.getStudyPk());
             FileSystemLocal fs = fileSystemHome.findByPrimaryKey(fsPk);
             checkConcurrentStudyStorage(study, fs);
-            return toFileDTOs(study.getFiles(fsPk));
+            Collection series = study.getSeries();
+            FileDTO[][] dtos = new FileDTO[series.size()][];
+            int i = 0;
+            for (Iterator it = series.iterator() ; it.hasNext() ; i++) {
+             dtos[i] = toFileDTOs(((SeriesLocal) it.next()).getFiles(fsPk));
+            }
+            return dtos;
         } catch (FinderException x) {
             throw new EJBException(x);
         }
@@ -872,48 +878,50 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
      *
      * @ejb.interface-method
      */
-    public List<FileDTO> moveFiles(DeleteStudyOrder order, FileDTO[] dtos, Integer destFileStatus, boolean keepSrcFiles, boolean keepMovedFilesOnError) throws ConcurrentStudyStorageException {
+    public List<FileDTO> moveFiles(DeleteStudyOrder order, FileDTO[][] dtos, Integer destFileStatus, boolean keepSrcFiles, boolean keepMovedFilesOnError) throws ConcurrentStudyStorageException {
         try {
             List<FileDTO> failed = null;
             long fsPk = order.getFsPk();
             StudyLocal study = studyHome.findByPrimaryKey(order.getStudyPk());
             FileSystemLocal fs = fileSystemHome.findByPrimaryKey(fsPk);
             checkConcurrentStudyStorage(study, fs);
-            FileSystemLocal fsDest = fileSystemHome.findByPrimaryKey(dtos[0].getFileSystemPk());
+            FileSystemLocal fsDest = fileSystemHome.findByPrimaryKey(dtos[0][0].getFileSystemPk());
             Collection<FileLocal> c = study.getFiles(fsPk);
             FileLocal[] files = c.toArray(new FileLocal[c.size()]);
             FileLocal fSrc;
             FileDTO dto;
-            for (int i = 0; i< dtos.length ; i++) {
-                dto = dtos[i];
-                try {
-                    fSrc = getFile(dto.getPk(), files, i);
-                    if (fSrc != null) {
-                        if (keepSrcFiles) { 
-                            fileHome.create(dto.getFilePath(), fSrc.getFileTsuid(), 
-                                fSrc.getFileSize(), fSrc.getFileMd5(), 
-                                destFileStatus == null ? fSrc.getFileStatus() : destFileStatus.intValue(), 
-                                fSrc.getInstance(), fsDest);
-                        } else {
-                            fSrc.setFilePath(dto.getFilePath());
-                            fSrc.setFileSystem(fsDest);
-                            if (destFileStatus != null) {
-                                fSrc.setFileStatus(destFileStatus.intValue());
+            for (int i = 0, k = 0 ; i< dtos.length ; i++) {
+                for (int j = 0; j < dtos[i].length ; j++, k++) {
+                    dto = dtos[i][j];
+                    try {
+                        fSrc = getFile(dto.getPk(), files, k);
+                        if (fSrc != null) {
+                            if (keepSrcFiles) { 
+                                fileHome.create(dto.getFilePath(), fSrc.getFileTsuid(), 
+                                    fSrc.getFileSize(), fSrc.getFileMd5(), 
+                                    destFileStatus == null ? fSrc.getFileStatus() : destFileStatus.intValue(), 
+                                    fSrc.getInstance(), fsDest);
+                            } else {
+                                fSrc.setFilePath(dto.getFilePath());
+                                fSrc.setFileSystem(fsDest);
+                                if (destFileStatus != null) {
+                                    fSrc.setFileStatus(destFileStatus.intValue());
+                                }
                             }
+                        } else {
+                            log.error("Missing source file for:"+dto);
                         }
-                    } else {
-                        log.error("Missing source file for:"+dto);
+                    } catch (Exception e) {
+                        if (!keepMovedFilesOnError) {
+                            throw (e instanceof RuntimeException) ? 
+                                    (RuntimeException) e : new EJBException(e);
+                        }
+                        if (failed == null) {
+                            failed = new ArrayList<FileDTO>();
+                            order.setThrowable(e);
+                        }
+                        failed.add(dto);
                     }
-                } catch (Exception e) {
-                    if (!keepMovedFilesOnError) {
-                        throw (e instanceof RuntimeException) ? 
-                                (RuntimeException) e : new EJBException(e);
-                    }
-                    if (failed == null) {
-                        failed = new ArrayList<FileDTO>();
-                        order.setThrowable(e);
-                    }
-                    failed.add(dto);
                 }
             }
             int availabilityOfExtRetr =
