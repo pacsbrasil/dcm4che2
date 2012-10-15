@@ -189,14 +189,10 @@ public class SelectAllLink extends AjaxFallbackLink<Object> {
         } else if (m.levelOfModel() == selectLevel) {
             internalSetSelected(m);
         } else if (m.levelOfModel() < selectLevel) {
-            if (selectState) {
-                if (m.isCollapsed())
-                    m.expand();
-                for (AbstractDicomModel m1 : m.getDicomModelsOfNextLevel()) {
-                    setSelected(m1);
-                }
-            } else {
-                m.collapse();
+            if (m.isCollapsed())
+                m.expand();
+            for (AbstractDicomModel m1 : m.getDicomModelsOfNextLevel()) {
+                setSelected(m1);
             }
         }
     }

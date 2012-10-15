@@ -41,7 +41,6 @@ package org.dcm4chee.web.war.folder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 
 import org.apache.wicket.Component;
@@ -379,7 +378,6 @@ public class ImageSelectionWindow extends ModalWindow {
     }
     
     private void collapseUnselected() {
-        log.info("######### collapseUnselected started");
         if (study != null) {
             List<PPSModel> mpps = study.getPPSs();
             for (PPSModel pps : mpps) {
@@ -394,7 +392,6 @@ public class ImageSelectionWindow extends ModalWindow {
             if (isUnselected(series))
                 series.collapse();
         }
-        log.info("######### collapseUnselected end");
     }
 
     private boolean isUnselected(SeriesModel s) {
