@@ -39,6 +39,7 @@
 package org.dcm4chee.web.war.common;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.apache.wicket.AttributeModifier;
@@ -72,6 +73,7 @@ public class SelectAllLink extends AjaxFallbackLink<Object> {
     private int selectLevel;
     private boolean selectChilds;
     private Image selectImg;
+    private HashMap<AbstractDicomModel, Boolean> modifiedModels;
     
     public SelectAllLink(String id, List<? extends AbstractDicomModel> models, 
             int selectLevel, final boolean select) {
@@ -112,6 +114,12 @@ public class SelectAllLink extends AjaxFallbackLink<Object> {
         this(id, models, models.get(0).levelOfModel(), true);
     }
     
+    public SelectAllLink setModifiedModels(
+            HashMap<AbstractDicomModel, Boolean> modifiedModels) {
+        this.modifiedModels = modifiedModels;
+        return this;
+    }
+
     public SelectAllLink addUpdateComponent(Component c) {
         c.setOutputMarkupId(true);
         updateComponents.add(c);
@@ -165,12 +173,12 @@ public class SelectAllLink extends AjaxFallbackLink<Object> {
         if (selectChilds) {
             if (selectState) {
                 if (m.levelOfModel() == selectLevel) {
-                    m.setSelected(true);
+                    internalSetSelected(m);
                     return;
                 }
             } else {
                 if (m.levelOfModel() >= selectLevel)
-                    m.setSelected(false);
+                    internalSetSelected(m);
             }
             List<? extends AbstractDicomModel> childs = m.getDicomModelsOfNextLevel();
             if (childs != null) {
@@ -179,12 +187,28 @@ public class SelectAllLink extends AjaxFallbackLink<Object> {
                 }
             }
         } else if (m.levelOfModel() == selectLevel) {
-            m.setSelected(this.selectState);
+            internalSetSelected(m);
         } else if (m.levelOfModel() < selectLevel) {
-            if (m.isCollapsed())
-                m.expand();
-            for (AbstractDicomModel m1 : m.getDicomModelsOfNextLevel()) {
-                setSelected(m1);
+            if (selectState) {
+                if (m.isCollapsed())
+                    m.expand();
+                for (AbstractDicomModel m1 : m.getDicomModelsOfNextLevel()) {
+                    setSelected(m1);
+                }
+            } else {
+                m.collapse();
+            }
+        }
+    }
+
+    private void internalSetSelected(AbstractDicomModel m) {
+        if (modifiedModels == null) {
+            m.setSelected(selectState);
+        } else {
+            if (m.isSelected() != selectState) {
+                m.setSelected(selectState);
+                if (modifiedModels.remove(m) == null)
+                    modifiedModels.put(m, selectState);
             }
         }
     }
