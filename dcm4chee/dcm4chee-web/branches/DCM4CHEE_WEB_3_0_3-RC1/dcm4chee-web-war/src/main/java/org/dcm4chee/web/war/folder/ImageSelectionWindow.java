@@ -389,6 +389,7 @@ public class ImageSelectionWindow extends ModalWindow {
     }
     
     private void collapseUnselected() {
+        collapsedModels.clear();
         if (study != null) {
             List<PPSModel> mpps = study.getPPSs();
             for (PPSModel pps : mpps) {
