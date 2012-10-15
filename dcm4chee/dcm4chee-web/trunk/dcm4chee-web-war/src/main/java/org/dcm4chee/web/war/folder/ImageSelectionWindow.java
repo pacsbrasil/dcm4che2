@@ -40,6 +40,8 @@ package org.dcm4chee.web.war.folder;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 import org.apache.wicket.Component;
@@ -69,6 +71,7 @@ import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.markup.DateTimeLabel;
 import org.dcm4chee.web.war.common.SelectAllLink;
 import org.dcm4chee.web.war.common.WadoImage;
+import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 import org.dcm4chee.web.war.folder.delegate.WADODelegate;
 import org.dcm4chee.web.war.folder.model.InstanceModel;
 import org.dcm4chee.web.war.folder.model.PPSModel;
@@ -97,7 +100,7 @@ public class ImageSelectionWindow extends ModalWindow {
     
     private static Logger log = LoggerFactory.getLogger(ImageSelectionWindow.class);
 
-    private List<InstanceModel> modifiedInstanceList;
+    private HashMap<AbstractDicomModel, Boolean> modifiedModels = new HashMap<AbstractDicomModel, Boolean>();
     
     public ImageSelectionWindow(String id, String titleResource) {
         this(id);
@@ -116,6 +119,7 @@ public class ImageSelectionWindow extends ModalWindow {
     
     public void show(final AjaxRequestTarget target, StudyModel study) {
         this.study = study;
+        this.series = null;
         seriesList.clear();
         if (study.isCollapsed())
             study.expand();
@@ -145,6 +149,7 @@ public class ImageSelectionWindow extends ModalWindow {
     }
     
     public void show(final AjaxRequestTarget target, SeriesModel series) {
+        this.study = null;
         this.series = series;
         if (series.isCollapsed())
             series.expand();
@@ -156,7 +161,7 @@ public class ImageSelectionWindow extends ModalWindow {
     @Override
     public void show(final AjaxRequestTarget target) {
         changeSelection = false;
-        modifiedInstanceList = new ArrayList<InstanceModel>();
+        modifiedModels.clear();
         super.show(target);
     }
     
@@ -189,8 +194,10 @@ public class ImageSelectionWindow extends ModalWindow {
                     item.add(new Label("seriesDesc", sm.getDescription()).setOutputMarkupId(true));
                     item.add(new Label("modality", sm.getModality()).setOutputMarkupId(true));
                     item.add(new SelectAllLink("selectAll", sm.getInstances(),SeriesModel.INSTANCE_LEVEL, true, item)
+                        .setModifiedModels(modifiedModels)
                         .add(new TooltipBehaviour("folder.imageselect.", "selectAllInstances")));
                     item.add(new SelectAllLink("deselectAll", sm.getInstances(),SeriesModel.INSTANCE_LEVEL, false, item)
+                        .setModifiedModels(modifiedModels)
                         .add(new TooltipBehaviour("folder.imageselect.", "deselectAllInstances")));
                     IModel<List<InstanceModel>> instListModel = new IModel<List<InstanceModel>>() {
                         private static final long serialVersionUID = 1L;
@@ -251,8 +258,10 @@ public class ImageSelectionWindow extends ModalWindow {
                 }
             }).setEscapeModelStrings(false));
             add(new SelectAllLink("selectAll", seriesList,SeriesModel.INSTANCE_LEVEL, true, datacontainer)
+                .setModifiedModels(modifiedModels)
                 .add(new TooltipBehaviour("folder.imageselect.", "selectInAllSeries")));
             add(new SelectAllLink("deselectAll", seriesList,SeriesModel.INSTANCE_LEVEL, false, datacontainer)
+                .setModifiedModels(modifiedModels)
                 .add(new TooltipBehaviour("folder.imageselect.", "deselectInAllSeries")));
             datacontainer.add(seriesListView.setOutputMarkupId(true));
             add(new AjaxPagingNavigator("seriesNavigator", seriesListView){
@@ -271,6 +280,7 @@ public class ImageSelectionWindow extends ModalWindow {
                 @Override
                 public void onClick(AjaxRequestTarget target) {
                     changeSelection = true;
+                    collapseUnselected();
                     close(target);
                 }
             }.add(new Label("okBtn.label", new ResourceModel("folder.imageselect.okBtn.label"))));
@@ -310,7 +320,10 @@ public class ImageSelectionWindow extends ModalWindow {
                     @Override
                     protected void onUpdate(AjaxRequestTarget target) {
                         log.info("selectionChanged!");
-                        modifiedInstanceList.add(item.getModelObject());                       
+                        InstanceModel m = item.getModelObject();
+                        if (modifiedModels.remove(m) == null) {
+                            modifiedModels.put(m, m.isSelected());                       
+                        }
                         target.addComponent(this);
                     }}.setOutputMarkupId(true));
                 item.add(new AbstractBehavior(){
@@ -346,13 +359,13 @@ public class ImageSelectionWindow extends ModalWindow {
     }
 
     public boolean isSelectionChanged() {
-        if (modifiedInstanceList.size() == 0) {
+        if (modifiedModels.size() == 0) {
             if (study != null)
                 study.collapse();
             if (series != null)
                 series.collapse();
         }
-        return modifiedInstanceList.size() > 0;
+        return modifiedModels.size() > 0;
     }
     
     public boolean changeSelection() {
@@ -360,8 +373,35 @@ public class ImageSelectionWindow extends ModalWindow {
     }
     
     public void undoSelectionChanges() {
-        for (InstanceModel instanceModel : modifiedInstanceList) 
-            instanceModel.setSelected(!instanceModel.isSelected());
-        modifiedInstanceList.clear();
+        for (AbstractDicomModel m : modifiedModels.keySet()) 
+            m.setSelected(!m.isSelected());
+        modifiedModels.clear();
+    }
+    
+    private void collapseUnselected() {
+        log.info("######### collapseUnselected started");
+        if (study != null) {
+            List<PPSModel> mpps = study.getPPSs();
+            for (PPSModel pps : mpps) {
+                for ( SeriesModel s :pps.getSeries()) {
+                    if (isUnselected(s)) {
+                        s.collapse();
+                    }
+                }
+            }
+        }
+        if (series != null) {
+            if (isUnselected(series))
+                series.collapse();
+        }
+        log.info("######### collapseUnselected end");
+    }
+
+    private boolean isUnselected(SeriesModel s) {
+        for (InstanceModel m : s.getInstances()) {
+            if (m.isSelected())
+                return false;
+        }
+        return true;
     }
 }
