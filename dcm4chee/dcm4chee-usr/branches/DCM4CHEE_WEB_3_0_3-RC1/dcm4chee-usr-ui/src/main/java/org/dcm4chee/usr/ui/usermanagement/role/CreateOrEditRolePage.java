@@ -106,7 +106,7 @@ public class CreateOrEditRolePage extends SecureSessionCheckPage {
 
         private Model<String> rolename = new Model<String>();
         private Model<String> description = new Model<String>();
-        private Model<Boolean> superuser = new Model<Boolean>();
+        private Model<Boolean> hiddenRole = new Model<Boolean>();
         
         private TextField<String> rolenameTextField= new TextField<String>("rolelist.add-role-form.rolename.input", rolename);
         private TextField<String> descriptionTextField= new TextField<String>("rolelist.add-role-form.description.input", description);
@@ -129,17 +129,17 @@ public class CreateOrEditRolePage extends SecureSessionCheckPage {
             );
             add(descriptionTextField);
 
-            WebMarkupContainer superuserContainer = new WebMarkupContainer("superuserContainer");
-            add(superuserContainer);
-            final CheckBox superuserCheckbox = new CheckBox("superuser-checkbox", superuser);
-            superuser.setObject(role != null && role.isSuperuser());
+            WebMarkupContainer hiddenRoleContainer = new WebMarkupContainer("hiddenRoleContainer");
+            add(hiddenRoleContainer);
+            final CheckBox hiddenRoleCheckbox = new CheckBox("hiddenRole-checkbox", hiddenRole);
+            hiddenRole.setObject(role != null && role.isSuperuser());
             if (role != null) {
                 rolenameTextField.setModelObject(role.getRolename());
                 descriptionTextField.setModelObject(role.getDescription());
-                superuserCheckbox.setModelObject(role.isSuperuser());
+                hiddenRoleCheckbox.setModelObject(role.isSuperuser());
             }
-            superuserContainer
-            	.add(superuserCheckbox)
+            hiddenRoleContainer
+            	.add(hiddenRoleCheckbox)
             	.add(new SecurityBehavior(getModuleName() + ":superuserCheckbox"));
             
             final StringBuffer webRoleUuid = new StringBuffer();
@@ -190,7 +190,7 @@ public class CreateOrEditRolePage extends SecureSessionCheckPage {
                         if (role == null) {
                             Role newRole = new Role(rolename.getObject());
                             newRole.setDescription(description.getObject());
-                            newRole.setSuperuser(superuserCheckbox.getModelObject());
+                            newRole.setSuperuser(hiddenRoleCheckbox.getModelObject());
                             newRole.setRoleGroups(groupList);
                             newRole.setWebRole(groupList.contains(webRoleUuid.toString()));
                             newRole.setDicomRole(groupList.contains(dicomRoleUuid.toString()));
@@ -203,7 +203,7 @@ public class CreateOrEditRolePage extends SecureSessionCheckPage {
                             getUpdateInfo(role, groupList, aetGroups);
                             role.setRolename(rolename.getObject());
                             role.setDescription(description.getObject());
-                            role.setSuperuser(superuserCheckbox.getModelObject());
+                            role.setSuperuser(hiddenRoleCheckbox.getModelObject());
                             role.setRoleGroups(groupList);
                             role.setWebRole(groupList.contains(webRoleUuid.toString()));
                             role.setDicomRole(groupList.contains(dicomRoleUuid.toString()));
@@ -230,7 +230,7 @@ public class CreateOrEditRolePage extends SecureSessionCheckPage {
                     StringBuilder sb = new StringBuilder("Role ").append(role).append(" updated.");
                     boolean changed = Auditlog.addChange(sb, false, "rolename", role.getRolename(), rolename.getObject());
                     Auditlog.addChange(sb, changed, "description", role.getDescription(), description.getObject());
-                    Auditlog.addChange(sb, changed, "superuser", role.isSuperuser(), superuserCheckbox.getModelObject());
+                    Auditlog.addChange(sb, changed, "superuser", role.isSuperuser(), hiddenRoleCheckbox.getModelObject());
                     Auditlog.addChange(sb, changed, "WEB role", role.isWebRole(), groupList.contains(webRoleUuid.toString()));
                     Auditlog.addChange(sb, changed, "DICOM role", role.isDicomRole(), groupList.contains(dicomRoleUuid.toString()));
                     Auditlog.addChange(sb, changed, "AET role", role.isAETRole(), groupList.contains(aetRoleUuid.toString()));
