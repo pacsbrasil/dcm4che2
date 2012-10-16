@@ -40,12 +40,15 @@ package org.dcm4chee.web.war;
 
 import java.util.Properties;
 
+import javax.servlet.http.HttpSession;
+
 import org.apache.wicket.markup.html.JavascriptPackageResource;
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.RequestCycle;
 import org.apache.wicket.ajax.AbstractAjaxTimerBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.model.Model;
+import org.apache.wicket.protocol.http.WebRequest;
 import org.apache.wicket.util.time.Duration;
 import org.dcm4chee.dashboard.ui.DashboardPanel;
 import org.dcm4chee.usr.ui.usermanagement.ChangePasswordPanel;
@@ -80,7 +83,6 @@ public class MainPage extends SecureWicketPage {
     
     public MainPage() {
         super();
-        
         if (StudyPermissionHelper.get().isSSO())
             add (new AbstractAjaxTimerBehavior(Duration.milliseconds(1)) {
     
@@ -97,7 +99,33 @@ public class MainPage extends SecureWicketPage {
                     }
                 }
             });
+        HttpSession session = ((WebRequest)getRequest()).getHttpServletRequest().getSession();
+        add (new AbstractAjaxTimerBehavior(Duration.milliseconds((session.getMaxInactiveInterval()+1)*1000)) {
+            
+            private static final long serialVersionUID = 1L;
+            private long lastTime = 0l;
+            @Override
+            protected void onTimer(AjaxRequestTarget arg0) {
+                HttpSession session = ((WebRequest)getRequest()).getHttpServletRequest().getSession();
+                if (log.isDebugEnabled()) {
+                    log.debug("############### Session Timeout checker!");
+                    log.debug("####### session getMaxInactiveInterval:"+session.getMaxInactiveInterval());
+                    log.debug("####### session getLastAccessedTime:"+session.getLastAccessedTime());
+                    log.debug("####### session currentTime:"+System.currentTimeMillis());
+                    log.debug("####### session lastTime:"+lastTime);
+                }
+                if ( session.getLastAccessedTime() < lastTime) {
+                    session.invalidate();
+                } else {
+                    lastTime = System.currentTimeMillis();
+                    long wait = (session.getMaxInactiveInterval()+1) * 1000 - 
+                        lastTime + session.getLastAccessedTime();
+                    this.setUpdateInterval(Duration.milliseconds(wait));
+                }
+            }
+        });
         addModules(getModuleSelectorPanel());
+       
     }
 
     private void addModules(ModuleSelectorPanel selectorPanel) {
