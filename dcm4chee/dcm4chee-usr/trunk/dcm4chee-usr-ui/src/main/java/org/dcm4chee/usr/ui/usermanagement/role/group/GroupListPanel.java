@@ -89,8 +89,6 @@ public class GroupListPanel extends Panel {
 
     private static final long serialVersionUID = 1L;
     
-    private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
-    
     UserAccess userAccess;
     
     private ListModel<Group> allGroups;
@@ -101,9 +99,6 @@ public class GroupListPanel extends Panel {
     
     public GroupListPanel(String id) {
         super(id);
-
-        if (GroupListPanel.BaseCSS != null)
-            add(CSSPackageResource.getHeaderContribution(GroupListPanel.BaseCSS));
 
         winSize = UsrCfgDelegate.getInstance().getWindowSize("editGroup");
         

@@ -63,14 +63,10 @@ import org.dcm4chee.web.common.secure.SecurityBehavior;
  */
 public class DynamicDisplayPage extends SecureWicketPage {
 
-    private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
     private static final ResourceReference DashboardCSS = new CompressedResourceReference(DashboardPanel.class, "dashboard-style.css");
     private static final ResourceReference PrintCSS = new CompressedResourceReference(DashboardPanel.class, "dashboard-print.css");
 
     public DynamicDisplayPage(ReportModel report, Map<String, String> parameters, boolean displayDiagram, boolean displayTable) {
-
-        if (DynamicDisplayPage.BaseCSS != null)
-            add(CSSPackageResource.getHeaderContribution(DynamicDisplayPage.BaseCSS));
         if (DynamicDisplayPage.DashboardCSS != null)
             add(CSSPackageResource.getHeaderContribution(DynamicDisplayPage.DashboardCSS));
         if (DynamicDisplayPage.PrintCSS != null)

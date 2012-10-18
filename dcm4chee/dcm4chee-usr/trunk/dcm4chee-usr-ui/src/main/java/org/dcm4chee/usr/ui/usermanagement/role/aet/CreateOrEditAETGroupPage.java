@@ -70,18 +70,12 @@ public class CreateOrEditAETGroupPage extends SecureSessionCheckPage {
     
     private static final long serialVersionUID = 1L;
 
-    private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
-    
     private static Logger log = LoggerFactory.getLogger(CreateOrEditAETGroupPage.class);
 
     protected ModalWindow window;
    
     public CreateOrEditAETGroupPage(final ModalWindow window, ListModel<AETGroup> allAETGroupnames, AETGroup aetGroup) {
         super();
-        
-        if (CreateOrEditAETGroupPage.BaseCSS != null)
-            add(CSSPackageResource.getHeaderContribution(CreateOrEditAETGroupPage.BaseCSS));
-
         this.window = window;
         add(new CreateOrEditAETGroupForm("add-aet-group-form", allAETGroupnames, aetGroup));
         

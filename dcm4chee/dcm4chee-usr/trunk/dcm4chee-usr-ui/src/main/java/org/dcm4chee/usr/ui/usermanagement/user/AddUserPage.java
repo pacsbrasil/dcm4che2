@@ -75,18 +75,12 @@ public class AddUserPage extends SecureSessionCheckPage {
     
     private static final long serialVersionUID = 1L;
 
-    private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
-    
     private static Logger log = LoggerFactory.getLogger(AddUserPage.class);
 
     protected ModalWindow window;
     
     public AddUserPage(final ModalWindow window, ListModel<User> allUsers) {
         super();
-        
-        if (AddUserPage.BaseCSS != null)
-            add(CSSPackageResource.getHeaderContribution(AddUserPage.BaseCSS));
-
         this.window = window;
         add(new AddUserForm("add-user-form", allUsers));        
     }

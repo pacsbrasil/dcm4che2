@@ -101,8 +101,6 @@ public class RoleListPanel extends Panel {
 
     private static final long serialVersionUID = 1L;
     
-    private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
-    
     UserAccess userAccess;
     
     private ListModel<Role> allRoles;
@@ -121,10 +119,6 @@ public class RoleListPanel extends Panel {
     
     public RoleListPanel(String id) {
         super(id);
-
-        if (RoleListPanel.BaseCSS != null)
-            add(CSSPackageResource.getHeaderContribution(RoleListPanel.BaseCSS));
-
         windowsizeMap.put("editRole", UsrCfgDelegate.getInstance().getWindowSize("editRole"));
         windowsizeMap.put("webPermissions", UsrCfgDelegate.getInstance().getWindowSize("webPermissions"));
         windowsizeMap.put("aetGroupAssignment", UsrCfgDelegate.getInstance().getWindowSize("aetGroupAssignment"));

@@ -44,6 +44,7 @@ import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.IAjaxCallDecorator;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.behavior.AbstractBehavior;
+import org.apache.wicket.behavior.HeaderContributor;
 import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxFallbackLink;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.html.CSSPackageResource;
@@ -59,6 +60,7 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.web.common.ajax.MaskingAjaxCallBehavior;
 import org.dcm4chee.web.common.base.BaseWicketPage;
+import org.dcm4chee.web.common.secure.SecureSessionCheckPage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -92,8 +94,6 @@ public abstract class ConfirmationWindow<T> extends ModalWindow {
     
     public MessageWindowPanel messageWindowPanel;
     
-    private static final ResourceReference baseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
-
     public ConfirmationWindow(String id, String titleResource) {
         this(id);
         setTitle(new ResourceModel(titleResource));
@@ -201,11 +201,19 @@ public abstract class ConfirmationWindow<T> extends ModalWindow {
     public int getState() {
         return state;
     }
+    
+    private HeaderContributor getBaseCSSHeaderContributor() {
+        Page page = this.getPage();
+        if (page instanceof SecureSessionCheckPage) {
+            return ((SecureSessionCheckPage) page).getBaseCSSHeaderContributor();
+        } else {
+            return CSSPackageResource.getHeaderContribution(SecureSessionCheckPage.BASE_CSS);
+        }
+    }
 
     public class ConfirmPage extends WebPage {
         public ConfirmPage() {
-            if (ConfirmationWindow.baseCSS != null)
-                add(CSSPackageResource.getHeaderContribution(ConfirmationWindow.baseCSS));
+            add(getBaseCSSHeaderContributor());
             add(messageWindowPanel);
         }
     }

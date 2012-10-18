@@ -71,18 +71,12 @@ public class CreateOrEditGroupPage extends SecureSessionCheckPage {
     
     private static final long serialVersionUID = 1L;
 
-    private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
-    
     private static Logger log = LoggerFactory.getLogger(CreateOrEditGroupPage.class);
 
     protected ModalWindow window;
    
     public CreateOrEditGroupPage(final ModalWindow window, ListModel<Group> allGroupnames, Group group) {
         super();
-        
-        if (CreateOrEditGroupPage.BaseCSS != null)
-            add(CSSPackageResource.getHeaderContribution(CreateOrEditGroupPage.BaseCSS));
-
         this.window = window;
         add(new CreateOrEditGroupForm("add-group-form", allGroupnames, group));
         

@@ -91,7 +91,6 @@ public class ConfigureReportPage extends SecureSessionCheckPage {
     
     private static Logger log = LoggerFactory.getLogger(ConfigureReportPage.class);
 
-    private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
     private static final ResourceReference DashboardBaseCSS = new CompressedResourceReference(DashboardPanel.class, "dashboard-style.css");
 
     private ReportModel report;
@@ -105,8 +104,6 @@ public class ConfigureReportPage extends SecureSessionCheckPage {
     public ConfigureReportPage(final ModalWindow window, final ReportModel report, boolean diagram, boolean table) {
         super();
 
-        if (ConfigureReportPage.BaseCSS != null)
-            add(CSSPackageResource.getHeaderContribution(ConfigureReportPage.BaseCSS));
         if (ConfigureReportPage.DashboardBaseCSS != null)
             add(CSSPackageResource.getHeaderContribution(ConfigureReportPage.DashboardBaseCSS));
 

@@ -72,18 +72,12 @@ public class ChangePasswordPanel extends Panel {
     
     private static final long serialVersionUID = 1L;
     
-    private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
-
     public ChangePasswordPanel(String id) {
         this(id, ((SecureSession) RequestCycle.get().getSession()).getUsername(), null, null);
     }
 
     public ChangePasswordPanel(String id, String userId, final User forUser, final ModalWindow window) {
         super(id);
-
-        if (ChangePasswordPanel.BaseCSS != null)
-            add(CSSPackageResource.getHeaderContribution(ChangePasswordPanel.BaseCSS));
-
         add(new ChangePasswordForm("change-password-form", userId, forUser, new Model<String>(), new Model<String>(), window));
     }
 
