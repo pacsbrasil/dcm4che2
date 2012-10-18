@@ -95,8 +95,6 @@ public class CreateOrEditAETPage extends SecureSessionCheckPage {
     
     private static final long serialVersionUID = 1L;
 
-    private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
-    
     private MessageWindow msgWin = new MessageWindow("msgWin");
     
     public CreateOrEditAETPage(final ModalWindow window, final AE ae, final AEListPanel panel) {
@@ -104,8 +102,6 @@ public class CreateOrEditAETPage extends SecureSessionCheckPage {
         add(JavascriptPackageResource.getHeaderContribution(BaseWicketPage.class, "web3-utils.js"));
         final String oldType = ae.getAeGroup();
         final String oldTitle = ae.getPk() == -1 ? null : ae.getTitle();
-        if (CreateOrEditAETPage.BaseCSS != null)
-            add(CSSPackageResource.getHeaderContribution(CreateOrEditAETPage.BaseCSS));
         msgWin.setTitle("");
         add(msgWin);
         add(new WebMarkupContainer("create-ae-title").setVisible(ae.getPk() == -1));

@@ -87,8 +87,6 @@ public class EditDicomObjectPanel extends Panel {
 
     private static final long serialVersionUID = 1L;
     
-    private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
-    
     private static ElementDictionary dict = ElementDictionary.getDictionary();
     private final DicomObject dcmObj;
     private final WebMarkupContainer table;
@@ -100,18 +98,12 @@ public class EditDicomObjectPanel extends Panel {
     public EditDicomObjectPanel(String id, final ModalWindow window, DicomObject dcmObj, String attrModelName) {
         super(id);
         editable = new EditableDicomAttributes(attrModelName);
-        
-        if (EditDicomObjectPanel.BaseCSS != null)
-            add(CSSPackageResource.getHeaderContribution(EditDicomObjectPanel.BaseCSS));
-        
         add(mw);
-        
         try {
             add(new Label("title", new ResourceModel("dicom.edit.title."+attrModelName)));    
         } catch (Exception x) {
             add(new Label("title", new Model<String>("DICOM Edit")));
         }
-        
         add(new AjaxCheckBox("allowAll", new PropertyModel<Boolean>(editable, "allowAll")) {
             private static final long serialVersionUID = 1L;
 

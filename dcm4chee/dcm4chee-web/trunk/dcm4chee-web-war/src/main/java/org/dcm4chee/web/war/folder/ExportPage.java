@@ -126,7 +126,6 @@ import org.slf4j.LoggerFactory;
  */
 public class ExportPage extends SecureSessionCheckPage implements CloseRequestSupport {
     
-    private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
     private static final ResourceReference CSS = new CompressedResourceReference(ExportPage.class, "export-style.css");
     
     private static final MetaDataKey<AE> LAST_DESTINATION_AET_ATTRIBUTE = new MetaDataKey<AE>(){
@@ -175,8 +174,6 @@ public class ExportPage extends SecureSessionCheckPage implements CloseRequestSu
         super();        
         
         StudyPermissionHelper studyPermissionHelper = StudyPermissionHelper.get(); 
-        if (ExportPage.BaseCSS != null)
-            add(CSSPackageResource.getHeaderContribution(ExportPage.BaseCSS));
         if (ExportPage.CSS != null)
             add(CSSPackageResource.getHeaderContribution(ExportPage.CSS));
 

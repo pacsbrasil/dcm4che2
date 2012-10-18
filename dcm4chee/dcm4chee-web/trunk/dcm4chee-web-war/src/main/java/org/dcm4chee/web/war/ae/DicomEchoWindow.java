@@ -46,6 +46,7 @@ import org.apache.wicket.Page;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
+import org.apache.wicket.behavior.HeaderContributor;
 import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxButton;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.ComponentTag;
@@ -82,7 +83,6 @@ public class DicomEchoWindow extends ModalWindow {
 
     private static final long serialVersionUID = 1L;
 
-    private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
     private static final ResourceReference CSS = new CompressedResourceReference(DicomEchoWindow.class, "ae-style.css");
     
     private boolean echoOnShow;
@@ -158,7 +158,16 @@ public class DicomEchoWindow extends ModalWindow {
         }
         return false;
     }
-    
+
+    private HeaderContributor getBaseCSSHeaderContributor() {
+        Page page = this.getPage();
+        if (page instanceof SecureSessionCheckPage) {
+            return ((SecureSessionCheckPage) page).getBaseCSSHeaderContributor();
+        } else {
+            return CSSPackageResource.getHeaderContribution(SecureSessionCheckPage.BASE_CSS);
+        }
+    }
+
     public class DicomEchoPage extends SecureSessionCheckPage {
     
         private static final long serialVersionUID = 1L;
@@ -204,9 +213,7 @@ public class DicomEchoWindow extends ModalWindow {
             
         public DicomEchoPage() {
             super();
-            
-            if (DicomEchoWindow.BaseCSS != null)
-                add(CSSPackageResource.getHeaderContribution(DicomEchoWindow.BaseCSS));
+            add(getBaseCSSHeaderContributor());
             if (DicomEchoWindow.CSS != null)
                 add(CSSPackageResource.getHeaderContribution(DicomEchoWindow.CSS));
     

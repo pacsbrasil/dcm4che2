@@ -57,6 +57,7 @@ import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
+import org.apache.wicket.behavior.HeaderContributor;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
@@ -90,6 +91,7 @@ import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.common.markup.DateTimeLabel;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
+import org.dcm4chee.web.common.secure.SecureSessionCheckPage;
 import org.dcm4chee.web.common.webview.link.WebviewerLinkProvider;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
 import org.dcm4chee.web.dao.vo.MppsToMwlLinkResult;
@@ -119,7 +121,6 @@ public class Mpps2MwlLinkPage extends ModalWindow {
     private static final long serialVersionUID = 1L;
     
     private static final long ONE_DAY_IN_MILLIS = 60000*60*24;
-    private static final ResourceReference baseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
     private static final ResourceReference folderCSS = new CompressedResourceReference(Mpps2MwlLinkPage.class, "folder-style.css");
     private static final ResourceReference CSS = new CompressedResourceReference(Mpps2MwlLinkPage.class, "mpps-link-style.css");
     
@@ -325,9 +326,18 @@ public class Mpps2MwlLinkPage extends ModalWindow {
         return true;
     }
 
+    private HeaderContributor getBaseCSSHeaderContributor() {
+        Page page = this.getPage();
+        if (page instanceof SecureSessionCheckPage) {
+            return ((SecureSessionCheckPage) page).getBaseCSSHeaderContributor();
+        } else {
+            return CSSPackageResource.getHeaderContribution(SecureSessionCheckPage.BASE_CSS);
+        }
+    }
+
     public class LinkPage extends WebPage {
         public LinkPage() {
-            add(CSSPackageResource.getHeaderContribution(Mpps2MwlLinkPage.baseCSS));
+            add(getBaseCSSHeaderContributor());
             add(CSSPackageResource.getHeaderContribution(Mpps2MwlLinkPage.folderCSS));
             add(CSSPackageResource.getHeaderContribution(Mpps2MwlLinkPage.CSS));
             add(panel);
