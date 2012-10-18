@@ -39,7 +39,16 @@
 package org.dcm4chee.web.common.secure;
 
 import org.apache.wicket.IPageMap;
+import org.apache.wicket.MetaDataKey;
+import org.apache.wicket.ResourceReference;
+import org.apache.wicket.Session;
+import org.apache.wicket.behavior.HeaderContributor;
+import org.apache.wicket.markup.html.IHeaderContributor;
+import org.apache.wicket.markup.html.IHeaderResponse;
 import org.apache.wicket.markup.html.JavascriptPackageResource;
+import org.apache.wicket.markup.html.resources.CompressedResourceReference;
+import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.Model;
 import org.apache.wicket.security.components.SecureWebPage;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 
@@ -50,6 +59,14 @@ import org.dcm4chee.web.common.base.BaseWicketPage;
  */
 public class SecureSessionCheckPage extends SecureWebPage {
 
+    public static final ResourceReference BASE_CSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
+    public static final ResourceReference BASE_CSS_R = new CompressedResourceReference(BaseWicketPage.class, "base-style-r.css");
+    
+    private static MetaDataKey<Model<ResourceReference>> BASE_CSS_MODEL_MKEY = 
+        new MetaDataKey<Model<ResourceReference>>() {
+            private static final long serialVersionUID = 1L;
+    };
+
     public SecureSessionCheckPage() {
         super();
         init();
@@ -59,8 +76,28 @@ public class SecureSessionCheckPage extends SecureWebPage {
         super(pageMap);
         init();
     }
+
+    public IModel<ResourceReference> getBaseCSSModel() {
+        IModel<ResourceReference> cssModel = Session.get().getMetaData(BASE_CSS_MODEL_MKEY);
+        if (cssModel == null) {
+            cssModel = new Model<ResourceReference>(BASE_CSS);
+            Session.get().setMetaData(BASE_CSS_MODEL_MKEY, cssModel);
+        }
+        return cssModel;
+    }
+    
+    public HeaderContributor getBaseCSSHeaderContributor() {
+        return new HeaderContributor(new IHeaderContributor() {
+                private static final long serialVersionUID = 1L;
+
+                public void renderHead(IHeaderResponse response) {
+                    response.renderCSSReference(getBaseCSSModel().getObject());
+                }
+        });
+    }
     
     private void init() {
+        add(getBaseCSSHeaderContributor());
         add(JavascriptPackageResource.getHeaderContribution(BaseWicketPage.class, "web3-utils.js"));
     }
 }

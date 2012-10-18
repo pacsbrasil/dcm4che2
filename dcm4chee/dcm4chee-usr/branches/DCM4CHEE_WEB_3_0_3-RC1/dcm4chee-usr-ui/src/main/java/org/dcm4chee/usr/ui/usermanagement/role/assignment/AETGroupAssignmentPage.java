@@ -73,17 +73,11 @@ public class AETGroupAssignmentPage extends SecureSessionCheckPage {
 
     private static final long serialVersionUID = 1L;
     
-    private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
-    
     UserAccess userAccess;
     private Role role;
     
     public AETGroupAssignmentPage(final ModalWindow modalWindow, Role role) {
         super();
-
-        if (AETGroupAssignmentPage.BaseCSS != null)
-            add(CSSPackageResource.getHeaderContribution(AETGroupAssignmentPage.BaseCSS));
-
         userAccess = (UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME);        
         this.role = role;
         setOutputMarkupId(true);

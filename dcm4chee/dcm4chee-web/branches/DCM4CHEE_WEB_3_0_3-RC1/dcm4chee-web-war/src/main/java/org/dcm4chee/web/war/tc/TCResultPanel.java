@@ -623,9 +623,6 @@ public class TCResultPanel extends Panel {
         private String issuerOfPatId;
         private StudyListPage studyListPage;
         private ViewPort viewPort;
-
-        private static final ResourceReference BASE_CSS = new CompressedResourceReference(
-                BaseWicketPage.class, "base-style.css");
         private static final ResourceReference CSS = new CompressedResourceReference(
                 StudyListPage.class, "folder-style.css");
         
@@ -662,9 +659,6 @@ public class TCResultPanel extends Panel {
                 
             };
             add(studyListPage);
-            if (BASE_CSS != null) {
-                add(CSSPackageResource.getHeaderContribution(BASE_CSS));
-            }
             if (CSS != null) {
                 add(CSSPackageResource.getHeaderContribution(CSS));
             }

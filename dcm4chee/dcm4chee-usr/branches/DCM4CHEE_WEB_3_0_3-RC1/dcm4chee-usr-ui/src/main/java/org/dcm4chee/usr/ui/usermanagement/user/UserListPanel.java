@@ -87,8 +87,6 @@ public class UserListPanel extends Panel {
 
     private static final long serialVersionUID = 1L;
     
-    private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
-
     private UserAccess userAccess;
     
     private ListModel<User> allUsers;
@@ -104,10 +102,6 @@ public class UserListPanel extends Panel {
 
     public UserListPanel(String id) {
         super(id);
-        
-        if (UserListPanel.BaseCSS != null)
-            add(CSSPackageResource.getHeaderContribution(UserListPanel.BaseCSS));
-
         userAccess = (UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME);
 
         setOutputMarkupId(true);

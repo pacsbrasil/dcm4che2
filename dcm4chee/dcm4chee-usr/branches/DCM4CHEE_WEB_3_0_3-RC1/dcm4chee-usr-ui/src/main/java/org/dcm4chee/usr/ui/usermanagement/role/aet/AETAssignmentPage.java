@@ -73,18 +73,12 @@ public class AETAssignmentPage extends SecureSessionCheckPage {
 
     private static final long serialVersionUID = 1L;
     
-    private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
-    
     UserAccess userAccess;
     private AETGroup aetGroup;
     private Set<String> aets = new LinkedHashSet<String>();
     
     public AETAssignmentPage(final ModalWindow modalWindow, AETGroup aetGroup) {
         super();
-
-        if (AETAssignmentPage.BaseCSS != null)
-            add(CSSPackageResource.getHeaderContribution(AETAssignmentPage.BaseCSS));
-
         userAccess = (UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME);        
         this.aetGroup = aetGroup;
         setOutputMarkupId(true);

@@ -74,17 +74,11 @@ public class RoleAssignmentPage extends SecureSessionCheckPage {
 
     private static final long serialVersionUID = 1L;
     
-    private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
-    
     UserAccess userAccess;
     private User user;
     
     public RoleAssignmentPage(final ModalWindow modalWindow, User user) {
         super();
-
-        if (RoleAssignmentPage.BaseCSS != null)
-            add(CSSPackageResource.getHeaderContribution(RoleAssignmentPage.BaseCSS));
-
         userAccess = (UserAccess) JNDIUtils.lookup(UserAccess.JNDI_NAME);        
         this.user = user;
         setOutputMarkupId(true);

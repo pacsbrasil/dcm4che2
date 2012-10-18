@@ -92,8 +92,6 @@ public class SimpleEditDicomObjectPanel extends Panel {
 
     private static final long serialVersionUID = 1L;
     
-    private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
-    
     private static ElementDictionary dict = ElementDictionary.getDictionary();
     private final DicomObject dcmObj;
     private Map<Integer,Map<String,Object>> presetChoices;
@@ -112,13 +110,8 @@ public class SimpleEditDicomObjectPanel extends Panel {
         super(id);
         this.setOutputMarkupId(true);
         this.useFnGn = useFnGn;
-        if (SimpleEditDicomObjectPanel.BaseCSS != null)
-            add(CSSPackageResource.getHeaderContribution(SimpleEditDicomObjectPanel.BaseCSS));
-        
         window.setCloseButtonCallback(new CloseButtonCallback() {
-
             private static final long serialVersionUID = 1L;
-
             public boolean onCloseButtonClicked(AjaxRequestTarget target) {
                 onClose();
                 return true;

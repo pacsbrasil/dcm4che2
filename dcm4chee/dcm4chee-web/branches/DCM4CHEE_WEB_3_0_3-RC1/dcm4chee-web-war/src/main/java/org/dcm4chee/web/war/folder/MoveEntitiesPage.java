@@ -104,7 +104,6 @@ import org.slf4j.LoggerFactory;
  */
 public class MoveEntitiesPage extends SecureSessionCheckPage {
     
-    private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
     private final static ResourceReference CSS = new CompressedResourceReference(MoveEntitiesPage.class, "move-style.css");
     
     private static Logger log = LoggerFactory.getLogger(MoveEntitiesPage.class);
@@ -156,9 +155,6 @@ public class MoveEntitiesPage extends SecureSessionCheckPage {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public MoveEntitiesPage(ModalWindow window, SelectedEntities selectedEntities, List<PatientModel> all) {
         super();
-        
-        if (MoveEntitiesPage.BaseCSS != null)
-            add(CSSPackageResource.getHeaderContribution(MoveEntitiesPage.BaseCSS));
         if (MoveEntitiesPage.CSS != null)
             add(CSSPackageResource.getHeaderContribution(MoveEntitiesPage.CSS));
 

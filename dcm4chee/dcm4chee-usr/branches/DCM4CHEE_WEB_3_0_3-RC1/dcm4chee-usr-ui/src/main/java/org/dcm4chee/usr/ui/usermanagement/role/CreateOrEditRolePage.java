@@ -81,18 +81,12 @@ public class CreateOrEditRolePage extends SecureSessionCheckPage {
     
     private static final long serialVersionUID = 1L;
 
-    private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
-    
     private static Logger log = LoggerFactory.getLogger(CreateOrEditRolePage.class);
 
     protected ModalWindow window;
 
     public CreateOrEditRolePage(final ModalWindow window, ListModel<Role> allRolenames, Role role, Map<String,Group> types) {
         super();
-        
-        if (CreateOrEditRolePage.BaseCSS != null)
-            add(CSSPackageResource.getHeaderContribution(CreateOrEditRolePage.BaseCSS));
-
         this.window = window;
         add(new CreateOrEditRoleForm("add-role-form", allRolenames, role, types));
         

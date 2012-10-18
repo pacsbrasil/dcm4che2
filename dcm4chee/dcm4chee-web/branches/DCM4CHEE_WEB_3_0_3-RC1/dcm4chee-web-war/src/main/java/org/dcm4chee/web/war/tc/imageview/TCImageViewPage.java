@@ -86,9 +86,6 @@ import org.slf4j.LoggerFactory;
  */
 public class TCImageViewPage extends SecureWebPage 
 {
-    private static final ResourceReference BASE_CSS = new CompressedResourceReference(
-            BaseWicketPage.class, "base-style.css");
-        
     private static final ResourceReference LAYOUT_CSS = new CompressedResourceReference(
             TCPanel.class, "css/tc-layout.css");
     
@@ -127,10 +124,6 @@ public class TCImageViewPage extends SecureWebPage
                     }
                 }
             );
-        }
-        
-        if (BASE_CSS != null) {
-            add(CSSPackageResource.getHeaderContribution(BASE_CSS));
         }
         
         if (LAYOUT_CSS != null) {

@@ -43,6 +43,7 @@ import org.apache.wicket.Page;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
+import org.apache.wicket.behavior.HeaderContributor;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebPage;
@@ -57,6 +58,7 @@ import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.util.string.interpolator.PropertyVariableInterpolator;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.exceptions.WicketExceptionWithMsgKey;
+import org.dcm4chee.web.common.secure.SecureSessionCheckPage;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
@@ -72,7 +74,6 @@ public class MessageWindow extends AutoOpenModalWindow {
     public static final String TITLE_WARNING="msgwindow.title.warn";
     public static final String TITLE_ERROR="msgwindow.title.error";
     
-    private static final ResourceReference baseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
     private IModel<String> msgModel;
     private IModel<String> colorModel = new Model<String>("");
 
@@ -190,13 +191,21 @@ public class MessageWindow extends AutoOpenModalWindow {
         this.setErrorMessage(x, useCauseAsDetail);
         show(target);
     }
+    private HeaderContributor getBaseCSSHeaderContributor() {
+        Page page = this.getPage();
+        if (page instanceof SecureSessionCheckPage) {
+            return ((SecureSessionCheckPage) page).getBaseCSSHeaderContributor();
+        } else {
+            return CSSPackageResource.getHeaderContribution(SecureSessionCheckPage.BASE_CSS);
+        }
+    }
+
 
     public class MessagePage extends WebPage {
         private static final long serialVersionUID = 0L;
 
         public MessagePage() {
-            if (MessageWindow.baseCSS != null)
-                add(CSSPackageResource.getHeaderContribution(MessageWindow.baseCSS));
+            add(getBaseCSSHeaderContributor());
             add(new Label("msg", new AbstractReadOnlyModel<String>(){
 
                 private static final long serialVersionUID = 1L;

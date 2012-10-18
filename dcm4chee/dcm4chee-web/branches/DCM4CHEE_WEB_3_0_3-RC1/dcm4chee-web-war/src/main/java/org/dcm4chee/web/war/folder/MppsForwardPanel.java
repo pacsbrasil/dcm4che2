@@ -75,9 +75,8 @@ public class MppsForwardPanel extends Panel {
 
     private static final long serialVersionUID = 1L;
     
-	private static Logger log = LoggerFactory.getLogger(MppsForwardPanel.class);
+    private static Logger log = LoggerFactory.getLogger(MppsForwardPanel.class);
 	
-    private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
     private static final ResourceReference CSS = new CompressedResourceReference(ExportPage.class, "export-style.css");
 
     private AE destinationAET;
@@ -123,9 +122,6 @@ public class MppsForwardPanel extends Panel {
 
     public MppsForwardPanel(String id, final ModalWindow modalWindow, final PPSModel ppsModel) {
     	super(id);
-
-        if (MppsForwardPanel.BaseCSS != null)
-            add(CSSPackageResource.getHeaderContribution(MppsForwardPanel.BaseCSS));
         if (MppsForwardPanel.CSS != null)
             add(CSSPackageResource.getHeaderContribution(MppsForwardPanel.CSS));
 

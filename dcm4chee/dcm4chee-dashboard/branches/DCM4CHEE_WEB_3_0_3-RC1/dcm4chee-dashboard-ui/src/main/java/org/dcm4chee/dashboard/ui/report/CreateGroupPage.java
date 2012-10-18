@@ -66,18 +66,12 @@ public class CreateGroupPage extends SecureSessionCheckPage {
     
     private static final long serialVersionUID = 1L;
 
-    private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
-    
     private static Logger log = LoggerFactory.getLogger(CreateGroupPage.class);
 
     protected ModalWindow window;
 
     public CreateGroupPage(final ModalWindow window) {
         super();
-        
-        if (CreateGroupPage.BaseCSS != null)
-            add(CSSPackageResource.getHeaderContribution(CreateGroupPage.BaseCSS));
-
         this.window = window;
         add(new AddGroupForm("add-group-form"));        
     }

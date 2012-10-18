@@ -90,8 +90,6 @@ public class StudyPermissionsPage extends SecureSessionCheckPage {
     
     private static final long serialVersionUID = 1L;
 
-    private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
-    
     private static Logger log = LoggerFactory.getLogger(StudyPermissionsPage.class);
 
     private PatientModel patModel;
@@ -106,12 +104,7 @@ public class StudyPermissionsPage extends SecureSessionCheckPage {
     
     public StudyPermissionsPage(AbstractEditableDicomModel model) {
         super();
-        
-        if (StudyPermissionsPage.BaseCSS != null)
-            add(CSSPackageResource.getHeaderContribution(StudyPermissionsPage.BaseCSS));
-
         setOutputMarkupId(true);
-
         try {
             List<?> servers = MBeanServerFactory.findMBeanServer(null);
             MBeanServerConnection server = null;
@@ -337,12 +330,8 @@ public class StudyPermissionsPage extends SecureSessionCheckPage {
     
     public class ConfirmationWrapperPage extends WebPage {
         
-        private final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
-
         public ConfirmationWrapperPage(ConfirmationWindow<?> confirmationWindow) {
-            if (BaseCSS != null)
-                add(CSSPackageResource.getHeaderContribution(BaseCSS));
-
+            add(StudyPermissionsPage.this.getBaseCSSHeaderContributor());
             add(confirmationWindow.getMessageWindowPanel());
         }
     }

@@ -89,8 +89,6 @@ public class InstanceViewPage extends SecureSessionCheckPage {
     
     private static final long serialVersionUID = 1L;
 
-    private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
-    
     private InstanceModel instanceModel;
     private int wadoRenderType;
     
@@ -103,8 +101,6 @@ public class InstanceViewPage extends SecureSessionCheckPage {
     public InstanceViewPage(ModalWindow modalWindow, InstanceModel instanceModel) {
         this.instanceModel = instanceModel;
         height = modalWindow.getInitialHeight()-100;
-        if (InstanceViewPage.BaseCSS != null)
-            add(CSSPackageResource.getHeaderContribution(InstanceViewPage.BaseCSS));
         add(new Label("info", new StringResourceModel("folder.instanceview.info", this, null, getInfoParams(), null )));
         wadoRenderType = WADODelegate.getInstance().getRenderType(instanceModel.getSopClassUID());
         if (wadoRenderType == WADODelegate.IMAGE) {

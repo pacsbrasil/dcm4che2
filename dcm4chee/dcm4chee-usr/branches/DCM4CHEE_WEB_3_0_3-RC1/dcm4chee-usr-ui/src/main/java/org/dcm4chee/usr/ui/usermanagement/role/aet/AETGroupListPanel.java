@@ -102,8 +102,6 @@ public class AETGroupListPanel extends Panel {
 
     private static final long serialVersionUID = 1L;
     
-    private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
-    
     UserAccess userAccess;
     
     private ListModel<AETGroup> allAETGroups = new ListModel<AETGroup>();
@@ -115,10 +113,6 @@ public class AETGroupListPanel extends Panel {
     
     public AETGroupListPanel(String id) {
         super(id);
-
-        if (AETGroupListPanel.BaseCSS != null)
-            add(CSSPackageResource.getHeaderContribution(AETGroupListPanel.BaseCSS));
-
         windowsizeMap.put("editAETGroup", UsrCfgDelegate.getInstance().getWindowSize("editAETGroup"));
         windowsizeMap.put("aetAssignment", UsrCfgDelegate.getInstance().getWindowSize("aetAssignment"));
         

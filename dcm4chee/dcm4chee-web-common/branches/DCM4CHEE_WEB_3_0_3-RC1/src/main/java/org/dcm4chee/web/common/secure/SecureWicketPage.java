@@ -57,8 +57,6 @@ import org.dcm4chee.web.common.base.ModuleSelectorPanel;
  */
 public class SecureWicketPage extends SecureSessionCheckPage {
 
-    private static final ResourceReference CSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
-    
     private ModuleSelectorPanel selectorPanel;
     
     public SecureWicketPage() {
@@ -72,10 +70,6 @@ public class SecureWicketPage extends SecureSessionCheckPage {
     }
     
     private void initLayout() {
-
-        if ( SecureWicketPage.CSS != null)
-            add(CSSPackageResource.getHeaderContribution(SecureWicketPage.CSS));
-
         add( new Label("app_browser_title", new AbstractReadOnlyModel<Object>() {
 
             private static final long serialVersionUID = 1L;
@@ -86,7 +80,7 @@ public class SecureWicketPage extends SecureSessionCheckPage {
             }
         } ));
 
-        add(selectorPanel = new ModuleSelectorPanel("modules"));
+        add(selectorPanel = new ModuleSelectorPanel("modules", getBaseCSSModel()));
     }
 
     public ModuleSelectorPanel getModuleSelectorPanel() {

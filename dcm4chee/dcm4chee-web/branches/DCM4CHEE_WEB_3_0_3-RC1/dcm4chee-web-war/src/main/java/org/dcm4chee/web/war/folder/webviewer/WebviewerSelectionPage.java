@@ -38,22 +38,17 @@
 
 package org.dcm4chee.web.war.folder.webviewer;
 
-import org.apache.wicket.Component;
 import org.apache.wicket.PageMap;
-import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxEventBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
-import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
-import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.ExternalLink;
 import org.apache.wicket.markup.html.link.PopupSettings;
-import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.markup.repeater.RepeatingView;
 import org.apache.wicket.model.ResourceModel;
-import org.dcm4chee.web.common.base.BaseWicketPage;
+import org.dcm4chee.web.common.secure.SecureSessionCheckPage;
 import org.dcm4chee.web.common.webview.link.WebviewerLinkProvider;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 
@@ -85,6 +80,8 @@ public class WebviewerSelectionPage extends WebPage {
                         PopupSettings.RESIZABLE|PopupSettings.SCROLLBARS));
                 if (modalWindow != null) {
                     link.add(new AjaxEventBehavior("onclick") {
+                        private static final long serialVersionUID = 1L;
+
                         @Override
                         protected void onEvent(AjaxRequestTarget target)
                         {
