@@ -50,6 +50,7 @@ import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.dict.Tags;
+import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.BaseJmsOrder;
 import org.dcm4chex.archive.common.FileStatus;
 import org.dcm4chex.archive.common.JmsOrderProperties;
@@ -116,7 +117,8 @@ public class FileCopyOrder extends BaseJmsOrder {
                     } else {
                         log.info("Copy has file status "+FileStatus.toString(fi.status)+"! Retry copy!");
                     }
-                } else if (isLocalRetrieveAET(fi.fileRetrieveAET)) {
+                } else if (fi.availability == Availability.ONLINE && isLocalRetrieveAET(fi.fileRetrieveAET) &&
+                        !fi.basedir.startsWith("tar:")) {
                     fi2Copy.put(fi.md5, fi);
                 }
             }
