@@ -40,6 +40,7 @@
 package org.dcm4chex.archive.ejb.entity;
 
 import java.sql.Timestamp;
+import java.util.StringTokenizer;
 
 import javax.ejb.CreateException;
 import javax.ejb.EntityBean;
@@ -220,21 +221,15 @@ public abstract class StudyOnFileSystemBean implements EntityBean {
         }
         int count;
         if (copyOnFSGroup != null) {
-            if (copyArchived) {
-                if (copyOnReadOnlyFS) {
-                    count = ejbSelectNumberOfStudyRelatedInstancesOnFSWithGroupIdAndStatusAndFileStatus(
-                            study, copyOnFSGroup, FileSystemStatus.RO, FileStatus.ARCHIVED);
-                } else {
-                    count = ejbSelectNumberOfStudyRelatedInstancesOnFSWithGroupIdAndFileStatus(
-                            study, copyOnFSGroup, FileStatus.ARCHIVED);
-                }
-            } else {
-                if (copyOnReadOnlyFS) {
-                    count = ejbSelectNumberOfStudyRelatedInstancesOnFSWithGroupIdAndStatus(
-                            study, copyOnFSGroup, FileSystemStatus.RO);
-                } else {
-                    count = ejbSelectNumberOfStudyRelatedInstancesOnFSWithGroupId(
-                            study, copyOnFSGroup);
+            String grp;
+            int c1;
+            count = -1;
+            for (StringTokenizer st = new StringTokenizer(copyOnFSGroup, "&") ; st.hasMoreElements() ;) {
+                c1 = checkCopyOnFSGroup(st.nextToken(), copyArchived, copyOnReadOnlyFS, study);
+                if (count == -1) {
+                    count = c1;
+                } else if (c1 != count) {
+                    return false;
                 }
             }
         } else {
@@ -256,6 +251,29 @@ public abstract class StudyOnFileSystemBean implements EntityBean {
             }
         }
         return count == study.getNumberOfStudyRelatedInstances();
+    }
+
+    private int checkCopyOnFSGroup(String copyOnFSGroup, boolean copyArchived,
+            boolean copyOnReadOnlyFS, StudyLocal study) throws FinderException {
+        int count;
+        if (copyArchived) {
+            if (copyOnReadOnlyFS) {
+                count = ejbSelectNumberOfStudyRelatedInstancesOnFSWithGroupIdAndStatusAndFileStatus(
+                        study, copyOnFSGroup, FileSystemStatus.RO, FileStatus.ARCHIVED);
+            } else {
+                count = ejbSelectNumberOfStudyRelatedInstancesOnFSWithGroupIdAndFileStatus(
+                        study, copyOnFSGroup, FileStatus.ARCHIVED);
+            }
+        } else {
+            if (copyOnReadOnlyFS) {
+                count = ejbSelectNumberOfStudyRelatedInstancesOnFSWithGroupIdAndStatus(
+                        study, copyOnFSGroup, FileSystemStatus.RO);
+            } else {
+                count = ejbSelectNumberOfStudyRelatedInstancesOnFSWithGroupId(
+                        study, copyOnFSGroup);
+            }
+        }
+        return count;
     }
 
     /**
