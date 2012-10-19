@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.StringTokenizer;
 
 import javax.management.Attribute;
 import javax.management.Notification;
@@ -50,6 +51,7 @@ import javax.management.ObjectName;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
+import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.DeleteStudyOrder;
 import org.dcm4chex.archive.common.DeleteStudyOrdersAndMaxAccessTime;
@@ -78,6 +80,8 @@ public abstract class AbstractDeleterService extends ServiceMBeanSupport {
     protected static final String NONE = "NONE";
 
     protected static final String AUTO = "AUTO";
+    
+    protected static final String NEW_LINE = System.getProperty("line.separator", "\n");
 
     private final FindScuDelegate findScu = new FindScuDelegate(this);
 
@@ -102,7 +106,7 @@ public abstract class AbstractDeleterService extends ServiceMBeanSupport {
 
     private boolean copyOnMedia;
 
-    private String copyOnFSGroup;
+    private String[] copyOnFSGroup;
 
     private boolean copyArchived;
 
@@ -333,7 +337,15 @@ public abstract class AbstractDeleterService extends ServiceMBeanSupport {
     }
 
     public String getDeleteStudyOnlyIfCopyOnFileSystemOfFileSystemGroup() {
-        return copyOnFSGroup != null ? copyOnFSGroup : NONE;
+        if (copyOnFSGroup == null) {
+            return NONE;
+        } else {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0 ; i < copyOnFSGroup.length ; i++) {
+                sb.append(copyOnFSGroup[i]).append(NEW_LINE);
+            }
+            return sb.toString();
+        }
     }
 
     public void setDeleteStudyOnlyIfCopyOnFileSystemOfFileSystemGroup(
@@ -344,7 +356,16 @@ public abstract class AbstractDeleterService extends ServiceMBeanSupport {
             throw new IllegalArgumentException(
                     "Must differ from file system group managed by this service");
         }
-        this.copyOnFSGroup = trimmed.equalsIgnoreCase(NONE) ? null : trimmed;
+        if (trimmed.equalsIgnoreCase(NONE)) {
+            this.copyOnFSGroup =  null;
+        } else {
+            StringTokenizer st = new StringTokenizer(trimmed, " \t\r\n;");
+            this.copyOnFSGroup = new String[st.countTokens()];
+            for (int i = 0 ; st.hasMoreTokens() ; i++) {
+                this.copyOnFSGroup[i] = st.nextToken();
+            }
+        }
+
     }
 
     public boolean isDeleteStudyOnlyIfCopyArchived() {
@@ -434,6 +455,7 @@ public abstract class AbstractDeleterService extends ServiceMBeanSupport {
         int countStudies = 0;
         long minAccessTime = 0;
         long sizeToDel = sizeToDel0;
+        String copyOnFSGroupString = StringUtils.toString(copyOnFSGroup, '&');
         do {
             DeleteStudyOrdersAndMaxAccessTime deleteOrdersAndAccessTime = 
                     fsMgt.createDeleteOrdersForStudiesOnFSGroup(
@@ -441,7 +463,7 @@ public abstract class AbstractDeleterService extends ServiceMBeanSupport {
                             notAccessedAfter,
                             scheduleStudiesForDeletionBatchSize,
                             externalRetrievable, storageNotCommited,
-                            copyOnMedia, copyOnFSGroup, copyArchived,
+                            copyOnMedia, copyOnFSGroupString, copyArchived,
                             copyOnReadOnlyFS);
             if (deleteOrdersAndAccessTime == null) {
                 if (sizeToDel0 != Long.MAX_VALUE) {
