@@ -444,7 +444,9 @@
       stored on a file system of the specified different file system group to
       become a candidate for deletion from file systems of the file system
       group managed by this service triggered by running out of disk space or
-      being not accessed longer than configured <i>DeleteStudiesNotAccessedFor</i>.
+      being not accessed longer than configured <i>DeleteStudiesNotAccessedFor</i>.<br/>
+      Several Filesystem groups can be configured by seperating group names by &lt;newline&gt;.<br />
+      In this case a copy must exist on all given filesystems.<br />
       "NONE" = no such constraint.]]>
     </description>
     <name>DeleteStudyOnlyIfCopyOnFileSystemOfFileSystemGroup</name>
