@@ -749,7 +749,10 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
                 return mwlItemModel.isDetails();
             }
         };
-        item.add((details).add(new DicomObjectPanel("dicomobject", mwlItemModel.getDataset(), false)));
+        DicomObject detailAttrs = new BasicDicomObject();
+        mwlItemModel.getDataset().copyTo(detailAttrs);
+        mwlItemModel.getPatientAttributes().copyTo(detailAttrs);
+        item.add(details.add(new DicomObjectPanel("dicomobject", detailAttrs, false)));
 
         int[] winSize = WebCfgDelegate.getInstance().getWindowSize("mwEdit");
         valueContainer.add(new AjaxFallbackLink<Object>("toggledetails") {
