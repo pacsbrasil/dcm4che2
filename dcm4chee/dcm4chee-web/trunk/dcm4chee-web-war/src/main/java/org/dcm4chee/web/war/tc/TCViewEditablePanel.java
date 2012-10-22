@@ -1,6 +1,7 @@
 package org.dcm4chee.web.war.tc;
 
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.IAjaxCallDecorator;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.image.Image;
@@ -29,6 +30,15 @@ public abstract class TCViewEditablePanel extends TCViewPanel
             public void onClick(AjaxRequestTarget target)
             {
                 onClose(target, true);
+            }
+            @Override
+            protected IAjaxCallDecorator getAjaxCallDecorator() {
+                try {
+                    return TCPanel.getMaskingBehaviour().getAjaxCallDecorator();
+                } catch (Exception e) {
+                    log.error("Failed to get IAjaxCallDecorator: ", e);
+                }
+                return null;
             }
         }
         .add(new Image("tc-view-ok-img", ImageManager.IMAGE_TC_ACKNOWLEDGE)
