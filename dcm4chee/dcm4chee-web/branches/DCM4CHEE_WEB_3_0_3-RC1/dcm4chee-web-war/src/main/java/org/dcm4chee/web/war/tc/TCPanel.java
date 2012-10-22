@@ -182,7 +182,7 @@ public class TCPanel extends Panel {
                     detailsPanel.clearTCObject(true);
                 }
 
-                return new Component[] { detailsPanel, listPanel };
+                return new Component[] {detailsPanel, listPanel};
             }
             
             @Override
@@ -197,37 +197,34 @@ public class TCPanel extends Panel {
 				private static final long serialVersionUID = 1L;
 
 				@Override
-                                protected void onClose(AjaxRequestTarget target, boolean save)
-                                {
-									if (viewDialog.isShown())
-									{
-	                                    viewDialog.close(target);
-	                                    
-	                                    if (save)
-	                                    {
-	                                        try
-	                                        {
-	                                            TCStoreDelegate storeDelegate = TCStoreDelegate.getInstance();
-	                                            
-	                                            //store new SR
-	                                            DicomObject dataset = model.getObject().toDataset();
-	                                            if (storeDelegate.storeImmediately(dataset))
-	                                            {
-	                                                //delete old SR
-	                                                storeDelegate.store(model.getObject().toRejectionNoteDataset());
-	                                            
-	                                                //trigger new search and select new SR
-	                                                listModel.addToFilter(tc);
-	                                                searchPanel.redoSearch(target, dataset.getString(Tag.SOPInstanceUID));
-	                                            }
-	                                        }
-	                                        catch (Exception e)
-	                                        {
-	                                            log.error("Saving teaching-file failed!", e);
-	                                        }
-	                                    }
-									}
-                                }
+				protected void onClose(AjaxRequestTarget target, boolean save)
+				{
+				    viewDialog.close(target);
+
+				    if (save)
+				    {
+				        try
+				        {
+				            TCStoreDelegate storeDelegate = TCStoreDelegate.getInstance();
+
+				            //store new SR
+				            DicomObject dataset = model.getObject().toDataset();
+				            if (storeDelegate.storeImmediately(dataset))
+				            {
+				                //delete old SR
+				                storeDelegate.store(model.getObject().toRejectionNoteDataset());
+
+				                //trigger new search and select new SR
+				                listModel.addToFilter(tc);
+				                searchPanel.redoSearch(target, dataset.getString(Tag.SOPInstanceUID));
+				            }
+				        }
+				        catch (Exception e)
+				        {
+				            log.error("Saving teaching-file failed!", e);
+				        }
+				    }
+				}
                             };
 
                     viewDialog.setContent(viewPanel);
