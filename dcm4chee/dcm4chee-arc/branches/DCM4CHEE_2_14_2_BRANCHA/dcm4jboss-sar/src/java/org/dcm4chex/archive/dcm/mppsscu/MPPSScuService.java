@@ -168,6 +168,7 @@ public class MPPSScuService extends AbstractScuService implements
         Map param = new HashMap();
         param.put("calling", new String[] { 
                 mpps.getString(PrivateTags.CallingAET) });
+        mpps.setPrivateCreatorID(null);
         String[] destAETs = forwardingRules
                 .getForwardDestinationsFor(param);
         for (int i = 0; i < destAETs.length; i++) {

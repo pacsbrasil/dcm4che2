@@ -497,6 +497,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 ds.setPrivateCreatorID(PrivateTags.CreatorID);
                 ds.putAE(PrivateTags.CallingAET, callingAET);
                 ds.putAE(PrivateTags.CalledAET, assoc.getCalledAET());
+                ds.setPrivateCreatorID(null);
                 if (coerced != null) {
                     service.coerceAttributes(ds, coerced);
                 }
@@ -559,6 +560,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     String tsuid = ds.getString(
                             PrivateTags.Dcm4cheURIReferencedTransferSyntaxUID,
                             UIDs.ImplicitVRLittleEndian);
+                    ds.setPrivateCreatorID(null);
                     ds.setFileMetaInfo(objFact.newFileMetaInfo(rqCmd
                             .getAffectedSOPClassUID(), rqCmd
                             .getAffectedSOPInstanceUID(), tsuid));
@@ -596,11 +598,12 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 }
                 return;
             }
-            ds.setPrivateCreatorID(PrivateTags.CreatorID);
             ds.putAE(Tags.RetrieveAET, fsDTO.getRetrieveAET());
-            if ( ! coerceBeforeWrite ) {
+            if ( !coerceBeforeWrite ) {
+                ds.setPrivateCreatorID(PrivateTags.CreatorID);
                 ds.putAE(PrivateTags.CallingAET, callingAET);
                 ds.putAE(PrivateTags.CalledAET, assoc.getCalledAET());
+                ds.setPrivateCreatorID(null);
                 if (coerced != null) {
                     service.coerceAttributes(ds, coerced);
                 }
