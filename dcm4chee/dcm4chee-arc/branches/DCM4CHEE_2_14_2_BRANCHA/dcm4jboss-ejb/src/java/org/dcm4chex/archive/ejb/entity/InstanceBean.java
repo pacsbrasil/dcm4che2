@@ -592,6 +592,7 @@ public abstract class InstanceBean implements EntityBean {
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
             ds.putOB(PrivateTags.InstancePk, Convert.toBytes(getPk()
                     .longValue()));
+            ds.setPrivateCreatorID(null);
             MediaLocal media = getMedia();
             if (media != null && media.getMediaStatus() == MediaDTO.COMPLETED) {
                 ds.putSH(Tags.StorageMediaFileSetID, media.getFilesetId());

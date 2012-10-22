@@ -446,6 +446,7 @@ public abstract class ContentManagerBean implements SessionBean {
             ds = study.getAttributes();
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
             ds.putOB(PrivateTags.StudyPk, Convert.toBytes(study.getPk().longValue()) );
+            ds.setPrivateCreatorID(null);
         	result.add(ds);
         }
         return result;
@@ -468,6 +469,7 @@ public abstract class ContentManagerBean implements SessionBean {
             ds = series.getAttributes();
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
             ds.putOB(PrivateTags.SeriesPk, Convert.toBytes(series.getPk().longValue()) );
+            ds.setPrivateCreatorID(null);
             refPPS = ds.getItem(Tags.RefPPSSeq);
             if ( refPPS != null) {
             	ppsUID = refPPS.getString(Tags.RefSOPInstanceUID);
@@ -497,6 +499,7 @@ public abstract class ContentManagerBean implements SessionBean {
         	ds = inst.getAttributes();
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
             ds.putOB(PrivateTags.InstancePk, Convert.toBytes(inst.getPk().longValue()) );
+            ds.setPrivateCreatorID(null);
         	result.add(ds);
         }
         return result;

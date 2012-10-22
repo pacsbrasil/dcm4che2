@@ -621,6 +621,7 @@ public abstract class PatientBean implements EntityBean {
         if (supplement) {
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
             ds.putOB(PrivateTags.PatientPk, Convert.toBytes(getPk().longValue()));
+            ds.setPrivateCreatorID(null);
         }
         return ds;
     }

@@ -867,6 +867,7 @@ public abstract class StudyBean implements EntityBean {
         if (supplement) {
             ds.setPrivateCreatorID(PrivateTags.CreatorID);
             ds.putOB(PrivateTags.StudyPk, Convert.toBytes(getPk().longValue()));
+            ds.setPrivateCreatorID(null);
             ds.putCS(Tags.ModalitiesInStudy, StringUtils.split(
                     getModalitiesInStudy(), '\\'));
             ds.putIS(Tags.NumberOfStudyRelatedSeries,

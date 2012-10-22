@@ -135,6 +135,7 @@ public abstract class PrivateSeriesBean implements EntityBean {
         Dataset ds = DatasetUtils.fromByteArray(getEncodedAttributes());
         ds.setPrivateCreatorID(PrivateTags.CreatorID);
         ds.putAE(PrivateTags.CallingAET, getSourceAET());
+        ds.setPrivateCreatorID(null);
         return ds;
     }
 
@@ -145,6 +146,7 @@ public abstract class PrivateSeriesBean implements EntityBean {
     	setSeriesIuid(ds.getString(Tags.SeriesInstanceUID));
         ds.setPrivateCreatorID(PrivateTags.CreatorID);
         setSourceAET( ds.getString(PrivateTags.CallingAET) );
+        ds.setPrivateCreatorID(null);
         Dataset tmp = ds.excludePrivate();
         setEncodedAttributes(DatasetUtils.toByteArray(tmp));
     }
