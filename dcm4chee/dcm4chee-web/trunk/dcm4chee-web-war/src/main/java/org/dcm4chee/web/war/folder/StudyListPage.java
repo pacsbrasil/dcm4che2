@@ -2964,7 +2964,7 @@ public class StudyListPage extends Panel {
     }
     
     private boolean checkExists(AbstractDicomModel m, AjaxRequestTarget target) {
-        if (dao.exists(m.getPk(), m.levelOfModel()))
+        if (m.getPk() == -1 || dao.exists(m.getPk(), m.levelOfModel()))
             return true;
         msgWin.show(target, new ResourceModel("folder.message.doesntExist").wrapOnAssignment(StudyListPage.this));
         AbstractDicomModel p = m.getParent();
