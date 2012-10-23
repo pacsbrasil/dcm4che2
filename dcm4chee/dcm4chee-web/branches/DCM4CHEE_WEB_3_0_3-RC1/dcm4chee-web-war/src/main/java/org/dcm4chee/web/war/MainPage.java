@@ -42,7 +42,6 @@ import java.util.Properties;
 
 import javax.servlet.http.HttpSession;
 
-import org.apache.wicket.markup.html.JavascriptPackageResource;
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.RequestCycle;
 import org.apache.wicket.ajax.AbstractAjaxTimerBehavior;
@@ -55,7 +54,6 @@ import org.dcm4chee.usr.ui.usermanagement.ChangePasswordPanel;
 import org.dcm4chee.usr.ui.usermanagement.role.RolePanel;
 import org.dcm4chee.usr.ui.usermanagement.user.UserListPanel;
 import org.dcm4chee.web.common.base.BaseWicketApplication;
-import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.base.ExternalWebApp;
 import org.dcm4chee.web.common.base.ExternalWebApplications;
 import org.dcm4chee.web.common.base.ModuleSelectorPanel;
