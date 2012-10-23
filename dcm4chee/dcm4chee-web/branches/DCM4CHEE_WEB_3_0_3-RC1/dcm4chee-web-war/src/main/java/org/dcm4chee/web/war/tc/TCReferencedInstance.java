@@ -11,14 +11,18 @@ import org.dcm4chee.web.war.folder.delegate.WADODelegate;
  */
 public class TCReferencedInstance implements Serializable {
 
-    private TCReferencedSeries series;
+	private static final long serialVersionUID = -4595238153105340245L;
+	
+	private TCReferencedSeries series;
     private String iuid;
     private String cuid;
+    private int instanceNumber;
 
-    public TCReferencedInstance(TCReferencedSeries series, String iuid, String cuid) {
+    public TCReferencedInstance(TCReferencedSeries series, String iuid, String cuid, int instanceNumber) {
         this.iuid = iuid;
         this.cuid = cuid;
         this.series = series;
+        this.instanceNumber = instanceNumber;
     }
 
     public TCReferencedSeries getSeries()
@@ -46,6 +50,11 @@ public class TCReferencedInstance implements Serializable {
     	return isImage(cuid);
     }
 
+    public int getInstanceNumber()
+    {
+    	return instanceNumber;
+    }
+    
     public static boolean isImage(String cuid) {
         return WADODelegate.IMAGE == WADODelegate.getInstance()
                 .getRenderType(cuid);

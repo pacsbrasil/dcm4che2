@@ -407,9 +407,13 @@ public class TCObject implements Serializable {
                                         .countItems() : -1;
                                 
                                 if (instanceCount > 0) {
-                                    study.addSeries(series);
+                                    TCQueryLocal ejb = (TCQueryLocal) JNDIUtils
+                                            .lookup(TCQueryLocal.JNDI_NAME);
                                     
+                                    study.addSeries(series);
+
                                     Map<String, TCReferencedImage> images = null;
+                                    Map<String, Integer> instanceNumbers = ejb.getInstanceNumbers(suid);
                                     
                                     for (int k = 0; k < instanceCount; k++) {
                                         DicomObject instanceRef = instanceSeq
@@ -418,10 +422,12 @@ public class TCObject implements Serializable {
                                                 .getString(Tag.ReferencedSOPInstanceUID);
                                         String cuid = instanceRef
                                                 .getString(Tag.ReferencedSOPClassUID);
+                                        Integer instanceNumber = instanceNumbers.get(iuid);
                                         
                                         if (TCReferencedInstance.isImage(cuid))
                                         {
-                                        	TCReferencedImage image = new TCReferencedImage(series, iuid, cuid);
+                                        	TCReferencedImage image = new TCReferencedImage(series, iuid, cuid,
+                                        			instanceNumber!=null?instanceNumber:-1);
                                         	series.addInstance(image);
                                         	
                                         	if (images==null)
@@ -434,14 +440,13 @@ public class TCObject implements Serializable {
                                         else
                                         {
                                         	series.addInstance(
-                                                new TCReferencedInstance(series, iuid, cuid));
+                                                new TCReferencedInstance(series, iuid, cuid, 
+                                                		instanceNumber!=null?instanceNumber:-1));
                                         }
                                     }
                                     
                                     if (images!=null && !images.isEmpty())
                                     {
-                                        TCQueryLocal ejb = (TCQueryLocal) JNDIUtils
-                                                .lookup(TCQueryLocal.JNDI_NAME);
                                         Map<String, Integer> frames = ejb.findMultiframeInstances(
                                         		stuid, suid, images.keySet().toArray(new String[0]));
                                         
@@ -455,7 +460,8 @@ public class TCObject implements Serializable {
                                         		for (int n=1; n<=me.getValue(); n++)
                                         		{
                                         			series.addInstance(new TCReferencedImage(
-                                        					series, image.getInstanceUID(), image.getClassUID(), n));
+                                        					series, image.getInstanceUID(), image.getClassUID(), 
+                                        					image.getInstanceNumber(), n));
                                         		}
                                         	}
                                         }

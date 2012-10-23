@@ -287,7 +287,36 @@ public class TCQueryBean implements TCQueryLocal {
         return (Instance) q.getSingleResult();
     }
     
-    
+    @SuppressWarnings({ "unchecked" })
+	public Map<String, Integer> getInstanceNumbers(String suid)
+    {
+    	if (suid!=null)
+    	{
+	    	Query q = em.createQuery("FROM Instance i WHERE i.series.seriesInstanceUID=:suid");
+	    	q.setParameter("suid", suid);
+	    	List<Instance> instances = q.getResultList();
+	    	if (instances!=null && !instances.isEmpty())
+	    	{
+	    		Map<String, Integer> map = new HashMap<String, Integer>();
+	    		for (Instance i : instances)
+	    		{
+	    			try
+	    			{
+		    			String instanceNumber = i.getInstanceNumber();
+		    			map.put(i.getSOPInstanceUID(), Integer.valueOf(instanceNumber));
+	    			}
+	    			catch (Exception e)
+	    			{
+	    				map.put(i.getSOPInstanceUID(), null);
+	    			}
+	    		}
+	    		return map;
+	    	}
+    	}
+    	
+    	return Collections.emptyMap();
+    }
+        
     @SuppressWarnings("unchecked")
 	public Map<String, Integer> findMultiframeInstances(String stuid)
     {
