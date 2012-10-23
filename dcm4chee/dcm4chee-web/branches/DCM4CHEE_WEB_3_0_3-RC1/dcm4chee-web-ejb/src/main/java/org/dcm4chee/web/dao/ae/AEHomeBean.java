@@ -37,6 +37,7 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.web.dao.ae;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.ejb.Stateless;
@@ -64,7 +65,7 @@ public class AEHomeBean implements AEHomeLocal {
 
     @SuppressWarnings("unchecked")
     public List<String> listAETitles() {
-        return em.createQuery("SELECT ae.title FROM AE ae ORDER BY ae.title")
+        return em.createQuery("SELECT ae.title FROM AE ae ORDER BY LOWER(ae.title)")
                 .getResultList();
     }
 
@@ -100,7 +101,7 @@ public class AEHomeBean implements AEHomeLocal {
             .append(" UPPER(title) LIKE :title");
         }
         if (!count)
-            sb.append(" ORDER BY ae.title, ae.aeGroup");
+            sb.append(" ORDER BY LOWER(ae.title), LOWER(ae.aeGroup)");
         Query query = em.createQuery(sb.toString());
         if (filter != null && !"<NONE>".equals(filter)) 
             query.setParameter("filter", filter);
@@ -138,7 +139,12 @@ public class AEHomeBean implements AEHomeLocal {
     
     @SuppressWarnings("unchecked")
     public List<String> listAeTypes() {
-        return em.createQuery("SELECT DISTINCT ae.aeGroup FROM AE ae ORDER BY ae.aeGroup").getResultList();
+    	List<Object[]> aeGroups = 
+    			em.createQuery("SELECT DISTINCT ae.aeGroup, LOWER(ae.aeGroup) FROM AE ae ORDER BY LOWER(ae.aeGroup)")
+    			.getResultList();
+    	List<String> result = new ArrayList<String>(aeGroups.size());
+    	for (Object[] aeGroup : aeGroups)
+    		result.add((String) aeGroup[0]);
+    	return result;
     }
-
 }
