@@ -57,15 +57,10 @@ import org.dcm4chee.web.war.common.model.AbstractDicomModel;
  * @version $Revision$ $Date$
  * @since May 24, 2011
  */
-public class WebviewerSelectionPage extends WebPage {
-    
-    private static final ResourceReference BaseCSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
+public class WebviewerSelectionPage extends SecureSessionCheckPage {
     
     public WebviewerSelectionPage(AbstractDicomModel model, WebviewerLinkProvider[] providers, final ModalWindow modalWindow) {
         super();        
-        if (WebviewerSelectionPage.BaseCSS != null)
-            add(CSSPackageResource.getHeaderContribution(WebviewerSelectionPage.BaseCSS));
-        
         add(new Label("header", new ResourceModel("webviewer.selection.header")));
         add(new Label("info", model.toString()));
         RepeatingView rv = new RepeatingView("repeater");
