@@ -73,7 +73,7 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
     private int numberOfStudyRelatedInstances;
     private List<String> studyPermissionActions = new ArrayList<String>();
     private String seriesIuid;
-    private boolean unlinkedSeries;
+    private Boolean unlinkedSeries;
     
     public StudyModel(Study study, PatientModel patModel, Date createdTime) {
         if (study == null) {
@@ -168,6 +168,15 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
     }
 
     public boolean hasUnlinkedSeries() {
+        if (unlinkedSeries == null) {
+            if (getPk() != -1) {
+                StudyListLocal dao = (StudyListLocal)
+                JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
+                unlinkedSeries = dao.hasUnlinkedSeries(getPk());
+            } else { 
+                unlinkedSeries = true;
+            }
+        }
         return unlinkedSeries;
     }
 

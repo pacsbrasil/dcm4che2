@@ -61,6 +61,7 @@ public interface StudyListLocal {
     String JNDI_NAME = "dcm4chee-web-ear/StudyListBean/local";
 
     int count(StudyListFilter filter, List<String> roles);
+    boolean hasUnlinkedSeries(long studyPk);
     int countUnconnectedMPPS(StudyListFilter filter);
     
     List<Patient> findPatients(StudyListFilter filter, int max, int index, List<String> roles);

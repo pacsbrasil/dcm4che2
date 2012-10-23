@@ -1558,6 +1558,8 @@ public class StudyListPage extends Panel {
                                 it.remove();
                             }
                         }
+                    } else {
+                        checkHasUnlinkedSeries(study, m);
                     }
                 } else if (StudyPermissionHelper.get().isEasyLink()) {
                     checkHasUnlinkedSeries(study, m);
