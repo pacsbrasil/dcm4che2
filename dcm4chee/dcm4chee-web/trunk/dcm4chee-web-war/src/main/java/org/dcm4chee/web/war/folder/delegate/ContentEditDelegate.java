@@ -286,6 +286,7 @@ public class ContentEditDelegate extends BaseMBeanDelegate {
                 failed++;
             }
         }
+        study.refresh();
         study.expand();
         if (collapsed && failed == 0) {
             study.collapse();

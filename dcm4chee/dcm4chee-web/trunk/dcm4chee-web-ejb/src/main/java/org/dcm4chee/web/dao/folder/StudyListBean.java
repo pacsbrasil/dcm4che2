@@ -143,6 +143,18 @@ public class StudyListBean implements StudyListLocal {
         return patientList;
     }
 
+    public boolean hasUnlinkedSeries(long studyPk) {
+        Query query = em.createQuery("SELECT COUNT(s) FROM Series s WHERE s.study.pk = :pk AND s.modalityPerformedProcedureStep IS NULL)");
+        query.setParameter("pk", studyPk);
+        int count = ((Number) query.getSingleResult()).intValue();
+        if (count == 0) {
+            query = em.createQuery("SELECT COUNT(s) FROM Series s WHERE s.study.pk = :pk AND s.modalityPerformedProcedureStep.accessionNumber IS NULL)");
+            query.setParameter("pk", studyPk);
+            count = ((Number) query.getSingleResult()).intValue();
+        }
+        return count > 0;
+    }
+
     public int countUnconnectedMPPS(StudyListFilter filter) {
         StringBuilder ql = new StringBuilder(64);
         ql.append("SELECT COUNT(*) FROM MPPS m WHERE NOT EXISTS (SELECT s.pk FROM Series s WHERE s.modalityPerformedProcedureStep = m)");
