@@ -148,13 +148,13 @@
 					        	<font color="{$fontcolor}">Lesen</font>
 					        </xsl:when>
 							<xsl:when test="EventIdentification/@EventActionCode='U'">
-					        	<font color="{$fontcolor}">Ã„ndern</font>
+					        	<font color="{$fontcolor}">Ändern</font>
 					        </xsl:when>
 							<xsl:when test="EventIdentification/@EventActionCode='D'">
-					        	<font color="{$fontcolor}">LÃ¶schen</font>
+					        	<font color="{$fontcolor}">Löschen</font>
 					        </xsl:when>
 							<xsl:when test="EventIdentification/@EventActionCode='E'">
-					        	<font color="{$fontcolor}">AusfÃ¼hren</font>
+					        	<font color="{$fontcolor}">Ausführen</font>
 					        </xsl:when>
 						</xsl:choose>
 					</td>
