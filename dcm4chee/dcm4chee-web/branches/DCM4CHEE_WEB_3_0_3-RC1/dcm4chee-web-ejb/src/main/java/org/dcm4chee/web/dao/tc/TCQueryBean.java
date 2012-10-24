@@ -395,8 +395,6 @@ public class TCQueryBean implements TCQueryLocal {
     			int frames = i.getAttributes(false).getInt(Tag.NumberOfFrames);
     			if (frames>0)
     			{
-    				log.info(i.getSOPInstanceUID() + " has " + frames + " frames...");
-
     				map.put(i.getSOPInstanceUID(), frames);
     			}
     		}

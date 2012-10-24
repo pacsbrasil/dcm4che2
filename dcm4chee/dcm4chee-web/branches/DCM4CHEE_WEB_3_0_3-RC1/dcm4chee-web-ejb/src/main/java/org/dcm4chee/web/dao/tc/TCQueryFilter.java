@@ -91,8 +91,7 @@ public class TCQueryFilter implements Serializable {
     public void setAcquisitionModality(AcquisitionModality acquisitionModality) {
         putValue(
                 TCQueryFilterKey.AcquisitionModality,
-                acquisitionModality != null ? TCQueryFilterValue
-                        .create(acquisitionModality) : null);
+                acquisitionModality != null ? acquisitionModality.createFilterValue() : null);
     }
 
     public String getAnatomy() {

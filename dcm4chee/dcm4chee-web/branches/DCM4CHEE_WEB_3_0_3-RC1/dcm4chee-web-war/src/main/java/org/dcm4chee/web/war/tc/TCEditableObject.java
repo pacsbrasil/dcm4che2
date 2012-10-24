@@ -516,6 +516,11 @@ public class TCEditableObject extends TCObject {
                     content.addDicomObject(
                             createCodeContent(TCQueryFilterKey.AcquisitionModality, modality.getCode()));
                 }
+                else if (modality.getString()!=null)
+                {
+                	content.addDicomObject(createTextContent(
+                			TCQueryFilterKey.AcquisitionModality, modality.getString()));
+                }
             }
         }
         

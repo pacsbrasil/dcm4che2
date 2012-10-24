@@ -116,11 +116,11 @@ public abstract class TCSearchPanel extends Panel {
                 new Model<String>(""));
         textText.add(new AutoSelectInputTextBehaviour());
         
-        final DropDownChoice<TCQueryFilterValue.AcquisitionModality> modalityChoice = TCUtilities.createEnumDropDownChoice(
+        final DropDownChoice<TCQueryFilterValue.AcquisitionModality> modalityChoice = TCUtilities.createDropDownChoice(
                 "modalityChoice",
                 new Model<TCQueryFilterValue.AcquisitionModality>(),
                 Arrays.asList(TCQueryFilterValue.AcquisitionModality.values()),
-                false, null, NullDropDownItem.All);
+                NullDropDownItem.All);
         final DropDownChoice<TCQueryFilterValue.PatientSex> patientSexChoice = TCUtilities.createEnumDropDownChoice(
                 "patientSexChoice", new Model<TCQueryFilterValue.PatientSex>(),
                 Arrays.asList(TCQueryFilterValue.PatientSex.values()), true,

@@ -406,39 +406,125 @@ public abstract class TCQueryFilterValue<T> implements Serializable {
         }
     }
 
-    public static enum AcquisitionModality implements DicomCodeEnum {
-        CR("DCM", "CR"),
-        CT("DCM", "CT"),
-        DG("DCM", "DG"),
-        DX("DCM", "DX"),
-        ECG("DCM", "ECG"),
-        ES("DCM", "ES"),
-        GM("DCM", "GM"),
-        IVUS("DCM", "IVUS"),
-        MG("DCM", "MG"),
-        MR("DCM", "MR"),
-        NM("DCM", "NM"),
-        PT("DCM", "PT"),
-        RF("DCM", "RF"),
-        RG("DCM", "RG"),
-        SM("DCM", "SM"),
-        US("DCM", "US"),
-        XA("DCM", "XA"),
-        XC("DCM", "XC");
+    public static final class AcquisitionModality implements Serializable, DicomCodeEnum, DicomStringEnum 
+    {
+		private static final long serialVersionUID = 818651921486055373L;
+		
+		public static final AcquisitionModality CR = new AcquisitionModality("DCM", "CR");
+        public static final AcquisitionModality CT = new AcquisitionModality("DCM", "CT");
+        public static final AcquisitionModality DG = new AcquisitionModality("DCM", "DG");
+        public static final AcquisitionModality DX = new AcquisitionModality("DCM", "DX");
+        public static final AcquisitionModality ECG = new AcquisitionModality("DCM", "ECG");
+        public static final AcquisitionModality ES = new AcquisitionModality("DCM", "ES");
+        public static final AcquisitionModality GM = new AcquisitionModality("DCM", "GM");
+        public static final AcquisitionModality IVUS = new AcquisitionModality("DCM", "IVUS");
+        public static final AcquisitionModality MG = new AcquisitionModality("DCM", "MG");
+        public static final AcquisitionModality MR = new AcquisitionModality("DCM", "MR");
+        public static final AcquisitionModality NM = new AcquisitionModality("DCM", "NM");
+        public static final AcquisitionModality PT = new AcquisitionModality("DCM", "PT");
+        public static final AcquisitionModality RF = new AcquisitionModality("DCM", "RF");
+        public static final AcquisitionModality RG = new AcquisitionModality("DCM", "RG");
+        public static final AcquisitionModality SM = new AcquisitionModality("DCM", "SM");
+        public static final AcquisitionModality US = new AcquisitionModality("DCM", "US");
+        public static final AcquisitionModality XA = new AcquisitionModality("DCM", "XA");
+        public static final AcquisitionModality XC = new AcquisitionModality("DCM", "XC");
+        private static AcquisitionModality[] modalities = new AcquisitionModality[] {
+        	CR,CT,DG,DX,ECG,ES,GM,IVUS,MG,MR,NM,PT,RF,RG,SM,US,XA,XC
+        };
 
+        private String value;
         private Code code;
 
+        private AcquisitionModality(String value) {
+            this.value = value;
+        }
+        
         private AcquisitionModality(String d, String v) {
             this.code = createCode(d, v, null);
         }
-
+        
         public Code getCode() {
             return code;
+        }
+        
+        public String getString()
+        {
+        	return value;
+        }
+        
+        @Override
+        public int hashCode() {
+        	if (value!=null) {
+        		return value.hashCode();
+        	}
+        	else if (code!=null) {
+        		return code.hashCode();
+        	}
+        	return super.hashCode();
+        }
+        
+        @Override
+        public boolean equals(Object o)
+        {
+        	if (o instanceof AcquisitionModality)
+        	{
+        		AcquisitionModality m = (AcquisitionModality) o;
+        		if (value!=null) {
+        			return value.equals(m.value);
+        		}
+        		else if (code!=null && m.code!=null) {
+        			return TCQueryFilterValue.equals(code, m.code);
+        		}
+        	}
+        	
+        	return super.equals(o);
+        }
+        
+        @Override
+        public String toString() {
+        	if (value!=null) {
+        		return value;
+        	}
+        	else if (code!=null) {
+        		return code.getCodeValue();
+        	}
+        	return super.toString();
+        }
+        
+        public TCQueryFilterValue<?> createFilterValue()
+        {
+        	if (value!=null) {
+        		return TCQueryFilterValue.create((DicomStringEnum)this);
+        	}
+        	else if (code!=null) {
+        		return TCQueryFilterValue.create((DicomCodeEnum)this);
+        	}
+        	return null;
+        }
+        
+        public static AcquisitionModality[] values()
+        {
+        	return modalities;
+        }
+                
+        public static AcquisitionModality get(String value) {
+        	if (value!=null && !value.isEmpty())
+        	{
+                for (AcquisitionModality mod : modalities) {
+                    if (mod.getCode()!=null && 
+                    	value.equalsIgnoreCase(mod.getCode().getCodeValue())) 
+                    {
+                        return mod;
+                    }
+                }
+        		return new AcquisitionModality(value);
+        	}
+        	return null;
         }
 
         public static AcquisitionModality get(Code code) {
             if (code != null) {
-                for (AcquisitionModality mod : values()) {
+                for (AcquisitionModality mod : modalities) {
                     if (TCQueryFilterValue.equals(code, mod.getCode())) {
                         return mod;
                     }
