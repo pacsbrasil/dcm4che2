@@ -134,6 +134,8 @@ public class Mpps2MwlLinkPage extends ModalWindow {
     private AjaxLink<String> closeLink;
     private boolean linkDone = false;
     private int missingPPS = -1; 
+    private boolean hasForeignPpsInfo;
+    
     private static Logger log = LoggerFactory.getLogger(Mpps2MwlLinkPage.class);
     
     private WebviewerLinkProvider[] webviewerLinkProviders;
@@ -225,10 +227,12 @@ public class Mpps2MwlLinkPage extends ModalWindow {
         studyModel.expand();
         ArrayList<PPSModel> models = new ArrayList<PPSModel>(studyModel.getPPSs().size());
         missingPPS = 0;
+        hasForeignPpsInfo = false;
         for (PPSModel m : studyModel.getPPSs()) {
             if (m.getDataset() == null) { 
                 models.add(m);
                 missingPPS++;
+                hasForeignPpsInfo |= m.hasForeignPpsInfo();
             } else if (m.getAccessionNumber() == null) {
                 models.add(m);
             }
@@ -265,6 +269,10 @@ public class Mpps2MwlLinkPage extends ModalWindow {
         log.info("########### doLink called! missingPPS:"+missingPPS);
         if (missingPPS > 0) {
             log.info("############### Emulate MPPS of study:"+ppsModels.get(0).getStudy());
+            if (hasForeignPpsInfo) {
+                log.info("############### Remove foreign PPS info of series in study:"+ppsModels.get(0).getStudy());
+                ContentEditDelegate.getInstance().removeForeignPpsInfo(ppsModels.get(0).getStudy().getPk());
+            }
             int emulated = MppsEmulateDelegate.getInstance().emulateMpps(ppsModels.get(0).getStudy().getPk());
             if (emulated < 1) {
                 confirmLink.setStatus(new ResourceModel("folder.message.emulateFailed").wrapOnAssignment(linkPanel));
@@ -385,9 +393,15 @@ public class Mpps2MwlLinkPage extends ModalWindow {
                 
                 private IModel<String> getConfirmMsg() {
                     if (ppsPatModelForInfo.getDataset().equals(mwlItemModel.getPatientAttributes())) {
-                        return new StringResourceModel("link.message.confirm",this, null, new Object[]{});
+                        if (hasForeignPpsInfo)
+                            return new StringResourceModel("link.message.confirm.foreignPpsInfo",this, null, new Object[]{});
+                        else
+                            return new StringResourceModel("link.message.confirm",this, null, new Object[]{});
                     } else {
-                        return new StringResourceModel("link.message.confirm.patient",this, null, new Object[]{});
+                        if (hasForeignPpsInfo)
+                            return new StringResourceModel("link.message.confirm.patient.foreignPpsInfo",this, null, new Object[]{});
+                        else
+                            return new StringResourceModel("link.message.confirm.patient",this, null, new Object[]{});
                     }
                 }
                 
