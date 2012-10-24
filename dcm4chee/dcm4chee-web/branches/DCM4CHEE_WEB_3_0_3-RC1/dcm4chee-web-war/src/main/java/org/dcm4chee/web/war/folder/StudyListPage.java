@@ -1711,14 +1711,10 @@ public class StudyListPage extends Panel {
                 
                 @Override
 		public void onClick(final AjaxRequestTarget target) {
-                	arrWindow
-    	        		.setContent(new Label("content", 
-    	        				new Model<String>(new AuditRecordRepositoryFacade()
-    	        					.doSearch(AuditRecordRepositoryFacade.Level.PATIENT, 
-    	        							patModel.getId())))
-    	                .setEscapeModelStrings(false)
-    	                .add(new AttributeModifier("class", true, new Model<String>("arr"))))
-    	                .show(target);
+                	showAuditQueryResult(target, 
+                			new AuditRecordRepositoryFacade()
+                				.doSearch(AuditRecordRepositoryFacade.Level.PATIENT, 
+                						patModel.getId()));
                 }
             }.add(new Image("arrImg",ImageManager.IMAGE_COMMON_ARR)
             .add(new ImageSizeBehaviour())
@@ -1864,13 +1860,10 @@ public class StudyListPage extends Panel {
                 
                 @Override
                 public void onClick(final AjaxRequestTarget target) {
-                    arrWindow.setContent(new Label("content", 
-                            new Model<String>(new AuditRecordRepositoryFacade()
-                            .doSearch(AuditRecordRepositoryFacade.Level.STUDY, 
-                                    studyModel.getStudyInstanceUID())))
-                    .setEscapeModelStrings(false)
-                    .add(new AttributeModifier("class", true, new Model<String>("arr"))))
-                    .show(target);
+                	showAuditQueryResult(target, 
+                			new AuditRecordRepositoryFacade()
+                				.doSearch(AuditRecordRepositoryFacade.Level.STUDY, 
+                						studyModel.getStudyInstanceUID()));
                 }
             }.add(new Image("arrImg",ImageManager.IMAGE_COMMON_ARR)
             .add(new ImageSizeBehaviour())
@@ -2213,13 +2206,10 @@ public class StudyListPage extends Panel {
 
                 @Override
                 public void onClick(final AjaxRequestTarget target) {
-                    arrWindow.setContent(new Label("content", 
-                            new Model<String>(new AuditRecordRepositoryFacade()
-                            .doSearch(AuditRecordRepositoryFacade.Level.PPS, 
-                                    ppsModel.getStudy().getStudyInstanceUID())))
-                    .setEscapeModelStrings(false)
-                    .add(new AttributeModifier("class", true, new Model<String>("arr"))))
-                    .show(target);
+                	showAuditQueryResult(target, 
+                			new AuditRecordRepositoryFacade()
+                				.doSearch(AuditRecordRepositoryFacade.Level.PPS, 
+                						ppsModel.getStudy().getStudyInstanceUID()));
                 }
             }.add(new Image("arrImg",ImageManager.IMAGE_COMMON_ARR)
             .add(new ImageSizeBehaviour())
@@ -2357,14 +2347,11 @@ public class StudyListPage extends Panel {
 
                 @Override
                 public void onClick(final AjaxRequestTarget target) {
-                    arrWindow.setContent(new Label("content", 
-                            new Model<String>(new AuditRecordRepositoryFacade()
-                            .doSearch(AuditRecordRepositoryFacade.Level.SERIES, 
-                                    ((StudyModel) seriesModel.getParent().getParent())
-                                    .getStudyInstanceUID())))
-                    .setEscapeModelStrings(false)
-                    .add(new AttributeModifier("class", true, new Model<String>("arr"))))
-                    .show(target);
+                	showAuditQueryResult(target, 
+                			new AuditRecordRepositoryFacade()
+                				.doSearch(AuditRecordRepositoryFacade.Level.SERIES, 
+                						((StudyModel) seriesModel.getParent().getParent())
+                                        .getStudyInstanceUID()));                	
                 }
             }.add(new Image("arrImg",ImageManager.IMAGE_COMMON_ARR)
             .add(new ImageSizeBehaviour())
@@ -2499,14 +2486,11 @@ public class StudyListPage extends Panel {
 
                 @Override
                 public void onClick(final AjaxRequestTarget target) {
-                    arrWindow.setContent(new Label("content", 
-                            new Model<String>(new AuditRecordRepositoryFacade()
-                            .doSearch(AuditRecordRepositoryFacade.Level.INSTANCE, 
-                                    ((StudyModel) instModel.getParent().getParent().getParent())
-                                    .getStudyInstanceUID())))
-                    .setEscapeModelStrings(false)
-                    .add(new AttributeModifier("class", true, new Model<String>("arr"))))
-                    .show(target);
+                	showAuditQueryResult(target, 
+                			new AuditRecordRepositoryFacade()
+                				.doSearch(AuditRecordRepositoryFacade.Level.INSTANCE, 
+                						((StudyModel) instModel.getParent().getParent().getParent())
+                                        .getStudyInstanceUID()));
                 }
             }.add(new Image("arrImg",ImageManager.IMAGE_COMMON_ARR)
             .add(new ImageSizeBehaviour())
@@ -2979,5 +2963,19 @@ public class StudyListPage extends Panel {
         }
         target.addComponent(form);
         return false;
+    }
+    
+    private void showAuditQueryResult(AjaxRequestTarget target, String result) {
+		if (result == null) {
+			msgWin
+				.setInfoMessage(getString("folder.arr.query.failed"));
+			msgWin.setColor("#FF0000");
+			msgWin.show(target);
+		} else
+			arrWindow
+        		.setContent(new Label("content", new Model<String>(result))
+                .setEscapeModelStrings(false)
+                .add(new AttributeModifier("class", true, new Model<String>("arr"))))
+                .show(target);
     }
 }

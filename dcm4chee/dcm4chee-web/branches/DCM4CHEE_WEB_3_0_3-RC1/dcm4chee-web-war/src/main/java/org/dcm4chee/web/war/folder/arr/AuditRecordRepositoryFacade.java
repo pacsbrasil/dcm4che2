@@ -63,10 +63,11 @@ public class AuditRecordRepositoryFacade {
 				returnValue.append(buffer);
 			reader.close();
 
-			if (returnValue.length() > 0) 
-				return transform(returnValue.toString());
+			return returnValue.length() > 0 ?  
+				transform(returnValue.toString()) : null;
 		} catch (Exception e) {
 			log.error(getClass().getName() + ": ", e);
+			return null;
 		} finally {
 			if (in != null)
 				try {
@@ -77,7 +78,6 @@ public class AuditRecordRepositoryFacade {
 			if (urlConnection != null)
 				urlConnection.disconnect();
 		}
-		return null;
 	}
 
 	private String processParameters(Level queryType, String queryParameter) throws Exception {	
