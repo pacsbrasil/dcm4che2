@@ -499,6 +499,21 @@ public class TCObject implements Serializable {
                                     .getCode())) {
                                 abstr = getTextValue(item);
                             } else if (conceptName
+                                    .equals(TCQueryFilterKey.AcquisitionModality
+                                            .getCode())) {
+                                AcquisitionModality m = AcquisitionModality
+                                        .get(getTextValue(item));
+
+                                if (m != null) {
+                                    if (acquisitionModalities == null) {
+                                        acquisitionModalities = new ArrayList<AcquisitionModality>();
+                                    }
+
+                                    if (!acquisitionModalities.contains(m)) {
+                                        acquisitionModalities.add(m);
+                                    }
+                                }
+                            } else if (conceptName
                                     .equals(TCQueryFilterKey.Anatomy.getCode())) {
                                 anatomy = TextOrCode.text(getTextValue(item));
                             } else if (conceptName
@@ -754,8 +769,23 @@ public class TCObject implements Serializable {
 
             throw new IllegalArgumentException("Unable to convert enum (" + valueClass + "): No enum constant found for name '" + v.toString() + "'!"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         }
+        else if (AcquisitionModality.class.isAssignableFrom(valueClass))
+        {
+        	if (valueClass.isAssignableFrom(v.getClass()))
+        	{
+        		return (T) v;
+        	}
+        	else
+        	{
+        		AcquisitionModality modality = AcquisitionModality.get(v.toString().trim());
+        		if (modality!=null)
+        		{
+        			return (T) modality;
+        		}
+        	}
+        }
         
-        throw new IllegalArgumentException("Unable to convert from class " + v.getClass() + " to class " + valueClass); //$NON-NLS-1$ //$NON-NLS-2$
+        throw new IllegalArgumentException("Unable to convert from " + v.getClass() + " to " + valueClass); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     protected <T extends Object> List<T> convertValues(Object v, Class<T> valueClass) throws IllegalArgumentException

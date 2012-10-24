@@ -184,6 +184,44 @@ public class TCUtilities
         }
     }
     
+    public static <T> DropDownChoice<T> createDropDownChoice(
+            final String id, IModel<T> model, List<T> options,
+            final NullDropDownItem nullItem) {
+        return createDropDownChoice(id, model, options, nullItem, null);
+    }
+    
+    public static <T> DropDownChoice<T> createDropDownChoice(
+            final String id, IModel<T> model, List<T> options,
+            final NullDropDownItem nullItem, final TCChangeListener<T> l) {
+        DropDownChoice<T> choice = new SelfUpdatingDropDownChoice<T>(id, model!=null?model.getObject():null, options) {
+
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            protected String getNullValidKey() {
+                if (nullItem!=null)
+                {
+                    return nullItem.getKey();
+                }
+                return null;
+            }
+            
+            @Override
+            protected void valueUpdated(T value, AjaxRequestTarget target)
+            {
+                if (l!=null)
+                {
+                    l.valueChanged(value);
+                }
+            }
+        };
+
+        choice.setNullValid(nullItem!=null && 
+                !NullDropDownItem.NotValid.equals(nullItem));
+
+        return choice;
+    }
+    
     public static <T extends Enum<T>> DropDownChoice<T> createEnumDropDownChoice(
             final String id, IModel<T> model, List<T> options,
             boolean localizeValues, final String localizePrefix) {
