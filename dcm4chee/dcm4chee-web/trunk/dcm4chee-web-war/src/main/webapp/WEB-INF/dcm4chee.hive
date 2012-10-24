@@ -14,6 +14,7 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "F
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:webviewerStudyLink", "render, enable";    
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:webviewerSeriesLink", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:webviewerInstanceLink", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.web.war.folder.InstanceViewPage", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:wadoImageWindow", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:wadoImageInstanceLink", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.folder.webviewer.WebviewerSelectionPage", "render, enable";
