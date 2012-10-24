@@ -342,18 +342,20 @@ public class MppsToMwlLinkBean implements MppsToMwlLinkLocal {
             String rpId, spsId;
             reqAttr: for (Iterator<RequestAttributes> it = reqAttrs.iterator() ; it.hasNext() ; ) {
                 ra = it.next();
-                for (int i = 0, len = newReqAttrSq.countItems() ; i < len ; i++) {
-                    rqAttrSqItem = newReqAttrSq.getDicomObject(i);
-                    rpId = rqAttrSqItem.getString(Tag.RequestedProcedureID); 
-                    spsId = rqAttrSqItem.getString(Tag.ScheduledProcedureStepID);
-                    if (ra.getRequestedProcedureID().equals(rpId) &&
-                        ra.getScheduledProcedureStepID().equals(spsId)) {
-                        ra.setAttributes(rqAttrSqItem);
-                        if (ra.getAccessionNumber() == null && studyAccNo != null)
-                            ra.setAccessionNumber(studyAccNo);
-                        em.merge(ra);
-                        newReqAttrSq.removeDicomObject(i);
-                        continue reqAttr;
+                if (ra.getRequestedProcedureID() != null && ra.getScheduledProcedureStepID() != null) {
+                    for (int i = 0, len = newReqAttrSq.countItems() ; i < len ; i++) {
+                        rqAttrSqItem = newReqAttrSq.getDicomObject(i);
+                        rpId = rqAttrSqItem.getString(Tag.RequestedProcedureID); 
+                        spsId = rqAttrSqItem.getString(Tag.ScheduledProcedureStepID);
+                        if (ra.getRequestedProcedureID().equals(rpId) &&
+                            ra.getScheduledProcedureStepID().equals(spsId)) {
+                            ra.setAttributes(rqAttrSqItem);
+                            if (ra.getAccessionNumber() == null && studyAccNo != null)
+                                ra.setAccessionNumber(studyAccNo);
+                            em.merge(ra);
+                            newReqAttrSq.removeDicomObject(i);
+                            continue reqAttr;
+                        }
                     }
                 }
                 em.remove(ra);
