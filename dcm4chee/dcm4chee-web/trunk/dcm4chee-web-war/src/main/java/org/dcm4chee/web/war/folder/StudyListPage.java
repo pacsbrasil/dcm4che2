@@ -738,7 +738,7 @@ public class StudyListPage extends Panel {
         }
         if (sph.hasWebRole("Mpps2MwlLinkEasy"))
             queryTypeChoices.add(SEARCH_WITHOUT_MWL);
-        if (sph.hasWebRole("FolderActions"))
+        if (sph.hasWebRole("UnreferencedMPPS"))
             queryTypeChoices.add(SEARCH_UNCONNECTED_MPPS);
         return queryTypeChoices;
     }
