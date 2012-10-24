@@ -1,7 +1,9 @@
 package org.dcm4chee.web.war.tc;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.dcm4che2.data.DicomObject;
@@ -22,35 +24,44 @@ public class TCReferencedSeries implements TCImageViewSeries {
     private String suid;
     private List<TCReferencedInstance> instances;
     private List<TCReferencedInstance> notImages;
+    private Comparator<TCReferencedInstance> instanceComparator;
     private DicomObject dataset;
     private boolean dbQueryDone;
+    private boolean resortInstances;
     
     public TCReferencedSeries(String suid, TCReferencedStudy study)
     {
         this.suid = suid;
         this.study = study;
         this.dbQueryDone = false;
+        this.resortInstances = false;
         this.instances = new ArrayList<TCReferencedInstance>();
+        this.instanceComparator = new InstanceComparator();
     }
+    
     @Override
     public String getSeriesUID()
     {
         return suid;
     }
+    
     @Override
     public TCReferencedStudy getStudy()
     {
         return study;
     }
+    
     public int getInstanceCount()
     {
         return instances.size();
     }
+    
     @Override
     public int getImageCount()
     {
         return instances.size()-(notImages!=null?notImages.size():0);
     }
+    
     @Override
     public String getSeriesValue(int tag)
     {
@@ -79,6 +90,7 @@ public class TCReferencedSeries implements TCImageViewSeries {
         
         return null;
     }
+    
     @SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
     public List<TCReferencedImage> getImages()
@@ -89,20 +101,31 @@ public class TCReferencedSeries implements TCImageViewSeries {
         }
         else
         {
-            List<TCReferencedImage> images = new ArrayList<TCReferencedImage>((List)instances);
+            List<?> images = new ArrayList(getInstances());
             images.removeAll(notImages);
-            return images;
+            return (List)images;
         }
     }
+    
     public List<TCReferencedInstance> getInstances()
     {
+    	if (resortInstances)
+    	{
+            Collections.sort(instances, instanceComparator);
+            
+            resortInstances = false;
+    	}
+    	
         return Collections.unmodifiableList(instances);
     }
+    
     public void addInstance(TCReferencedInstance instance)
     {
         if (!instances.contains(instance))
         {
             instances.add(instance);
+            
+            resortInstances = true;
             
             if (!instance.isImage())
             {
@@ -117,6 +140,7 @@ public class TCReferencedSeries implements TCImageViewSeries {
             }
         }
     }
+    
     public void removeInstance(TCReferencedInstance instance)
     {
     	if (instances!=null)
@@ -129,6 +153,37 @@ public class TCReferencedSeries implements TCImageViewSeries {
     			{
     				notImages = null;
     			}
+    		}
+    	}
+    }
+    
+    private static class InstanceComparator implements Serializable, Comparator<TCReferencedInstance> 
+    {
+		private static final long serialVersionUID = -2944080049158009801L;
+
+		@Override
+		public int compare(TCReferencedInstance i1, TCReferencedInstance i2)
+    	{
+    		int n1 = i1.getInstanceNumber();
+    		int n2 = i2.getInstanceNumber();
+    		
+    		if (n1==n2)
+    		{
+    			if (i1 instanceof TCReferencedImage && 
+    					i2 instanceof TCReferencedImage)
+    			{
+    				n1 += ((TCReferencedImage)i1).getFrameNumber();
+    				n2 += ((TCReferencedImage)i2).getFrameNumber();
+    			}
+    		}
+    		
+    		if (n1<=n2)
+    		{
+    			return -1; 
+    		}
+    		else
+    		{
+    			return 1;
     		}
     	}
     }

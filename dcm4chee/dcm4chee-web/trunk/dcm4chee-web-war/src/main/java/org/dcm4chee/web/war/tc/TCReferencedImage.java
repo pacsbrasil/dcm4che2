@@ -9,14 +9,14 @@ public class TCReferencedImage extends TCReferencedInstance implements TCImageVi
 
 	private final int frameNumber;
 	
-	public TCReferencedImage(TCReferencedSeries series, String iuid, String cuid) 
+	public TCReferencedImage(TCReferencedSeries series, String iuid, String cuid, int instanceNumber) 
     {
-		this(series, iuid, cuid, -1);
+		this(series, iuid, cuid, instanceNumber, -1);
     }
 	
-	public TCReferencedImage(TCReferencedSeries series, String iuid, String cuid, int frameNumber) 
+	public TCReferencedImage(TCReferencedSeries series, String iuid, String cuid, int instanceNumber, int frameNumber) 
     {
-    	super(series, iuid, cuid);
+    	super(series, iuid, cuid, instanceNumber);
     	this.frameNumber = frameNumber;
     }
 	
