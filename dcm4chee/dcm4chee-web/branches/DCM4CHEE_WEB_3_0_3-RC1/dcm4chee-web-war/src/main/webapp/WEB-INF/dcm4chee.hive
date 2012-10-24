@@ -69,6 +69,10 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "H
 // KEY: swarm.principal.HidePPSLevel
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:hidePPSLevel", "render, enable";
 };
+grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "UnreferencedMPPS"
+{
+// KEY: swarm.principal.UnreferencedMPPS
+};
 
 grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "QueryARR"
 {
