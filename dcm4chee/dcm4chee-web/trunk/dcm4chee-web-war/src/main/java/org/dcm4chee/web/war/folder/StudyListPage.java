@@ -1261,11 +1261,18 @@ public class StudyListPage extends Panel {
             @Override
             public void onConfirmation(AjaxRequestTarget target, final PPSModel ppsModel) {
                 logSecurityAlert(ppsModel, true, StudyListPage.tooOldAuditMessageText);
-                
-                setMppsLinkWindow().show(target, ppsModel, form);
-                setStatus(new Model<String>(""));
             }
         };
+        confirmLinkMpps.setWindowClosedCallback(new ModalWindow.WindowClosedCallback() {
+        	
+        	private static final long serialVersionUID = 1L;
+        	
+        	public void onClose(AjaxRequestTarget target) {
+                if (confirmLinkMpps.getState() == ConfirmationWindow.CONFIRMED) {
+                	setMppsLinkWindow().show(target, confirmLinkMpps.getUserObject(), form);
+                }
+        	}
+        });
         form.add(confirmLinkMpps
             .setInitialHeight(150)
             .setInitialWidth(410));
@@ -1277,11 +1284,19 @@ public class StudyListPage extends Panel {
             @Override
             public void onConfirmation(AjaxRequestTarget target, final StudyModel studyModel) {
                 logSecurityAlert(studyModel, true, StudyListPage.tooOldAuditMessageText);
-                
-                setMppsLinkWindow().show(target, studyModel, form);
-                setStatus(new Model<String>(""));
             }
         };
+        confirmLinkMppsStudy.setWindowClosedCallback(new ModalWindow.WindowClosedCallback() {
+        	
+        	private static final long serialVersionUID = 1L;
+        	
+        	public void onClose(AjaxRequestTarget target) {
+        		if (confirmLinkMppsStudy.getState() == ConfirmationWindow.CONFIRMED) {
+        			setMppsLinkWindow().show(target, confirmLinkMppsStudy.getUserObject(), form);
+        		}
+        	}
+        });
+
         form.add(confirmLinkMppsStudy
             .setInitialHeight(150)
             .setInitialWidth(410));
