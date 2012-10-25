@@ -38,6 +38,7 @@
 
 package org.dcm4chee.web.common.markup.modal;
 
+import org.apache.wicket.Component;
 import org.apache.wicket.Page;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -60,6 +61,7 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.web.common.ajax.MaskingAjaxCallBehavior;
 import org.dcm4chee.web.common.base.BaseWicketPage;
+import org.dcm4chee.web.common.behaviours.FocusOnLoadBehaviour;
 import org.dcm4chee.web.common.secure.SecureSessionCheckPage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,9 +76,9 @@ public abstract class ConfirmationWindow<T> extends ModalWindow {
     
     private static final long serialVersionUID = 1L;
 
-    public static final String FOCUS_ON_CONFIRM = "content:confirm";
-    public static final String FOCUS_ON_DECLINE = "content:decline";
-    public static final String FOCUS_ON_CANCEL = "content:cancel";
+    public static final String FOCUS_ON_CONFIRM = "confirm";
+    public static final String FOCUS_ON_DECLINE = "decline";
+    public static final String FOCUS_ON_CANCEL = "cancel";
 
     public static final int UNCONFIRMED = 0;
     public static final int CONFIRMED = 1;
@@ -84,7 +86,6 @@ public abstract class ConfirmationWindow<T> extends ModalWindow {
     public static final int CANCELED = 3;
 
     private T userObject;
-    private String focusElementId;
 
     private IModel<?> remark, confirm, decline, cancel;
     
@@ -93,6 +94,8 @@ public abstract class ConfirmationWindow<T> extends ModalWindow {
     private int state = UNCONFIRMED;
     
     public MessageWindowPanel messageWindowPanel;
+
+    public Model<Component> focusComponentModel = new Model<Component>(null);
     
     public ConfirmationWindow(String id, String titleResource) {
         this(id);
@@ -163,8 +166,6 @@ public abstract class ConfirmationWindow<T> extends ModalWindow {
     public void show(final AjaxRequestTarget target) {
         hasStatus = false;
         super.show(target);
-        if (focusElementId != null)
-            target.focusComponent(this.get(focusElementId));
     }
     
     public void confirm(AjaxRequestTarget target, IModel<?> msg, T userObject) {
@@ -176,9 +177,22 @@ public abstract class ConfirmationWindow<T> extends ModalWindow {
     public void confirm(AjaxRequestTarget target, IModel<?> msg, T userObject, String focusElementId, boolean showCancel) {
         this.messageWindowPanel.msg = msg;
         this.userObject = userObject;
-        this.focusElementId = focusElementId;
+        this.focusComponentModel.setObject(getFocusComponent(focusElementId));
         this.showCancel = showCancel;
         show(target);
+    }
+
+    private Component getFocusComponent(String focusElementId) {
+        if (focusElementId == null) {
+            return null;
+        } else if (FOCUS_ON_DECLINE.equals(focusElementId)) {
+            return this.messageWindowPanel.declineBtn;
+        } else if (FOCUS_ON_CANCEL.equals(focusElementId)) {
+            return this.messageWindowPanel.cancelBtn;
+        } else if (FOCUS_ON_CONFIRM.equals(focusElementId)) {
+            return this.messageWindowPanel.confirmBtn;
+        }
+        return null;
     }
 
     public void confirmWithCancel(AjaxRequestTarget target, IModel<?> msg, T userObject) {
@@ -225,6 +239,8 @@ public abstract class ConfirmationWindow<T> extends ModalWindow {
         private final Logger log = LoggerFactory.getLogger(MessageWindowPanel.class);
         
         private IndicatingAjaxFallbackLink<Object> confirmBtn;
+        private AjaxFallbackLink<Object> declineBtn;
+        private AjaxFallbackLink<Object> cancelBtn;
         private AjaxFallbackLink<Object> okBtn;
         
         private IModel<?> msg;
@@ -310,7 +326,7 @@ public abstract class ConfirmationWindow<T> extends ModalWindow {
             confirmBtn.setOutputMarkupId(true);
             add(confirmBtn);
             
-            add(new AjaxFallbackLink<Object>("decline"){
+            declineBtn = new AjaxFallbackLink<Object>("decline"){
 
                 private static final long serialVersionUID = 1L;
 
@@ -329,9 +345,11 @@ public abstract class ConfirmationWindow<T> extends ModalWindow {
                 public boolean isVisible() {
                     return !hasStatus;
                 }
-            }.add(new Label("declineLabel", decline)));
+            };
+            declineBtn.add(new Label("declineLabel", decline)).setOutputMarkupId(true);
+            add(declineBtn);
             
-            add(new AjaxFallbackLink<Object>("cancel"){
+            cancelBtn = new AjaxFallbackLink<Object>("cancel"){
                 private static final long serialVersionUID = 1L;
 
                 @Override
@@ -345,7 +363,8 @@ public abstract class ConfirmationWindow<T> extends ModalWindow {
                 public boolean isVisible() {
                     return !hasStatus && showCancel;
                 }
-            }.add(new Label("cancelLabel", cancel)) );
+            };
+            add(cancelBtn.add(new Label("cancelLabel", cancel)).setOutputMarkupId(true));
             
             add(okBtn = new IndicatingAjaxFallbackLink<Object>("ok") {
 
@@ -381,6 +400,7 @@ public abstract class ConfirmationWindow<T> extends ModalWindow {
             .setOutputMarkupId(true)
             .setOutputMarkupPlaceholderTag(true);
             this.setOutputMarkupId(true);
+            add(FocusOnLoadBehaviour.newComponentModelFocusBehaviour(focusComponentModel));
         }
         
         /**
