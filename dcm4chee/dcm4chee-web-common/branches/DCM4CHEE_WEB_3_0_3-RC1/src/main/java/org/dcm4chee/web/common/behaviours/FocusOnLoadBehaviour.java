@@ -46,6 +46,7 @@ import org.apache.wicket.markup.html.IHeaderResponse;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.FormComponent;
 import org.apache.wicket.markup.html.form.TextField;
+import org.apache.wicket.model.IModel;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
@@ -74,6 +75,11 @@ public class FocusOnLoadBehaviour extends AbstractBehavior {
     public static FocusOnLoadBehaviour newFocusAndSelectBehaviour() {
         FocusOnLoadBehaviour fb = new FocusOnLoadBehaviour();
         fb.focusStrategy = fb.new FocusAndSelectTextStrategy();
+        return fb;
+    }
+    public static FocusOnLoadBehaviour newComponentModelFocusBehaviour(IModel<Component> m) {
+        FocusOnLoadBehaviour fb = new FocusOnLoadBehaviour();
+        fb.focusStrategy = fb.new ComponentModelFocusStrategy(m);
         return fb;
     }
     
@@ -121,6 +127,21 @@ public class FocusOnLoadBehaviour extends AbstractBehavior {
 
         public void focus(IHeaderResponse headerResponse, Component c) {
             headerResponse.renderOnLoadJavascript(getJavaScriptString(c));
+        }
+    }
+
+    public class ComponentModelFocusStrategy implements FocusStrategy {
+
+        private static final long serialVersionUID = 1L;
+        
+        private IModel<Component> focusComponentModel;
+        public ComponentModelFocusStrategy(IModel<Component> c) {
+            focusComponentModel = c;
+        }
+        public void focus(IHeaderResponse headerResponse, Component c) {
+            if (focusComponentModel.getObject() != null) {
+                headerResponse.renderOnLoadJavascript(getJavaScriptString(focusComponentModel.getObject()));
+            }
         }
     }
 
