@@ -33,12 +33,20 @@ public abstract class TCViewEditablePanel extends TCViewPanel
             }
             @Override
             protected IAjaxCallDecorator getAjaxCallDecorator() {
-                try {
-                    return TCPanel.getMaskingBehaviour().getAjaxCallDecorator();
-                } catch (Exception e) {
-                    log.error("Failed to get IAjaxCallDecorator: ", e);
-                }
-                return null;
+            	return new IAjaxCallDecorator() {
+					private static final long serialVersionUID = -6741509384950051556L;
+					public final CharSequence decorateScript(CharSequence script) {
+	                    return "$(this).attr('disabled','disabled'); if(typeof showMask == 'function') { showMask(); };"+script;
+	                }
+	            
+	                public final CharSequence decorateOnSuccessScript(CharSequence script) {
+	                    return "hideMask();"+script;
+	                }
+	            
+	                public final CharSequence decorateOnFailureScript(CharSequence script) {
+	                    return "hideMask();"+script;
+	                }
+            	};
             }
         }
         .add(new Image("tc-view-ok-img", ImageManager.IMAGE_TC_ACKNOWLEDGE)
