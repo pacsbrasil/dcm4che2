@@ -50,7 +50,9 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
+import javax.management.AttributeNotFoundException;
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanException;
 import javax.management.MalformedObjectNameException;
@@ -82,43 +84,49 @@ import org.dcm4chex.archive.util.FileUtils;
 public class FileCopyService extends AbstractFileCopyService {
 
     private static final String NONE = "NONE";    
+    public static final String NEW_LINE = System.getProperty("line.separator", "\n");
     private static final int MD5SUM_ENTRY_LEN = 52;
     
     private ObjectName hsmModuleServicename = null;
-    private ArrayList<ObjectName> registeredModules = new ArrayList<ObjectName>();
-    private boolean isReady;
     
-    public String getRegisteredHSMModules() {
-        StringBuilder sb = new StringBuilder();
-        for (ObjectName on : registeredModules) {
-            sb.append(on).append("\n");
-        }
-        return sb.toString();
-    }
-
     public final String getHSMModulServicename() {
         return hsmModuleServicename == null ? NONE : hsmModuleServicename.toString();
     }
 
     public final void setHSMModulServicename(String name) throws MalformedObjectNameException {
         this.hsmModuleServicename = NONE.equals(name) ? null : ObjectName.getInstance(name);
-        isReady = !getDestination().startsWith("tar:") | hsmModuleServicename == null | registeredModules.contains(hsmModuleServicename);
+    }
+    
+    public String getAvailableHSMModules() {
+        try {
+            Set names = server.queryNames(new ObjectName("*:service=FileCopyHSMModule,*") , null);
+            StringBuilder sb = new StringBuilder(names.size()*40);
+            for (Iterator it = names.iterator() ; it.hasNext() ;) {
+                sb.append(it.next()).append(NEW_LINE);
+            }
+            return sb.toString();
+        } catch (Exception x) {
+            log.error("Failed to get list of available HSM modules!", x);
+            return "ERROR";
+        }
     }
     
     public boolean isReady() {
-        return isReady;
+        if (getState() == STARTED) {
+            try {
+                if (hsmModuleServicename == null || 
+                    (server.isRegistered(hsmModuleServicename) && 
+                     (Integer)server.getAttribute(hsmModuleServicename, "State") == STARTED)) {
+                    return true;
+                }
+            } catch (Exception e) {
+                log.error("Failed to get state of hsmModuleServicename:"+hsmModuleServicename);
+                return false;
+            }
+        }
+        return false;
     }
     
-    public void registerHSMModule(ObjectName module) throws Exception {
-        registeredModules.add(module);
-        isReady = isReady | hsmModuleServicename == null | module.equals(hsmModuleServicename);
-    }
-    public void unregisterHSMModule(ObjectName module) throws Exception {
-        registeredModules.remove(module);
-        if (getDestination().startsWith("tar:") && module.equals(hsmModuleServicename))
-            isReady = false;
-    }
-
     public boolean copyFilesOfStudy(String studyIUID) throws Exception {
         if (destination == null) {
             log.warn("Destination is not configured! skip this copyFilesOfStudy call!");

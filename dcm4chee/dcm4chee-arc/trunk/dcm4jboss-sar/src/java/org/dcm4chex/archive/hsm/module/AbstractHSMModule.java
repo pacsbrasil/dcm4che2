@@ -58,18 +58,6 @@ public abstract class AbstractHSMModule extends ServiceMBeanSupport {
     public static final String NONE = "NONE";    
     protected ObjectName fileCopyServiceName;
 
-    protected void startService() throws Exception {
-        server.invoke(fileCopyServiceName, "registerHSMModule", 
-                new Object[]{getServiceName()}, 
-                new String[]{ObjectName.class.getName()});
-    }
-
-    protected void stopService() throws Exception {
-        server.invoke(fileCopyServiceName, "unregisterHSMModule", 
-                new Object[]{getServiceName()}, 
-                new String[]{ObjectName.class.getName()});
-    }
-    
     public ObjectName getFileCopyServiceName() {
         return fileCopyServiceName;
     }
