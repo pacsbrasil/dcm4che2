@@ -64,9 +64,9 @@
       </descriptors>
    </attribute>
    <attribute access="read-only"
-      getMethod="getRegisteredHSMModules">
-      <description>Registered HSM modules.</description>
-      <name>RegisteredHSMModules</name>
+      getMethod="getAvailableHSMModules">
+      <description>Available HSM modules.</description>
+      <name>AvailableHSMModules</name>
       <type>java.lang.String</type>
    </attribute>
    <attribute access="read-only"
