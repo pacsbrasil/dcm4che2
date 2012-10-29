@@ -563,8 +563,7 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
                         + storageFileSystem + " - no alternative storage file "
                         + "system configured for file system group "
                         + getFileSystemGroupID());
-                checkFreeDiskSpaceTime = System.currentTimeMillis()
-                        + checkFreeDiskSpaceRetryInterval;
+                storageFileSystem = null;
                 return null;
             }
         } else {
