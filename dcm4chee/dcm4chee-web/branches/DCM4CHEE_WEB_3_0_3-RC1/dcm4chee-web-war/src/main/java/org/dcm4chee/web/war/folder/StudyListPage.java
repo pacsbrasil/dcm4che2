@@ -274,7 +274,7 @@ public class StudyListPage extends Panel {
         new ResourceReference(StudyListPage.class, "sokoban.svg");
     public static final ResourceReference EGG_PNG = 
         new ResourceReference(StudyListPage.class, "egg.png");
-	
+        
     private WebviewerLinkProvider[] webviewerLinkProviders;
     
     private List<WebMarkupContainer> searchTableComponents = new ArrayList<WebMarkupContainer>();
@@ -317,7 +317,7 @@ public class StudyListPage extends Panel {
             
             @Override
             public void onConfirmation(AjaxRequestTarget target, final Form<?> form) {
-            	doSearch(target, form, viewport.resetOnSearch());
+                doSearch(target, form, viewport.resetOnSearch());
             }
         };
         add(confirmSearch
@@ -373,9 +373,9 @@ public class StudyListPage extends Panel {
         
         int[] winSize = WebCfgDelegate.getInstance().getWindowSize("arr");
         arrWindow
-        	.setInitialWidth(winSize[0])
-        	.setInitialHeight(winSize[1])
-        	.setTitle("");
+                .setInitialWidth(winSize[0])
+                .setInitialHeight(winSize[1])
+                .setTitle("");
 
         header = new StudyListHeader("thead", form, viewport, hidePPSModel);
         form.add(header);
@@ -751,7 +751,7 @@ public class StudyListPage extends Panel {
             private static final long serialVersionUID = 1L;
 
             @SuppressWarnings("rawtypes")
-			@Override
+                        @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
 
                 form.clearInput();
@@ -840,8 +840,8 @@ public class StudyListPage extends Panel {
                 if (!WebCfgDelegate.getInstance().isQueryAfterPagesizeChange())
                     return;
                 if (!viewport.getFilter().isFiltered()) {
-                	viewport.setResetOnSearch(false);
-            		confirmSearch.confirm(target, new StringResourceModel("folder.message.confirmSearch", this.getComponent(), null), form); 
+                        viewport.setResetOnSearch(false);
+                        confirmSearch.confirm(target, new StringResourceModel("folder.message.confirmSearch", this.getComponent(), null), form); 
                 } else doSearch(target, form, false);
                 target.addComponent(header);
             }
@@ -901,11 +901,11 @@ public class StudyListPage extends Panel {
                 Auditlog.logQuery(true, UID.StudyRootQueryRetrieveInformationModelFIND, viewport.getFilter().getQueryDicomObject());
             }
             target.addComponent(form);
-	}
+        }
 
-	private void addViewPort(final WebMarkupContainer parent) {
-    	
-    	parent.add(new Link<Object>("prev") {
+        private void addViewPort(final WebMarkupContainer parent) {
+        
+        parent.add(new Link<Object>("prev") {
 
             private static final long serialVersionUID = 1L;
 
@@ -925,7 +925,7 @@ public class StudyListPage extends Panel {
         .add(new TooltipBehaviour("folder.search.")))
         );
 
-    	parent.add(new Link<Object>("next") {
+        parent.add(new Link<Object>("next") {
 
             private static final long serialVersionUID = 1L;
 
@@ -1067,11 +1067,7 @@ public class StudyListPage extends Panel {
                     
                     @Override
                     protected void onSubmit() {
-                        DicomObject obj = getDicomObject();
-                        if (obj.getString(Tag.PatientName) == null) {
-                            throw new WicketExceptionWithMsgKey("PatientNameIsEmpty");
-                        }
-                        newPatModel.update(obj);
+                        newPatModel.update(getDicomObject());
                         viewport.getPatients().add(0, newPatModel);
                     }
                 };
@@ -1096,42 +1092,42 @@ public class StudyListPage extends Panel {
         
         AjaxButton deleteBtn = new AjaxButton("deleteBtn") {
 
-        	private static final long serialVersionUID = 1L;
+                private static final long serialVersionUID = 1L;
             
-        	private void checkWarnings(SelectedEntities selected, MultiResourceModel remarkModel) {
+                private void checkWarnings(SelectedEntities selected, MultiResourceModel remarkModel) {
                     if (selected.hasPatients()) {
-                    	int studiesCount = 0;
-                    	String patientListing = "";
-                    	Iterator<PatientModel> i = selected.getPatients().iterator();
-                    	while (i.hasNext()) {
-                    		PatientModel patientModel = i.next();
-                    		studiesCount += dao.countStudiesOfPatient(patientModel.getPk(), null);
-                    		patientListing += (
-                    				(patientModel.getId() != null ? patientModel.getId() : " ") + 
-                    				" / " + 
-                    				(patientModel.getIssuer() != null ? patientModel.getIssuer() : " ") + 
-                    				" / " + 
-                    				(patientModel.getName() != null ? patientModel.getName() : " "));
-                    		if (i.hasNext())
-                    			patientListing += ", <br /> ";
-                    	}               	
-                    	remarkModel.addModel(new StringResourceModel("folder.message.warnPatientDelete", 
-                    				this, null, new Object[] {studiesCount, patientListing}));
-                    	confirmDelete
-                    		.setInitialWidth(500)
-                    		.setInitialHeight(280 + (20 * selected.getPatients().size()));
+                        int studiesCount = 0;
+                        String patientListing = "";
+                        Iterator<PatientModel> i = selected.getPatients().iterator();
+                        while (i.hasNext()) {
+                                PatientModel patientModel = i.next();
+                                studiesCount += dao.countStudiesOfPatient(patientModel.getPk(), null);
+                                patientListing += (
+                                                (patientModel.getId() != null ? patientModel.getId() : " ") + 
+                                                " / " + 
+                                                (patientModel.getIssuer() != null ? patientModel.getIssuer() : " ") + 
+                                                " / " + 
+                                                (patientModel.getName() != null ? patientModel.getName() : " "));
+                                if (i.hasNext())
+                                        patientListing += ", <br /> ";
+                        }                       
+                        remarkModel.addModel(new StringResourceModel("folder.message.warnPatientDelete", 
+                                                this, null, new Object[] {studiesCount, patientListing}));
+                        confirmDelete
+                                .setInitialWidth(500)
+                                .setInitialHeight(280 + (20 * selected.getPatients().size()));
                     }                
                     if (ContentEditDelegate.getInstance().sendsRejectionNotes()) 
                         remarkModel.addModel(new StringResourceModel("folder.message.warnDelete",this, null));
-        	}
-        	
+                }
+                
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-            	confirmDelete.initContent(500, 280);
-            	
+                confirmDelete.initContent(500, 280);
+                
                 MultiResourceModel remarkModel = new MultiResourceModel();
-            	confirmDelete.setRemark(remarkModel);
-            	
+                confirmDelete.setRemark(remarkModel);
+                
                 boolean hasIgnored = selected.update(studyPermissionHelper.isUseStudyPermissions(), 
                         viewport.getPatients(), StudyPermission.DELETE_ACTION);               
                 selected.deselectChildsOfSelectedEntities();
@@ -1139,16 +1135,16 @@ public class StudyListPage extends Panel {
                 if ((hasIgnored ||selected.hasDicomSelection() || selected.hasPPS()) 
                         && selected.hasTooOld()) {
                     if (StudyPermissionHelper.get().ignoreEditTimeLimit()) {
-                    	checkWarnings(selected, remarkModel);
+                        checkWarnings(selected, remarkModel);
                         if (hasIgnored) {
-	                    confirmDelete.initContent(confirmDelete.getInitialWidth(), confirmDelete.getInitialHeight() + 50);
+                            confirmDelete.initContent(confirmDelete.getInitialWidth(), confirmDelete.getInitialHeight() + 50);
                             remarkModel.addModel(new StringResourceModel("folder.message.deleteNotAllowed",this, null));
                         }
                         if (selected.hasPPS()) {
                             confirmDelete.confirmWithCancel(target, new StringResourceModel("folder.message.tooOld.confirmPpsDelete",this, null,new Object[]{selected}), selected);
                         } else if (selected.hasDicomSelection()) {
-                        	confirmDelete.initContent(confirmDelete.getInitialWidth(), confirmDelete.getInitialHeight() + 50);
-                        	confirmDelete.confirm(target, new StringResourceModel("folder.message.tooOld.delete", this, null, new Object[]{selected}), selected);
+                                confirmDelete.initContent(confirmDelete.getInitialWidth(), confirmDelete.getInitialHeight() + 50);
+                                confirmDelete.confirm(target, new StringResourceModel("folder.message.tooOld.delete", this, null, new Object[]{selected}), selected);
                         } else {
                             msgWin.setInfoMessage(getString("folder.message.deleteNotAllowed"));
                             msgWin.setColor("#FF0000");
@@ -1164,7 +1160,7 @@ public class StudyListPage extends Panel {
 
                 checkWarnings(selected, remarkModel);
                 if (hasIgnored) {
-                	confirmDelete.initContent(confirmDelete.getInitialWidth(), confirmDelete.getInitialHeight() + 50);
+                        confirmDelete.initContent(confirmDelete.getInitialWidth(), confirmDelete.getInitialHeight() + 50);
                     remarkModel.addModel(new StringResourceModel("folder.message.deleteNotAllowed",this, null));
                 }
                 if (selected.hasPPS()) {
@@ -1261,11 +1257,18 @@ public class StudyListPage extends Panel {
             @Override
             public void onConfirmation(AjaxRequestTarget target, final PPSModel ppsModel) {
                 logSecurityAlert(ppsModel, true, StudyListPage.tooOldAuditMessageText);
-                
-                setMppsLinkWindow().show(target, ppsModel, form);
-                setStatus(new Model<String>(""));
             }
         };
+        confirmLinkMpps.setWindowClosedCallback(new ModalWindow.WindowClosedCallback() {
+                
+                private static final long serialVersionUID = 1L;
+                
+                public void onClose(AjaxRequestTarget target) {
+                if (confirmLinkMpps.getState() == ConfirmationWindow.CONFIRMED) {
+                        setMppsLinkWindow().show(target, confirmLinkMpps.getUserObject(), form);
+                }
+                }
+        });
         form.add(confirmLinkMpps
             .setInitialHeight(150)
             .setInitialWidth(410));
@@ -1277,11 +1280,19 @@ public class StudyListPage extends Panel {
             @Override
             public void onConfirmation(AjaxRequestTarget target, final StudyModel studyModel) {
                 logSecurityAlert(studyModel, true, StudyListPage.tooOldAuditMessageText);
-                
-                setMppsLinkWindow().show(target, studyModel, form);
-                setStatus(new Model<String>(""));
             }
         };
+        confirmLinkMppsStudy.setWindowClosedCallback(new ModalWindow.WindowClosedCallback() {
+                
+                private static final long serialVersionUID = 1L;
+                
+                public void onClose(AjaxRequestTarget target) {
+                        if (confirmLinkMppsStudy.getState() == ConfirmationWindow.CONFIRMED) {
+                                setMppsLinkWindow().show(target, confirmLinkMppsStudy.getUserObject(), form);
+                        }
+                }
+        });
+
         form.add(confirmLinkMppsStudy
             .setInitialHeight(150)
             .setInitialWidth(410));
@@ -1710,11 +1721,11 @@ public class StudyListPage extends Panel {
                 private static final long serialVersionUID = 1L;
                 
                 @Override
-		public void onClick(final AjaxRequestTarget target) {
-                	showAuditQueryResult(target, 
-                			new AuditRecordRepositoryFacade()
-                				.doSearch(AuditRecordRepositoryFacade.Level.PATIENT, 
-                						patModel.getId()));
+                public void onClick(final AjaxRequestTarget target) {
+                        showAuditQueryResult(target, 
+                                        new AuditRecordRepositoryFacade()
+                                                .doSearch(AuditRecordRepositoryFacade.Level.PATIENT, 
+                                                                patModel.getId()));
                 }
             }.add(new Image("arrImg",ImageManager.IMAGE_COMMON_ARR)
             .add(new ImageSizeBehaviour())
@@ -1795,11 +1806,11 @@ public class StudyListPage extends Panel {
             row.add(new Label("accessionNumber").add(tooltip));
             row.add(new Label("modalities").add(tooltip));
             row.add(new Label("description", 
-            		new Model<String>(studyModel.getDescription() != null &&
-            				studyModel.getDescription().length() > 30 ? 
-            						studyModel.getDescription().substring(0,30) : 
-            							studyModel.getDescription()))
-            	.add(new AttributeModifier("title", true, new Model<String>(studyModel.getDescription()))));
+                        new Model<String>(studyModel.getDescription() != null &&
+                                        studyModel.getDescription().length() > 30 ? 
+                                                        studyModel.getDescription().substring(0,30) : 
+                                                                studyModel.getDescription()))
+                .add(new AttributeModifier("title", true, new Model<String>(studyModel.getDescription()))));
             row.add(new Label("numberOfSeries").add(tooltip));
             row.add(new Label("numberOfInstances").add(tooltip));
             row.add(new Label("availability").add(tooltip));
@@ -1860,10 +1871,10 @@ public class StudyListPage extends Panel {
                 
                 @Override
                 public void onClick(final AjaxRequestTarget target) {
-                	showAuditQueryResult(target, 
-                			new AuditRecordRepositoryFacade()
-                				.doSearch(AuditRecordRepositoryFacade.Level.STUDY, 
-                						studyModel.getStudyInstanceUID()));
+                        showAuditQueryResult(target, 
+                                        new AuditRecordRepositoryFacade()
+                                                .doSearch(AuditRecordRepositoryFacade.Level.STUDY, 
+                                                                studyModel.getStudyInstanceUID()));
                 }
             }.add(new Image("arrImg",ImageManager.IMAGE_COMMON_ARR)
             .add(new ImageSizeBehaviour())
@@ -2043,11 +2054,11 @@ public class StudyListPage extends Panel {
             row.add(new Label("spsid").add(tooltip));
             row.add(new Label("modality").add(tooltip));
             row.add(new Label("description", 
-            		new Model<String>(ppsModel.getDescription() != null &&
-            				ppsModel.getDescription().length() > 30 ? 
-            						ppsModel.getDescription().substring(0,30) : 
-            							ppsModel.getDescription()))
-        		.add(new AttributeModifier("title", true, new Model<String>(ppsModel.getDescription()))));
+                        new Model<String>(ppsModel.getDescription() != null &&
+                                        ppsModel.getDescription().length() > 30 ? 
+                                                        ppsModel.getDescription().substring(0,30) : 
+                                                                ppsModel.getDescription()))
+                        .add(new AttributeModifier("title", true, new Model<String>(ppsModel.getDescription()))));
             row.add(new Label("numberOfSeries").add(tooltip));
             row.add(new Label("numberOfInstances").add(tooltip));
             row.add(new Label("status").add(tooltip));
@@ -2185,13 +2196,13 @@ public class StudyListPage extends Panel {
             );
 
             row.add(new AjaxLink<Object>("forward") {
-            	
+                
                 private static final long serialVersionUID = 1L;
 
                 @Override
                 public void onClick(AjaxRequestTarget target) {
                     if (checkExists(ppsModel, target)) {
-                	modalWindow.setContent(new MppsForwardPanel("content", modalWindow, ppsModel));
+                        modalWindow.setContent(new MppsForwardPanel("content", modalWindow, ppsModel));
                         modalWindow.setTitle("");
                         modalWindow.show(target);
                     }
@@ -2206,10 +2217,10 @@ public class StudyListPage extends Panel {
 
                 @Override
                 public void onClick(final AjaxRequestTarget target) {
-                	showAuditQueryResult(target, 
-                			new AuditRecordRepositoryFacade()
-                				.doSearch(AuditRecordRepositoryFacade.Level.PPS, 
-                						ppsModel.getStudy().getStudyInstanceUID()));
+                        showAuditQueryResult(target, 
+                                        new AuditRecordRepositoryFacade()
+                                                .doSearch(AuditRecordRepositoryFacade.Level.PPS, 
+                                                                ppsModel.getStudy().getStudyInstanceUID()));
                 }
             }.add(new Image("arrImg",ImageManager.IMAGE_COMMON_ARR)
             .add(new ImageSizeBehaviour())
@@ -2285,11 +2296,11 @@ public class StudyListPage extends Panel {
             row.add(new Label("sourceAET").add(tooltip));
             row.add(new Label("modality").add(tooltip));
             row.add(new Label("description", 
-            		new Model<String>(seriesModel.getDescription() != null &&
-            				seriesModel.getDescription().length() > 30 ? 
-            						seriesModel.getDescription().substring(0,30) : 
-            							seriesModel.getDescription()))
-        		.add(new AttributeModifier("title", true, new Model<String>(seriesModel.getDescription()))));
+                        new Model<String>(seriesModel.getDescription() != null &&
+                                        seriesModel.getDescription().length() > 30 ? 
+                                                        seriesModel.getDescription().substring(0,30) : 
+                                                                seriesModel.getDescription()))
+                        .add(new AttributeModifier("title", true, new Model<String>(seriesModel.getDescription()))));
             row.add(new Label("numberOfInstances").add(tooltip));
             row.add(new Label("availability").add(tooltip));
             row.add(new AjaxFallbackLink<Object>("toggledetails") {
@@ -2347,11 +2358,11 @@ public class StudyListPage extends Panel {
 
                 @Override
                 public void onClick(final AjaxRequestTarget target) {
-                	showAuditQueryResult(target, 
-                			new AuditRecordRepositoryFacade()
-                				.doSearch(AuditRecordRepositoryFacade.Level.SERIES, 
-                						((StudyModel) seriesModel.getParent().getParent())
-                                        .getStudyInstanceUID()));                	
+                        showAuditQueryResult(target, 
+                                        new AuditRecordRepositoryFacade()
+                                                .doSearch(AuditRecordRepositoryFacade.Level.SERIES, 
+                                                                ((StudyModel) seriesModel.getParent().getParent())
+                                        .getStudyInstanceUID()));                       
                 }
             }.add(new Image("arrImg",ImageManager.IMAGE_COMMON_ARR)
             .add(new ImageSizeBehaviour())
@@ -2424,11 +2435,11 @@ public class StudyListPage extends Panel {
             row.add(new Label("instanceNumber").add(tooltip));
             row.add(new Label("sopClassUID").add(tooltip));
             row.add(new Label("description", 
-            		new Model<String>(instModel.getDescription() != null &&
-            				instModel.getDescription().length() > 30 ? 
-            						instModel.getDescription().substring(0,30) : 
-            							instModel.getDescription()))
-        		.add(new AttributeModifier("title", true, new Model<String>(instModel.getDescription()))));
+                        new Model<String>(instModel.getDescription() != null &&
+                                        instModel.getDescription().length() > 30 ? 
+                                                        instModel.getDescription().substring(0,30) : 
+                                                                instModel.getDescription()))
+                        .add(new AttributeModifier("title", true, new Model<String>(instModel.getDescription()))));
             row.add(new Label("availability").add(tooltip));
             row.add(new AjaxFallbackLink<Object>("toggledetails") {
 
@@ -2486,10 +2497,10 @@ public class StudyListPage extends Panel {
 
                 @Override
                 public void onClick(final AjaxRequestTarget target) {
-                	showAuditQueryResult(target, 
-                			new AuditRecordRepositoryFacade()
-                				.doSearch(AuditRecordRepositoryFacade.Level.INSTANCE, 
-                						((StudyModel) instModel.getParent().getParent().getParent())
+                        showAuditQueryResult(target, 
+                                        new AuditRecordRepositoryFacade()
+                                                .doSearch(AuditRecordRepositoryFacade.Level.INSTANCE, 
+                                                                ((StudyModel) instModel.getParent().getParent().getParent())
                                         .getStudyInstanceUID()));
                 }
             }.add(new Image("arrImg",ImageManager.IMAGE_COMMON_ARR)
@@ -2966,14 +2977,14 @@ public class StudyListPage extends Panel {
     }
     
     private void showAuditQueryResult(AjaxRequestTarget target, String result) {
-		if (result == null) {
-			msgWin
-				.setInfoMessage(getString("folder.arr.query.failed"));
-			msgWin.setColor("#FF0000");
-			msgWin.show(target);
-		} else
-			arrWindow
-        		.setContent(new Label("content", new Model<String>(result))
+                if (result == null) {
+                        msgWin
+                                .setInfoMessage(getString("folder.arr.query.failed"));
+                        msgWin.setColor("#FF0000");
+                        msgWin.show(target);
+                } else
+                        arrWindow
+                        .setContent(new Label("content", new Model<String>(result))
                 .setEscapeModelStrings(false)
                 .add(new AttributeModifier("class", true, new Model<String>("arr"))))
                 .show(target);
