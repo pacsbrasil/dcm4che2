@@ -37,11 +37,12 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.web.war.tc.keywords.acr;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import javax.swing.tree.DefaultTreeModel;
@@ -60,8 +61,9 @@ import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.panel.Fragment;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.Model;
-import org.apache.wicket.util.convert.IConverter;
+import org.apache.wicket.model.util.ListModel;
 import org.dcm4chee.icons.ImageManager;
+import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 import org.dcm4chee.web.war.common.AutoSelectInputTextBehaviour;
 import org.dcm4chee.web.war.tc.TCPopupManager.AbstractTCPopup;
 import org.dcm4chee.web.war.tc.TCPopupManager.TCPopupPosition;
@@ -80,22 +82,26 @@ public class TCKeywordACRInput extends AbstractTCKeywordInput {
 
     private static final long serialVersionUID = 1L;
 
-    private TextField<TCKeyword> text;
-    
-    public TCKeywordACRInput(final String id) {
-        this(id, null);
+    private TextField<String> text;
+
+    public TCKeywordACRInput(final String id, TCQueryFilterKey filterKey, 
+    		boolean usedForSearch, TCKeyword selectedKeyword) {
+    	this(id, filterKey, usedForSearch, selectedKeyword!=null ?
+    			Collections.singletonList(selectedKeyword) : null);
     }
+    
+    public TCKeywordACRInput(final String id, TCQueryFilterKey filterKey, 
+    		boolean usedForSearch, List<TCKeyword> selectedKeywords) {
+        super(id, filterKey, usedForSearch);
 
-    public TCKeywordACRInput(final String id, TCKeyword selectedKeyword) {
-        super(id);
-
-        setDefaultModel(new Model<TCKeyword>() {
-            @Override
-            public void setObject(TCKeyword keyword)
+        setDefaultModel(new ListModel<TCKeyword>(selectedKeywords) {
+			private static final long serialVersionUID = 1L;
+			@Override
+            public void setObject(List<TCKeyword> keywords)
             {
-                if (!TCUtilities.equals(getObject(),keyword))
+                if (!TCUtilities.equals(getObject(),keywords))
                 {
-                    super.setObject(keyword);
+                    super.setObject(keywords);
                     
                     fireValueChanged();
                 }
@@ -103,56 +109,17 @@ public class TCKeywordACRInput extends AbstractTCKeywordInput {
         });
         
         final ACRChooser chooser = new ACRChooser("keyword-acr");
-
-        text = new TextField<TCKeyword>("text",
-                selectedKeyword != null ? new Model<TCKeyword>(selectedKeyword)
-                        : new Model<TCKeyword>(), TCKeyword.class) {
-            @Override
-            public IConverter getConverter(Class<?> type) {
-                if (TCKeyword.class.isAssignableFrom(type)) {
-                    return new IConverter() {
-                        @Override
-                        public String convertToString(Object o, Locale locale) {
-                            if (o instanceof TCKeyword) {
-                                return ((TCKeyword) o).getName();
-                            }
-
-                            return o != null ? o.toString() : null;
-                        }
-
-                        @Override
-                        public TCKeyword convertToObject(String s, Locale locale) {
-                            if (s != null) {
-                                TCKeyword keyword = new TCKeyword(s, null,
-                                        false);
-
-                                TCKeyword curKeyword = TCKeywordACRInput.this
-                                        .getModel().getObject();
-
-                                if (curKeyword == null
-                                        || !curKeyword.getName().equals(
-                                                keyword.getName())) {
-                                    TCKeywordACRInput.this.getModel()
-                                            .setObject(keyword);
-                                }
-
-                                return keyword;
-                            }
-
-                            return null;
-                        }
-                    };
-                }
-                return super.getConverter(type);
-            }
-        };
+        final MultipleKeywordsTextModel textModel = new MultipleKeywordsTextModel(selectedKeywords);
+        text = new TextField<String>("text", textModel);
         text.setOutputMarkupId(true);
         text.add(new AutoSelectInputTextBehaviour());
         text.add(new AjaxFormComponentUpdatingBehavior("onchange") {
-            @Override
+			private static final long serialVersionUID = 1L;
+			@Override
             public void onUpdate(AjaxRequestTarget target)
             {
                 text.updateModel();
+                getModel().setObject(textModel.getKeywordItems());
             }
         });
         
@@ -160,7 +127,7 @@ public class TCKeywordACRInput extends AbstractTCKeywordInput {
         chooserBtn.add(new Image("chooser-button-img", ImageManager.IMAGE_TC_ARROW_DOWN)
             .setOutputMarkupId(true));
 
-        ACRPopup popup = new ACRPopup(chooser, text);
+        ACRPopup popup = new ACRPopup(chooser);
         popup.installPopupTrigger(chooserBtn, new TCPopupPosition(
                 chooserBtn.getMarkupId(),
                 popup.getMarkupId(), 
@@ -171,13 +138,40 @@ public class TCKeywordACRInput extends AbstractTCKeywordInput {
         add(popup);
     }
 
-    @Override
-    public TCKeyword getKeyword() {
-        return getModel().getObject();
+    public List<TCKeyword> getKeywordsAsList() {
+    	return getModel().getObject();
+    }
+    
+    public void setKeywords(List<TCKeyword> keywords)
+    {
+    	getModel().setObject(keywords);
+    	((MultipleKeywordsTextModel)text.getModel()).setKeywordItems(keywords);
     }
 
     @Override
-    public void resetKeyword() {
+    public TCKeyword[] getKeywords() {
+        List<TCKeyword> keywords = getKeywordsAsList();
+        if (keywords!=null && !keywords.isEmpty())
+        {
+        	List<TCKeyword> list = new ArrayList<TCKeyword>(keywords);
+        	for (Iterator<TCKeyword> it=list.iterator();it.hasNext();)
+        	{
+        		TCKeyword keyword = it.next();
+        		if (keyword==null || keyword.isAllKeywordsPlaceholder())
+        		{
+        			it.remove();
+        		}
+        	}
+        	if (!list.isEmpty())
+        	{
+        		return list.toArray(new TCKeyword[0]);
+        	}
+        }
+        return null;
+    }
+
+    @Override
+    public void resetKeywords() {
         getModel().setObject(null);
         text.getModel().setObject(null);
     }
@@ -195,12 +189,48 @@ public class TCKeywordACRInput extends AbstractTCKeywordInput {
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    private Model<TCKeyword> getModel() {
-        return (Model) getDefaultModel();
+    private ListModel<TCKeyword> getModel() {
+        return (ListModel) getDefaultModel();
+    }
+    
+    private class MultipleKeywordsTextModel extends MultipleItemsTextModel
+    {
+		private static final long serialVersionUID = 4098272902061698377L;
+		
+		public MultipleKeywordsTextModel(List<TCKeyword> selectedKeywords)
+    	{
+    		setKeywordItems(selectedKeywords);
+    	}
+    	
+    	public void setKeywordItems(List<TCKeyword> keywords)
+    	{
+    		setObject(toString(keywords));
+    	}
+    	
+    	public List<TCKeyword> getKeywordItems()
+    	{
+    		List<String> items = getStringItems();
+    		if (items!=null && !items.isEmpty())
+    		{
+    			List<TCKeyword> keywords = new ArrayList<TCKeyword>();
+    			for (String item : items)
+    			{
+                    TCKeyword keyword = new TCKeyword(item, null, false);
+                    if (keyword!=null)
+                    {
+                    	keywords.add(keyword);
+                    }
+    			}
+    			return keywords;
+    		}
+    		return null;
+    	}
     }
     
     public class ACRChooser extends Fragment {
-        private TCKeyword anatomyKeyword;
+		private static final long serialVersionUID = -4128242521402923293L;
+
+		private TCKeyword anatomyKeyword;
 
         private TCKeyword pathologyKeyword;
 
@@ -339,16 +369,16 @@ public class TCKeywordACRInput extends AbstractTCKeywordInput {
             add(anatomyTree);
         }
 
-        public TCKeyword getKeyword() {
+        public List<? extends TCKeyword> getKeywords() {
 
             if (anatomyKeyword != null && pathologyKeyword != null
                     && anatomyKeyword.getCode() != null
                     && pathologyKeyword.getCode() != null) {
-                return new ACRKeyword(anatomyKeyword, pathologyKeyword);
+                return Collections.singletonList(new ACRKeyword(anatomyKeyword, pathologyKeyword));
             } else if (pathologyKeyword != null) {
-                return pathologyKeyword;
+                return Collections.singletonList(pathologyKeyword);
             } else if (anatomyKeyword != null) {
-                return anatomyKeyword;
+                return Collections.singletonList(anatomyKeyword);
             }
 
             return null;
@@ -445,14 +475,13 @@ public class TCKeywordACRInput extends AbstractTCKeywordInput {
 
     private class ACRPopup extends AbstractTCPopup
     {
-        private ACRChooser chooser;
-        private TextField<TCKeyword> text;
+		private static final long serialVersionUID = -8132148064066349246L;
+		private ACRChooser chooser;
 
-        public ACRPopup(ACRChooser chooser, TextField<TCKeyword> text) {
+        public ACRPopup(ACRChooser chooser) {
             super("acr-keyword-popup", true, false, true, true);
 
             this.chooser = chooser;
-            this.text = text;
             
             add(chooser);
         }
@@ -460,23 +489,39 @@ public class TCKeywordACRInput extends AbstractTCKeywordInput {
         @Override
         public void afterShowing(AjaxRequestTarget target)
         {
-            chooser.setKeyword(
-                    TCKeywordACRInput.this.getModel().getObject());
-            
+        	if (isMultipleKeywordSearchEnabled())
+        	{
+        		chooser.setKeyword(null);
+        	}
+        	else
+        	{
+        		chooser.setKeyword(getKeyword());
+        	}
+        	
             target.addComponent(chooser);
         }
 
-        @Override
-        public void beforeHiding(AjaxRequestTarget target) {
-            // apply keyword(s)
-            TCKeyword keyword = chooser.getKeyword();
-            if (keyword != null && keyword.isAllKeywordsPlaceholder()) {
-                keyword = null;
-            }
+        @SuppressWarnings({ "unchecked", "rawtypes" })
+		@Override
+        public void beforeHiding(AjaxRequestTarget target) 
+        {
+        	List<? extends TCKeyword> selectedKeywords = chooser.getKeywords();
 
-            TCKeywordACRInput.this.getModel().setObject(keyword);
-            text.setModelObject(keyword);
-            
+        	if (isMultipleKeywordSearchEnabled())
+        	{
+        		if (selectedKeywords!=null)
+        		{
+                	List<TCKeyword> keywords = new ArrayList<TCKeyword>();
+        			keywords.addAll(getKeywordsAsList());
+        			keywords.addAll(selectedKeywords);
+        			setKeywords(keywords);
+        		}
+        	}
+        	else
+        	{
+        		setKeywords((List)selectedKeywords);
+        	}
+
             target.addComponent(text);
         }
     }

@@ -3,13 +3,20 @@ package org.dcm4chee.web.war.tc;
 import java.io.Serializable;
 
 import org.apache.wicket.Component;
-import org.dcm4chee.web.war.tc.TCObject.ITextOrCode;
+import org.dcm4chee.web.dao.tc.ITextOrCode;
+import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 
 public interface TCInput extends Serializable {
     
-    public ITextOrCode getValue();
+	public boolean isUsedForSearch();
+	
+	public TCQueryFilterKey getFilterKey();
+	
+	public ITextOrCode getValue();
+	
+    public ITextOrCode[] getValues();
 
-    public void resetValue();
+    public void resetValues();
 
     public Component getComponent();
 
@@ -19,6 +26,6 @@ public interface TCInput extends Serializable {
     
     public static interface ValueChangeListener extends Serializable
     {
-        public void valueChanged(ITextOrCode value);
+        public void valueChanged(ITextOrCode[] value);
     }
 }

@@ -771,6 +771,40 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isTCMultipleKeywordSearchEnabled"
+      setMethod="setTCMultipleKeywordSearchEnabled">
+      <description><![CDATA[
+      If true, searching for multiple keywords is enabled: This means that<br>
+      1) the user is able to specify/select multiple keyword search strings or codes<br>
+      2) a teaching-file is in the search result set, if it contains one (OR-concatenation)<br>
+      or all (AND-concatenation) specified<br> keyword strings/codes. The type of concatenation<br>
+      used can be configured with the 'TCMultipleKeywordORConcat' setting.
+      <br>
+      By default, searching for multiple keywords is disabled.
+      ]]></description>
+      <name>TCMultipleKeywordSearch</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isTCMultipleKeywordORConcatEnabled"
+      setMethod="setTCMultipleKeywordORConcatEnabled">
+      <description><![CDATA[
+      If true, searching for multiple keywords uses an OR-concatenation: A teaching-file
+      is in the search result set, if at least one search keyword matches. If false, an
+      AND-concatenation is used. In this case a teaching-file is the search result set just
+      if ALL search keywords matches the keywords of the teaching-file. By default, OR-concatenation
+      is used. This setting is ignored, if TCMultipleKeywordSearch is set to false.
+      ]]></description>
+      <name>TCMultipleKeywordORConcat</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getMoveScuServiceName"
       setMethod="setMoveScuServiceName">
       <description>Used internally. Do NOT modify.

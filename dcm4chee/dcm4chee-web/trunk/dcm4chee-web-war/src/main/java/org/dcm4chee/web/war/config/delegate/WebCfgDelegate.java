@@ -292,6 +292,16 @@ public class WebCfgDelegate extends BaseCfgDelegate {
     {
         return getBoolean("TCEditOnDoubleClick", false);
     }
+    
+    public boolean isTCMultipleKeywordSearchEnabled()
+    {
+        return getBoolean("TCMultipleKeywordSearch", false);
+    }
+    
+    public boolean isTCMultipleKeywordORConcatEnabled()
+    {
+    	return getBoolean("TCMultipleKeywordORConcat", true);
+    }
 
     public String getTCKeywordCataloguesPath() {
         return getString("TCKeywordCataloguesPath");

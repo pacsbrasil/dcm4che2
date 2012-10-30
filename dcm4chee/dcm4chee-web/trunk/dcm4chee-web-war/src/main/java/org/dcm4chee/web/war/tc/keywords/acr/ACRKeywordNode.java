@@ -37,7 +37,7 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.web.war.tc.keywords.acr;
 
-import org.dcm4chee.web.war.tc.TCObject.DicomCode;
+import org.dcm4chee.web.dao.tc.TCDicomCode;
 import org.dcm4chee.web.war.tc.keywords.TCKeyword;
 import org.dcm4chee.web.war.tc.keywords.TCKeywordNode;
 
@@ -52,13 +52,13 @@ public class ACRKeywordNode extends TCKeywordNode {
 
     private String id;
 
-    private ACRKeywordNode(String id, String name, DicomCode code) {
+    private ACRKeywordNode(String id, String name, TCDicomCode code) {
         super(new TCKeyword(name, code, false));
 
         this.id = id;
     }
 
-    public static ACRKeywordNode create(String id, DicomCode code) {
+    public static ACRKeywordNode create(String id, TCDicomCode code) {
         return new ACRKeywordNode(id, null, code);
     }
 
@@ -100,9 +100,9 @@ public class ACRKeywordNode extends TCKeywordNode {
                 .getCode()) : null;
     }
 
-    public ACRKeywordNode findNodeByCode(DicomCode code) {
+    public ACRKeywordNode findNodeByCode(TCDicomCode code) {
         if (code != null) {
-            DicomCode c = getKeyword().getCode();
+            TCDicomCode c = getKeyword().getCode();
 
             if (c != null && c.equals(code)
                     && c.getMeaning().equals(code.getMeaning())) {
@@ -125,7 +125,7 @@ public class ACRKeywordNode extends TCKeywordNode {
 
     public ACRKeywordNode findNodeByCodeValue(String value) {
         if (value != null) {
-            DicomCode code = getKeyword().getCode();
+            TCDicomCode code = getKeyword().getCode();
 
             if (code != null) {
                 if (value.equals(code.getValue())) {

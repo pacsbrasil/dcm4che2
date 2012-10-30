@@ -38,12 +38,13 @@
 package org.dcm4chee.web.dao.tc;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.dcm4chee.archive.entity.Code;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue.AcquisitionModality;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue.Category;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue.Level;
@@ -91,23 +92,8 @@ public class TCQueryFilter implements Serializable {
     public void setAcquisitionModality(AcquisitionModality acquisitionModality) {
         putValue(
                 TCQueryFilterKey.AcquisitionModality,
-                acquisitionModality != null ? acquisitionModality.createFilterValue() : null);
-    }
-
-    public String getAnatomy() {
-        try {
-            return (String) getValue(TCQueryFilterKey.Anatomy);
-        } catch (ClassCastException e) {
-            log.warn(
-                    "TC property 'anatomy' is not of type String. Returning null...",
-                    e);
-
-            return null;
-        }
-    }
-
-    public void setAnatomy(String anatomy) {
-        putValue(TCQueryFilterKey.Anatomy, anatomy);
+                acquisitionModality != null ? 
+                		acquisitionModality.createFilterValue() : null);
     }
 
     public String getAuthorAffiliation() {
@@ -143,22 +129,6 @@ public class TCQueryFilter implements Serializable {
                 category != null ? TCQueryFilterValue.create(category) : null);
     }
 
-    public String getDiagnosis() {
-        try {
-            return (String) getValue(TCQueryFilterKey.Diagnosis);
-        } catch (ClassCastException e) {
-            log.warn(
-                    "TC property 'diagnosis' is not of type String. Returning null...",
-                    e);
-
-            return null;
-        }
-    }
-
-    public void setDiagnosis(String diagnosis) {
-        putValue(TCQueryFilterKey.Diagnosis, diagnosis);
-    }
-
     public YesNo getDiagnosisConfirmed() {
         return (YesNo) getValue(TCQueryFilterKey.DiagnosisConfirmed);
     }
@@ -170,44 +140,12 @@ public class TCQueryFilter implements Serializable {
                         .create(diagnosisConfirmed) : null);
     }
 
-    public String getDiffDiagnosis() {
-        try {
-            return (String) getValue(TCQueryFilterKey.DifferentialDiagnosis);
-        } catch (ClassCastException e) {
-            log.warn(
-                    "TC property 'diff-diagnosis' is not of type String. Returning null...",
-                    e);
-
-            return null;
-        }
-    }
-
-    public void setDiffDiagnosis(String diffDiagnosis) {
-        putValue(TCQueryFilterKey.DifferentialDiagnosis, diffDiagnosis);
-    }
-
     public String getDiscussion() {
         return (String) getValue(TCQueryFilterKey.Discussion);
     }
 
     public void setDiscussion(String discussion) {
         putValue(TCQueryFilterKey.Discussion, discussion);
-    }
-
-    public String getFinding() {
-        try {
-            return (String) getValue(TCQueryFilterKey.Finding);
-        } catch (ClassCastException e) {
-            log.warn(
-                    "TC property 'finding' is not of type String. Returning null...",
-                    e);
-
-            return null;
-        }
-    }
-
-    public void setFinding(String finding) {
-        putValue(TCQueryFilterKey.Finding, finding);
     }
 
     public String getHistory() {
@@ -218,22 +156,6 @@ public class TCQueryFilter implements Serializable {
         putValue(TCQueryFilterKey.History, history);
     }
 
-    public String getKeyword() {
-        try {
-            return (String) getValue(TCQueryFilterKey.Keyword);
-        } catch (ClassCastException e) {
-            log.warn(
-                    "TC property 'keyword' is not of type String. Returning null...",
-                    e);
-
-            return null;
-        }
-    }
-
-    public void setKeyword(String keyword) {
-        putValue(TCQueryFilterKey.Keyword, keyword);
-    }
-
     public Level getLevel() {
         return (Level) getValue(TCQueryFilterKey.Level);
     }
@@ -241,38 +163,6 @@ public class TCQueryFilter implements Serializable {
     public void setLevel(Level level) {
         putValue(TCQueryFilterKey.Level,
                 level != null ? TCQueryFilterValue.create(level) : null);
-    }
-
-    public String getOrganSystem() {
-        try {
-            return (String) getValue(TCQueryFilterKey.OrganSystem);
-        } catch (ClassCastException e) {
-            log.warn(
-                    "TC property 'organ-system' is not of type String. Returning null...",
-                    e);
-
-            return null;
-        }
-    }
-
-    public void setOrganSystem(String organSystem) {
-        putValue(TCQueryFilterKey.OrganSystem, organSystem);
-    }
-
-    public String getPathology() {
-        try {
-            return (String) getValue(TCQueryFilterKey.Pathology);
-        } catch (ClassCastException e) {
-            log.warn(
-                    "TC property 'pathology' is not of type String. Returning null...",
-                    e);
-
-            return null;
-        }
-    }
-
-    public void setPathology(String pathology) {
-        putValue(TCQueryFilterKey.Pathology, pathology);
     }
 
     public PatientSex getPatientSex() {
@@ -310,9 +200,9 @@ public class TCQueryFilter implements Serializable {
         putValue(TCQueryFilterKey.Title, title);
     }
 
-    public Code getAnatomyCode() {
+    public ITextOrCode getAnatomy() {
         try {
-            return (Code) getValue(TCQueryFilterKey.Anatomy);
+            return (ITextOrCode) getValue(TCQueryFilterKey.Anatomy);
         } catch (ClassCastException e) {
             log.warn(
                     "TC property 'anatomy' not of type Code. Returning null...",
@@ -322,15 +212,13 @@ public class TCQueryFilter implements Serializable {
         }
     }
 
-    public void setAnatomyCode(Code anatomyCode) {
-        putValue(TCQueryFilterKey.Anatomy,
-                anatomyCode != null ? TCQueryFilterValue.create(anatomyCode)
-                        : null);
+    public void setAnatomy(ITextOrCode anatomy) {
+        putValue(TCQueryFilterKey.Anatomy, anatomy);
     }
 
-    public Code getDiagnosisCode() {
+    public ITextOrCode getDiagnosis() {
         try {
-            return (Code) getValue(TCQueryFilterKey.Diagnosis);
+            return (ITextOrCode) getValue(TCQueryFilterKey.Diagnosis);
         } catch (ClassCastException e) {
             log.warn(
                     "TC property 'diagnosis' not of type Code. Returning null...",
@@ -340,16 +228,13 @@ public class TCQueryFilter implements Serializable {
         }
     }
 
-    public void setDiagnosisCode(Code diagnosisCode) {
-        putValue(
-                TCQueryFilterKey.Diagnosis,
-                diagnosisCode != null ? TCQueryFilterValue
-                        .create(diagnosisCode) : null);
+    public void setDiagnosis(ITextOrCode diagnosis) {
+        putValue(TCQueryFilterKey.Diagnosis, diagnosis);
     }
 
-    public Code getDiffDiagnosisCode() {
+    public ITextOrCode getDiffDiagnosis() {
         try {
-            return (Code) getValue(TCQueryFilterKey.DifferentialDiagnosis);
+            return (ITextOrCode) getValue(TCQueryFilterKey.DifferentialDiagnosis);
         } catch (ClassCastException e) {
             log.warn(
                     "TC property 'diff-diagnosis' not of type Code. Returning null...",
@@ -359,16 +244,13 @@ public class TCQueryFilter implements Serializable {
         }
     }
 
-    public void setDiffDiagnosisCode(Code diffDiagnosisCode) {
-        putValue(
-                TCQueryFilterKey.DifferentialDiagnosis,
-                diffDiagnosisCode != null ? TCQueryFilterValue
-                        .create(diffDiagnosisCode) : null);
+    public void setDiffDiagnosis(ITextOrCode diffDiagnosis) {
+        putValue(TCQueryFilterKey.DifferentialDiagnosis, diffDiagnosis);
     }
 
-    public Code getFindingCode() {
+    public ITextOrCode getFinding() {
         try {
-            return (Code) getValue(TCQueryFilterKey.Finding);
+            return (ITextOrCode) getValue(TCQueryFilterKey.Finding);
         } catch (ClassCastException e) {
             log.warn(
                     "TC property 'finding' not of type Code. Returning null...",
@@ -378,15 +260,13 @@ public class TCQueryFilter implements Serializable {
         }
     }
 
-    public void setFindingCode(Code findingCode) {
-        putValue(TCQueryFilterKey.Finding,
-                findingCode != null ? TCQueryFilterValue.create(findingCode)
-                        : null);
+    public void setFinding(ITextOrCode finding) {
+        putValue(TCQueryFilterKey.Finding, finding);
     }
 
-    public Code getKeywordCode() {
+    public ITextOrCode[] getKeywords() {
         try {
-            return (Code) getValue(TCQueryFilterKey.Keyword);
+            return (ITextOrCode[]) getValues(TCQueryFilterKey.Keyword);
         } catch (ClassCastException e) {
             log.warn(
                     "TC property 'keyword' not of type Code. Returning null...",
@@ -396,15 +276,13 @@ public class TCQueryFilter implements Serializable {
         }
     }
 
-    public void setKeywordCode(Code keywordCode) {
-        putValue(TCQueryFilterKey.Keyword,
-                keywordCode != null ? TCQueryFilterValue.create(keywordCode)
-                        : null);
+    public void setKeywords(ITextOrCode...keywords) {
+        putValue(TCQueryFilterKey.Keyword, keywords);
     }
 
-    public Code getOrganSystemCode() {
+    public ITextOrCode getOrganSystem() {
         try {
-            return (Code) getValue(TCQueryFilterKey.OrganSystem);
+            return (ITextOrCode) getValue(TCQueryFilterKey.OrganSystem);
         } catch (ClassCastException e) {
             log.warn(
                     "TC property 'organ-system' not of type Code. Returning null...",
@@ -414,16 +292,13 @@ public class TCQueryFilter implements Serializable {
         }
     }
 
-    public void setOrganSystemCode(Code organSystemCode) {
-        putValue(
-                TCQueryFilterKey.OrganSystem,
-                organSystemCode != null ? TCQueryFilterValue
-                        .create(organSystemCode) : null);
+    public void setOrganSystem(ITextOrCode organSystem) {
+        putValue(TCQueryFilterKey.OrganSystem, organSystem);
     }
 
-    public Code getPathologyCode() {
+    public ITextOrCode getPathology() {
         try {
-            return (Code) getValue(TCQueryFilterKey.Pathology);
+            return (ITextOrCode) getValue(TCQueryFilterKey.Pathology);
         } catch (ClassCastException e) {
             log.warn(
                     "TC property 'pathology' not of type Code. Returning null...",
@@ -433,11 +308,8 @@ public class TCQueryFilter implements Serializable {
         }
     }
 
-    public void setPathologyCode(Code pathologyCode) {
-        putValue(
-                TCQueryFilterKey.Pathology,
-                pathologyCode != null ? TCQueryFilterValue
-                        .create(pathologyCode) : null);
+    public void setPathology(ITextOrCode pathology) {
+        putValue(TCQueryFilterKey.Pathology, pathology);
     }
 
     @Override
@@ -473,12 +345,49 @@ public class TCQueryFilter implements Serializable {
 
         return value != null ? value.getValue() : null;
     }
+    
+    public Object[] getValues(TCQueryFilterKey key) {
+        TCQueryFilterValue<?> value = values != null ? values.get(key) : null;
+
+        return value != null ? value.getValues() : null;
+    }
 
     private void putValue(TCQueryFilterKey key, String value) {
         putValue(
                 key,
                 value != null && value.length() > 0 ? TCQueryFilterValue
                         .create(value) : null);
+    }
+    
+    private void putValue(TCQueryFilterKey key, ITextOrCode...values)
+    {
+    	List<ITextOrCode> searchables = null;
+    	
+    	if (values!=null && values.length>0)
+    	{
+    		searchables = new ArrayList<ITextOrCode>();
+    		for (ITextOrCode value : values)
+    		{
+    			if (value!=null)
+    			{
+    				String text = value.getText();
+    				TCDicomCode code = value.getCode();
+    				if ( (code!=null) || (text!=null && !text.isEmpty()))
+    				{
+    					searchables.add(value);
+    				}
+    			}
+    		}
+    	}
+    	if (searchables==null || searchables.isEmpty())
+    	{
+    		putValue(key, (TCQueryFilterValue<?>) null);
+    	}
+    	else
+    	{
+    		putValue(key, TCQueryFilterValue.create(
+    				searchables.toArray(new ITextOrCode[0])));
+    	}
     }
 
     private void putValue(TCQueryFilterKey key, TCQueryFilterValue<?> value) {

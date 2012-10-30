@@ -39,9 +39,10 @@ package org.dcm4chee.web.war.tc.keywords;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
@@ -55,12 +56,12 @@ import org.apache.wicket.extensions.markup.html.tree.DefaultAbstractTree.LinkTyp
 import org.apache.wicket.extensions.markup.html.tree.Tree;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.form.Button;
-import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.Model;
-import org.apache.wicket.util.convert.IConverter;
+import org.apache.wicket.model.util.ListModel;
 import org.dcm4chee.icons.ImageManager;
+import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 import org.dcm4chee.web.war.common.AutoSelectInputTextBehaviour;
 import org.dcm4chee.web.war.tc.TCPopupManager.AbstractTCPopup;
 import org.dcm4chee.web.war.tc.TCPopupManager.TCPopupPosition;
@@ -76,96 +77,73 @@ public class TCKeywordTreeInput extends AbstractTCKeywordInput {
 
     private static final long serialVersionUID = 1L;
 
-    private AutoCompleteTextField<TCKeyword> text;
+    private TCKeywordNode root;
+    private AutoCompleteTextField<String> text;
     
-    public TCKeywordTreeInput(final String id, final TCKeywordNode root) {
-        this(id, null, root);
+    public TCKeywordTreeInput(final String id, TCQueryFilterKey filterKey, boolean usedForSearch, 
+    		TCKeyword selectedKeyword, final TCKeywordNode root) {
+    	this(id, filterKey, usedForSearch, selectedKeyword!=null ? 
+    			Collections.singletonList(selectedKeyword) : null, root);
     }
+    
+    public TCKeywordTreeInput(final String id, TCQueryFilterKey filterKey, boolean usedForSearch, 
+    		List<TCKeyword> selectedKeywords, final TCKeywordNode root) {
+        super(id, filterKey, usedForSearch);
 
-    public TCKeywordTreeInput(final String id, TCKeyword selectedKeyword,
-            final TCKeywordNode root) {
-        super(id);
-
-        setDefaultModel(new Model<TCKeyword>(selectedKeyword) {
-            @Override
-            public void setObject(TCKeyword keyword)
+        setDefaultModel(new ListModel<TCKeyword>(selectedKeywords) {
+			private static final long serialVersionUID = 1L;
+			@Override
+            public void setObject(List<TCKeyword> keywords)
             {
-                if (!TCUtilities.equals(getObject(),keyword))
+				List<TCKeyword> cur = getObject();
+                if (!TCUtilities.equals(cur,keywords))
                 {
-                    super.setObject(keyword);
-                    
+                    super.setObject(keywords);                    
                     fireValueChanged();
                 }
             }
         });
         
-        text = new AutoCompleteTextField<TCKeyword>(
-                "text", getModel(), TCKeyword.class, new AutoCompleteSettings()) {
-
-            private static final long serialVersionUID = 1L;
-
+        this.root = root;
+        
+        final MultipleKeywordsTextModel textModel = new MultipleKeywordsTextModel(selectedKeywords);
+        this.text = new AutoCompleteTextField<String>(
+                "text", textModel, String.class, new AutoCompleteSettings()) {
+        	private static final long serialVersionUID = 1L;
             @Override
-            public IConverter getConverter(Class<?> type) {
-                if (TCKeyword.class.equals(type)) {
-                    return new IConverter() {
-
-                        private static final long serialVersionUID = 1L;
-
-                        @Override
-                        public String convertToString(Object o, Locale locale) {
-                            return o != null ? o.toString() : null;
-                        }
-
-                        @Override
-                        public TCKeyword convertToObject(String s, Locale locale) {
-                            if (s != null) {
-                                TCKeywordNode node = findNode(root, s);
-                                if (node != null) {
-                                    return node.getKeyword();
-                                } else if (s.length() > 0) {
-                                    return new TCKeyword(s, null, false);
-                                }
-                            }
-
-                            return null;
-                        }
-                    };
-                }
-                return super.getConverter(type);
-            }
-
-            @Override
-            protected Iterator<TCKeyword> getChoices(String s) {
-                List<TCKeyword> keywords = new ArrayList<TCKeyword>();
+            protected Iterator<String> getChoices(String s) {
+                LinkedHashMap<String, TCKeyword> keywords = new LinkedHashMap<String, TCKeyword>();
                 findMatchingKeywords(root, s, keywords);
-                return keywords.iterator();
+                return keywords.keySet().iterator();
             }
         };
         text.setOutputMarkupId(true);
         text.add(new AutoSelectInputTextBehaviour());
         text.add(new AjaxFormComponentUpdatingBehavior("onchange") {
-            @Override
+			private static final long serialVersionUID = 1L;
+			@Override
             public void onUpdate(AjaxRequestTarget target)
             {
                 text.updateModel();
+                getModel().setObject(textModel.getKeywordItems());
             }
         });
         
-        final KeywordTreePopup popup = new KeywordTreePopup(text);
+        final KeywordTreePopup popup = new KeywordTreePopup();
         final Button chooserBtn = new Button("chooser-button", new Model<String>("..."));
         chooserBtn.add(new Image("chooser-button-img", ImageManager.IMAGE_TC_ARROW_DOWN)
         .setOutputMarkupId(true));
 
         final Tree tree = new Tree("keyword-tree", new DefaultTreeModel(root)) {
-
             private static final long serialVersionUID = 1L;
             @Override
             protected void populateTreeItem(WebMarkupContainer item, int level) {
                 super.populateTreeItem(item, level);
-                
                 //(WEB-429) workaround: disable browser-native drag and drop
-                item.add(new AttributeModifier("onmousedown", true, new AbstractReadOnlyModel<String>() {
-                    @Override
+                item.add(new AttributeModifier("onmousedown", true, 
+                		new AbstractReadOnlyModel<String>() {
+					private static final long serialVersionUID = 1L;
+					@Override
                     public String getObject()
                     {
                         return "return false;";
@@ -175,15 +153,30 @@ public class TCKeywordTreeInput extends AbstractTCKeywordInput {
             @Override
             public void onNodeLinkClicked(AjaxRequestTarget target,
                     TreeNode node) {
-                popup.setSelectedNode((TCKeywordNode)node);
-                popup.hide(target);
+            	if (isMultipleKeywordSearchEnabled())
+            	{
+            		boolean selected = getTreeState().isNodeSelected(node);
+            		if (selected)
+            		{
+            			popup.addSelectedNode((TCKeywordNode)node);
+            		}
+            		else
+            		{
+            			popup.removeSelectedNode((TCKeywordNode)node);
+            		}
+            	}
+            	else
+            	{
+            		popup.setSelectedNodes((TCKeywordNode)node);
+                    popup.hide(target);
+            	}
             }
         };
 
         tree.setOutputMarkupId(true);
         tree.setRootLess(true);
         tree.setLinkType(LinkType.AJAX);
-        tree.getTreeState().setAllowSelectMultiple(false);
+        tree.getTreeState().setAllowSelectMultiple(isMultipleKeywordSearchEnabled());
 
         popup.setTree(root, tree);
         popup.add(tree);
@@ -196,15 +189,43 @@ public class TCKeywordTreeInput extends AbstractTCKeywordInput {
         add(chooserBtn);
         add(popup);
     }
-
-    @Override
-    public TCKeyword getKeyword() {
-        return getModel().getObject();
+    
+    public List<TCKeyword> getKeywordsAsList() {
+    	return getModel().getObject();
+    }
+    
+    public void setKeywords(List<TCKeyword> keywords)
+    {
+    	getModel().setObject(keywords);
+    	((MultipleKeywordsTextModel)text.getModel()).setKeywordItems(keywords);
     }
 
     @Override
-    public void resetKeyword() {
+    public TCKeyword[] getKeywords() {
+        List<TCKeyword> keywords = getKeywordsAsList();
+        if (keywords!=null && !keywords.isEmpty())
+        {
+        	List<TCKeyword> list = new ArrayList<TCKeyword>(keywords);
+        	for (Iterator<TCKeyword> it=list.iterator();it.hasNext();)
+        	{
+        		TCKeyword keyword = it.next();
+        		if (keyword==null || keyword.isAllKeywordsPlaceholder())
+        		{
+        			it.remove();
+        		}
+        	}
+        	if (!list.isEmpty())
+        	{
+        		return list.toArray(new TCKeyword[0]);
+        	}
+        }
+        return null;
+    }
+
+    @Override
+    public void resetKeywords() {
         getModel().setObject(null);
+        text.setModelObject(null);
     }
     
     @Override
@@ -219,9 +240,9 @@ public class TCKeywordTreeInput extends AbstractTCKeywordInput {
         text.setEnabled(!exclusive);
     }
 
-    @SuppressWarnings({ "unchecked" })
-    private Model<TCKeyword> getModel() {
-        return (Model) getDefaultModel();
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private ListModel<TCKeyword> getModel() {
+        return (ListModel) getDefaultModel();
     }
 
     private void ensurePathExpanded(Tree tree, TCKeywordNode node) {
@@ -255,14 +276,16 @@ public class TCKeywordTreeInput extends AbstractTCKeywordInput {
     }
 
     private void findMatchingKeywords(TCKeywordNode root, String s,
-            List<TCKeyword> matching) {
+            LinkedHashMap<String, TCKeyword> matching) {
         if (root != null) {
             TCKeyword keyword = root.getKeyword();
 
-            if (keyword != null
-                    && keyword.toString().toUpperCase()
-                            .contains(s.toUpperCase())) {
-                matching.add(keyword);
+            if (keyword != null)
+            {
+            	String sk = keyword.toString();
+            	if (sk.toUpperCase().contains(s.toUpperCase())) {
+            		matching.put(sk, keyword);
+            	}
             }
 
             if (root.getChildCount() > 0) {
@@ -296,18 +319,59 @@ public class TCKeywordTreeInput extends AbstractTCKeywordInput {
 
         return null;
     }
+    
+    private class MultipleKeywordsTextModel extends MultipleItemsTextModel
+    {
+		private static final long serialVersionUID = 4098272902061698377L;
+		
+		public MultipleKeywordsTextModel(List<TCKeyword> selectedKeywords)
+    	{
+    		setKeywordItems(selectedKeywords);
+    	}
+    	
+    	public void setKeywordItems(List<TCKeyword> keywords)
+    	{
+    		setObject(toString(keywords));
+    	}
+    	
+    	public List<TCKeyword> getKeywordItems()
+    	{
+    		List<String> items = getStringItems();
+    		if (items!=null && !items.isEmpty())
+    		{
+    			List<TCKeyword> keywords = new ArrayList<TCKeyword>();
+    			for (String item : items)
+    			{
+                    TCKeyword keyword = null;
+                    TCKeywordNode node = root!=null ? findNode(root, item) : null;
+                    if (node != null) {
+                        keyword = node.getKeyword();
+                    } 
+                    if (keyword==null && item.length()>0) {
+                        keyword = new TCKeyword(item, null, false);
+                    }
+                    if (keyword!=null)
+                    {
+                    	keywords.add(keyword);
+                    }
+    			}
+    			return keywords;
+    		}
+    		return null;
+    	}
+    }
 
     private class KeywordTreePopup extends AbstractTCPopup 
     {
-        private TCKeywordNode root;
-        private TCKeywordNode lastSelectedNode;
+		private static final long serialVersionUID = 2897120559101620288L;
+		private TCKeywordNode root;
+        private List<TCKeywordNode> selectedNodes;
         private Tree tree;
-        private TextField<TCKeyword> text;
 
-        public KeywordTreePopup(TextField<TCKeyword> text) 
+        public KeywordTreePopup() 
         {
             super("tree-keyword-popup", true, true, true, true);
-            this.text = text;
+            this.selectedNodes = new ArrayList<TCKeywordNode>();
         }
 
         public void setTree(TCKeywordNode root, Tree tree) {
@@ -315,35 +379,60 @@ public class TCKeywordTreeInput extends AbstractTCKeywordInput {
             this.tree = tree;
         }
         
-        public void setSelectedNode(TCKeywordNode node)
+        public void addSelectedNode(TCKeywordNode node)
         {
-            this.lastSelectedNode = node;
+        	if (!selectedNodes.contains(node))
+        	{
+        		selectedNodes.add(node);
+        	}
+        }
+        
+        public void removeSelectedNode(TCKeywordNode node)
+        {
+        	selectedNodes.remove(node);
+        }
+        
+        public void setSelectedNodes(TCKeywordNode...nodes)
+        {
+            this.selectedNodes.clear();
+            if (nodes!=null)
+            {
+            	for (TCKeywordNode node : nodes)
+            	{
+            		selectedNodes.add(node);
+            	}
+            }
         }
         
         @Override
         public void afterShowing(AjaxRequestTarget target)
         {
-            TCKeyword keyword = TCKeywordTreeInput.this.getKeyword();
-            TCKeywordNode toSelect = findNode(root, keyword);
-
-            if (toSelect != null) 
+        	// reset selection
+        	selectedNodes.clear();
+            Collection<Object> selectedNodes = tree.getTreeState().getSelectedNodes();
+            if (selectedNodes != null && !selectedNodes.isEmpty()) 
             {
-                lastSelectedNode = toSelect;
-                tree.getTreeState().selectNode(toSelect, true);
-                ensurePathExpanded(tree, toSelect);
-            } 
-            else 
-            {
-                Collection<Object> selectedNodes = tree.getTreeState().getSelectedNodes();
-                if (selectedNodes != null && !selectedNodes.isEmpty()) 
+                for (Object node : selectedNodes) 
                 {
-                    for (Object node : selectedNodes) 
-                    {
-                        tree.getTreeState().selectNode(node, false);
-                        lastSelectedNode = (TCKeywordNode) node;
-                    }
+                    tree.getTreeState().selectNode(node, false);
                 }
             }
+            
+            // select nodes
+        	List<TCKeyword> keywords = getKeywordsAsList();
+        	if (keywords!=null)
+        	{
+        		for (TCKeyword keyword : keywords)
+        		{
+                    TCKeywordNode toSelect = findNode(root, keyword);
+                    if (toSelect != null) 
+                    {
+                        addSelectedNode(toSelect);
+                        tree.getTreeState().selectNode(toSelect, true);
+                        ensurePathExpanded(tree, toSelect);
+                    }                     
+        		}
+        	}
 
             target.addComponent(tree);
         }
@@ -351,14 +440,26 @@ public class TCKeywordTreeInput extends AbstractTCKeywordInput {
         @Override
         public void beforeHiding(AjaxRequestTarget target) 
         {
-            TCKeyword keyword = lastSelectedNode != null ? 
-                    lastSelectedNode.getKeyword() : null;
+        	List<TCKeyword> keywords = null;
+        	
+        	if (selectedNodes!=null)
+        	{
+        		for (TCKeywordNode node : selectedNodes)
+        		{
+        			TCKeyword keyword = node.getKeyword();
+        			
+                    if (keyword!=null && !keyword.isAllKeywordsPlaceholder()) 
+                    {
+                        if (keywords==null)
+                        {
+                        	keywords = new ArrayList<TCKeyword>();
+                        }
+                        keywords.add(keyword);
+                    }
+        		}
+        	}
 
-            if (keyword != null && keyword.isAllKeywordsPlaceholder()) {
-                keyword = null;
-            }
-
-            TCKeywordTreeInput.this.getModel().setObject(keyword);
+            setKeywords(keywords);
 
             target.addComponent(text);
         }

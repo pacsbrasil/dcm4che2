@@ -58,7 +58,6 @@ import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxEventBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.IAjaxCallDecorator;
-import org.apache.wicket.behavior.IBehavior;
 import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxLink;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.extensions.markup.html.repeater.data.sort.OrderByBorder;
@@ -82,12 +81,10 @@ import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.security.components.SecureComponentHelper;
 import org.apache.wicket.util.convert.IConverter;
 import org.apache.wicket.util.convert.converters.DateConverter;
-import org.apache.wicket.util.time.Duration;
 import org.dcm4chee.archive.entity.Instance;
 import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
-import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.markup.modal.MessageWindow;
 import org.dcm4chee.web.common.secure.SecurityBehavior;
@@ -436,7 +433,8 @@ public class TCResultPanel extends Panel {
                                 public final CharSequence decorateOnFailureScript(CharSequence script) {
                                     return "hideMask();$('body').css('cursor','');"+script;
                                 }
-                            };                        } catch (Exception e) {
+                            };   
+                        } catch (Exception e) {
                             log.error("Failed to get IAjaxCallDecorator: ", e);
                         }
                         return null;
@@ -635,9 +633,7 @@ public class TCResultPanel extends Panel {
         private String issuerOfPatId;
         private StudyListPage studyListPage;
         private ViewPort viewPort;
-        private static final ResourceReference baseCSS = new CompressedResourceReference(
-        		BaseWicketPage.class, "base-style.css");
-        private static final ResourceReference folderCSS = new CompressedResourceReference(
+        private static final ResourceReference CSS = new CompressedResourceReference(
                 StudyListPage.class, "folder-style.css");
         
         public TCStudyListPage() {
@@ -673,11 +669,8 @@ public class TCResultPanel extends Panel {
                 
             };
             add(studyListPage);
-            if (baseCSS != null) {
-                add(CSSPackageResource.getHeaderContribution(baseCSS));
-            }
-            if (folderCSS != null) {
-                add(CSSPackageResource.getHeaderContribution(folderCSS));
+            if (CSS != null) {
+                add(CSSPackageResource.getHeaderContribution(CSS));
             }
         }
         
@@ -804,8 +797,10 @@ public class TCResultPanel extends Panel {
                         .applyStudyPermissions() ? StudyPermissionHelper.get()
                         .getDicomRoles() : null;
 
-                return dao.findMatchingInstances(filter, roles, WebCfgDelegate
-                        .getInstance().getTCRestrictedSourceAETList());
+                WebCfgDelegate config = WebCfgDelegate.getInstance();
+                return dao.findMatchingInstances(filter, roles, 
+                		config.getTCRestrictedSourceAETList(),
+                		config.isTCMultipleKeywordORConcatEnabled());
             } catch (Exception e) {
                 log.error("TC query failed!", e);
 

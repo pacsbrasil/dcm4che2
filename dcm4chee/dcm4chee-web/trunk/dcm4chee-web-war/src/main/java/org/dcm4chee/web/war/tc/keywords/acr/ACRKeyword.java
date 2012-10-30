@@ -37,7 +37,7 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.web.war.tc.keywords.acr;
 
-import org.dcm4chee.web.war.tc.TCObject.DicomCode;
+import org.dcm4chee.web.dao.tc.TCDicomCode;
 import org.dcm4chee.web.war.tc.keywords.TCKeyword;
 
 /**
@@ -77,7 +77,7 @@ public class ACRKeyword extends TCKeyword {
 
     public static String getAnatomyCodeValue(String value) {
         if (isValidCodeValue(value)) {
-            DicomCode code = DicomCode.fromString(ACRCatalogue.getInstance()
+            TCDicomCode code = TCDicomCode.fromString(ACRCatalogue.getInstance()
                     .getDesignatorId(), value);
             String codeValue = code != null ? code.getValue() : null;
 
@@ -95,7 +95,7 @@ public class ACRKeyword extends TCKeyword {
 
     public static String getPathologyCodeValue(String value) {
         if (isValidCodeValue(value)) {
-            DicomCode code = DicomCode.fromString(ACRCatalogue.getInstance()
+            TCDicomCode code = TCDicomCode.fromString(ACRCatalogue.getInstance()
                     .getDesignatorId(), value);
             String codeValue = code != null ? code.getValue() : null;
 
@@ -140,7 +140,7 @@ public class ACRKeyword extends TCKeyword {
         return sbuf.toString();
     }
 
-    private static DicomCode compositeCodes(DicomCode code1, DicomCode code2) {
+    private static TCDicomCode compositeCodes(TCDicomCode code1, TCDicomCode code2) {
         StringBuffer valueBuf = new StringBuffer();
         StringBuffer meaningBuf = new StringBuffer();
         String designatorId = null;
@@ -175,7 +175,7 @@ public class ACRKeyword extends TCKeyword {
         }
 
         if (designatorId != null && valueBuf.length() > 0) {
-            return new DicomCode(designatorId, valueBuf.toString(),
+            return new TCDicomCode(designatorId, valueBuf.toString(),
                     meaningBuf.toString());
         }
 

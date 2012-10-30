@@ -246,6 +246,8 @@ public class TCPopupManager implements Serializable
                     }
                 }
                 
+                beforeShowing(target);
+                
                 showPopup(position, target);
                 
                 getPopupManager().popupShown(this);
@@ -261,11 +263,18 @@ public class TCPopupManager implements Serializable
             getPopupManager().popupHidden(this);
             
             hidePopup(target);
+            
+            afterHiding(target);
         }
         
         public void installPopupTrigger(Component trigger, TCPopupPosition position)
         {
             trigger.add(new PopupTriggerBehavior(position));
+        }
+        
+        protected void beforeShowing(AjaxRequestTarget target)
+        {
+        	/* do nothing by default */
         }
                 
         protected void afterShowing(AjaxRequestTarget target)
@@ -276,6 +285,11 @@ public class TCPopupManager implements Serializable
         protected void beforeHiding(AjaxRequestTarget target)
         {
             /* do nothing by default */
+        }
+        
+        protected void afterHiding(AjaxRequestTarget target)
+        {
+        	/* do nothing by default */
         }
         
         protected TCPopupManager getPopupManager()

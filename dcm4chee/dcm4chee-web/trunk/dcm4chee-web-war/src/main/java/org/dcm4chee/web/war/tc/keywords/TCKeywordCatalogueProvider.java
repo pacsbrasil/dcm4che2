@@ -41,6 +41,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -50,10 +51,10 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.wicket.resource.loader.PackageStringResourceLoader;
 import org.dcm4chee.web.common.util.FileUtils;
+import org.dcm4chee.web.dao.tc.TCDicomCode;
 import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
 import org.dcm4chee.web.war.config.delegate.WebCfgDelegate.KeywordCatalogue;
-import org.dcm4chee.web.war.tc.TCObject.DicomCode;
 import org.dcm4chee.web.war.tc.TCPanel;
 import org.dcm4chee.web.war.tc.keywords.acr.ACRCatalogue;
 import org.slf4j.Logger;
@@ -443,7 +444,7 @@ public class TCKeywordCatalogueProvider {
                         String meaning = attrs.getNamedItem("meaning")
                                 .getTextContent();
 
-                        values.add(new TCKeyword(new DicomCode(id, value,
+                        values.add(new TCKeyword(new TCDicomCode(id, value,
                                 meaning)));
                     }
                 }
@@ -459,15 +460,17 @@ public class TCKeywordCatalogueProvider {
 
         @Override
         public TCKeywordInput createInput(final String id,
-                TCKeyword selectedKeyword) {
-            return new TCKeywordListInput(id, selectedKeyword, getKeywords());
+        		TCQueryFilterKey filterKey, boolean usedForSearch,
+                TCKeyword...selectedKeywords) {
+            return new TCKeywordListInput(id, filterKey, usedForSearch, 
+            		selectedKeywords!=null?Arrays.asList(selectedKeywords):null, getKeywords());
         }
 
         @Override
         public TCKeyword findKeyword(String value) {
             if (value != null) {
                 for (TCKeyword keyword : keywords) {
-                    DicomCode code = keyword.getCode();
+                	TCDicomCode code = keyword.getCode();
                     if (value.equals(code.getValue())) {
                         return keyword;
                     }
@@ -550,8 +553,10 @@ public class TCKeywordCatalogueProvider {
 
         @Override
         public TCKeywordInput createInput(final String id,
-                TCKeyword selectedKeyword) {
-            return new TCKeywordTreeInput(id, selectedKeyword, getRoot());
+        		TCQueryFilterKey filterKey, boolean usedForSearch,
+                TCKeyword...selectedKeywords) {
+            return new TCKeywordTreeInput(id, filterKey, usedForSearch,
+            		selectedKeywords!=null?Arrays.asList(selectedKeywords):null, getRoot());
         }
 
         @Override
@@ -583,7 +588,7 @@ public class TCKeywordCatalogueProvider {
                 TCKeyword keyword = node.getKeyword();
                 if (keyword!=null)
                 {
-                    DicomCode code = keyword.getCode();
+                	TCDicomCode code = keyword.getCode();
                     if (code!=null && value.equals(code.getValue())) {
                         return node.getKeyword();
                     }
@@ -630,7 +635,7 @@ public class TCKeywordCatalogueProvider {
                 String value = attrs.getNamedItem("value").getTextContent();
                 String meaning = attrs.getNamedItem("meaning").getTextContent();
 
-                return new TCKeywordNode(new TCKeyword(new DicomCode(id, value,
+                return new TCKeywordNode(new TCKeyword(new TCDicomCode(id, value,
                         meaning)));
             }
 

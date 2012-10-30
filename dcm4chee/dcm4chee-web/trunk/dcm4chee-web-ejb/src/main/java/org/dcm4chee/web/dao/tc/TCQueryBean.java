@@ -77,7 +77,7 @@ public class TCQueryBean implements TCQueryLocal {
     private EntityManager em;
 
     public int countMatchingInstances(TCQueryFilter filter, List<String> roles,
-            List<String> restrictedSourceAETs) {
+            List<String> restrictedSourceAETs, boolean multipleKeywordORConcat) {
         if (roles != null && roles.isEmpty()) {
             return 0;
         }
@@ -123,7 +123,7 @@ public class TCQueryBean implements TCQueryLocal {
                 sb.append(" AND (");
 
                 QueryParam[] params = e.getValue().appendSQLWhereConstraint(
-                        e.getKey(), sb);
+                        e.getKey(), sb, multipleKeywordORConcat);
                 if (params != null) {
                     if (paramSets == null) {
                         paramSets = new HashSet<QueryParam[]>();
@@ -161,7 +161,7 @@ public class TCQueryBean implements TCQueryLocal {
 
     @SuppressWarnings("unchecked")
     public List<Instance> findMatchingInstances(TCQueryFilter filter,
-            List<String> roles, List<String> restrictedSourceAETs) {
+            List<String> roles, List<String> restrictedSourceAETs, boolean multipleKeywordORConcat) {
         if (roles != null && roles.isEmpty()) {
             return Collections.emptyList();
         }
@@ -208,7 +208,7 @@ public class TCQueryBean implements TCQueryLocal {
                 sb.append(" AND (");
 
                 QueryParam[] params = e.getValue().appendSQLWhereConstraint(
-                        e.getKey(), sb);
+                        e.getKey(), sb, multipleKeywordORConcat);
                 if (params != null) {
                     if (paramSets == null) {
                         paramSets = new HashSet<QueryParam[]>();

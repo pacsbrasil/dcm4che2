@@ -38,6 +38,9 @@
 package org.dcm4chee.web.dao.tc;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 
 import org.dcm4che2.data.BasicDicomObject;
@@ -55,23 +58,38 @@ public abstract class TCQueryFilterValue<T> implements Serializable {
 
     private static final long serialVersionUID = 1L;
     
-    private T value;
-
-    public TCQueryFilterValue(T value) {
-        this.value = value;
+    private T[] value;
+    
+    public TCQueryFilterValue(T...values) {
+        this.value = values!=null ? Arrays.copyOf(values, values.length) : null;
     }
 
     public T getValue() {
-        return value;
+        return value[0];
+    }
+    
+    public T[] getValues() {
+    	return value;
     }
 
     @Override
     public String toString() {
-        return value != null ? value.toString() : null;
+    	if (value!=null && value.length>0)
+    	{
+    		StringBuilder sbuilder = new StringBuilder();
+    		sbuilder.append(value[0].toString());
+    		for (int i=1; i<value.length; i++)
+    		{
+    			sbuilder.append(";").append(value[i].toString());
+    		}
+    		return sbuilder.toString();
+    	}
+    	
+        return "";
     }
 
     public abstract QueryParam[] appendSQLWhereConstraint(TCQueryFilterKey key,
-            StringBuilder sb);
+            StringBuilder sb, boolean multipleValueORConcat);
 
     public static TCQueryFilterValue<String> create(String value) {
         
@@ -81,7 +99,7 @@ public abstract class TCQueryFilterValue<T> implements Serializable {
 
             @Override
             public QueryParam[] appendSQLWhereConstraint(TCQueryFilterKey key,
-                    StringBuilder sb) {
+                    StringBuilder sb, boolean multipleValueORConcat) {
                 QueryParam searchStringParam = new QueryParam("searchString",
                         "%" + getValue().replaceAll("\\*","%").toUpperCase() + "%");
                 QueryParam conceptNameValueParam = new QueryParam(
@@ -103,102 +121,117 @@ public abstract class TCQueryFilterValue<T> implements Serializable {
                         + conceptNameDesignatorParam.getKey() + ")");
                 sb.append(")");
 
-                if (key.supportsCodeValue()) {
-                    QueryParam conceptCodeMeaningParam = new QueryParam(
-                            "conceptCodeMeaning", "%" + getValue().replaceAll("\\*","%").toUpperCase() + "%");
-
-                    sb.append(" OR ");
-
-                    sb.append("EXISTS (");
-                    sb.append("FROM ContentItem content_item");
-                    sb.append(" INNER JOIN content_item.conceptName concept_name");
-                    sb.append(" INNER JOIN content_item.conceptCode concept_code");
-                    sb.append(" WHERE (instance.sopInstanceUID = content_item.instance.sopInstanceUID)");
-                    sb.append(" AND (content_item.relationshipType = 'CONTAINS')");
-                    sb.append(" AND (concept_name.codeValue = :"
-                            + conceptNameValueParam.getKey() + ")");
-                    sb.append(" AND (concept_name.codingSchemeDesignator = :"
-                            + conceptNameDesignatorParam.getKey() + ")");
-                    sb.append(" AND ((upper(concept_code.codeMeaning) LIKE :"
-                            + conceptCodeMeaningParam.getKey() + ")");
-                    sb.append(" OR (upper(concept_code.codeValue) LIKE :"
-                    		+ conceptCodeMeaningParam.getKey() + "))");
-                    sb.append(")");
-
-                    return new QueryParam[] { searchStringParam,
-                            conceptNameValueParam, conceptNameDesignatorParam,
-                            conceptCodeMeaningParam };
-                }
-
                 return new QueryParam[] { searchStringParam,
                         conceptNameValueParam, conceptNameDesignatorParam };
             }
         };
     }
 
-    public static TCQueryFilterValue<Code> create(Code code) {
+    
+    public static TCQueryFilterValue<ITextOrCode> create(ITextOrCode...toc) {
         
-        return new TCQueryFilterValue<Code>(code) {
+        return new TCQueryFilterValue<ITextOrCode>(toc) {
 
             private static final long serialVersionUID = 1L;
 
             @Override
             public QueryParam[] appendSQLWhereConstraint(TCQueryFilterKey key,
-                    StringBuilder sb) {
+                    StringBuilder sb, boolean multipleValueORConcat) {
+            	List<QueryParam> params = new ArrayList<QueryParam>();
                 QueryParam conceptNameValueParam = new QueryParam(
                         "conceptNameValue", key.getCode().getCodeValue());
                 QueryParam conceptNameDesignatorParam = new QueryParam(
                         "conceptNameDesignator", key.getCode()
                                 .getCodingSchemeDesignator());
-                QueryParam conceptCodeValueParam = new QueryParam(
-                        "conceptCodeValue", getValue().getCodeValue());
-                QueryParam conceptCodeDesignatorParam = new QueryParam(
-                        "conceptCodeDesignator", getValue()
-                                .getCodingSchemeDesignator());
-                QueryParam searchStringParam = new QueryParam("searchString",
-                        "%" + getValue().getCodeValue().toUpperCase() + "%");
+                params.add(conceptNameValueParam);
+                params.add(conceptNameDesignatorParam);
+                
+            	ITextOrCode[] toc = getValues();
+                boolean joinCodes = toc!=null && key.supportsCodeValue();
 
                 sb.append("EXISTS (");
                 sb.append("FROM ContentItem content_item");
                 sb.append(" INNER JOIN content_item.conceptName concept_name");
-                sb.append(" INNER JOIN content_item.conceptCode concept_code");
+                
+                if (joinCodes)
+                {
+                	sb.append(" LEFT JOIN content_item.conceptCode concept_code");
+                }
+                
                 sb.append(" WHERE (instance.sopInstanceUID = content_item.instance.sopInstanceUID)");
                 sb.append(" AND (content_item.relationshipType = 'CONTAINS')");
                 sb.append(" AND (concept_name.codeValue = :"
                         + conceptNameValueParam.getKey() + ")");
                 sb.append(" AND (concept_name.codingSchemeDesignator = :"
                         + conceptNameDesignatorParam.getKey() + ")");
-                sb.append(" AND (concept_code.codeValue = :"
-                        + conceptCodeValueParam.getKey() + ")");
-                sb.append(" AND (concept_code.codingSchemeDesignator = :"
-                        + conceptCodeDesignatorParam.getKey() + ")");
+                
+                if (toc!=null && toc.length>0)
+                {
+	                sb.append(" AND (");
+	                for (int i=0; i<toc.length; i++)
+	                {
+	                	if (i>0) {
+	                		if (multipleValueORConcat)
+	                		{
+	                			sb.append(" OR ");
+	                		}
+	                		else
+	                		{
+	                			sb.append(" AND ");
+	                		}
+	                	}
+	                	
+	                	ITextOrCode item = toc[i];
+	                	TCDicomCode code = item.getCode();
+	                	String text = item.getText();
+	                	
+	                	sb.append("(");
+	                	
+	                	if (code!=null)
+	                	{
+	    	                QueryParam valueParam = new QueryParam("conceptCodeValue", code.getValue());
+	    	                QueryParam designatorParam = new QueryParam("conceptCodeDesignator",code.getDesignator());
+	    	                QueryParam valueTextParam = new QueryParam("valueText", code.getValue().toUpperCase());
+	    	                
+	    	                sb.append("((concept_code.codeValue = :"
+	    	                        + valueParam.getKey() + ")");
+	    	                sb.append(" AND (concept_code.codingSchemeDesignator = :"
+	    	                        + designatorParam.getKey() + "))");
+	    	                sb.append(" OR (upper(content_item.textValue) LIKE :"
+	    	                		+ valueTextParam.getKey() + ")");
+	    	                
+	    	                params.add(valueParam);
+	    	                params.add(designatorParam);
+	    	                params.add(valueTextParam);
+	                	}
+	                	else if (text!=null)
+	                	{
+	                		QueryParam param = new QueryParam("searchString",
+	                                "%" + text.replaceAll("\\*","%").toUpperCase() + "%");
+	                		
+	    	                sb.append("(upper(content_item.textValue) LIKE :"
+	    	                        + param.getKey() + ")");
+	    	                
+	    	                if (joinCodes)
+	    	                {
+	    	                    sb.append(" OR (upper(concept_code.codeMeaning) LIKE :"
+	    	                            + param.getKey() + ")");
+	    	                    sb.append(" OR (upper(concept_code.codeValue) LIKE :"
+	    	                    		+ param.getKey() + ")");
+	    	                }
+	    	                
+	    	                params.add(param);
+	                	}
+	
+		                sb.append(")");
+	                }
+	                sb.append(")");
+                }
                 sb.append(")");
-
-                sb.append(" OR ");
-
-                sb.append("EXISTS (");
-                sb.append("FROM ContentItem content_item");
-                sb.append(" INNER JOIN content_item.conceptName concept_name");
-                sb.append(" WHERE (instance.sopInstanceUID = content_item.instance.sopInstanceUID)");
-                sb.append(" AND (content_item.relationshipType = 'CONTAINS')");
-                sb.append(" AND (upper(content_item.textValue) LIKE :"
-                        + searchStringParam.getKey() + ")");
-                sb.append(" AND (concept_name.codeValue = :"
-                        + conceptNameValueParam.getKey() + ")");
-                sb.append(" AND (concept_name.codingSchemeDesignator = :"
-                        + conceptNameDesignatorParam.getKey() + ")");
-                sb.append(")");
-
-                return new QueryParam[] { conceptNameValueParam,
-                        conceptNameDesignatorParam, conceptCodeValueParam,
-                        conceptCodeDesignatorParam, searchStringParam };
+                
+                return params.toArray(new QueryParam[0]);
             }
         };
-    }
-
-    public static TCQueryFilterValue<Code> create(String designator,
-            String value) {
-        return create(createCode(designator, value, null));
     }
 
     public static TCQueryFilterValue<DicomCodeEnum> create(DicomCodeEnum value) {
@@ -209,7 +242,7 @@ public abstract class TCQueryFilterValue<T> implements Serializable {
 
             @Override
             public QueryParam[] appendSQLWhereConstraint(TCQueryFilterKey key,
-                    StringBuilder sb) {
+                    StringBuilder sb, boolean multipleValueORConcat) {
                 QueryParam conceptNameValueParam = new QueryParam(
                         "conceptNameValue", key.getCode().getCodeValue());
                 QueryParam conceptNameDesignatorParam = new QueryParam(
@@ -253,7 +286,7 @@ public abstract class TCQueryFilterValue<T> implements Serializable {
 
             @Override
             public QueryParam[] appendSQLWhereConstraint(TCQueryFilterKey key,
-                    StringBuilder sb) {
+                    StringBuilder sb, boolean multipleValueORConcat) {
                 QueryParam searchStringParam = new QueryParam("searchString",
                         getValue().getString().toUpperCase());
                 QueryParam conceptNameValueParam = new QueryParam(
@@ -593,5 +626,6 @@ public abstract class TCQueryFilterValue<T> implements Serializable {
             return null;
         }
     }
+
 
 }

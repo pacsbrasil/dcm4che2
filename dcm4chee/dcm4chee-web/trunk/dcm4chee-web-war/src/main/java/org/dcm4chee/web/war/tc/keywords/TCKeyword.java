@@ -37,8 +37,8 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.web.war.tc.keywords;
 
-import org.dcm4chee.web.war.tc.TCObject.DicomCode;
-import org.dcm4chee.web.war.tc.TCObject.ITextOrCode;
+import org.dcm4chee.web.dao.tc.ITextOrCode;
+import org.dcm4chee.web.dao.tc.TCDicomCode;
 
 /**
  * @author Bernhard Ableitinger <bernhard.ableitinger@agfa.com>
@@ -51,21 +51,21 @@ public class TCKeyword implements ITextOrCode {
 
     private String name;
 
-    private DicomCode code;
+    private TCDicomCode code;
 
     private boolean isAllKeywordsPlaceholder;
 
     private boolean isValid;
 
-    public TCKeyword(DicomCode code) {
+    public TCKeyword(TCDicomCode code) {
         this(null, code);
     }
 
-    public TCKeyword(String name, DicomCode code) {
+    public TCKeyword(String name, TCDicomCode code) {
         this(name, code, true);
     }
 
-    public TCKeyword(String name, DicomCode code, boolean isValid) {
+    public TCKeyword(String name, TCDicomCode code, boolean isValid) {
         this.name = name != null ? name : code != null ? code.getMeaning()
                 : null;
         this.code = code;
@@ -90,7 +90,7 @@ public class TCKeyword implements ITextOrCode {
     }
 
     @Override
-    public DicomCode getCode() {
+    public TCDicomCode getCode() {
         return code;
     }
 

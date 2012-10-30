@@ -61,10 +61,10 @@ import org.apache.wicket.model.util.ListModel;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
+import org.dcm4chee.web.dao.tc.ITextOrCode;
 import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue;
 import org.dcm4chee.web.war.tc.TCInput.ValueChangeListener;
-import org.dcm4chee.web.war.tc.TCObject.ITextOrCode;
 import org.dcm4chee.web.war.tc.TCObject.TextOrCode;
 import org.dcm4chee.web.war.tc.TCUtilities.NullDropDownItem;
 import org.dcm4chee.web.war.tc.TCUtilities.SelfUpdatingTextArea;
@@ -215,9 +215,9 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         anatomyInput.addChangeListener(
                 new ValueChangeListener() {
                     @Override
-                    public void valueChanged(ITextOrCode value)
+                    public void valueChanged(ITextOrCode[] values)
                     {
-                        getTC().setAnatomy(value);
+                        getTC().setAnatomy(values!=null&&values.length>0?values[0]:null);
                     }
                 }
         );
@@ -227,9 +227,9 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         pathologyInput.addChangeListener(
                 new ValueChangeListener() {
                     @Override
-                    public void valueChanged(ITextOrCode value)
+                    public void valueChanged(ITextOrCode[] values)
                     {
-                        getTC().setPathology(value);
+                        getTC().setPathology(values!=null&&values.length>0?values[0]:null);
                     }
                 }
         );
@@ -239,9 +239,9 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         findingInput.addChangeListener(
                 new ValueChangeListener() {
                     @Override
-                    public void valueChanged(ITextOrCode value)
+                    public void valueChanged(ITextOrCode[] values)
                     {
-                        getTC().setFinding(value);
+                        getTC().setFinding(values!=null&&values.length>0?values[0]:null);
                     }
                 }
         );
@@ -251,9 +251,9 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         diffDiagInput.addChangeListener(
                 new ValueChangeListener() {
                     @Override
-                    public void valueChanged(ITextOrCode value)
+                    public void valueChanged(ITextOrCode[] values)
                     {
-                        getTC().setDiffDiagnosis(value);
+                        getTC().setDiffDiagnosis(values!=null&&values.length>0?values[0]:null);
                     }
                 }
         );
@@ -263,9 +263,9 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         diagInput.addChangeListener(
                 new ValueChangeListener() {
                     @Override
-                    public void valueChanged(ITextOrCode value)
+                    public void valueChanged(ITextOrCode[] values)
                     {
-                        getTC().setDiagnosis(value);
+                        getTC().setDiagnosis(values!=null&&values.length>0?values[0]:null);
                     }
                 }
         );
@@ -363,9 +363,9 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
                 keywordInput.addChangeListener(
                         new ValueChangeListener() {
                             @Override
-                            public void valueChanged(ITextOrCode value)
+                            public void valueChanged(ITextOrCode[] values)
                             {
-                                keywordsModel.setKeywordAt(index, value);
+                                keywordsModel.setKeywordAt(index, values!=null&&values.length>0?values[0]:null);
                             }
                         }
                 );

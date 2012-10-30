@@ -12,22 +12,22 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.wicket.Component;
-import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
-import org.dcm4che2.data.VR;
 import org.dcm4che2.io.DicomInputStream;
 import org.dcm4chee.archive.entity.Code;
 import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.web.common.util.FileUtils;
+import org.dcm4chee.web.dao.tc.ITextOrCode;
+import org.dcm4chee.web.dao.tc.TCDicomCode;
 import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
-import org.dcm4chee.web.dao.tc.TCQueryLocal;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue.AcquisitionModality;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue.Category;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue.Level;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue.PatientSex;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue.YesNo;
+import org.dcm4chee.web.dao.tc.TCQueryLocal;
 import org.dcm4chee.web.war.folder.delegate.TarRetrieveDelegate;
 import org.dcm4chee.web.war.tc.keywords.TCKeyword;
 import org.dcm4chee.web.war.tc.keywords.TCKeywordCatalogue;
@@ -411,7 +411,7 @@ public class TCObject implements Serializable {
                                             .lookup(TCQueryLocal.JNDI_NAME);
                                     
                                     study.addSeries(series);
-                                    
+
                                     Map<String, TCReferencedImage> images = null;
                                     Map<String, Integer> instanceNumbers = ejb.getInstanceNumbers(suid);
                                     
@@ -440,8 +440,8 @@ public class TCObject implements Serializable {
                                         else
                                         {
                                         	series.addInstance(
-                                                    new TCReferencedInstance(series, iuid, cuid, 
-                                                    		instanceNumber!=null?instanceNumber:-1));
+                                                new TCReferencedInstance(series, iuid, cuid, 
+                                                		instanceNumber!=null?instanceNumber:-1));
                                         }
                                     }
                                     
@@ -460,7 +460,7 @@ public class TCObject implements Serializable {
                                         		for (int n=1; n<=me.getValue(); n++)
                                         		{
                                         			series.addInstance(new TCReferencedImage(
-                                        					series, image.getInstanceUID(), image.getClassUID(),
+                                        					series, image.getInstanceUID(), image.getClassUID(), 
                                         					image.getInstanceNumber(), n));
                                         		}
                                         	}
@@ -491,7 +491,7 @@ public class TCObject implements Serializable {
 
                     if (item != null) {
                         String valueType = item.getString(Tag.ValueType);
-                        DicomCode conceptName = new DicomCode(
+                        TCDicomCode conceptName = new TCDicomCode(
                                 item.getNestedDicomObject(Tag.ConceptNameCodeSequence));
 
                         if ("TEXT".equalsIgnoreCase(valueType)) {
@@ -652,12 +652,12 @@ public class TCObject implements Serializable {
         return object != null ? object.getString(Tag.TextValue) : null;
     }
 
-    private DicomCode getCodeValue(DicomObject object) {
+    private TCDicomCode getCodeValue(DicomObject object) {
         return object == null ? null : object.contains(Tag.ConceptCodeSequence) ?
-            new DicomCode(object.getNestedDicomObject(Tag.ConceptCodeSequence)) : null;
+            new TCDicomCode(object.getNestedDicomObject(Tag.ConceptCodeSequence)) : null;
     }
     
-    public Code toCode(DicomCode c) {
+    public Code toCode(TCDicomCode c) {
         return c == null ? null : c.toCode();
     }
 
@@ -702,9 +702,9 @@ public class TCObject implements Serializable {
         }
         else if (String.class.isAssignableFrom(valueClass))
         {
-            if (DicomCode.class.isAssignableFrom(v.getClass()))
+            if (TCDicomCode.class.isAssignableFrom(v.getClass()))
             {
-                return (T) ((DicomCode)v).toString();
+                return (T) ((TCDicomCode)v).toString();
             }
             else if (ITextOrCode.class.isAssignableFrom(v.getClass())) {
                 return (T) ((ITextOrCode)v).getText();
@@ -714,9 +714,9 @@ public class TCObject implements Serializable {
                 return (T) v.toString();
             }
         }
-        else if (DicomCode.class.isAssignableFrom(valueClass))
+        else if (TCDicomCode.class.isAssignableFrom(valueClass))
         {
-            if (DicomCode.class.isAssignableFrom(v.getClass()))
+            if (TCDicomCode.class.isAssignableFrom(v.getClass()))
             {
                 return (T) v;
             }
@@ -731,7 +731,7 @@ public class TCObject implements Serializable {
             {
                 TCKeyword keyword = cat.findKeyword((String)v);
                 
-                DicomCode code = keyword!=null?keyword.getCode():null;
+                TCDicomCode code = keyword!=null?keyword.getCode():null;
                 
                 if (code!=null)
                 {
@@ -743,8 +743,8 @@ public class TCObject implements Serializable {
             if (ITextOrCode.class.isAssignableFrom(v.getClass())) {
                 return (T) v;
             }
-            else if (DicomCode.class.isAssignableFrom(v.getClass())) {
-                return (T) TextOrCode.code((DicomCode)v);
+            else if (TCDicomCode.class.isAssignableFrom(v.getClass())) {
+                return (T) TextOrCode.code((TCDicomCode)v);
             }
             else if (String.class.isAssignableFrom(v.getClass())) {
                 return (T) TextOrCode.text((String)v);
@@ -822,149 +822,23 @@ public class TCObject implements Serializable {
     }
     
     
-    public static class DicomCode implements Serializable {
-
-        private static final long serialVersionUID = 1L;
-
-        private String value;
-
-        private String designator;
-
-        private String meaning;
-
-        private String version;
-
-        public DicomCode(String designator, String value, String meaning,
-                String version) {
-            this.value = value;
-            this.designator = designator;
-            this.meaning = meaning;
-            this.version = version;
-        }
-
-        public DicomCode(String designator, String value, String meaning) {
-            this(designator, value, meaning, null);
-        }
-
-        public DicomCode(DicomObject dataset) {
-            this.value = dataset.getString(Tag.CodeValue);
-            this.designator = dataset.getString(Tag.CodingSchemeDesignator);
-            this.meaning = dataset.getString(Tag.CodeMeaning);
-            this.version = dataset.getString(Tag.CodingSchemeVersion);
-        }
-
-        public static DicomCode fromString(String designator, String s) {
-            if (designator != null && s != null) {
-                if (s.startsWith("(")) {
-                    String value = s.substring(1, s.indexOf(")"));
-                    String meaning = s.substring(s.indexOf(")") + 2);
-
-                    return new DicomCode(designator, value, meaning);
-                } else {
-                    return new DicomCode(designator, s, null);
-                }
-            }
-
-            return null;
-        }
-
-        public String getValue() {
-            return value;
-        }
-
-        public String getDesignator() {
-            return designator;
-        }
-
-        public String getMeaning() {
-            return meaning;
-        }
-
-        public String getVersion() {
-            return version;
-        }
-
-        @Override
-        public String toString() {
-            StringBuffer sbuf = new StringBuffer();
-
-            if (meaning != null) {
-                sbuf.append("(");
-            }
-
-            sbuf.append(value);
-
-            if (meaning != null) {
-                sbuf.append(") ");
-                sbuf.append(meaning);
-            }
-
-            return sbuf.toString();
-        }
-
-        public Code toCode() {
-            DicomObject dataset = new BasicDicomObject();
-            dataset.putString(Tag.CodingSchemeDesignator, VR.SH, designator);
-            dataset.putString(Tag.CodeValue, VR.SH, value);
-            dataset.putString(Tag.CodeMeaning, VR.LO, meaning == null ? ""
-                    : meaning);
-
-            if (version != null) {
-                dataset.putString(Tag.CodingSchemeVersion, null, version);
-            }
-
-            return new Code(dataset);
-        }
-
-        public boolean equals(Code code) {
-            if (code != null) {
-                return value.equals(code.getCodeValue())
-                        && designator.equals(code.getCodingSchemeDesignator())
-                        && (version == null || version.equals(code
-                                .getCodingSchemeVersion()));
-            }
-
-            return false;
-        }
-        @Override
-        public boolean equals(Object o) {
-            if (o != null && (o instanceof DicomCode)) {
-                DicomCode code = (DicomCode) o;
-                return value.equals(code.value)
-                        && designator.equals(code.designator)
-                        && (version == null || version.equals(code.version));
-            }
-
-            return false;
-        }
-        @Override
-        public int hashCode() {
-            return (value+"_"+designator+"_"+version).hashCode();
-        }
-    }
-    
-    public interface ITextOrCode extends Serializable {
-        public String getText();
-        public DicomCode getCode();
-    }
-    
     public static class TextOrCode implements ITextOrCode
     {
         private static final long serialVersionUID = 1L;
         
         private String text;
-        private DicomCode code;
+        private TCDicomCode code;
         
         private TextOrCode(String text) {
             this.text = text;
         }
-        private TextOrCode(DicomCode code) {
+        private TextOrCode(TCDicomCode code) {
             this.code = code;
         }
         public static TextOrCode text(String text) {
             return new TextOrCode(text);
         }
-        public static TextOrCode code(DicomCode code) {
+        public static TextOrCode code(TCDicomCode code) {
             return new TextOrCode(code);
         }
         @Override
@@ -972,7 +846,7 @@ public class TCObject implements Serializable {
             return text;
         }
         @Override
-        public DicomCode getCode() {
+        public TCDicomCode getCode() {
             return code;
         }
         @Override

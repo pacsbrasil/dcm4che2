@@ -151,8 +151,8 @@ function shouldHandlePopupMouseOut(event, popupId)
 			popupPosition!=null && 
 			popupWidth!=null && popupHeight!=null)
 	{
-		if (event.pageX<popupPosition.left+1 || event.pageX>popupPosition.left+popupWidth-1 ||
-			event.pageY<popupPosition.top+1 || event.pageY>popupPosition.top+popupHeight-1)
+		if (event.pageX<popupPosition.left-1 || event.pageX>popupPosition.left+popupWidth+5 ||
+			event.pageY<popupPosition.top-1 || event.pageY>popupPosition.top+popupHeight+20)
 		{
 			if (!popup.hasClass('ui-resizable-resizing'))
 			{

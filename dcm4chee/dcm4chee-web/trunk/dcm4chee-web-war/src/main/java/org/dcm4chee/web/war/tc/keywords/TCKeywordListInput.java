@@ -37,30 +37,34 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.web.war.tc.keywords;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
+import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.extensions.ajax.markup.html.autocomplete.AutoCompleteSettings;
 import org.apache.wicket.extensions.ajax.markup.html.autocomplete.AutoCompleteTextField;
-import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.ListChoice;
-import org.apache.wicket.markup.html.form.TextField;
+import org.apache.wicket.markup.html.form.ListMultipleChoice;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.model.Model;
-import org.apache.wicket.util.convert.IConverter;
+import org.apache.wicket.model.util.ListModel;
 import org.dcm4chee.icons.ImageManager;
+import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 import org.dcm4chee.web.war.common.AutoSelectInputTextBehaviour;
 import org.dcm4chee.web.war.tc.TCPopupManager.AbstractTCPopup;
 import org.dcm4chee.web.war.tc.TCPopupManager.TCPopupPosition;
 import org.dcm4chee.web.war.tc.TCPopupManager.TCPopupPosition.PopupAlign;
 import org.dcm4chee.web.war.tc.TCUtilities;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Bernhard Ableitinger <bernhard.ableitinger@agfa.com>
@@ -70,78 +74,60 @@ import org.dcm4chee.web.war.tc.TCUtilities;
 public class TCKeywordListInput extends AbstractTCKeywordInput {
 
     private static final long serialVersionUID = 1L;
+    private final static Logger log = LoggerFactory
+            .getLogger(TCKeywordListInput.class);
+	private Map<String, TCKeyword> keywordMap;
+    private AutoCompleteTextField<String> text;
 
-    private AutoCompleteTextField<TCKeyword> text;
-    
-    public TCKeywordListInput(final String id, List<TCKeyword> keywords) {
-        this(id, null, keywords);
-    }
-
-    public TCKeywordListInput(final String id, TCKeyword selectedKeyword,
+    public TCKeywordListInput(final String id, TCQueryFilterKey filterKey, boolean usedForSearch, TCKeyword selectedKeyword,
             final List<TCKeyword> keywords) {
-        super(id);
+    	this(id, filterKey, usedForSearch, selectedKeyword!=null ?
+    			Collections.singletonList(selectedKeyword):null, keywords);
+    }
+    
+    public TCKeywordListInput(final String id, TCQueryFilterKey filterKey, boolean usedForSearch, List<TCKeyword> selectedKeywords,
+            final List<TCKeyword> keywords) {
+        super(id, filterKey, usedForSearch);
         
-        setDefaultModel(new Model<TCKeyword>(selectedKeyword) {
-            @Override
-            public void setObject(TCKeyword keyword)
+		if (keywords!=null && !keywords.isEmpty())
+		{
+			keywordMap = new HashMap<String, TCKeyword>(keywords.size());
+			for (TCKeyword keyword : keywords)
+			{
+				keywordMap.put(keyword.toString(), keyword);
+			}
+		}
+		
+        setDefaultModel(new ListModel<TCKeyword>(selectedKeywords!=null ?
+        		new ArrayList<TCKeyword>(selectedKeywords):new ArrayList<TCKeyword>()) {
+			private static final long serialVersionUID = 1L;
+			@Override
+            public void setObject(List<TCKeyword> keywords)
             {
-                if (!TCUtilities.equals(getObject(),keyword))
+				List<TCKeyword> cur = getObject();
+                if (!TCUtilities.equals(cur,keywords))
                 {
-                    super.setObject(keyword);                    
+                    super.setObject(keywords);                    
                     fireValueChanged();
                 }
             }
         });
 
-        text = new AutoCompleteTextField<TCKeyword>(
-                "text", getModel(), TCKeyword.class, new AutoCompleteSettings()) {
-
+        final MultipleKeywordsTextModel textModel = new MultipleKeywordsTextModel(
+        		selectedKeywords);
+        text = new AutoCompleteTextField<String>(
+                "text", textModel, String.class, new AutoCompleteSettings()) {
             private static final long serialVersionUID = 1L;
-
-            final Map<String, TCKeyword> keywordMap = new HashMap<String, TCKeyword>();
-
             @Override
-            public IConverter getConverter(Class<?> type) {
-                if (TCKeyword.class.equals(type)) {
-                    if (keywordMap.isEmpty() && keywords != null
-                            && !keywords.isEmpty()) {
-                        for (TCKeyword keyword : keywords) {
-                            keywordMap.put(keyword.toString(), keyword);
-                        }
-                    }
-                    return new IConverter() {
-
-                        private static final long serialVersionUID = 1L;
-
-                        @Override
-                        public String convertToString(Object o, Locale locale) {
-                            return o != null ? o.toString() : null;
-                        }
-
-                        @Override
-                        public TCKeyword convertToObject(String s, Locale locale) {
-                            if (s != null) {
-                                TCKeyword keyword = keywordMap.get(s);
-                                if (keyword == null) {
-                                    keyword = new TCKeyword(s, null, false);
-                                }
-                                return keyword;
-                            }
-                            return null;
-                        }
-                    };
-                }
-                return getConverter(type);
-            }
-
-            @Override
-            protected Iterator<TCKeyword> getChoices(String s) {
-                List<TCKeyword> match = new ArrayList<TCKeyword>();
+            protected Iterator<String> getChoices(String s) {
+                List<String> match = new ArrayList<String>();
                 if (s.length() >= 3) {
+                	String ks = null;
                     for (TCKeyword keyword : keywords) {
-                        if (keyword.toString().toUpperCase()
+                    	ks = keyword.toString();
+                        if (ks.toUpperCase()
                                 .contains(s.toUpperCase())) {
-                            match.add(keyword);
+                            match.add(ks);
                         }
                     }
                 }
@@ -152,44 +138,20 @@ public class TCKeywordListInput extends AbstractTCKeywordInput {
         text.setOutputMarkupId(true);
         text.add(new AutoSelectInputTextBehaviour());
         text.add(new AjaxFormComponentUpdatingBehavior("onchange") {
-            @Override
+			private static final long serialVersionUID = 1L;
+			@Override
             public void onUpdate(AjaxRequestTarget target)
             {
                 text.updateModel();
+                getModel().setObject(textModel.getKeywordItems());
             }
         });
-
-        final ListChoice<TCKeyword> keywordList = new ListChoice<TCKeyword>(
-                "keyword-list", new Model<TCKeyword>(selectedKeyword), keywords) {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            protected String getNullValidKey() {
-                return "tc.search.null.text";
-            }
-        };
-        keywordList.setOutputMarkupId(true);
-        keywordList.setNullValid(true);
 
         final Button chooserBtn = new Button("chooser-button", new Model<String>("..."));
         chooserBtn.add(new Image("chooser-button-img", ImageManager.IMAGE_TC_ARROW_DOWN)
         .setOutputMarkupId(true));
-
-        final KeywordListPopup popup = new KeywordListPopup(keywordList, text);
-        popup.installPopupTrigger(chooserBtn, new TCPopupPosition(
-                chooserBtn.getMarkupId(),
-                popup.getMarkupId(), 
-                PopupAlign.BottomLeft, PopupAlign.TopLeft));
         
-        keywordList.add(new AjaxFormComponentUpdatingBehavior("onchange") {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void onUpdate(AjaxRequestTarget target) {
-                popup.hide(target);
-            }
-        });
+        final KeywordListPopup popup = new KeywordListPopup(chooserBtn, keywords);
 
         add(text);
         add(popup);
@@ -197,16 +159,41 @@ public class TCKeywordListInput extends AbstractTCKeywordInput {
     }
 
     @Override
-    public TCKeyword getKeyword() {
-        TCKeyword keyword = getModel().getObject();
-
-        return keyword == null || keyword.isAllKeywordsPlaceholder() ? null
-                : keyword;
+    public TCKeyword[] getKeywords() {
+        List<TCKeyword> keywords = getKeywordsAsList();
+        if (keywords!=null && !keywords.isEmpty())
+        {
+        	List<TCKeyword> list = new ArrayList<TCKeyword>(keywords);
+        	for (Iterator<TCKeyword> it=list.iterator();it.hasNext();)
+        	{
+        		TCKeyword keyword = it.next();
+        		if (keyword==null || keyword.isAllKeywordsPlaceholder())
+        		{
+        			it.remove();
+        		}
+        	}
+        	if (!list.isEmpty())
+        	{
+        		return list.toArray(new TCKeyword[0]);
+        	}
+        }
+        return null;
+    }
+    
+    public List<TCKeyword> getKeywordsAsList() {
+    	return getModel().getObject();
+    }
+    
+    public void setKeywords(List<TCKeyword> keywords)
+    {
+    	getModel().setObject(keywords);
+    	((MultipleKeywordsTextModel)text.getModel()).setKeywordItems(keywords);
     }
 
     @Override
-    public void resetKeyword() {
+    public void resetKeywords() {
         getModel().setObject(null);
+        text.setModelObject(null);
     }
     
     @Override
@@ -221,31 +208,173 @@ public class TCKeywordListInput extends AbstractTCKeywordInput {
         text.setEnabled(!exclusive);
     }
 
-    @SuppressWarnings({ "unchecked" })
-    private Model<TCKeyword> getModel() {
-        return (Model) getDefaultModel();
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private ListModel<TCKeyword> getModel() {
+        return (ListModel) getDefaultModel();
     }
 
+    private class MultipleKeywordsTextModel extends MultipleItemsTextModel
+    {
+		private static final long serialVersionUID = 4098272902061698377L;
+		
+		public MultipleKeywordsTextModel(List<TCKeyword> selectedKeywords)
+    	{
+    		setKeywordItems(selectedKeywords);
+    	}
+    	
+    	public void setKeywordItems(List<TCKeyword> keywords)
+    	{
+    		setObject(toString(keywords));
+    	}
+    	
+    	public List<TCKeyword> getKeywordItems()
+    	{
+    		List<String> items = getStringItems();
+    		if (items!=null && !items.isEmpty())
+    		{
+    			List<TCKeyword> keywords = new ArrayList<TCKeyword>();
+    			for (String item : items)
+    			{
+                    TCKeyword keyword = keywordMap!=null ? keywordMap.get(item) : null;
+                    if (keyword == null) {
+                        keyword = new TCKeyword(item, null, false);
+                    }
+                    keywords.add(keyword);
+    			}
+    			return keywords;
+    		}
+    		return null;
+    	}
+    }
+    
     private class KeywordListPopup extends AbstractTCPopup 
     {
-        private ListChoice<TCKeyword> list;
-        private TextField<TCKeyword> text;
+		private static final long serialVersionUID = -6621878309773247538L;
 
-        public KeywordListPopup(ListChoice<TCKeyword> list,
-                TextField<TCKeyword> text) 
+		private IListCreator listCreator;
+		private Component list;
+
+		public KeywordListPopup(Component trigger, final List<TCKeyword> availableKeywords)
         {
-            super("list-keyword-popup", true, true, true, true);
-
-            this.list = list;
-            this.text = text;
-            
-            add(list);
+        	super("list-keyword-popup", true, true, true, true);
+        	
+        	this.listCreator = new IListCreator() {
+				private static final long serialVersionUID = 8173577296342482236L;
+				@Override
+        		public boolean isListInvalid() {
+                    if (isMultipleKeywordSearchEnabled())
+                    {
+                    	if (!(list instanceof ListMultipleChoice))
+                    	{
+                    		return true;
+                    	}
+                    }
+                    else
+                    {
+                    	if (!(list instanceof ListChoice))
+                    	{
+                    		return true;
+                    	}
+                    }
+                    return false;
+        		}
+        		@SuppressWarnings({ "unchecked", "rawtypes" })
+				@Override
+        		public void updateSelection()
+        		{
+        			if (list instanceof ListMultipleChoice)
+        			{
+        				((ListMultipleChoice)list).setModelObject(getKeywordsAsList());
+        			}
+        			else if (list instanceof ListChoice)
+        			{
+        				((ListChoice)list).setModelObject(getKeyword());
+        			}
+        		}
+        		@SuppressWarnings({ "unchecked", "rawtypes" })
+				@Override
+        		public List<TCKeyword> getSelection() {
+        			if (list instanceof ListMultipleChoice)
+        			{
+        				return (List) ((ListMultipleChoice<?>)list).getModelObject();
+        			}
+        			else if (list instanceof ListChoice)
+        			{
+        				TCKeyword keyword = (TCKeyword) ((ListChoice<?>)list).getModelObject();
+        				if (keyword!=null)
+        				{
+        					return new ArrayList<TCKeyword>(
+        							Collections.singletonList(keyword));
+        				}
+        			}
+        			return new ArrayList<TCKeyword>(0);
+        		}
+                @Override
+            	public Component createList()
+                {
+                    if (isMultipleKeywordSearchEnabled())
+                    {
+            	        ListMultipleChoice<TCKeyword> choice = new ListMultipleChoice<TCKeyword>(
+            	                "keyword-list", availableKeywords);
+            	        choice.setDefaultModel(new ListModel<TCKeyword>(getKeywordsAsList()));
+            	        choice.setOutputMarkupId(true);
+                        choice.add(new AjaxFormComponentUpdatingBehavior("onchange") {
+                        	private static final long serialVersionUID = 1L;
+                        	@Override
+                        	public void onUpdate(AjaxRequestTarget target) {
+                        	}
+                        });
+            	        return choice;
+                    }
+                    else
+                    {
+                    	TCKeyword selectedKeyword = getKeyword();
+            	        ListChoice<TCKeyword> choice = new ListChoice<TCKeyword>(
+            	                "keyword-list", selectedKeyword!=null?
+            	                		new Model<TCKeyword>(selectedKeyword) : new Model<TCKeyword>(), availableKeywords) {
+            		        private static final long serialVersionUID = 1L;
+            	            @Override
+            	            protected String getNullValidKey() {
+            	                return "tc.search.null.text";
+            	            }
+            	        };
+            	        choice.setNullValid(true);
+            	        choice.setOutputMarkupId(true);
+                        choice.add(new AjaxFormComponentUpdatingBehavior("onchange") {
+                        	private static final long serialVersionUID = 1L;
+                        	@Override
+                        	public void onUpdate(AjaxRequestTarget target) {
+               					hide(target);
+                        	}
+                        });
+            	        return choice;
+                    }
+                }
+            };
+        	
+        	installPopupTrigger(trigger, new TCPopupPosition(
+	                trigger.getMarkupId(),
+	                getMarkupId(), 
+	                PopupAlign.BottomLeft, PopupAlign.TopLeft));
+        	
+        	add(this.list=listCreator.createList());
         }
-
+        
+        @Override
+        public void beforeShowing(AjaxRequestTarget target)
+        {
+        	if (listCreator.isListInvalid())
+        	{
+        		remove(list);
+        		add(list=listCreator.createList());
+        		//target.addComponent(this);
+        	}
+        }
+        
         @Override
         public void afterShowing(AjaxRequestTarget target) 
         {
-            list.setModelObject(TCKeywordListInput.this.getKeyword());
+        	listCreator.updateSelection();
 
             if (target!=null)
             {
@@ -256,16 +385,20 @@ public class TCKeywordListInput extends AbstractTCKeywordInput {
         @Override
         public void beforeHiding(AjaxRequestTarget target) 
         {
-            TCKeyword keyword = list.getModelObject();
-            
-            TCKeywordListInput.this.getModel().setObject(
-                    keyword != null&&keyword.isAllKeywordsPlaceholder() ? null
-                            : keyword);
+            setKeywords(listCreator.getSelection());
             
             if (target!=null)
             {
                 target.addComponent(text);
             }
         }
+    }
+    
+    private interface IListCreator extends Serializable
+    {
+    	boolean isListInvalid();
+    	void updateSelection();
+    	List<TCKeyword> getSelection();
+    	Component createList();
     }
 }

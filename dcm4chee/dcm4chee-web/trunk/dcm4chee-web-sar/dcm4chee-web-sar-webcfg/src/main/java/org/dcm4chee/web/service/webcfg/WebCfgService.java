@@ -51,7 +51,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -148,7 +147,9 @@ public class WebCfgService extends ServiceMBeanSupport implements
     private Map<String, String> tcKeywordCataloguesExclusive = new LinkedHashMap<String, String>();
     private List<String> tcRestrictedSrcAETs = new ArrayList<String>();
     private boolean tcEditOnDoubleClick;
-
+    private boolean tcMultipleKeywordSearch;
+    private boolean tcMultipleKeywordORConcat;
+    
     private String patientIDPattern;
     private String issuerOfPatientID;
 
@@ -427,6 +428,22 @@ public class WebCfgService extends ServiceMBeanSupport implements
 
     public void setTCEditOnDoubleClick(boolean b) {
         tcEditOnDoubleClick = b;
+    }
+    
+    public boolean isTCMultipleKeywordSearchEnabled() {
+        return tcMultipleKeywordSearch;
+    }
+
+    public void setTCMultipleKeywordSearchEnabled(boolean b) {
+        tcMultipleKeywordSearch = b;
+    }
+    
+    public boolean isTCMultipleKeywordORConcatEnabled() {
+    	return tcMultipleKeywordORConcat;
+    }
+        
+    public void setTCMultipleKeywordORConcatEnabled(boolean b) {
+    	tcMultipleKeywordORConcat = b;
     }
     
     public String getTCSeriesDisplayFormat()

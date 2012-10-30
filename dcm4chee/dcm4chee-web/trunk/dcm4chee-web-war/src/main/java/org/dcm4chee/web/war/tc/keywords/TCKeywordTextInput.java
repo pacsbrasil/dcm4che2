@@ -37,9 +37,11 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.web.war.tc.keywords;
 
-import org.apache.wicket.model.Model;
+import java.util.List;
+
+import org.dcm4chee.web.dao.tc.ITextOrCode;
+import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 import org.dcm4chee.web.war.common.AutoSelectInputTextBehaviour;
-import org.dcm4chee.web.war.tc.TCObject.ITextOrCode;
 import org.dcm4chee.web.war.tc.TCObject.TextOrCode;
 import org.dcm4chee.web.war.tc.TCUtilities;
 import org.dcm4chee.web.war.tc.TCUtilities.SelfUpdatingTextField;
@@ -55,15 +57,12 @@ public class TCKeywordTextInput extends AbstractTCInput {
 
     private SelfUpdatingTextField textField;
     
-    public TCKeywordTextInput(final String id) {
-        this(id, null);
-    }
+    public TCKeywordTextInput(final String id, TCQueryFilterKey filterKey, boolean usedForSearch, String value) {
+        super(id, filterKey, usedForSearch);
 
-    public TCKeywordTextInput(final String id, String value) {
-        super(id);
-
-        setDefaultModel(new Model<String>(value) {
-            @Override
+        setDefaultModel(new MultipleKeywordsTextModel(value) {
+			private static final long serialVersionUID = -7153545248802297319L;
+			@Override
             public void setObject(String keyword)
             {
                 if (!TCUtilities.equals(getObject(),keyword))
@@ -76,7 +75,8 @@ public class TCKeywordTextInput extends AbstractTCInput {
         });
         
         textField = new SelfUpdatingTextField("text", getDefaultModelObjectAsString()) {
-            @Override
+			private static final long serialVersionUID = 2956374148262098506L;
+			@Override
             protected void textUpdated(String text)
             {
                 TCKeywordTextInput.this.setDefaultModelObject(text);
@@ -88,13 +88,38 @@ public class TCKeywordTextInput extends AbstractTCInput {
     }
 
     @Override
-    public ITextOrCode getValue() {
-        return TextOrCode.text(textField.getText());
+    public ITextOrCode[] getValues() {
+    	return ((MultipleKeywordsTextModel)getDefaultModel()).getItems();
     }
 
     @Override
-    public void resetValue() {
+    public void resetValues() {
         textField.setText(null);
     }
 
+    private class MultipleKeywordsTextModel extends MultipleItemsTextModel
+    {
+		private static final long serialVersionUID = -1950571156137332608L;
+
+		public MultipleKeywordsTextModel(String text)
+    	{
+    		super(text);
+    	}
+    	
+    	public ITextOrCode[] getItems()
+    	{
+    		List<String> list = getStringItems();
+        	if (list!=null && !list.isEmpty())
+        	{
+        		ITextOrCode[] a = new ITextOrCode[list.size()];
+        		for (int i=0; i<list.size(); i++)
+        		{
+        			a[i] = TextOrCode.text(list.get(i));
+        		}
+        		return a;
+        	}
+        	
+        	return null;
+    	}
+    }
 }

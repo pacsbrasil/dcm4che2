@@ -60,7 +60,6 @@ import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
-import org.dcm4chee.archive.entity.Code;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.markup.BaseForm;
@@ -68,10 +67,7 @@ import org.dcm4chee.web.dao.tc.TCQueryFilter;
 import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue;
 import org.dcm4chee.web.war.common.AutoSelectInputTextBehaviour;
-import org.dcm4chee.web.war.tc.TCObject.DicomCode;
-import org.dcm4chee.web.war.tc.TCObject.ITextOrCode;
 import org.dcm4chee.web.war.tc.TCUtilities.NullDropDownItem;
-import org.dcm4chee.web.war.tc.keywords.TCKeyword;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -101,17 +97,17 @@ public abstract class TCSearchPanel extends Panel {
         setOutputMarkupId(true);
 
         final TCInput keywordInput = TCUtilities.createInput(
-                "keywordInput", TCQueryFilterKey.Keyword, getFilterValue(TCQueryFilterKey.Keyword));
+                "keywordInput", TCQueryFilterKey.Keyword, getFilterValue(TCQueryFilterKey.Keyword), true);
         final TCInput anatomyInput = TCUtilities.createInput(
-                "anatomyInput", TCQueryFilterKey.Anatomy, getFilterValue(TCQueryFilterKey.Anatomy));
+                "anatomyInput", TCQueryFilterKey.Anatomy, getFilterValue(TCQueryFilterKey.Anatomy), true);
         final TCInput pathologyInput = TCUtilities.createInput(
-                "pathologyInput", TCQueryFilterKey.Pathology, getFilterValue(TCQueryFilterKey.Pathology));
+                "pathologyInput", TCQueryFilterKey.Pathology, getFilterValue(TCQueryFilterKey.Pathology), true);
         final TCInput findingInput = TCUtilities.createInput(
-                "findingInput", TCQueryFilterKey.Finding, getFilterValue(TCQueryFilterKey.Finding));
+                "findingInput", TCQueryFilterKey.Finding, getFilterValue(TCQueryFilterKey.Finding), true);
         final TCInput diagnosisInput = TCUtilities.createInput(
-                "diagnosisInput", TCQueryFilterKey.Diagnosis, getFilterValue(TCQueryFilterKey.Diagnosis));
+                "diagnosisInput", TCQueryFilterKey.Diagnosis, getFilterValue(TCQueryFilterKey.Diagnosis), true);
         final TCInput diffDiagnosisInput = TCUtilities.createInput(
-                "diffDiagnosisInput", TCQueryFilterKey.DifferentialDiagnosis, getFilterValue(TCQueryFilterKey.DifferentialDiagnosis));
+                "diffDiagnosisInput", TCQueryFilterKey.DifferentialDiagnosis, getFilterValue(TCQueryFilterKey.DifferentialDiagnosis), true);
         final TextField<String> textText = new TextField<String>("textText",
                 new Model<String>(""));
         textText.add(new AutoSelectInputTextBehaviour());
@@ -176,77 +172,17 @@ public abstract class TCSearchPanel extends Panel {
                     TCQueryFilter filter = (TCQueryFilter) TCSearchPanel.this
                             .getDefaultModelObject();
                     filter.clear();
-
-                    Object keywordInputValue = getConvertedKeywordInputValue(
-                            keywordInput.getValue());
-                    if (keywordInputValue != null) {
-                        if (Code.class.equals(keywordInputValue.getClass())) {
-                            filter.setKeywordCode((Code) keywordInputValue);
-                        } else if (String.class.equals(keywordInputValue
-                                .getClass())) {
-                            filter.setKeyword((String) keywordInputValue);
-                        }
-                    }
+                    
+                    filter.setKeywords(keywordInput.getValues());
 
                     if (showAdvancedOptions)
                     {
-	                    Object anatomyInputValue = getConvertedKeywordInputValue(
-	                            anatomyInput.getValue());
-	                    if (anatomyInputValue != null) {
-	                        if (Code.class.equals(anatomyInputValue.getClass())) {
-	                            filter.setAnatomyCode((Code) anatomyInputValue);
-	                        } else if (String.class.equals(anatomyInputValue
-	                                .getClass())) {
-	                            filter.setAnatomy((String) anatomyInputValue);
-	                        }
-	                    }
-	
-	                    Object pathologyInputValue = getConvertedKeywordInputValue(
-	                            pathologyInput.getValue());
-	                    if (pathologyInputValue != null) {
-	                        if (Code.class.equals(pathologyInputValue.getClass())) {
-	                            filter.setPathologyCode((Code) pathologyInputValue);
-	                        } else if (String.class.equals(pathologyInputValue
-	                                .getClass())) {
-	                            filter.setPathology((String) pathologyInputValue);
-	                        }
-	                    }
-	
-	                    Object findingInputValue = getConvertedKeywordInputValue(
-	                            findingInput.getValue());
-	                    if (findingInputValue != null) {
-	                        if (Code.class.equals(findingInputValue.getClass())) {
-	                            filter.setFindingCode((Code) findingInputValue);
-	                        } else if (String.class.equals(findingInputValue
-	                                .getClass())) {
-	                            filter.setFinding((String) findingInputValue);
-	                        }
-	                    }
-	
-	                    Object diagnosisInputValue = getConvertedKeywordInputValue(
-	                            diagnosisInput.getValue());
-	                    if (diagnosisInputValue != null) {
-	                        if (Code.class.equals(diagnosisInputValue.getClass())) {
-	                            filter.setDiagnosisCode((Code) diagnosisInputValue);
-	                        } else if (String.class.equals(diagnosisInputValue
-	                                .getClass())) {
-	                            filter.setDiagnosis((String) diagnosisInputValue);
-	                        }
-	                    }
-	
-	                    Object diffDiagnosisInputValue = getConvertedKeywordInputValue(
-	                            diffDiagnosisInput.getValue());
-	                    if (diffDiagnosisInputValue != null) {
-	                        if (Code.class.equals(diffDiagnosisInputValue
-	                                .getClass())) {
-	                            filter.setDiffDiagnosisCode((Code) diffDiagnosisInputValue);
-	                        } else if (String.class.equals(diffDiagnosisInputValue
-	                                .getClass())) {
-	                            filter.setDiffDiagnosis((String) diffDiagnosisInputValue);
-	                        }
-	                    }
-	
-	                    filter.setAcquisitionModality(modalityChoice
+	                    filter.setAnatomy(anatomyInput.getValue());
+	                    filter.setPathology(pathologyInput.getValue());
+	                    filter.setFinding(findingInput.getValue());
+	                    filter.setDiagnosis(diagnosisInput.getValue());
+	                    filter.setDiffDiagnosis(diffDiagnosisInput.getValue());
+		                    filter.setAcquisitionModality(modalityChoice
 	                            .getModelObject());
 	                    filter.setPatientSex(patientSexChoice.getModelObject());
 	                    filter.setCategory(categoryChoice.getModelObject());
@@ -338,12 +274,12 @@ public abstract class TCSearchPanel extends Panel {
                         .getDefaultModelObject();
                 filter.clear();
 
-                keywordInput.resetValue();
-                anatomyInput.resetValue();
-                pathologyInput.resetValue();
-                findingInput.resetValue();
-                diagnosisInput.resetValue();
-                diffDiagnosisInput.resetValue();
+                keywordInput.resetValues();
+                anatomyInput.resetValues();
+                pathologyInput.resetValues();
+                findingInput.resetValues();
+                diagnosisInput.resetValues();
+                diffDiagnosisInput.resetValues();
                 modalityChoice.setModelObject(null);
                 levelChoice.setModelObject(null);
                 patientSexChoice.setModelObject(null);
@@ -406,7 +342,8 @@ public abstract class TCSearchPanel extends Panel {
             }
         }.add(new Label("advancedOptionsToggleText",
                 new AbstractReadOnlyModel<String>() {
-                    @Override
+					private static final long serialVersionUID = -7928173606391768738L;
+					@Override
                     public String getObject() {
                         return showAdvancedOptions ? getString("tc.search.advancedOptions.hide.Text")
                                 : getString("tc.search.advancedOptions.show.Text");
@@ -480,37 +417,5 @@ public abstract class TCSearchPanel extends Panel {
     {
         TCQueryFilter filter = (TCQueryFilter) getDefaultModelObject();
         return filter != null ? filter.getValue(key) : null;
-    }
-    
-    private Object getConvertedKeywordInputValue(Object value)
-    {
-    	DicomCode code = null;
-    	String text = null;
-    	
-        if (value instanceof TCKeyword)
-        {
-            TCKeyword kw = (TCKeyword) value;
-            
-            if (kw != null) {
-                code = kw.getCode();
-                text = kw.getName();
-            }
-        }
-        else if (value instanceof ITextOrCode)
-        {
-        	code = ((ITextOrCode)value).getCode();
-        	text = ((ITextOrCode)value).getText();
-        }
-        
-        if (code!=null)
-        {
-        	return code.toCode();
-        }
-        else if (text!=null && text.length()>0)
-        {
-        	return text;
-        }
-
-        return value;
     }
 }

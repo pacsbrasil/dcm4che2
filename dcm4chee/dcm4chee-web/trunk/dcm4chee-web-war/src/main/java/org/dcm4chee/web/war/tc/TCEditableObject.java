@@ -16,6 +16,8 @@ import org.dcm4che2.util.DateUtils;
 import org.dcm4che2.util.UIDUtils;
 import org.dcm4chee.archive.entity.Code;
 import org.dcm4chee.web.common.util.FileUtils;
+import org.dcm4chee.web.dao.tc.ITextOrCode;
+import org.dcm4chee.web.dao.tc.TCDicomCode;
 import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue.AcquisitionModality;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue.Category;
@@ -642,7 +644,7 @@ public class TCEditableObject extends TCObject {
         return ds;
     }
     
-    private DicomObject createCodeContent(TCQueryFilterKey key, DicomCode code)
+    private DicomObject createCodeContent(TCQueryFilterKey key, TCDicomCode code)
     {
         return createCodeContent(key, code.toCode());
     }
@@ -660,7 +662,7 @@ public class TCEditableObject extends TCObject {
     private DicomObject createTextOrCodeContent(TCQueryFilterKey key, ITextOrCode value) {
         if (value!=null) {
             String text = value.getText();
-            DicomCode code = value.getCode();
+            TCDicomCode code = value.getCode();
             
             if (code!=null) {
                 TCKeywordCatalogueProvider prov = TCKeywordCatalogueProvider.getInstance();   

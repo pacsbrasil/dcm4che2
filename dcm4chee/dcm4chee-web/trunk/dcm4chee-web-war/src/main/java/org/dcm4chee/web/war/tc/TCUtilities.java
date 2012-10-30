@@ -21,10 +21,10 @@ import org.apache.wicket.markup.html.link.PopupSettings;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.PropertyModel;
 import org.dcm4chee.archive.entity.Code;
+import org.dcm4chee.web.dao.tc.ITextOrCode;
+import org.dcm4chee.web.dao.tc.TCDicomCode;
 import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 import org.dcm4chee.web.war.common.AutoSelectInputTextBehaviour;
-import org.dcm4chee.web.war.tc.TCObject.DicomCode;
-import org.dcm4chee.web.war.tc.TCObject.ITextOrCode;
 import org.dcm4chee.web.war.tc.keywords.TCKeyword;
 import org.dcm4chee.web.war.tc.keywords.TCKeywordCatalogue;
 import org.dcm4chee.web.war.tc.keywords.TCKeywordCatalogueProvider;
@@ -41,7 +41,7 @@ import org.slf4j.LoggerFactory;
 public class TCUtilities 
 {
     private static final Logger log = LoggerFactory.getLogger(TCUtilities.class);
- 
+    
     public static enum PopupAlign {
         TopLeft("left top"),
         TopRight("right top"),
@@ -128,12 +128,12 @@ public class TCUtilities
     }
     
     public static TCInput createInput(final String componentId,
-            TCQueryFilterKey key, Object value) {
-        return createInput(componentId, key, value, true);
+            TCQueryFilterKey key, Object value, boolean usedForSearch) {
+        return createInput(componentId, key, value, usedForSearch, true);
     }
     
     public static TCInput createInput(final String componentId,
-            TCQueryFilterKey key, Object value, boolean checkExclusive) {
+            TCQueryFilterKey key, Object value, boolean usedForSearch, boolean checkExclusive) {
         TCKeywordCatalogueProvider p = TCKeywordCatalogueProvider.getInstance();
 
         if (p.hasCatalogue(key)) 
@@ -145,12 +145,12 @@ public class TCUtilities
             {
                 svalue = ((Code) value).getCodeValue();
             }
-            else if (value instanceof DicomCode)
+            else if (value instanceof TCDicomCode)
             {
-                svalue = ((DicomCode)value).getValue();
+                svalue = ((TCDicomCode)value).getValue();
             }
             else if (value instanceof ITextOrCode) {
-                DicomCode code = ((ITextOrCode)value).getCode();
+                TCDicomCode code = ((ITextOrCode)value).getCode();
                 if (code!=null) {
                     svalue = code.getValue();
                 }
@@ -167,7 +167,9 @@ public class TCUtilities
                 keyword = new TCKeyword(svalue, null, false);
             }
             
-            TCKeywordInput input = cat.createInput(componentId, keyword);
+            TCKeywordInput input = keyword==null ?
+            		cat.createInput(componentId, key, usedForSearch) :
+            		cat.createInput(componentId, key, usedForSearch, keyword);
             
             if (checkExclusive)
             {
@@ -179,7 +181,7 @@ public class TCUtilities
         } 
         else 
         {
-            return new TCKeywordTextInput(componentId, 
+            return new TCKeywordTextInput(componentId, key, usedForSearch,
                     value!=null?value.toString():null);
         }
     }

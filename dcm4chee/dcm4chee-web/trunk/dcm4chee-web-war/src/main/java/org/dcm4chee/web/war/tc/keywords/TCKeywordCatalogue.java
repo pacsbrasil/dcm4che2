@@ -37,6 +37,8 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.web.war.tc.keywords;
 
+import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
+
 
 
 /**
@@ -89,7 +91,8 @@ public abstract class TCKeywordCatalogue {
     }
 
     public abstract TCKeywordInput createInput(final String componentId,
-            TCKeyword selectedKeyword);
+    		TCQueryFilterKey filterKey, boolean usedForSearch,
+            TCKeyword...selectedKeywords);
 
     public abstract TCKeyword findKeyword(String value);
 

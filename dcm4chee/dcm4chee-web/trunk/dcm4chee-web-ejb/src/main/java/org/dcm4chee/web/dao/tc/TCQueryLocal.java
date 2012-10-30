@@ -57,10 +57,10 @@ public interface TCQueryLocal {
     String JNDI_NAME = "dcm4chee-web-ear/TCListBean/local";
 
     int countMatchingInstances(TCQueryFilter filter, List<String> roles,
-            List<String> restrictedSourceAETs);
+            List<String> restrictedSourceAETs, boolean multipleKeywordORConcat);
 
     List<Instance> findMatchingInstances(TCQueryFilter filter,
-            List<String> roles, List<String> restrictedSourceAETs);
+            List<String> roles, List<String> restrictedSourceAETs, boolean multipleKeywordORConcat);
     
     
     Study findStudyByUID(String stuid);

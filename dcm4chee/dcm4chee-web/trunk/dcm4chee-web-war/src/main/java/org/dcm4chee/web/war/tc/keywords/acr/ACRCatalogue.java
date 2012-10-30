@@ -37,8 +37,10 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.web.war.tc.keywords.acr;
 
-import org.dcm4chee.web.war.tc.TCInput.ValueChangeListener;
-import org.dcm4chee.web.war.tc.TCObject.DicomCode;
+import java.util.Arrays;
+
+import org.dcm4chee.web.dao.tc.TCDicomCode;
+import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 import org.dcm4chee.web.war.tc.keywords.TCKeyword;
 import org.dcm4chee.web.war.tc.keywords.TCKeywordCatalogue;
 
@@ -60,7 +62,7 @@ public class ACRCatalogue extends TCKeywordCatalogue {
     private boolean pathologyRootsCreated;
 
     private ACRCatalogue() {
-        super("ACR", "ACR", "American College of Radiology", null);
+        super("ACR", "ACR","American College of Radiology", null);
     }
 
     public static synchronized ACRCatalogue getInstance() {
@@ -121,9 +123,10 @@ public class ACRCatalogue extends TCKeywordCatalogue {
     }
 
     @Override
-    public TCKeywordACRInput createInput(final String id,
-            TCKeyword selectedKeyword) {
-        return new TCKeywordACRInput(id, selectedKeyword);
+    public TCKeywordACRInput createInput(final String id, TCQueryFilterKey filterKey,
+            boolean usedForSearch, TCKeyword...selectedKeywords) {
+        return new TCKeywordACRInput(id, filterKey, usedForSearch, 
+        		selectedKeywords!=null?Arrays.asList(selectedKeywords):null);
     }
 
     public TCKeyword findAnatomyKeywordByValue(String codeValue) {
@@ -219,7 +222,7 @@ public class ACRCatalogue extends TCKeywordCatalogue {
         String[] parts = s.trim().split(";");
         String value = parts[1].trim();
 
-        return ACRKeywordNode.create(value, new DicomCode(getDesignatorId(),
+        return ACRKeywordNode.create(value, new TCDicomCode(getDesignatorId(),
                 value, parts[0]));
     }
 
@@ -227,7 +230,7 @@ public class ACRCatalogue extends TCKeywordCatalogue {
         String[] parts = s.trim().split(";");
         String value = parts[0].trim();
 
-        return ACRKeywordNode.create(value, new DicomCode(getDesignatorId(),
+        return ACRKeywordNode.create(value, new TCDicomCode(getDesignatorId(),
                 value, parts[1]));
     }
 
