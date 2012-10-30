@@ -168,6 +168,24 @@ public class QueryHSMMigrateCmd extends BaseReadCmd {
             close();
         }
     }
+
+    public int countFileCopiesOfTarFile(long srcFsPk, String tarFile, long targetFsPk) throws SQLException {
+        sqlBuilder.setFrom(new String[] {"File", "File"});
+        sqlBuilder.setAliases(new String[] {ALIAS_SRC, null});
+        sqlBuilder.setSelect(new String[]{sqlBuilder.getCountOf(null, false)});
+        sqlBuilder.addIntValueMatch(ALIAS_SRC, "File.filesystem_fk", false, (int)srcFsPk);
+        sqlBuilder.addIntValueMatch(null, "File.filesystem_fk", false, (int)targetFsPk);
+        sqlBuilder.addFieldValueMatch(ALIAS_SRC, "File.instance_fk", false, null, "File.instance_fk");
+        sqlBuilder.addWildCardMatch(ALIAS_SRC, "File.filePath", false, tarFile+"!*");
+        sqlBuilder.addOrderBy("File.pk", " ASC");
+        try {
+            execute(sqlBuilder.getSql());
+            next();
+            return rs.getInt(1); 
+        } finally {
+            close();
+        }
+    }
     
     private void addFileStatiMatch(int[] fileStati) {
         if (fileStati != null) {
