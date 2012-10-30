@@ -43,14 +43,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.OnChangeAjaxBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxFallbackButton;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow.CloseButtonCallback;
-import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.DropDownChoice;
@@ -61,7 +59,6 @@ import org.apache.wicket.markup.html.form.IChoiceRenderer;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.panel.Fragment;
 import org.apache.wicket.markup.html.panel.Panel;
-import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.markup.repeater.RepeatingView;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
@@ -75,7 +72,6 @@ import org.dcm4che2.data.SpecificCharacterSet;
 import org.dcm4che2.util.TagUtils;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
-import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.exceptions.WicketExceptionWithMsgKey;
 import org.dcm4chee.web.common.markup.BaseForm;
@@ -289,21 +285,24 @@ public class SimpleEditDicomObjectPanel extends Panel {
         public ElementFragment(String id, SpecificCharacterSet cs, final int[] tagPath) {
             super(id, choices.get(tagPath[tagPath.length-1]) == null ? "element" : "choice_element", SimpleEditDicomObjectPanel.this);
             final int tag = tagPath[tagPath.length-1];
+
+            String s = getString(TagUtils.toString(tag),null,"");
+            if (s == "") {
+                s = dict.nameOf(tag);
+                if (s == null || s.equals(ElementDictionary.getUnkown()) 
+                        || ElementDictionary.PRIVATE_CREATOR.equals(s)) {
+                    s = TagUtils.toString(tag);
+                }
+            }
+            final String tagName = s;
+
             add(new Label("name", new AbstractReadOnlyModel<String>(){
                 
                 private static final long serialVersionUID = 1L;
 
                 @Override
                 public String getObject() {
-                    String s = getString(TagUtils.toString(tag),null,"");
-                    if (s == "") {
-                        s = dict.nameOf(tag);
-                        if (s == null || s.equals(ElementDictionary.getUnkown()) 
-                                || ElementDictionary.PRIVATE_CREATOR.equals(s)) {
-                            s = TagUtils.toString(tag);
-                        }
-                    }
-                    return s;
+                    return tagName;
                 }
             }));
             @SuppressWarnings("rawtypes")
@@ -316,12 +315,16 @@ public class SimpleEditDicomObjectPanel extends Panel {
                 c.setEnabled(false);
             }
             if (requiredTags != null && requiredTags.contains(tagPath[tagPath.length-1])) {
-                c.setRequired(true);
+            	if (c instanceof PatientNameField)
+            		((PatientNameField) c).setSubfieldsToRequired(true);
+            	else
+            		c.setRequired(true);
             }
             add(c.setOutputMarkupId(true));
             if (c instanceof FormComponentPanel) {
                 setMarkupTagReferenceId("date_element"); 
             }
+            c.setLabel(new Model<String>(tagName));
             final IModel<List<String>> presetModel = new AbstractReadOnlyModel<List<String>>() {
                 private static final long serialVersionUID = 1L;
 
