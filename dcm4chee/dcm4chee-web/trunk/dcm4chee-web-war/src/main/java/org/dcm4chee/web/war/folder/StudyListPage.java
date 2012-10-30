@@ -1067,11 +1067,7 @@ public class StudyListPage extends Panel {
                     
                     @Override
                     protected void onSubmit() {
-                        DicomObject obj = getDicomObject();
-//                        if (obj.getString(Tag.PatientName) == null) {
-//                            throw new WicketExceptionWithMsgKey("PatientNameIsEmpty");
-//                        }
-                        newPatModel.update(obj);
+                        newPatModel.update(getDicomObject());
                         viewport.getPatients().add(0, newPatModel);
                     }
                 };
