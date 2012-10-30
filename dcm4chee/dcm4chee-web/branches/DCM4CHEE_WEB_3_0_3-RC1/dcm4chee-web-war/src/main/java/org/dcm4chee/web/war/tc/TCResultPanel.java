@@ -58,7 +58,6 @@ import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxEventBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.IAjaxCallDecorator;
-import org.apache.wicket.behavior.IBehavior;
 import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxLink;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.extensions.markup.html.repeater.data.sort.OrderByBorder;
@@ -82,12 +81,10 @@ import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.security.components.SecureComponentHelper;
 import org.apache.wicket.util.convert.IConverter;
 import org.apache.wicket.util.convert.converters.DateConverter;
-import org.apache.wicket.util.time.Duration;
 import org.dcm4chee.archive.entity.Instance;
 import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
-import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.markup.modal.MessageWindow;
 import org.dcm4chee.web.common.secure.SecurityBehavior;
@@ -401,7 +398,8 @@ public class TCResultPanel extends Panel {
                         }));
                 
                 item.add(new AjaxEventBehavior("onclick") {
-                    @Override
+					private static final long serialVersionUID = 1L;
+					@Override
                     protected void onEvent(AjaxRequestTarget target)
                     {
                         selectTC(item, tc, target);
@@ -409,7 +407,8 @@ public class TCResultPanel extends Panel {
                 });
                 
                 item.add(new AjaxEventBehavior("ondblclick") {
-                    @Override
+					private static final long serialVersionUID = 1L;
+					@Override
                     protected void onEvent(AjaxRequestTarget target)
                     {
                         boolean edit = WebCfgDelegate.getInstance().getTCEditOnDoubleClick();
@@ -423,7 +422,18 @@ public class TCResultPanel extends Panel {
                     @Override
                     protected IAjaxCallDecorator getAjaxCallDecorator() {
                         try {
-                            return TCPanel.getMaskingBehaviour().getAjaxCallDecorator();
+                            return new IAjaxCallDecorator() {
+                                private static final long serialVersionUID = 1L;
+                                public final CharSequence decorateScript(CharSequence script) {
+                                    return "if(typeof showMask == 'function') { showMask(); $('body').css('cursor','wait'); };"+script;
+                                }
+                                public final CharSequence decorateOnSuccessScript(CharSequence script) {
+                                    return "hideMask();$('body').css('cursor','');"+script;
+                                }
+                                public final CharSequence decorateOnFailureScript(CharSequence script) {
+                                    return "hideMask();$('body').css('cursor','');"+script;
+                                }
+                            };
                         } catch (Exception e) {
                             log.error("Failed to get IAjaxCallDecorator: ", e);
                         }
