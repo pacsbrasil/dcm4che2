@@ -239,6 +239,12 @@ public class HSMMigrateService extends ServiceMBeanSupport {
         }
     }
 
+    protected long getSrcFsPk() {
+        return srcFsPk;
+    }
+    protected long getTargetFsPk() {
+        return targetFsPk;
+    }
     public final String getTargetFileStatus() {
         return FileStatus.toString(targetFileStatus);
     }

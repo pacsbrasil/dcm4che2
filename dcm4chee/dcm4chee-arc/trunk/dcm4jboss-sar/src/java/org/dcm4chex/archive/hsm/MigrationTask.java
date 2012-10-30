@@ -52,6 +52,7 @@ import org.dcm4chex.archive.common.FileStatus;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2;
 import org.dcm4chex.archive.ejb.interfaces.MD5;
+import org.dcm4chex.archive.ejb.jdbc.QueryHSMMigrateCmd;
 
 /**
  * @author franz.willer@gmail.com
@@ -84,10 +85,20 @@ public class MigrationTask implements Runnable {
         this.counts = count;
     }
     private void migrateTarFile(String srcFsId, String srcTarFilename, String targetFsId) throws Exception {
+        int nrOfCopies = new QueryHSMMigrateCmd().countFileCopiesOfTarFile(service.getSrcFsPk(), srcTarFilename, service.getTargetFsPk());
+        FileDTO[] dtos = null;
+        if (nrOfCopies > 0 || service.isVerifyTar()) {
+            dtos = mgr.getFilesOfTarFile(srcFsId, srcTarFilename);
+            if (nrOfCopies > 0 && dtos.length == nrOfCopies) {
+                log.warn(this+" - File copies of all files in source tar file "+srcTarFilename+" already exists! Set file status of source to MIGRATED.");
+                mgr.setFilestatusOfFilesOfTarFile(srcFsId, srcTarFilename, FileStatus.MIGRATED);
+                return;
+            }
+        }
         File src = service.fetchTarFile(srcFsId, srcTarFilename);
         if (service.isVerifyTar()) {
             try {
-                List<FileDTO> missingFiles = verifyTar(src, mgr.getFilesOfTarFile(srcFsId, srcTarFilename), true);
+                List<FileDTO> missingFiles = verifyTar(src, dtos, true);
                 for (int i = 0, len = missingFiles.size() ; i < len ; i++) {
                     mgr.setFileStatus(missingFiles.get(i).getPk(), FileStatus.MD5_CHECK_FAILED);
                 }
