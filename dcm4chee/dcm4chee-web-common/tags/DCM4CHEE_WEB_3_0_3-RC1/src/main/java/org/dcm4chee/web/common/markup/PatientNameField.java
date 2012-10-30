@@ -42,6 +42,7 @@ import org.apache.wicket.Component;
 import org.apache.wicket.behavior.IBehavior;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.form.FormComponent;
 import org.apache.wicket.markup.html.form.FormComponentPanel;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.model.IModel;
@@ -104,6 +105,15 @@ public class PatientNameField extends FormComponentPanel<String> {
         fnField.setVisible(b);
         gnLabel.setVisible(b);
         gnField.setVisible(b);
+    }
+    
+        public FormComponent<String> setSubfieldsToRequired(boolean required) {
+                if (isUseFnGn()) {
+                        fnField.setRequired(required);
+                        gnField.setRequired(required);
+                } else
+                        pnField.setRequired(required);
+                return this;
     }
     
     public IModel<Boolean> getUseFnGn() {
