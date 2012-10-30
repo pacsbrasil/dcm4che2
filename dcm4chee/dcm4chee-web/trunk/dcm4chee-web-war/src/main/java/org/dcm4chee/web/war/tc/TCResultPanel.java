@@ -401,7 +401,8 @@ public class TCResultPanel extends Panel {
                         }));
                 
                 item.add(new AjaxEventBehavior("onclick") {
-                    @Override
+					private static final long serialVersionUID = 1L;
+					@Override
                     protected void onEvent(AjaxRequestTarget target)
                     {
                         selectTC(item, tc, target);
@@ -409,7 +410,8 @@ public class TCResultPanel extends Panel {
                 });
                 
                 item.add(new AjaxEventBehavior("ondblclick") {
-                    @Override
+					private static final long serialVersionUID = 1L;
+					@Override
                     protected void onEvent(AjaxRequestTarget target)
                     {
                         boolean edit = WebCfgDelegate.getInstance().getTCEditOnDoubleClick();
@@ -423,8 +425,18 @@ public class TCResultPanel extends Panel {
                     @Override
                     protected IAjaxCallDecorator getAjaxCallDecorator() {
                         try {
-                            return TCPanel.getMaskingBehaviour().getAjaxCallDecorator();
-                        } catch (Exception e) {
+                            return new IAjaxCallDecorator() {
+                                private static final long serialVersionUID = 1L;
+                                public final CharSequence decorateScript(CharSequence script) {
+                                    return "if(typeof showMask == 'function') { showMask(); $('body').css('cursor','wait'); };"+script;
+                                }
+                                public final CharSequence decorateOnSuccessScript(CharSequence script) {
+                                    return "hideMask();$('body').css('cursor','');"+script;
+                                }
+                                public final CharSequence decorateOnFailureScript(CharSequence script) {
+                                    return "hideMask();$('body').css('cursor','');"+script;
+                                }
+                            };                        } catch (Exception e) {
                             log.error("Failed to get IAjaxCallDecorator: ", e);
                         }
                         return null;

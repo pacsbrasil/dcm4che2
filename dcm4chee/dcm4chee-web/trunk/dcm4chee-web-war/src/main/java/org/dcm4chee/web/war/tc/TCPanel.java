@@ -182,7 +182,7 @@ public class TCPanel extends Panel {
                     detailsPanel.clearTCObject(true);
                 }
 
-                return new Component[] {detailsPanel, listPanel};
+                return new Component[] {detailsPanel};
             }
             
             @Override
