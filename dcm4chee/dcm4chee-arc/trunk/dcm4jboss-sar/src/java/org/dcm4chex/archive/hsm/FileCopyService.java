@@ -70,10 +70,13 @@ import org.dcm4che.util.MD5Utils;
 import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.BaseJmsOrder;
 import org.dcm4chex.archive.config.ForwardingRules;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2Home;
 import org.dcm4chex.archive.ejb.interfaces.MD5;
 import org.dcm4chex.archive.ejb.interfaces.Storage;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 import org.dcm4chex.archive.ejb.jdbc.QueryCmd;
+import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
 
 /**
@@ -128,8 +131,8 @@ public class FileCopyService extends AbstractFileCopyService {
     }
     
     public boolean copyFilesOfStudy(String studyIUID) throws Exception {
-        if (destination == null) {
-            log.warn("Destination is not configured! skip this copyFilesOfStudy call!");
+        if (!checkDestinationFsPath(destination)) {
+            log.warn("Destination is not configured or doesn't exist! skip this copyFilesOfStudy call!");
             return false;
         }
         log.info("Start copy files of study "+studyIUID);
@@ -150,8 +153,8 @@ public class FileCopyService extends AbstractFileCopyService {
     }
 
     public boolean copyFilesOfSeries(String seriesIUID) throws Exception {
-        if (destination == null) {
-            log.warn("Destination is not configured! skip this copyFilesOfSeries call!");
+        if (!checkDestinationFsPath(destination)) {
+            log.warn("Destination is not configured or doesn't exist! skip this copyFilesOfSeries call!");
             return false;
         }
         return doCopyFilesOfSeries(seriesIUID);
@@ -203,6 +206,10 @@ public class FileCopyService extends AbstractFileCopyService {
     protected void process(BaseJmsOrder order) throws Exception {
         FileCopyOrder fileCopyOrder = (FileCopyOrder)order;
         String destPath = fileCopyOrder.getDestinationFileSystemPath();
+        if (!checkDestinationFsPath(destPath)) {
+            log.error("Destination file system doesn't exist! Skip this FileCopy order!");
+            return;
+        }
         List<FileInfo> fileInfos = fileCopyOrder.getFileInfos();
         int removed = removeOfflineOrTarSourceFiles(fileInfos);
         if ( removed > 0 ) 
@@ -429,4 +436,17 @@ public class FileCopyService extends AbstractFileCopyService {
         sb.append('-').append(System.currentTimeMillis()%3600000).append(".tar");
         return sb.toString();
     }
+    
+    private boolean checkDestinationFsPath(String destFsPath) throws Exception {
+        if (destFsPath == null)
+            return false;
+        FileSystemMgt2 mgr = ((FileSystemMgt2Home) EJBHomeFactory.getFactory().lookup(
+                FileSystemMgt2Home.class, FileSystemMgt2Home.JNDI_NAME)).create();
+        try {
+            return mgr.getFileSystem(destFsPath) != null;
+        } catch (Exception x) {
+            return false;
+        }
+    }
+
 }
