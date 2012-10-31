@@ -39,11 +39,15 @@ package org.dcm4chex.archive.mbean;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
+import java.util.UUID;
 
-import javax.management.Attribute;
 import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
@@ -160,7 +164,8 @@ public abstract class AbstractDeleterService extends ServiceMBeanSupport {
         return isRunningScheduleStudiesForDeletion;
     }
 
-    protected void startService() throws Exception {
+    @Override
+	protected void startService() throws Exception {
         scheduleStudiesForDeletionListenerID = scheduler.startScheduler(
                 timerIDScheduleStudiesForDeletion,
                 scheduleStudiesForDeletionInterval,
@@ -176,14 +181,16 @@ public abstract class AbstractDeleterService extends ServiceMBeanSupport {
 
     private final NotificationListener scheduleStudiesForDeletionListener =
             new NotificationListener() {
-        public void handleNotification(Notification notif, Object handback) {
+        @Override
+		public void handleNotification(Notification notif, Object handback) {
             startScheduleStudiesForDeletion();
         }
     };
 
     protected void startScheduleStudiesForDeletion() {
         new Thread(new Runnable() {
-            public void run() {
+            @Override
+			public void run() {
                 try {
                     scheduleStudiesForDeletion();
                 } catch (Exception e) {
@@ -479,16 +486,32 @@ public abstract class AbstractDeleterService extends ServiceMBeanSupport {
             Iterator<DeleteStudyOrder> iter = orders.iterator();
             boolean dontCheckMax = maxSize < 1;
             DeleteStudyOrder order;
+            List<String> nonWritableDirList = new ArrayList<String>();
+            List<String> writableDirList = new ArrayList<String>();
             while (iter.hasNext() && (dontCheckMax || result[0] < maxSize )) {
                 order = iter.next();
-                FileSystemDTO fsDto = fsMgt.getFileSystem(order.getFsPk());
-                String sofDirectory = fsDto.getDirectoryPath();
-                File directoryCheck = FileUtils.toFile(sofDirectory);
-                if (!directoryCheck.exists()) {
-                    log.warn("Unable to locate directory " + directoryCheck + ", ignoring scheduled deletion request for studyUID: " 
-                            + order.getStudyIUID() + " on file system");
-                    continue;
+                FileSystemDTO fsDto = fsMgt.getFileSystem(order.getFsPk());                
+                String sofDirectory = fsDto.getDirectoryPath();	                
+                
+                if ( !writableDirList.contains(sofDirectory) ) {
+	                
+	                if (nonWritableDirList.contains(sofDirectory)) {
+	                	log.info("Previously determined not to have RW access to directory " + sofDirectory + ", ignoring scheduled deletion request for studyUID: " 
+	                			+ order.getStudyIUID() + " on file system");
+	                	continue;
+	                }
+	                
+	                if (FileSystemStatus.RW != checkDirPath(fsDto.getGroupID(), sofDirectory)) {
+	                	nonWritableDirList.add(sofDirectory);
+	                    log.warn("Do not have RW access to directory " + sofDirectory + ", ignoring scheduled deletion request for studyUID: " 
+	                            + order.getStudyIUID() + " on file system");
+	                    continue;
+	                    
+	                }
+	                
+	                writableDirList.add(sofDirectory);
                 }
+                
                 if (!checkExternalRetrievable(order))
                     continue;
                 if (fsMgt.markStudyOnFSRecordForDeletion(order, true)) {
@@ -592,4 +615,62 @@ public abstract class AbstractDeleterService extends ServiceMBeanSupport {
                     getFileSystemGroupIDForDeleter());
         return markAndScheduleDeleteOrders(orders, -1)[0];
     }
+    
+    protected Integer checkDirPath(String fsGroupId, String dirPath) {
+    	Integer dirStatus = FileSystemStatus.PENDING;
+
+    	File dir = null;
+    	try {    		
+    		if ("ONLINE_STORAGE".equals(fsGroupId)) {
+    			dir = translateOnlinePathToFile(dirPath);
+    		} else if ("NEARLINE_STORAGE".equals(fsGroupId)) {
+    			dir = translateNearlinePathToFile(dirPath);
+    		}    		    		
+
+    		if (dir != null && dir.exists() && dir.isDirectory()) {
+    			dirStatus = FileSystemStatus.RO;
+    			String testFile = getTempFileNameToCheck();
+    			try {
+    				File test = new File(dir, testFile);
+    				boolean writable = test.createNewFile();
+    				test.delete();
+    				if (writable) {
+    					dirStatus = FileSystemStatus.RW;
+    				} 
+    				else {
+    					dirStatus = FileSystemStatus.RO;
+    				}
+    			} catch (Exception e) {
+    				dirStatus = FileSystemStatus.RO;
+    			}
+    		} 
+
+    	} catch (Exception e) {
+    		log.error("Exception encountered: ",e);            
+    	}
+    	return dirStatus;
+    }
+    
+    protected String getTempFileNameToCheck() {
+    	return String.format("temp-delete-check-%s.txt", UUID.randomUUID().toString());
+    }
+    
+    private File translateOnlinePathToFile(String dirPath) {
+        return FileUtils.toFile(dirPath);
+    }
+
+    private File translateNearlinePathToFile(String dirPath)
+            throws MalformedURLException {
+        dirPath = normalizeNearlinePath(dirPath);
+        return new File(new URL(dirPath).getPath());
+    }
+
+    private String normalizeNearlinePath(String dirPath) {
+        if (dirPath.startsWith("file:///")) {
+            return dirPath;
+        } else {
+            return "file:///" + dirPath;
+        }
+    }
+
 }
