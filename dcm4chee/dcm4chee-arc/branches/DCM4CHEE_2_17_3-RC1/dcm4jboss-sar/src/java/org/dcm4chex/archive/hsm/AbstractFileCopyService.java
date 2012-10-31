@@ -151,6 +151,7 @@ public abstract class AbstractFileCopyService extends ServiceMBeanSupport
     }
 
     public final void setDestination(String destination) throws Exception {
+        destination = destination.trim();
         if ("NONE".equalsIgnoreCase(destination)) {
             this.condition = null;
             this.destination = null;
