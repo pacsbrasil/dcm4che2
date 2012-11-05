@@ -213,7 +213,7 @@ public class FileMoveService extends AbstractDeleterService implements MessageLi
                 dirPath = dirPath.substring(4);
             File dir = FileUtils.toFile(dirPath);
             return dir.isDirectory() ? FileUtils.formatSize(FileSystemUtils.freeSpace(dir.getPath()) - getMinFreeDiskSpaceOnDestFS())
-                                     : hsmModuleServicename == null ? "UNKNOWN" : "n.a. (HSM)";
+                                     : hsmModuleServicename == null ? "UNKNOWN (destination path not found)" : "n.a. (HSM)";
 
         } catch (Exception x) {
             log.error("Failed to get UsableDiskSpaceStringOnDest!", x);
@@ -421,12 +421,15 @@ public class FileMoveService extends AbstractDeleterService implements MessageLi
             if (fsDTO == null) {
                 throw new RuntimeException("No destination file system (with free disk space) available!");
             }
-            FileDTO[][] files = mgt.getFilesOfStudy(order);
             long availOnDest = getUsableDiskSpaceOnDest();
             log.debug("Available disk space on destination FS:"+availOnDest);
-            for (int i = 0 ; i < files.length && availOnDest > 0; i++) {
-                for (int j = 0 ; j < files[i].length && availOnDest > 0; j++) {
-                    availOnDest -= files[i][j].getFileSize();
+            FileDTO[][] files = null;
+            if (availOnDest > 0) {
+                files = mgt.getFilesOfStudy(order);
+                for (int i = 0 ; i < files.length && availOnDest > 0; i++) {
+                    for (int j = 0 ; j < files[i].length && availOnDest > 0; j++) {
+                        availOnDest -= files[i][j].getFileSize();
+                    }
                 }
             }
             log.debug("Expected available disk space on destination FS after move:"+availOnDest);
