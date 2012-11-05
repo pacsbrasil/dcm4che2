@@ -51,7 +51,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -148,7 +147,8 @@ public class WebCfgService extends ServiceMBeanSupport implements
     private Map<String, String> tcKeywordCataloguesExclusive = new LinkedHashMap<String, String>();
     private List<String> tcRestrictedSrcAETs = new ArrayList<String>();
     private boolean tcEditOnDoubleClick;
-
+    private boolean tcShowImagesInDialog;
+    
     private String patientIDPattern;
     private String issuerOfPatientID;
 
@@ -427,6 +427,14 @@ public class WebCfgService extends ServiceMBeanSupport implements
 
     public void setTCEditOnDoubleClick(boolean b) {
         tcEditOnDoubleClick = b;
+    }
+    
+    public boolean isTCShowImagesInDialogEnabled() {
+        return tcShowImagesInDialog;
+    }
+
+    public void setTCShowImagesInDialogEnabled(boolean b) {
+        tcShowImagesInDialog = b;
     }
     
     public String getTCSeriesDisplayFormat()

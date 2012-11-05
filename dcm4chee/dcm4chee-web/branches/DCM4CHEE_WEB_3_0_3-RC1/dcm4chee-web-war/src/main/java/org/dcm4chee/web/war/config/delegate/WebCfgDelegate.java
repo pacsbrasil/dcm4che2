@@ -292,6 +292,11 @@ public class WebCfgDelegate extends BaseCfgDelegate {
     {
         return getBoolean("TCEditOnDoubleClick", false);
     }
+    
+    public boolean isTCShowImagesInDialogEnabled()
+    {
+        return getBoolean("TCShowImagesInDialog", true);
+    }
 
     public String getTCKeywordCataloguesPath() {
         return getString("TCKeywordCataloguesPath");

@@ -163,19 +163,12 @@
            DigitalXRayImageStorageForProcessing
            DigitalMammographyXRayImageStorageForPresentation
            DigitalMammographyXRayImageStorageForProcessing
-           DigitalIntraOralXRayImageStorageForPresentation
-           DigitalIntraOralXRayImageStorageForProcessing
            CTImageStorage
            EnhancedCTImageStorage
-           UltrasoundMultiFrameImageStorage
            MRImageStorage
            EnhancedMRImageStorage
            UltrasoundImageStorage
            SecondaryCaptureImageStorage
-           MultiFrameSingleBitSecondaryCaptureImageStorage
-           MultiFrameGrayscaleByteSecondaryCaptureImageStorage
-           MultiFrameGrayscaleWordSecondaryCaptureImageStorage
-           MultiFrameTrueColorSecondaryCaptureImageStorage
            XRayAngiographicImageStorage
            EnhancedXAImageStorage
            XRayRadiofluoroscopicImageStorage
@@ -192,11 +185,8 @@
            HardcopyGrayscaleImageStorageSOPClassRetired
            HardcopyColorImageStorageSOPClassRetired
            NuclearMedicineImageStorageRetired
-           UltrasoundMultiFrameImageStorageRetired
            UltrasoundImageStorageRetired
            XRayAngiographicBiPlaneImageStorageRetired
-           VLImageStorageTrialRetired
-           VLMultiFrameImageStorageTrialRetired
            "/>
       </descriptors>
    </attribute>
@@ -231,7 +221,6 @@
       <type>java.lang.String</type>
       <descriptors>
          <value value="
-           TwelveLeadECGWaveformStorage
            GeneralECGWaveformStorage
            AmbulatoryECGWaveformStorage
            HemodynamicWaveformStorage
@@ -768,6 +757,21 @@
       <type>boolean</type>
       <descriptors>
          <value value="false"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isTCShowImagesInDialogEnabled"
+      setMethod="setTCShowImagesInDialogEnabled">
+      <description><![CDATA[
+      Specifies whether the images view panel is shown in the view/edit dialog or not.
+      By default, this setting is true and the images view panel is displayed. However,
+      if the majority of TF have man referenced images, it may make sense to set this 
+      to false in order to reduce the time it takes to display the dialog.
+      ]]></description>
+      <name>TCShowImagesInDialog</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
