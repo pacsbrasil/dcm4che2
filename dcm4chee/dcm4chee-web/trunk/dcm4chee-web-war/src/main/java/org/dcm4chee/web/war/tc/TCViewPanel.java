@@ -80,9 +80,18 @@ public class TCViewPanel extends Panel
         final Label biblioTitleLabel = new Label("tc.view.bibliography.tab.title");
         biblioTitleLabel.setOutputMarkupId(true);
         
+        final boolean showImagesTab = WebCfgDelegate.getInstance().isTCShowImagesInDialogEnabled();
         final TCViewOverviewTab overviewTab = new TCViewOverviewTab("tc-view-overview", getModel(), isEditable());
         final TCViewDiagnosisTab diagnosisTab = new TCViewDiagnosisTab("tc-view-diagnosis", getModel(), isEditable());
-        final TCViewImagesTab imagesTab = new TCViewImagesTab("tc-view-images", getModel());
+        final WebMarkupContainer imagesTab =  showImagesTab ?
+        		new TCViewImagesTab("tc-view-images", getModel()) : new WebMarkupContainer("tc-view-images") {
+					private static final long serialVersionUID = 1L;
+					@Override
+					public boolean isVisible() {
+        				return false;
+        			}
+        		};
+        		
         final TCViewGenericTextTab diffDiagnosisTab = new TCViewGenericTextTab("tc-view-diffDiagnosis", getModel(), isEditable()) {
             @Override
             public String getTabTitle()
@@ -221,13 +230,21 @@ public class TCViewPanel extends Panel
         
         content.add(biblioTitleLabel);
         
-        content.add(new Label("tc.view.images.tab.title", new AbstractReadOnlyModel<String>() {
-            @Override
-            public String getObject()
-            {
-                return imagesTab.getTabTitle();
-            }
-        }));
+        content.add((new WebMarkupContainer("tc.view.images.tab.item") {
+			private static final long serialVersionUID = 1L;
+			@Override
+        	public boolean isVisible() {
+        		return showImagesTab;
+        	}
+        }).add(new Label("tc.view.images.tab.title", new AbstractReadOnlyModel<String>() {
+			private static final long serialVersionUID = 1L;
+			@Override
+        	public String getObject()
+        	{
+        		return imagesTab instanceof TCViewImagesTab ?
+        				((TCViewImagesTab)imagesTab).getTabTitle() : null;
+        	}
+        })));
         
         tabsToIndices.put(overviewTab, 0);
         tabsToIndices.put(diagnosisTab, 1);
@@ -237,7 +254,11 @@ public class TCViewPanel extends Panel
         tabsToIndices.put(discussionTab, 5);
         tabsToIndices.put(organSystemTab, 6);
         tabsToIndices.put(biblioTab, 7);
-        tabsToIndices.put(imagesTab, 8);
+        
+        if (imagesTab instanceof TCViewImagesTab)
+        {
+        	tabsToIndices.put((TCViewImagesTab)imagesTab, 8);
+        }
         
         content.add(overviewTab);
         content.add(diagnosisTab);

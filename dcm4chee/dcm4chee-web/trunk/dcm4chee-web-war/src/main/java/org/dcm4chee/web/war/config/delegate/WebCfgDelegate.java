@@ -293,6 +293,11 @@ public class WebCfgDelegate extends BaseCfgDelegate {
         return getBoolean("TCEditOnDoubleClick", false);
     }
     
+    public boolean isTCShowImagesInDialogEnabled()
+    {
+        return getBoolean("TCShowImagesInDialog", true);
+    }
+    
     public boolean isTCMultipleKeywordSearchEnabled()
     {
         return getBoolean("TCMultipleKeywordSearch", false);

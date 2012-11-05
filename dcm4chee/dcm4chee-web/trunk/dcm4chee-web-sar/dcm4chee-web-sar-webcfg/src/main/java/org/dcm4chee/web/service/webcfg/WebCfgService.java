@@ -149,6 +149,7 @@ public class WebCfgService extends ServiceMBeanSupport implements
     private boolean tcEditOnDoubleClick;
     private boolean tcMultipleKeywordSearch;
     private boolean tcMultipleKeywordORConcat;
+    private boolean tcShowImagesInDialog;
     
     private String patientIDPattern;
     private String issuerOfPatientID;
@@ -428,6 +429,14 @@ public class WebCfgService extends ServiceMBeanSupport implements
 
     public void setTCEditOnDoubleClick(boolean b) {
         tcEditOnDoubleClick = b;
+    }
+    
+    public boolean isTCShowImagesInDialogEnabled() {
+        return tcShowImagesInDialog;
+    }
+
+    public void setTCShowImagesInDialogEnabled(boolean b) {
+        tcShowImagesInDialog = b;
     }
     
     public boolean isTCMultipleKeywordSearchEnabled() {

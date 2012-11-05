@@ -771,6 +771,21 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isTCShowImagesInDialogEnabled"
+      setMethod="setTCShowImagesInDialogEnabled">
+      <description><![CDATA[
+      Specifies whether the images view panel is shown in the view/edit dialog or not.
+      By default, this setting is true and the images view panel is displayed. However,
+      if the majority of TF have man referenced images, it may make sense to set this 
+      to false in order to reduce the time it takes to display the dialog.
+      ]]></description>
+      <name>TCShowImagesInDialog</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="isTCMultipleKeywordSearchEnabled"
       setMethod="setTCMultipleKeywordSearchEnabled">
       <description><![CDATA[
