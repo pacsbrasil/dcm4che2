@@ -155,7 +155,7 @@ public class SimpleEditDicomObjectPanel extends Panel {
 
             @Override
             protected void onError(AjaxRequestTarget target, Form<?> form) {
-                BaseForm.addInvalidComponentsToAjaxRequestTarget(target, form);
+                BaseForm.addFormComponentsToAjaxRequestTarget(target, form);
             }
         });
         form.add(new AjaxFallbackButton("cancel", new ResourceModel("cancelBtn"), form) {
