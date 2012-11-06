@@ -110,7 +110,6 @@ public class PatientNameField extends FormComponentPanel<String> {
 	public FormComponent<String> setSubfieldsToRequired(boolean required) {
 		if (isUseFnGn()) {
 			fnField.setRequired(required);
-			gnField.setRequired(required);
 		} else
 			pnField.setRequired(required);
 		return this;
