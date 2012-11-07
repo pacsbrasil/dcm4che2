@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -297,7 +298,10 @@ public class DicomEditBean implements DicomEditLocal {
             Query q = em.createNamedQuery("PrivateSeries.findByIUID");
             q.setParameter("iuid", series.getSeriesInstanceUID());
             pSeries = (PrivateSeries) q.getSingleResult();
-            series.getStudy().getPatient().getPk();
+            if (!series.getStudy().getPatient().getPatientID()
+            		.equals(pSeries.getStudy().getPatient().getPatientID()))
+            	throw new EJBException("Series already exists in trash with different patient ID: SeriesInstanceUID: " 
+            		+ series.getSeriesInstanceUID());
         } catch (NoResultException nre) {
             pSeries = new PrivateSeries();//we need parents initialized.
             DicomObject attrs = series.getAttributes(false);
@@ -319,7 +323,10 @@ public class DicomEditBean implements DicomEditLocal {
             Query q = em.createNamedQuery("PrivateStudy.findByIUID");
             q.setParameter("iuid", study.getStudyInstanceUID());
             pStudy = (PrivateStudy) q.getSingleResult();
-            study.getPatient().getPk();
+            if (!study.getPatient().getPatientID()
+            		.equals(pStudy.getPatient().getPatientID()))
+            	throw new EJBException("Study already exists in trash with different patient ID, StudyInstanceUID: " 
+            		+ study.getStudyInstanceUID());
         } catch (NoResultException nre) {
             pStudy = new PrivateStudy();
             pStudy.setAttributes(study.getAttributes(false));

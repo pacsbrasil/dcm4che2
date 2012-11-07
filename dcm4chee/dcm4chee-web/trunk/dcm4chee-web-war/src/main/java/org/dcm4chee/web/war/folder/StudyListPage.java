@@ -57,6 +57,7 @@ import javax.ejb.EJBException;
 import javax.management.MBeanServerConnection;
 import javax.management.MBeanServerFactory;
 import javax.management.ObjectName;
+import javax.management.RuntimeMBeanException;
 import javax.security.auth.Subject;
 import javax.security.jacc.PolicyContext;
 import javax.servlet.http.HttpServletRequest;
@@ -1014,17 +1015,20 @@ public class StudyListPage extends Panel {
                 this.setStatus(new StringResourceModel("folder.message.delete.running", StudyListPage.this, null));
                 
                 try {
-                    if (getDelegate().moveToTrash(selected)) {
-                        setStatus(new StringResourceModel("folder.message.deleteDone", StudyListPage.this,null));
-                        if (selected.hasPatients()) {
-                            viewport.getPatients().clear();
-                            query(target);
-                        } else
-                            selected.refreshView(true);
+                	getDelegate().moveToTrash(selected);
+                	setStatus(new StringResourceModel("folder.message.deleteDone", StudyListPage.this,null));
+                    if (selected.hasPatients()) {
+                        viewport.getPatients().clear();
+                        query(target);
                     } else
-                        setStatus(new StringResourceModel("folder.message.deleteFailed", StudyListPage.this,null));
+                        selected.refreshView(true);
+                } catch (RuntimeMBeanException e) {
+                	log.error("moveToTrash failed: ", e);
+                	if (e.getCause() instanceof EJBException)
+                		this.setStatus(new StringResourceModel("folder.message.deleteFailed.alreadyExists", StudyListPage.this, null));
                 } catch (Throwable t) {
                     log.error("moveToTrash failed: ", t);
+                    setStatus(new StringResourceModel("folder.message.deleteFailed", StudyListPage.this,null));
                 }
                 target.addComponent(getMessageWindowPanel().getMsgLabel());
                 target.addComponent(getMessageWindowPanel().getOkBtn());
