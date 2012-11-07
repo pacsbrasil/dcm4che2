@@ -47,7 +47,6 @@ import java.util.StringTokenizer;
 
 import javax.servlet.http.Cookie;
 
-import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Page;
 import org.apache.wicket.RequestCycle;
 import org.apache.wicket.ResourceReference;
@@ -55,15 +54,11 @@ import org.apache.wicket.Session;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
-import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.ChoiceRenderer;
 import org.apache.wicket.markup.html.form.DropDownChoice;
-import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.panel.Panel;
-import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
@@ -72,13 +67,11 @@ import org.apache.wicket.protocol.http.WebApplication;
 import org.apache.wicket.protocol.http.WebRequest;
 import org.apache.wicket.protocol.http.WebResponse;
 import org.apache.wicket.security.swarm.SwarmWebApplication;
-import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
 import org.dcm4chee.web.common.model.ProgressProvider;
 import org.dcm4chee.web.common.secure.SecureAjaxTabbedPanel;
 import org.dcm4chee.web.common.secure.SecureSession;
 import org.dcm4chee.web.common.secure.SecureSessionCheckPage;
-import org.dcm4chee.web.common.secure.SecureWicketPage;
 import org.dcm4chee.web.common.util.CloseRequestSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,7 +92,7 @@ public class ModuleSelectorPanel extends SecureAjaxTabbedPanel {
     private static final long serialVersionUID = 1L;
     private static List<String> languages;
     private static String defaultLanguage;
-    private IModel<ResourceReference> baseCssModel;
+//    private IModel<ResourceReference> baseCssModel;
     
     public boolean showLogout = true;
     
@@ -136,7 +129,7 @@ public class ModuleSelectorPanel extends SecureAjaxTabbedPanel {
     }
     public ModuleSelectorPanel(String id, IModel<ResourceReference> cssModel) {
         super(id);
-        this.baseCssModel = cssModel;
+//        this.baseCssModel = cssModel;
         boolean found = false;
         Cookie[] cs = ((WebRequest) RequestCycle.get().getRequest()).getHttpServletRequest().getCookies();
         if (cs != null)
@@ -248,37 +241,37 @@ public class ModuleSelectorPanel extends SecureAjaxTabbedPanel {
         });
         add(languageSelector);
         
-        final DropDownChoice<ResourceReference> cssSelector = 
-            new DropDownChoice<ResourceReference>("cssSelect", baseCssModel, 
-                    getBaseCssResources(), new ChoiceRenderer<ResourceReference>() {
-
-            private static final long serialVersionUID = 1L;
-            
-            @Override
-            public String getDisplayValue(ResourceReference object) {
-                String n = object.getName();
-                if (n.endsWith(".css"))
-                    n = n.substring(0, n.length()-4);
-                return ModuleSelectorPanel.this.getString("style.name."+n, null, n);
-            }
-        }) {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            protected void onSelectionChanged(ResourceReference newSelection) {
-                log.info("set Base CSS resource:"+newSelection);
-            }
-        };
-        cssSelector.add(new AjaxFormComponentUpdatingBehavior("onchange") {
-            private static final long serialVersionUID = 1L;
-
-            protected void onUpdate(AjaxRequestTarget target) {
-                cssSelector.onSelectionChanged();
-                target.addComponent(getPage());
-            }
-        }).add(new TooltipBehaviour("application.", "styleselect"));
-        add(cssSelector);
+//        final DropDownChoice<ResourceReference> cssSelector = 
+//            new DropDownChoice<ResourceReference>("cssSelect", baseCssModel, 
+//                    getBaseCssResources(), new ChoiceRenderer<ResourceReference>() {
+//
+//            private static final long serialVersionUID = 1L;
+//            
+//            @Override
+//            public String getDisplayValue(ResourceReference object) {
+//                String n = object.getName();
+//                if (n.endsWith(".css"))
+//                    n = n.substring(0, n.length()-4);
+//                return ModuleSelectorPanel.this.getString("style.name."+n, null, n);
+//            }
+//        }) {
+//
+//            private static final long serialVersionUID = 1L;
+//
+//            @Override
+//            protected void onSelectionChanged(ResourceReference newSelection) {
+//                log.info("set Base CSS resource:"+newSelection);
+//            }
+//        };
+//        cssSelector.add(new AjaxFormComponentUpdatingBehavior("onchange") {
+//            private static final long serialVersionUID = 1L;
+//
+//            protected void onUpdate(AjaxRequestTarget target) {
+//                cssSelector.onSelectionChanged();
+//                target.addComponent(getPage());
+//            }
+//        }).add(new TooltipBehaviour("application.", "styleselect"));
+//        add(cssSelector);
         
         add(new Image("img_logo", new ResourceReference(ModuleSelectorPanel.class, 
                 "images/logo.gif"))
