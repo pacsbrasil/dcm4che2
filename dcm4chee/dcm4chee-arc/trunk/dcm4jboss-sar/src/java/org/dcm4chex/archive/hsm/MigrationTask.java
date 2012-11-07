@@ -86,9 +86,11 @@ public class MigrationTask implements Runnable {
     }
     private void migrateTarFile(String srcFsId, String srcTarFilename, String targetFsId) throws Exception {
         int nrOfCopies = new QueryHSMMigrateCmd().countFileCopiesOfTarFile(service.getSrcFsPk(), srcTarFilename, service.getTargetFsPk());
+        log.debug("########### nrOfCopies:"+nrOfCopies);
         FileDTO[] dtos = null;
         if (nrOfCopies > 0 || service.isVerifyTar()) {
             dtos = mgr.getFilesOfTarFile(srcFsId, srcTarFilename);
+            log.debug("########### dtos.length:"+dtos.length);
             if (nrOfCopies > 0 && dtos.length == nrOfCopies) {
                 log.warn(this+" - File copies of all files in source tar file "+srcTarFilename+" already exists! Set file status of source to MIGRATED.");
                 mgr.setFilestatusOfFilesOfTarFile(srcFsId, srcTarFilename, FileStatus.MIGRATED);
