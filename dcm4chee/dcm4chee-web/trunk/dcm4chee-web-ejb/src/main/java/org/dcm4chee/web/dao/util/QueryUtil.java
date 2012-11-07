@@ -46,7 +46,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.persistence.TemporalType;
 
-import org.apache.commons.lang.StringUtils;
 import org.dcm4che2.data.PersonName;
 import org.dcm4che2.data.Tag;
 import org.dcm4chee.archive.conf.AttributeFilter;
@@ -455,9 +454,8 @@ public class QueryUtil {
                 param.append(token);
             }
         }
-        while (padcarets-- > 0) {
+        if (param.charAt(param.length()-1) != '%')
             param.append("^%");
-        }
         return param.toString();
     }
 
