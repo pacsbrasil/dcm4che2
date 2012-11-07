@@ -163,7 +163,7 @@ public class TCResultPanel extends Panel {
                 final TCModel tc = item.getModelObject();
 
                 final StringBuilder jsStopEventPropagationInline = new StringBuilder(
-                                "var event=arguments[0] || window.event; if (event.stopPropagation) {event.stopPropagation();} else {event.cancelBubble=True;};");
+                		"var event=arguments[0] || window.event; if (event.stopPropagation) {event.stopPropagation();} else {event.cancelBubble=True;};");
                 
                 item.setOutputMarkupId(true);
                 item.add(new TCMultiLineLabel("title", tc.getTitle(), 80));
@@ -216,8 +216,8 @@ public class TCResultPanel extends Panel {
                     }
                     protected void onComponentTag(ComponentTag tag)
                     {
-                        super.onComponentTag(tag);
-                        tag.put("ondblclick",jsStopEventPropagationInline);
+                    	super.onComponentTag(tag);
+                    	tag.put("ondblclick",jsStopEventPropagationInline);
                     }
                     @Override
                     protected IAjaxCallDecorator getAjaxCallDecorator() {
@@ -243,8 +243,8 @@ public class TCResultPanel extends Panel {
                     }
                     protected void onComponentTag(ComponentTag tag)
                     {
-                        super.onComponentTag(tag);
-                        tag.put("ondblclick",jsStopEventPropagationInline);
+                    	super.onComponentTag(tag);
+                    	tag.put("ondblclick",jsStopEventPropagationInline);
                     }
                     @Override
                     protected IAjaxCallDecorator getAjaxCallDecorator() {
@@ -398,8 +398,8 @@ public class TCResultPanel extends Panel {
                         }));
                 
                 item.add(new AjaxEventBehavior("onclick") {
-                                        private static final long serialVersionUID = 1L;
-                                        @Override
+					private static final long serialVersionUID = 1L;
+					@Override
                     protected void onEvent(AjaxRequestTarget target)
                     {
                         selectTC(item, tc, target);
@@ -407,8 +407,8 @@ public class TCResultPanel extends Panel {
                 });
                 
                 item.add(new AjaxEventBehavior("ondblclick") {
-                                        private static final long serialVersionUID = 1L;
-                                        @Override
+					private static final long serialVersionUID = 1L;
+					@Override
                     protected void onEvent(AjaxRequestTarget target)
                     {
                         boolean edit = WebCfgDelegate.getInstance().getTCEditOnDoubleClick();
@@ -433,7 +433,7 @@ public class TCResultPanel extends Panel {
                                 public final CharSequence decorateOnFailureScript(CharSequence script) {
                                     return "hideMask();$('body').css('cursor','');"+script;
                                 }
-                            };   
+                            };
                         } catch (Exception e) {
                             log.error("Failed to get IAjaxCallDecorator: ", e);
                         }
@@ -797,10 +797,8 @@ public class TCResultPanel extends Panel {
                         .applyStudyPermissions() ? StudyPermissionHelper.get()
                         .getDicomRoles() : null;
 
-                WebCfgDelegate config = WebCfgDelegate.getInstance();
-                return dao.findMatchingInstances(filter, roles, 
-                                config.getTCRestrictedSourceAETList(),
-                                config.isTCMultipleKeywordORConcatEnabled());
+                return dao.findMatchingInstances(filter, roles, WebCfgDelegate
+                        .getInstance().getTCRestrictedSourceAETList());
             } catch (Exception e) {
                 log.error("TC query failed!", e);
 
