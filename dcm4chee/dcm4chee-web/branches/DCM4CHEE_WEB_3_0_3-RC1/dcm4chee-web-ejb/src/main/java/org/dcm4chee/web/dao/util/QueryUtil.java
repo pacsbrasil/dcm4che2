@@ -454,7 +454,7 @@ public class QueryUtil {
                 param.append(token);
             }
         }
-        if (param.charAt(param.length()-1) != '%')
+        if (param.charAt(param.length()-1) != '%' && padcarets > 0)
             param.append("^%");
         return param.toString();
     }
