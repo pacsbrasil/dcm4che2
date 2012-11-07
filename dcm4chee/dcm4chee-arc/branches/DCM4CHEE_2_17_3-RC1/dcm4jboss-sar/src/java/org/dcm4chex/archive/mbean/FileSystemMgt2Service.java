@@ -375,7 +375,7 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
     }
 
     public long getFreeDiskSpaceOnCurFS() throws IOException {
-        if (storageFileSystem == null)
+        if (storageFileSystem == null || getMinFreeDiskSpaceBytes() == 0)
             return -1L;
         File dir = FileUtils.toFile(storageFileSystem.getDirectoryPath());
         return dir.isDirectory() ? FileSystemUtils.freeSpace(dir.getPath())
@@ -388,7 +388,7 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
 
     public long getUsableDiskSpaceOnCurFS() throws IOException {
         long free = getFreeDiskSpaceOnCurFS();
-        return free == -1L ? -1L : Math.max(0, free - Math.max(getMinFreeDiskSpaceBytes(), MIN_FREE_DISK_SPACE));
+        return free == -1L ? -1L : Math.max(0, free - getMinFreeDiskSpaceBytes());
     }
 
     public String getUsableDiskSpaceOnCurFSString() throws IOException {
@@ -630,20 +630,20 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
         File dir = checkFS(fsDTO, " - try to switch to next configured storage directory");
         if (dir == null)
             return false;
-        long minFree = getMinFreeDiskSpaceBytes();
-        if (minFree == 0)
-            minFree = MIN_FREE_DISK_SPACE;
+        if (getMinFreeDiskSpaceBytes() == 0) {
+            return true;
+        }
         final long freeSpace = FileSystemUtils.freeSpace(dir.getPath());
         log.info("Free disk space on " + dir + ": "
                 + FileUtils.formatSize(freeSpace));
-        if (freeSpace < minFree) {
+        if (freeSpace < getMinFreeDiskSpaceBytes()) {
             log.info("High Water Mark reached on current storage directory "
                     + dir
                     + " - try to switch to next configured storage directory");
             return false;
         }
         checkFreeDiskSpaceTime = System.currentTimeMillis() + Math.min(
-                freeSpace * checkFreeDiskSpaceMinInterval / minFree,
+                freeSpace * checkFreeDiskSpaceMinInterval / getMinFreeDiskSpaceBytes(),
                 checkFreeDiskSpaceMaxInterval);
         return true;
     }
