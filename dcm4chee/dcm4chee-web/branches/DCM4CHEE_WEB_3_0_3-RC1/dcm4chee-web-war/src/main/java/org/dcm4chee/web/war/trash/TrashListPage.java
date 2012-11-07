@@ -116,7 +116,6 @@ import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
 import org.dcm4chee.web.war.folder.DicomObjectPanel;
 import org.dcm4chee.web.war.folder.arr.AuditRecordRepositoryFacade;
-import org.dcm4chee.web.war.folder.model.StudyModel;
 import org.dcm4chee.web.war.trash.delegate.StoreBridgeDelegate;
 import org.dcm4chee.web.war.trash.model.PrivInstanceModel;
 import org.dcm4chee.web.war.trash.model.PrivPatientModel;
