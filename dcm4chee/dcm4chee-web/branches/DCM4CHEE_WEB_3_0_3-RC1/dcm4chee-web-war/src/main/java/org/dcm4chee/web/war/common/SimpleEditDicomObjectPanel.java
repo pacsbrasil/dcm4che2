@@ -155,7 +155,7 @@ public class SimpleEditDicomObjectPanel extends Panel {
 
             @Override
             protected void onError(AjaxRequestTarget target, Form<?> form) {
-                BaseForm.addInvalidComponentsToAjaxRequestTarget(target, form);
+                BaseForm.addFormComponentsToAjaxRequestTarget(target, form);
             }
         });
         form.add(new AjaxFallbackButton("cancel", new ResourceModel("cancelBtn"), form) {
@@ -235,24 +235,24 @@ public class SimpleEditDicomObjectPanel extends Panel {
 
     public DicomObject getDicomObject() {
         int[] tagPath;
-        for (int i = 0; i < tagPaths.length; i++) {
-            tagPath = tagPaths[i];
-            if ((tagPath.length | 0x01) == 1) {//normal tagPath?
-                putNullIfMissing(tagPath);
-            } else {//handle compound (DA TM)
-                int[] ia = new int[tagPath.length-1];
-                System.arraycopy(tagPath, 0, ia, 0, ia.length);
+    	for (int i = 0; i < tagPaths.length; i++) {
+    	    tagPath = tagPaths[i];
+    	    if ((tagPath.length | 0x01) == 1) {//normal tagPath?
+    		putNullIfMissing(tagPath);
+    	    } else {//handle compound (DA TM)
+    	        int[] ia = new int[tagPath.length-1];
+    	        System.arraycopy(tagPath, 0, ia, 0, ia.length);
                 putNullIfMissing(ia);//Date
                 ia[ia.length-1] = tagPath[ia.length];
                 putNullIfMissing(ia);//Time
-            }
-        }
+    	    }
+    	}
         return dcmObj;
     }
 
     private void putNullIfMissing(int[] tagPath) {
         if (dcmObj.get(tagPath) == null)
-                dcmObj.putNull(tagPath, DicomElementModel.getVRof(dcmObj, tagPath));
+        	dcmObj.putNull(tagPath, DicomElementModel.getVRof(dcmObj, tagPath));
     }
 
     protected void onSubmit() {}
@@ -315,10 +315,10 @@ public class SimpleEditDicomObjectPanel extends Panel {
                 c.setEnabled(false);
             }
             if (requiredTags != null && requiredTags.contains(tagPath[tagPath.length-1])) {
-                if (c instanceof PatientNameField)
-                        ((PatientNameField) c).setSubfieldsToRequired(true);
-                else
-                        c.setRequired(true);
+            	if (c instanceof PatientNameField)
+            		((PatientNameField) c).setSubfieldsToRequired(true);
+            	else
+            		c.setRequired(true);
             }
             add(c.setOutputMarkupId(true));
             if (c instanceof FormComponentPanel) {
