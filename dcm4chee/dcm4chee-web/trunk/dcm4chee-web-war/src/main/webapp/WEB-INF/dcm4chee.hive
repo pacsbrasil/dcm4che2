@@ -110,6 +110,7 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "F
 {
 // KEY: swarm.principal.FolderActions
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:deleteButton", "render, enable";
+	permission ${ComponentPermission} "org.dcm4chee.web.war.tc.TCResultPanel$TCStudyListPage:folder:deleteButton", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:moveButton", "render, enable";
 };
 
