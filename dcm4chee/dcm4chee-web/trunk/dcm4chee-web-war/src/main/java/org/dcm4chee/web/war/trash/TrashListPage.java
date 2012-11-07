@@ -116,6 +116,7 @@ import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
 import org.dcm4chee.web.war.folder.DicomObjectPanel;
 import org.dcm4chee.web.war.folder.arr.AuditRecordRepositoryFacade;
+import org.dcm4chee.web.war.folder.model.StudyModel;
 import org.dcm4chee.web.war.trash.delegate.StoreBridgeDelegate;
 import org.dcm4chee.web.war.trash.model.PrivInstanceModel;
 import org.dcm4chee.web.war.trash.model.PrivPatientModel;
@@ -1061,14 +1062,10 @@ public class TrashListPage extends Panel {
                 
                 @Override
 				public void onClick(final AjaxRequestTarget target) {
-                	arrWindow
-    	        		.setContent(new Label("content", 
-    	        				new Model<String>(new AuditRecordRepositoryFacade()
-    	        					.doSearch(AuditRecordRepositoryFacade.Level.PATIENT, 
-    	        							patModel.getId())))
-    	                .setEscapeModelStrings(false)
-    	                .add(new AttributeModifier("class", true, new Model<String>("arr"))))
-    	                .show(target);
+                	showAuditQueryResult(target, 
+                			new AuditRecordRepositoryFacade()
+                				.doSearch(AuditRecordRepositoryFacade.Level.PATIENT, 
+                						patModel.getId()));
                 }
             }.add(new Image("arrImg",ImageManager.IMAGE_COMMON_ARR)
             .add(new ImageSizeBehaviour())
@@ -1171,14 +1168,10 @@ public class TrashListPage extends Panel {
                 
                 @Override
 				public void onClick(final AjaxRequestTarget target) {
-                	arrWindow
-    	        		.setContent(new Label("content", 
-    	        				new Model<String>(new AuditRecordRepositoryFacade()
-    	        					.doSearch(AuditRecordRepositoryFacade.Level.STUDY, 
-    	        							studyModel.getStudyInstanceUID())))
-    	                .setEscapeModelStrings(false)
-    	                .add(new AttributeModifier("class", true, new Model<String>("arr"))))
-    	                .show(target);
+                	showAuditQueryResult(target, 
+                			new AuditRecordRepositoryFacade()
+                				.doSearch(AuditRecordRepositoryFacade.Level.STUDY, 
+                						studyModel.getStudyInstanceUID()));
                 }
             }.add(new Image("arrImg",ImageManager.IMAGE_COMMON_ARR)
             .add(new ImageSizeBehaviour())
@@ -1282,15 +1275,11 @@ public class TrashListPage extends Panel {
                 
                 @Override
 				public void onClick(final AjaxRequestTarget target) {
-                	arrWindow
-    	        		.setContent(new Label("content", 
-    	        				new Model<String>(new AuditRecordRepositoryFacade()
-    	        					.doSearch(AuditRecordRepositoryFacade.Level.SERIES, 
-    	        							((PrivStudyModel) seriesModel.getParent())
-    	        								.getStudyInstanceUID())))
-    	                .setEscapeModelStrings(false)
-    	                .add(new AttributeModifier("class", true, new Model<String>("arr"))))
-    	                .show(target);
+                	showAuditQueryResult(target, 
+                			new AuditRecordRepositoryFacade()
+                				.doSearch(AuditRecordRepositoryFacade.Level.SERIES, 
+                						((PrivStudyModel) seriesModel.getParent())
+                                        .getStudyInstanceUID()));
                 }
             }.add(new Image("arrImg",ImageManager.IMAGE_COMMON_ARR)
             .add(new ImageSizeBehaviour())
@@ -1379,15 +1368,11 @@ public class TrashListPage extends Panel {
                 
                 @Override
 				public void onClick(final AjaxRequestTarget target) {
-                	arrWindow
-    	        		.setContent(new Label("content", 
-    	        				new Model<String>(new AuditRecordRepositoryFacade()
-    	        					.doSearch(AuditRecordRepositoryFacade.Level.INSTANCE, 
-    	        							((PrivStudyModel) instModel.getParent().getParent())
-	        									.getStudyInstanceUID())))
-    	                .setEscapeModelStrings(false)
-    	                .add(new AttributeModifier("class", true, new Model<String>("arr"))))
-    	                .show(target);
+                	showAuditQueryResult(target, 
+                			new AuditRecordRepositoryFacade()
+                				.doSearch(AuditRecordRepositoryFacade.Level.INSTANCE, 
+                						((PrivStudyModel) instModel.getParent().getParent())
+                                        .getStudyInstanceUID()));
                 }
             }.add(new Image("arrImg",ImageManager.IMAGE_COMMON_ARR)
             .add(new ImageSizeBehaviour())
@@ -1570,5 +1555,19 @@ public class TrashListPage extends Panel {
                 pks.add(pp.getPk());
             dao.removeTrashEntities(pks, PrivatePatient.class, true);
         }
+    }
+    
+    private void showAuditQueryResult(AjaxRequestTarget target, String result) {
+		if (result == null) {
+			msgWin
+				.setInfoMessage(getString("trash.arr.query.failed"));
+			msgWin.setColor("#FF0000");
+			msgWin.show(target);
+		} else
+			arrWindow
+        		.setContent(new Label("content", new Model<String>(result))
+                .setEscapeModelStrings(false)
+                .add(new AttributeModifier("class", true, new Model<String>("arr"))))
+                .show(target);
     }
 }
