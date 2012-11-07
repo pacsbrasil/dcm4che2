@@ -51,10 +51,7 @@ import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
-import org.dcm4che2.net.DicomServiceException;
 import org.dcm4che2.util.UIDUtils;
-import org.dcm4chee.archive.common.Availability;
-import org.dcm4chee.archive.entity.MPPS;
 import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.Series;
 import org.dcm4chee.archive.entity.Study;
@@ -66,7 +63,6 @@ import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 import org.dcm4chee.web.war.common.model.AbstractEditableDicomModel;
 import org.dcm4chee.web.war.folder.MoveEntitiesPage;
 import org.dcm4chee.web.war.folder.SelectedEntities;
-import org.dcm4chee.web.war.folder.model.InstanceModel;
 import org.dcm4chee.web.war.folder.model.PPSModel;
 import org.dcm4chee.web.war.folder.model.PatientModel;
 import org.dcm4chee.web.war.folder.model.SeriesModel;
@@ -108,29 +104,24 @@ public class ContentEditDelegate extends BaseMBeanDelegate {
         }
     }
     
-    public boolean moveToTrash(SelectedEntities selected) {
-        try {
-            if ( selected.hasPatients()) {
-                moveToTrash("movePatientsToTrash", toPks(selected.getPatients()));
-            }
-            if ( selected.hasStudies()) {
-                moveToTrash("moveStudiesToTrash", toPks(selected.getStudies()));
-            }
-            if ( selected.hasPPS()) {
-                moveToTrash("moveSeriesOfPpsToTrash", toPks(selected.getPpss()));
-            }
-            if ( selected.hasSeries()) {
-                moveToTrash("moveSeriesToTrash", toPks(selected.getSeries()));
-            }
-            if ( selected.hasInstances()) {
-                moveToTrash("moveInstancesToTrash", toPks(selected.getInstances()));
-            }
-        } catch (Exception x) {
-            String msg = "Move to trash failed! Reason:"+x.getMessage();
-            log.error(msg,x);
-            return false;
+    public void moveToTrash(SelectedEntities selected) 
+    		throws InstanceNotFoundException, MBeanException, ReflectionException, IOException {
+
+		if ( selected.hasPatients()) {
+            moveToTrash("movePatientsToTrash", toPks(selected.getPatients()));
         }
-        return true;
+        if ( selected.hasStudies()) {
+            moveToTrash("moveStudiesToTrash", toPks(selected.getStudies()));
+        }
+        if ( selected.hasPPS()) {
+            moveToTrash("moveSeriesOfPpsToTrash", toPks(selected.getPpss()));
+        }
+        if ( selected.hasSeries()) {
+            moveToTrash("moveSeriesToTrash", toPks(selected.getSeries()));
+        }
+        if ( selected.hasInstances()) {
+            moveToTrash("moveInstancesToTrash", toPks(selected.getInstances()));
+        }
     }
 
     public boolean deletePps(SelectedEntities selected) {
