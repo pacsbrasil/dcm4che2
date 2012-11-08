@@ -16,8 +16,7 @@
       >dcm4chee.archive:service=DicomSecurity</depends>
     <depends optional-attribute-name="StgCmtScuScpName"
       >dcm4chee.archive:service=StgCmtScuScp</depends>
-    <depends optional-attribute-name="TarRetrieverName"
-      >dcm4chee.archive:service=TarRetriever</depends>
+    <depends>dcm4chee.archive:service=TarRetriever</depends>
     <depends optional-attribute-name="TemplatesServiceName"
       >dcm4chee.archive:service=Templates</depends>
     <depends optional-attribute-name="PixQueryServiceName"

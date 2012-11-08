@@ -146,7 +146,7 @@
    <operation impact="ACTION">
       <description>Retrieve file from TAR specified by File System ID and File ID. 
       </description>
-      <name>retrieveFileFromTAR</name>
+      <name>retrieveFile</name>
       <parameter>
         <description>File System ID</description>
         <name>fsID</name>

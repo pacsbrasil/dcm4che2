@@ -1183,12 +1183,22 @@ DICOM JPEG-LS images by specified value. Only effective for WADO retrieval.
       <type>javax.management.ObjectName</type>
    </attribute>
    <attribute access="read-write"
-      getMethod="getTarRetrieverName"
-      setMethod="setTarRetrieverName">
-      <description>Used internally. Do NOT modify.
+      getMethod="getProtocolRetrieverMapping"
+      setMethod="setProtocolRetrieverMapping">
+      <description><![CDATA[Define mapping between protocols like tar: and Protocol retriever service names.<br/>
+      	Format:&lt;protocol&gt;=&lt;Reriever Service Name&gt;[&lt;newline&gt;&lt;protocol&gt;=&lt;...&gt;[..]]<br/>
+      	Use 'NONE' to disable mapping.<br/>
+      	Note: The retriever service must provide java.io.File retrieveFile(java.lang.String fsID, java.lang.String fileID) method<br/>
+      	Example: <br/>
+      	tar:=dcm4chee.archive:service=TarRetriever<br/>
+      	ftp:=%lt;Objectname of FTP retriever service&gt;
+       ]]>
       </description>
-      <name>TarRetrieverName</name>
-      <type>javax.management.ObjectName</type>
+      <name>ProtocolRetrieverMapping</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="tar:=dcm4chee.archive:service=TarRetriever"/>
+      </descriptors>
    </attribute>
    <attribute access="read-write"
       getMethod="getTLSConfigName"

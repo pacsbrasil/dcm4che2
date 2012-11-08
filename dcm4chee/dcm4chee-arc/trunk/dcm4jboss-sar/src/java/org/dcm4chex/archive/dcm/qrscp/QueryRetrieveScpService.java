@@ -56,12 +56,16 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.Map.Entry;
+
 import javax.ejb.FinderException;
 import javax.management.InstanceNotFoundException;
 import javax.management.JMException;
 import javax.management.MBeanException;
+import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
 import javax.xml.transform.Templates;
@@ -135,6 +139,8 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     private static final String SEND_BUFFER = "SEND_BUFFER";
 
+    public static final String NEW_LINE = System.getProperty("line.separator", "\n");
+
     private static final Timer pendingRspTimer = new Timer(true);
 
     static final UIDDictionary uidDict = 
@@ -174,7 +180,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     private ObjectName stgCmtScuScpName;
 
-    private ObjectName tarRetrieverName;
+    HashMap<String, ObjectName> protocolRetriever = new HashMap<String, ObjectName>();
 
     private ObjectName pixQueryServiceName;
     
@@ -346,14 +352,34 @@ public class QueryRetrieveScpService extends AbstractScpService {
         this.stgCmtScuScpName = stgCmtScuScpName;
     }
 
-    public final ObjectName getTarRetrieverName() {
-        return tarRetrieverName;
+    public String getProtocolRetrieverMapping() {
+        if (protocolRetriever.isEmpty())
+            return NONE;
+        StringBuilder sb = new StringBuilder();
+        for (Entry<String, ObjectName> entry : protocolRetriever.entrySet()) {
+            sb.append(entry.getKey()).append('=').append(entry.getValue()).append(NEW_LINE);
+        }
+        return sb.toString();
     }
-
-    public final void setTarRetrieverName(ObjectName tarRetrieverName) {
-        this.tarRetrieverName = tarRetrieverName;
+    
+    public void setProtocolRetrieverMapping(String s) throws MalformedObjectNameException, NullPointerException {
+        s = s.trim();
+        if(NONE.equals(s)) {
+            protocolRetriever.clear();
+        } else {
+            StringTokenizer st = new StringTokenizer(s, " \t\n\r;");
+            int pos;
+            HashMap<String, ObjectName> newMap = new HashMap<String, ObjectName>();
+            for (String tk ; st.hasMoreElements() ;) {
+                tk = st.nextToken();
+                pos = tk.indexOf('=');
+                if (pos == -1)
+                    throw new IllegalArgumentException("Wrong format: must be <protocol>=<Retriever Service Name>[<NewLine>...]");
+                newMap.put(tk.substring(0, pos), new ObjectName(tk.substring(++pos)));
+            }
+            protocolRetriever = newMap;
+        }
     }
-
     public final ObjectName getPixQueryServiceName() {
         return pixQueryServiceName;
     }
@@ -1267,9 +1293,9 @@ public class QueryRetrieveScpService extends AbstractScpService {
         }
     }
 
-    File retrieveFileFromTAR(String fsID, String fileID) throws Exception {
+    File retrieveFile(String fsID, String fileID) throws Exception {
         try {
-            return (File) server.invoke(tarRetrieverName, "retrieveFileFromTAR",
+            return (File) server.invoke(getRetrieverNameForProtocol(fsID), "retrieveFile",
                     new Object[] { fsID, fileID }, new String[] {
                             String.class.getName(), String.class.getName() });
         } catch (InstanceNotFoundException e) {
@@ -1279,6 +1305,16 @@ public class QueryRetrieveScpService extends AbstractScpService {
         } catch (ReflectionException e) {
             throw new ConfigurationException(e.getMessage(), e);
         }
+    }
+
+    private ObjectName getRetrieverNameForProtocol(String fsID) {
+        int pos = fsID.indexOf(':');
+        String protocol = fsID.substring(0, ++pos);
+        ObjectName n = protocolRetriever.get(protocol);
+        if (n == null) {
+            throw new ConfigurationException("No Retriever servicename configured for protocol:"+protocol);
+        }
+        return n;
     }
 
     private FileSystemMgt2 getFileSystemMgt() throws Exception {
@@ -1583,7 +1619,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
     }
 
     public File getFile(String fsID, String fileID) throws Exception {
-        File file = fsID.startsWith("tar:") ? retrieveFileFromTAR(fsID, fileID)
+        File file = fsID.indexOf(':') > 0 ? retrieveFile(fsID, fileID)
                         : FileUtils.toFile(fsID, fileID);
         if (!file.canRead()) {
             throw new FileNotFoundException(file.getPath());
@@ -1744,7 +1780,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
             }
             if (tarPaths.add(tarPath)) {
                 try {
-                    retrieveFileFromTAR(fsID, fileID);
+                    retrieveFile(fsID, fileID);
                 } catch (Exception e) {
                     throw new Exception("Failed to retrieve TAR " + tarPath
                             + " from file system " + fsID, e);
