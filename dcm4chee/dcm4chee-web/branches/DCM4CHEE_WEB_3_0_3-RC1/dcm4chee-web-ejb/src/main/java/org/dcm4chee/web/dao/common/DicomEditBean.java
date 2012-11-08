@@ -304,16 +304,16 @@ public class DicomEditBean implements DicomEditLocal {
             		+ series.getSeriesInstanceUID());
         } catch (NoResultException nre) {
             pSeries = new PrivateSeries();//we need parents initialized.
-            DicomObject attrs = series.getAttributes(false);
-            attrs.putString(attrs.resolveTag(PrivateTag.CallingAET, PrivateTag.CreatorID), 
-                    VR.AE, series.getSourceAET());
-            pSeries.setAttributes(attrs);
-            pSeries.setPrivateType(DELETED);
-            Study study = series.getStudy();
-            PrivateStudy pStudy = moveStudyToTrash(study);
-            pSeries.setStudy(pStudy);
-            em.persist(pSeries);
         }
+        DicomObject attrs = series.getAttributes(false);
+        attrs.putString(attrs.resolveTag(PrivateTag.CallingAET, PrivateTag.CreatorID), 
+                VR.AE, series.getSourceAET());
+        pSeries.setAttributes(attrs);
+        pSeries.setPrivateType(DELETED);
+        Study study = series.getStudy();
+        PrivateStudy pStudy = moveStudyToTrash(study);
+        pSeries.setStudy(pStudy);
+        em.persist(pSeries);
         return pSeries;
     }
 
@@ -329,13 +329,13 @@ public class DicomEditBean implements DicomEditLocal {
             		+ study.getStudyInstanceUID());
         } catch (NoResultException nre) {
             pStudy = new PrivateStudy();
-            pStudy.setAttributes(study.getAttributes(false));
-            pStudy.setPrivateType(DELETED);
-            Patient pat = study.getPatient();
-            PrivatePatient pPat = movePatientToTrash(pat);
-            pStudy.setPatient(pPat);
-            em.persist(pStudy);
         }
+        pStudy.setAttributes(study.getAttributes(false));
+        pStudy.setPrivateType(DELETED);
+        Patient pat = study.getPatient();
+        PrivatePatient pPat = movePatientToTrash(pat);
+        pStudy.setPatient(pPat);
+        em.persist(pStudy);
         return pStudy;
     }
 
