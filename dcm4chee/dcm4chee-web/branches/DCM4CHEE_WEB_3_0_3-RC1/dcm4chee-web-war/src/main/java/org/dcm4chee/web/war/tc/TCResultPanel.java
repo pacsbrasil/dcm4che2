@@ -635,7 +635,7 @@ public class TCResultPanel extends Panel {
         private StudyListPage studyListPage;
         private ViewPort viewPort;
         private static final ResourceReference baseCSS = new CompressedResourceReference(
-        		BaseWicketPage.class, "base-style.css");
+                BaseWicketPage.class, "base-style.css");
         private static final ResourceReference folderCSS = new CompressedResourceReference(
                 StudyListPage.class, "folder-style.css");
         
