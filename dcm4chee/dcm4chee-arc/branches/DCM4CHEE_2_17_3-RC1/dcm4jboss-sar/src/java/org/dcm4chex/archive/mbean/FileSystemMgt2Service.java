@@ -109,8 +109,6 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
 
     private long checkFreeDiskSpaceTime;
 
-    private boolean noFreeDiskSpace;
-
     private boolean scheduleStudiesForDeletionOnSeriesStored;
 
     private int deleteOrphanedPrivateFilesBatchSize;
@@ -375,7 +373,7 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
     }
 
     public long getFreeDiskSpaceOnCurFS() throws IOException {
-        if (storageFileSystem == null || getMinFreeDiskSpaceBytes() == 0)
+        if (storageFileSystem == null)
             return -1L;
         File dir = FileUtils.toFile(storageFileSystem.getDirectoryPath());
         return dir.isDirectory() ? FileSystemUtils.freeSpace(dir.getPath())

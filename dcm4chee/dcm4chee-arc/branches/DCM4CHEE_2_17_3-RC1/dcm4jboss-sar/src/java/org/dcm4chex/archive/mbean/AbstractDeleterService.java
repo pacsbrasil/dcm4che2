@@ -202,15 +202,13 @@ public abstract class AbstractDeleterService extends ServiceMBeanSupport {
     public abstract long getMinFreeDiskSpaceBytes();
 
     public long getFreeDiskSpace() throws Exception {
-        if (getMinFreeDiskSpaceBytes() == 0) {
-            return -1L;
-        }
+        boolean allRW = getMinFreeDiskSpaceBytes() != 0;
         FileSystemDTO[] fsDTOs =
             fileSystemMgt().getFileSystemsOfGroup(getFileSystemGroupIDForDeleter());
         long free = 0L;
         for (FileSystemDTO fsDTO : fsDTOs) {
             int status = fsDTO.getStatus();
-            if (status == FileSystemStatus.RW
+            if ( (allRW && status == FileSystemStatus.RW)
                     || status == FileSystemStatus.DEF_RW) {
                 File dir = FileUtils.toFile(fsDTO.getDirectoryPath());
                 if (dir.isDirectory()) {
@@ -226,11 +224,7 @@ public abstract class AbstractDeleterService extends ServiceMBeanSupport {
     }
 
     public long getUsableDiskSpace() throws Exception {
-        long minFree = getMinFreeDiskSpaceBytes();
-        if (minFree == 0) {
-            return -1L;
-        }
-        return calcUsableDiskSpace(minFree);
+        return calcUsableDiskSpace(getMinFreeDiskSpaceBytes());
     }
     
     public long calcUsableDiskSpace(long minFree) throws Exception {
@@ -238,10 +232,11 @@ public abstract class AbstractDeleterService extends ServiceMBeanSupport {
     }
 
     private long calcUsableDiskSpace(FileSystemDTO[] fsDTOs, long minFree) throws IOException {
+        boolean allRW = minFree != 0;
         long free = 0L;
         for (FileSystemDTO fsDTO : fsDTOs) {
             int status = fsDTO.getStatus();
-            if (status == FileSystemStatus.RW || status == FileSystemStatus.DEF_RW) {
+            if ( (allRW && status == FileSystemStatus.RW) || status == FileSystemStatus.DEF_RW) {
                 File dir = FileUtils.toFile(fsDTO.getDirectoryPath());
                 if (dir.isDirectory()) {
                     free += Math.max(0, FileSystemUtils.freeSpace(dir.getPath()) - minFree);
