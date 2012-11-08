@@ -133,7 +133,9 @@
       It is also possible to configure a relative value in %.<br /> 
       In this case the MinimumFreeDiskSpace is calculated for current storage file system.
       Note: This feature is not supported on java environments prior JDK 6!
-      NONE = disable check for minimal free available disk space.]]>
+      NONE = disable check for minimal free available disk space.
+      Therefore switching to next file system is also disabled. 
+      (Only useful for configurations with only one RW filesystem)]]>
     </description>
     <name>MinimumFreeDiskSpace</name>
     <type>java.lang.String</type>
