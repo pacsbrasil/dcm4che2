@@ -79,6 +79,7 @@ import org.dcm4chex.archive.ejb.interfaces.VerifyingObserverLocalHome;
 import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.dcm4chex.archive.util.AETs;
 import org.dcm4chex.archive.util.Convert;
+import org.dcm4chex.archive.util.DynamicQueryBuilder;
 
 /**
  * Instance Bean
@@ -149,14 +150,21 @@ import org.dcm4chex.archive.util.Convert;
  */
 public abstract class InstanceBean implements EntityBean {
 
-    private static final int DEFAULT_IN_LIST_SIZE = 200;
-
     private static final Logger log = Logger.getLogger(InstanceBean.class);
 
     private static final Class[] STRING_PARAM = new Class[] { String.class };
 
     private CodeLocalHome codeHome;
     private VerifyingObserverLocalHome observerHome;
+    private final DynamicQueryBuilder dynamicQueryBuilder;
+
+    public InstanceBean() {
+    	this(new DynamicQueryBuilder());
+	}
+
+	public InstanceBean(DynamicQueryBuilder dynamicQueryBuilder) {
+		this.dynamicQueryBuilder = dynamicQueryBuilder;
+	}
 
     public void setEntityContext(EntityContext ctx) {
         Context jndiCtx = null;
@@ -757,47 +765,27 @@ public abstract class InstanceBean implements EntityBean {
     public Collection ejbHomeListByIUIDs(String[] iuids) throws FinderException {
         if (iuids == null || iuids.length < 1)
             return new ArrayList();
-        Collection c;
-        String jbossQl;
+        
         log.debug("List by IUIDs:" + iuids.length);
         long t0 = System.currentTimeMillis();
-        if (iuids.length > DEFAULT_IN_LIST_SIZE) {
-            jbossQl = getByIUIDsQueryString(DEFAULT_IN_LIST_SIZE);
-            String[] uids = new String[DEFAULT_IN_LIST_SIZE];
-            System.arraycopy(iuids, 0, uids, 0, DEFAULT_IN_LIST_SIZE);
-            int idx = DEFAULT_IN_LIST_SIZE;
-            int maxIdx = iuids.length - DEFAULT_IN_LIST_SIZE;
-            c = ejbSelectGeneric(jbossQl, uids);
-            log.debug("First chunked query:" + c.size());
-            while (idx < maxIdx) {
-                System.arraycopy(iuids, idx, uids, 0, DEFAULT_IN_LIST_SIZE);
-                c.addAll(ejbSelectGeneric(jbossQl, uids));
-                log.debug("chunked query (idx:" + idx + "):" + c.size());
-                idx += DEFAULT_IN_LIST_SIZE;
-            }
-            if (idx < iuids.length) {
-                int remain = iuids.length - idx;
-                jbossQl = getByIUIDsQueryString(remain);
-                uids = new String[remain];
-                System.arraycopy(iuids, idx, uids, 0, remain);
-                c.addAll(ejbSelectGeneric(jbossQl, uids));
-                log.debug("Remain chunked query(remain:" + remain + "):"
-                        + c.size());
-            }
-        } else {
-            jbossQl = getByIUIDsQueryString(iuids.length);
-            c = ejbSelectGeneric(jbossQl, iuids);
+        Iterator<DynamicQueryBuilder.DynamicQuery> dynamicQueries = dynamicQueryBuilder.getDynamicQueries("SELECT OBJECT(i) FROM Instance i WHERE i.sopIuid", iuids, 1);
+        
+        DynamicQueryBuilder.DynamicQuery dynamicQuery = dynamicQueries.next();
+        Collection c = execute(dynamicQuery);
+
+        while (dynamicQueries.hasNext()) {
+        	c.addAll(execute(dynamicQueries.next()));
         }
         log.debug("Total time:" + (System.currentTimeMillis() - t0));
         return c;
     }
 
-    private String getByIUIDsQueryString(int size) {
-        StringBuffer sb = new StringBuffer("SELECT OBJECT(i) FROM Instance i");
-        sb.append(" WHERE i.sopIuid");
-        addIN(sb, 1, size);
-        log.debug("Execute JBossQL: " + sb);
-        return sb.toString();
+	@SuppressWarnings("rawtypes")
+	private Collection execute(DynamicQueryBuilder.DynamicQuery dynamicQuery)
+			throws FinderException {
+		log.debug("Execute JBossQL: " + dynamicQuery.getJbossQl());
+		
+        return ejbSelectGeneric(dynamicQuery.getJbossQl(), dynamicQuery.getArgs());
     }
 
     /**
@@ -813,29 +801,16 @@ public abstract class InstanceBean implements EntityBean {
         int idx = 2;
         if (srCodes != null && srCodes.size() > 0) {
             jbossQl.append(" AND i.srCode.pk");
-            idx = addIN(jbossQl, idx, srCodes.size());
+            idx = dynamicQueryBuilder.appendJbossQl(jbossQl, idx, srCodes.size());
             params.addAll(srCodes);
         }
         if (cuids != null && cuids.size() > 0) {
             jbossQl.append(" AND i.sopCuid");
-            idx = addIN(jbossQl, idx, cuids.size());
+            idx = dynamicQueryBuilder.appendJbossQl(jbossQl, idx, cuids.size());
             params.addAll(cuids);
         }
         log.debug("Execute JBossQL: " + jbossQl);
         return ejbSelectGeneric(jbossQl.toString(), params.toArray());
-    }
-
-    private int addIN(StringBuffer jbossQl, int idx, int len) {
-        if (len > 1) {
-            jbossQl.append(" IN ( ");
-            for (int i = 1; i < len; i++) {
-                jbossQl.append("?").append(idx++).append(", ");
-            }
-            jbossQl.append("?").append(idx++).append(")");
-        } else {
-            jbossQl.append(" = ?").append(idx++);
-        }
-        return idx;
     }
 
     /**

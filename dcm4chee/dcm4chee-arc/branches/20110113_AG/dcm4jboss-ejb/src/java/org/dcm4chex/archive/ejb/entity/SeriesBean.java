@@ -81,6 +81,7 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.dcm4chex.archive.util.AETs;
 import org.dcm4chex.archive.util.Convert;
+import org.dcm4chex.archive.util.DynamicQueryBuilder;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -165,6 +166,16 @@ public abstract class SeriesBean implements EntityBean {
     private MPPSLocalHome mppsHome;
     private SeriesRequestLocalHome reqHome;
 //    private FileSystemLocalHome fsHome;
+
+    private final DynamicQueryBuilder dynamicQueryBuilder;
+
+    public SeriesBean() {
+		this(new DynamicQueryBuilder());
+	}
+
+	public SeriesBean(DynamicQueryBuilder dynamicQueryBuilder) {
+		this.dynamicQueryBuilder = dynamicQueryBuilder;
+	}
 
     public void setEntityContext(EntityContext ctx) {
         ejbctx = ctx;
@@ -1132,4 +1143,36 @@ public abstract class SeriesBean implements EntityBean {
     public Collection getAllFiles() throws FinderException {      
         return ejbSelectAllFiles(getPk());
     }    
+        
+    /**
+     * @ejb.home-method
+     */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public Collection ejbHomeListByIUIDs(String[] iuids) throws FinderException {
+        if (iuids == null || iuids.length < 1)
+            return new ArrayList();
+        
+        log.debug("List by IUIDs:" + iuids.length);
+        long t0 = System.currentTimeMillis();
+        Iterator<DynamicQueryBuilder.DynamicQuery> dynamicQueries = dynamicQueryBuilder.getDynamicQueries("SELECT OBJECT(s) FROM Series s WHERE s.seriesIuid", iuids, 1);
+        
+        DynamicQueryBuilder.DynamicQuery dynamicQuery = dynamicQueries.next();
+        Collection c = execute(dynamicQuery);
+
+        while (dynamicQueries.hasNext()) {
+        	c.addAll(execute(dynamicQueries.next()));
+        }
+        
+        log.debug("Total time:" + (System.currentTimeMillis() - t0));
+        
+        return c;
+    }
+
+	@SuppressWarnings("rawtypes")
+	private Collection execute(DynamicQueryBuilder.DynamicQuery dynamicQuery)
+			throws FinderException {
+		log.debug("Execute JBossQL: " + dynamicQuery.getJbossQl());
+		
+        return ejbSelectGeneric(dynamicQuery.getJbossQl(), dynamicQuery.getArgs());
+	}
 }
