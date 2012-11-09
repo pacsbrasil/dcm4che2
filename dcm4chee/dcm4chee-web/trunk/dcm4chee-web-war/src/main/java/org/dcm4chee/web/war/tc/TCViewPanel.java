@@ -394,6 +394,14 @@ public class TCViewPanel extends Panel
 
             return s != null ? s : "";
         }
+        
+        protected String getShortStringValue(TCQueryFilterKey key) {
+            TCObject tc = getTC();
+
+            String s = tc != null ? tc.getValueAsLocalizedString(key, this, true) : null;
+
+            return s != null ? s : "";
+        }
     }
         
     public abstract static class AbstractEditableTCViewTab extends

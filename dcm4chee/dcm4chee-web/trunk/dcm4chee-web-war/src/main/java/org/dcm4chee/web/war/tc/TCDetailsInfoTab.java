@@ -104,7 +104,7 @@ public class TCDetailsInfoTab extends Panel {
 
             @Override
             public String getObject() {
-                return getStringValue(TCQueryFilterKey.Keyword);
+                return getShortStringValue(TCQueryFilterKey.Keyword);
             }
         }).add(new AbstractBehavior() {
 
@@ -112,7 +112,11 @@ public class TCDetailsInfoTab extends Panel {
 
             @Override
             public void onComponentTag(Component c, ComponentTag tag) {
-                tag.put("title", getStringValue(TCQueryFilterKey.Keyword));
+            	String s = getTooltipString(TCQueryFilterKey.Keyword);
+            	if (s!=null && !s.isEmpty())
+            	{
+            		tag.put("title", s); //$NON-NLS-1$
+            	}
             }
         }));
 
@@ -124,7 +128,7 @@ public class TCDetailsInfoTab extends Panel {
 
             @Override
             public String getObject() {
-                return getStringValue(TCQueryFilterKey.Anatomy);
+                return getShortStringValue(TCQueryFilterKey.Anatomy);
             }
         }).add(new AbstractBehavior() {
 
@@ -132,7 +136,11 @@ public class TCDetailsInfoTab extends Panel {
 
             @Override
             public void onComponentTag(Component c, ComponentTag tag) {
-                tag.put("title", getStringValue(TCQueryFilterKey.Anatomy));
+            	String s = getTooltipString(TCQueryFilterKey.Anatomy);
+            	if (s!=null && !s.isEmpty())
+            	{
+            		tag.put("title", s); //$NON-NLS-1$
+            	}
             }
         }));
 
@@ -144,7 +152,7 @@ public class TCDetailsInfoTab extends Panel {
 
             @Override
             public String getObject() {
-                return getStringValue(TCQueryFilterKey.Pathology);
+                return getShortStringValue(TCQueryFilterKey.Pathology);
             }
         }).add(new AbstractBehavior() {
 
@@ -152,7 +160,11 @@ public class TCDetailsInfoTab extends Panel {
 
             @Override
             public void onComponentTag(Component c, ComponentTag tag) {
-                tag.put("title", getStringValue(TCQueryFilterKey.Pathology));
+            	String s = getTooltipString(TCQueryFilterKey.Pathology);
+            	if (s!=null && !s.isEmpty())
+            	{
+            		tag.put("title", s); //$NON-NLS-1$
+            	}
             }
         }));
 
@@ -165,7 +177,7 @@ public class TCDetailsInfoTab extends Panel {
 
                     @Override
                     public String getObject() {
-                        return getStringValue(TCQueryFilterKey.Finding);
+                        return getShortStringValue(TCQueryFilterKey.Finding);
                     }
                 }).add(new AbstractBehavior() {
 
@@ -173,7 +185,11 @@ public class TCDetailsInfoTab extends Panel {
 
             @Override
             public void onComponentTag(Component c, ComponentTag tag) {
-                tag.put("title", getStringValue(TCQueryFilterKey.Finding));
+            	String s = getTooltipString(TCQueryFilterKey.Finding);
+            	if (s!=null && !s.isEmpty())
+            	{
+            		tag.put("title", s); //$NON-NLS-1$
+            	}
             }
         }));
 
@@ -185,7 +201,7 @@ public class TCDetailsInfoTab extends Panel {
 
             @Override
             public String getObject() {
-                return getStringValue(TCQueryFilterKey.Diagnosis);
+                return getShortStringValue(TCQueryFilterKey.Diagnosis);
             }
         }).add(new AbstractBehavior() {
 
@@ -193,7 +209,11 @@ public class TCDetailsInfoTab extends Panel {
 
             @Override
             public void onComponentTag(Component c, ComponentTag tag) {
-                tag.put("title", getStringValue(TCQueryFilterKey.Diagnosis));
+            	String s = getTooltipString(TCQueryFilterKey.Diagnosis);
+            	if (s!=null && !s.isEmpty())
+            	{
+            		tag.put("title", s); //$NON-NLS-1$
+            	}
             }
         }));
 
@@ -206,7 +226,7 @@ public class TCDetailsInfoTab extends Panel {
 
                     @Override
                     public String getObject() {
-                        return getStringValue(TCQueryFilterKey.DifferentialDiagnosis);
+                        return getShortStringValue(TCQueryFilterKey.DifferentialDiagnosis);
                     }
                 }).add(new AbstractBehavior() {
 
@@ -214,8 +234,11 @@ public class TCDetailsInfoTab extends Panel {
 
             @Override
             public void onComponentTag(Component c, ComponentTag tag) {
-                tag.put("title",
-                        getStringValue(TCQueryFilterKey.DifferentialDiagnosis));
+            	String s = getTooltipString(TCQueryFilterKey.DifferentialDiagnosis);
+            	if (s!=null && !s.isEmpty())
+            	{
+            		tag.put("title", s); //$NON-NLS-1$
+            	}
             }
         }));
 
@@ -248,7 +271,11 @@ public class TCDetailsInfoTab extends Panel {
 
             @Override
             public void onComponentTag(Component c, ComponentTag tag) {
-                tag.put("title", getStringValue(TCQueryFilterKey.Category));
+            	String s = getTooltipString(TCQueryFilterKey.Category);
+            	if (s!=null && !s.isEmpty())
+            	{
+            		tag.put("title", s); //$NON-NLS-1$
+            	}
             }
         }));
 
@@ -268,7 +295,11 @@ public class TCDetailsInfoTab extends Panel {
 
             @Override
             public void onComponentTag(Component c, ComponentTag tag) {
-                tag.put("title", getStringValue(TCQueryFilterKey.Level));
+            	String s = getTooltipString(TCQueryFilterKey.Level);
+            	if (s!=null && !s.isEmpty())
+            	{
+            		tag.put("title", s); //$NON-NLS-1$
+            	}
             }
         }));
 
@@ -288,8 +319,11 @@ public class TCDetailsInfoTab extends Panel {
 
             @Override
             public void onComponentTag(Component c, ComponentTag tag) {
-                tag.put("title",
-                        getStringValue(TCQueryFilterKey.AcquisitionModality));
+            	String s = getTooltipString(TCQueryFilterKey.AcquisitionModality);
+            	if (s!=null && !s.isEmpty())
+            	{
+            		tag.put("title", s); //$NON-NLS-1$
+            	}
             }
         }));
 
@@ -322,8 +356,11 @@ public class TCDetailsInfoTab extends Panel {
 
             @Override
             public void onComponentTag(Component c, ComponentTag tag) {
-                tag.put("title",
-                        getStringValue(TCQueryFilterKey.PatientSpecies));
+            	String s = getTooltipString(TCQueryFilterKey.PatientSpecies);
+            	if (s!=null && !s.isEmpty())
+            	{
+            		tag.put("title", s); //$NON-NLS-1$
+            	}
             }
         }));
 
@@ -356,12 +393,26 @@ public class TCDetailsInfoTab extends Panel {
         return (TCObject) getDefaultModelObject();
     }
 
-    private String getStringValue(TCQueryFilterKey key) {
+    private String getShortStringValue(TCQueryFilterKey key) {
         TCObject tc = getTCObject();
 
-        String s = tc != null ? tc.getValueAsLocalizedString(key, this)
+        String s = tc != null ? tc.getValueAsLocalizedString(key, this, true)
                 : null;
 
         return s != null ? s : "-";
+    }
+    
+    private String getStringValue(TCQueryFilterKey key) {
+        TCObject tc = getTCObject();
+
+        String s = tc != null ? tc.getValueAsLocalizedString(key, this, false)
+                : null;
+
+        return s != null ? s : "-";
+    }
+    
+    private String getTooltipString(TCQueryFilterKey key) {
+        TCObject tc = getTCObject();
+        return tc != null ? tc.getValueAsLocalizedString(key, this, false) : null;
     }
 }

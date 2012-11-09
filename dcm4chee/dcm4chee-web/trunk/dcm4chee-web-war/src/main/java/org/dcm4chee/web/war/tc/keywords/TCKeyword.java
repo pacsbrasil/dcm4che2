@@ -104,8 +104,22 @@ public class TCKeyword implements ITextOrCode {
 
     @Override
     public String toString() {
-        return name != null ? name : code != null ? code.toString() : super
-                .toString();
+        return toString(false);
+    }
+    
+    public String toShortString() {
+    	return toString(true);
+    }
+    
+    private String toString(boolean shortString) {
+    	if (name!=null) {
+    		return name;
+    	}
+    	else if (code!=null)
+    	{
+    		return shortString ? code.toShortString() : code.toString();
+    	}
+        return super.toString();
     }
 
     @Override

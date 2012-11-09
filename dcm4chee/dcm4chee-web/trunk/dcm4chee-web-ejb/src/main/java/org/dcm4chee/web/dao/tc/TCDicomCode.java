@@ -87,6 +87,14 @@ public class TCDicomCode implements Serializable {
 
         return sbuf.toString();
     }
+    
+    public String toShortString() {
+        if (meaning!=null)
+        {
+        	return meaning;
+        }
+        return value;
+    }
 
     public Code toCode() {
         DicomObject dataset = new BasicDicomObject();

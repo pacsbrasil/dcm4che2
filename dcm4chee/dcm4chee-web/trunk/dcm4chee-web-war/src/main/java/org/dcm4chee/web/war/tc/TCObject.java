@@ -284,7 +284,7 @@ public class TCObject implements Serializable {
         if (TCQueryFilterKey.Abstract.equals(key)) {
             value = getAbstr();
         } else if (TCQueryFilterKey.AcquisitionModality.equals(key)) {
-            value = concatStringValues(getAcquisitionModalities());
+            value = concatStringValues(getAcquisitionModalities(), false);
         } else if (TCQueryFilterKey.Anatomy.equals(key)) {
             value = getAnatomy();
         } else if (TCQueryFilterKey.AuthorAffiliation.equals(key)) {
@@ -330,8 +330,11 @@ public class TCObject implements Serializable {
         return value;
     }
 
-
     public String getValueAsLocalizedString(TCQueryFilterKey key, Component c) {
+    	return getValueAsLocalizedString(key, c, false);
+    }
+
+    public String getValueAsLocalizedString(TCQueryFilterKey key, Component c, boolean shortString) {
         if (TCQueryFilterKey.Category.equals(key)) {
             return getCategory() != null ? c.getString("tc.category."
                     + getCategory().name().toLowerCase()) : null;
@@ -345,23 +348,27 @@ public class TCObject implements Serializable {
             return getPatientSex() != null ? c.getString("tc.patientsex."
                     + getPatientSex().name().toLowerCase()) : null;
         } else {
-            return getValueAsString(key);
+            return getValueAsString(key, shortString);
         }
     }
 
     public String getValueAsString(TCQueryFilterKey key) {
-        return toStringValue(getValue(key));
+    	return getValueAsString(key, false);
+    }
+    
+    public String getValueAsString(TCQueryFilterKey key, boolean shortString) {
+        return toStringValue(getValue(key), shortString);
     }
 
-    private String concatStringValues(List<?> list) {
+    private String concatStringValues(List<?> list, boolean shortString) {
         if (list != null) {
             Iterator<?> it = list.iterator();
             StringBuilder sbuilder = new StringBuilder();
             if (it.hasNext())
-                sbuilder.append(toStringValue(it.next()));
+                sbuilder.append(toStringValue(it.next(), shortString));
             while (it.hasNext()) {
                 sbuilder.append("; ");
-                sbuilder.append(toStringValue(it.next()));
+                sbuilder.append(toStringValue(it.next(), shortString));
             }
             return sbuilder.toString();
         }
@@ -661,11 +668,15 @@ public class TCObject implements Serializable {
         return c == null ? null : c.toCode();
     }
 
-    private String toStringValue(Object value) {
+    private String toStringValue(Object value, boolean shortString) {
         if (value instanceof List) {
-            return concatStringValues((List<?>)value);
+            return concatStringValues((List<?>)value, shortString);
         }
         else if (value!=null) {
+        	if (shortString && value instanceof ITextOrCode)
+        	{
+        		return ((ITextOrCode)value).toShortString();
+        	}
             return value.toString();
         }
         else {
@@ -851,8 +862,16 @@ public class TCObject implements Serializable {
         }
         @Override
         public String toString() {
+            return toString(false);
+        }
+        @Override
+        public String toShortString() {
+        	return toString(true);
+        }
+        private String toString(boolean shortString) {
             if (code!=null) {
-                return code.toString();
+           		return shortString ? code.toShortString() :
+           			code.toString();
             }
             else if (text!=null) {
                 return text;

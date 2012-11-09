@@ -45,6 +45,7 @@ import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.behavior.AttributeAppender;
+import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.CheckBox;
@@ -141,7 +142,7 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
             }
         };
 
-        final TextArea<String> keywordArea = new SelfUpdatingTextArea("tc-view-overview-keyword-area", getStringValue(TCQueryFilterKey.Keyword)) {
+        final TextArea<String> keywordArea = new SelfUpdatingTextArea("tc-view-overview-keyword-area", getShortStringValue(TCQueryFilterKey.Keyword)) {
             @Override
             protected void textUpdated(String text)
             {
@@ -159,6 +160,12 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
                     
                     getTC().setKeywords(keywords);
                 }
+            }
+            
+            @Override
+            protected void onComponentTag(ComponentTag tag)
+            {
+            	tag.put("title", getStringValue(TCQueryFilterKey.Keyword)); //$NON-NLS-1$
             }
         };
         keywordArea.setOutputMarkupId(true);
@@ -295,20 +302,55 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
                 "tc.patientsex", NullDropDownItem.Undefined, new DropDownChangeListener<TCQueryFilterValue.PatientSex>(TCQueryFilterKey.PatientSex));
 
         final Label anatomyLabel = new Label("tc-view-overview-anatomy-value-label", new Model<String>(
-                getStringValue(TCQueryFilterKey.Anatomy)
-        ));
+                getShortStringValue(TCQueryFilterKey.Anatomy)
+        )) {
+			private static final long serialVersionUID = 3465370488528419531L;
+			@Override
+            protected void onComponentTag(ComponentTag tag)
+            {
+            	tag.put("title", getStringValue(TCQueryFilterKey.Anatomy)); //$NON-NLS-1$
+            }
+        };
         final Label pathologyLabel = new Label("tc-view-overview-pathology-value-label", new Model<String>(
-                getStringValue(TCQueryFilterKey.Pathology)
-        ));
+                getShortStringValue(TCQueryFilterKey.Pathology)
+        )) {
+			private static final long serialVersionUID = 3465370488528419531L;
+			@Override
+            protected void onComponentTag(ComponentTag tag)
+            {
+            	tag.put("title", getStringValue(TCQueryFilterKey.Pathology)); //$NON-NLS-1$
+            }
+        };
         final Label findingLabel = new Label("tc-view-overview-finding-value-label", new Model<String>(
-                getStringValue(TCQueryFilterKey.Finding)
-        ));
+                getShortStringValue(TCQueryFilterKey.Finding)
+        )) {
+			private static final long serialVersionUID = 3465370488528419531L;
+			@Override
+            protected void onComponentTag(ComponentTag tag)
+            {
+            	tag.put("title", getStringValue(TCQueryFilterKey.Finding)); //$NON-NLS-1$
+            }
+        };
         final Label diffDiagLabel = new Label("tc-view-overview-diffdiag-value-label", new Model<String>(
-                getStringValue(TCQueryFilterKey.DifferentialDiagnosis)
-        ));
+                getShortStringValue(TCQueryFilterKey.DifferentialDiagnosis)
+        )) {
+			private static final long serialVersionUID = 3465370488528419531L;
+			@Override
+            protected void onComponentTag(ComponentTag tag)
+            {
+            	tag.put("title", getStringValue(TCQueryFilterKey.DifferentialDiagnosis)); //$NON-NLS-1$
+            }
+        };
         final Label diagLabel = new Label("tc-view-overview-diag-value-label", new Model<String>(
-                getStringValue(TCQueryFilterKey.Diagnosis)
-        ));
+                getShortStringValue(TCQueryFilterKey.Diagnosis)
+        )) {
+			private static final long serialVersionUID = 3465370488528419531L;
+			@Override
+            protected void onComponentTag(ComponentTag tag)
+            {
+            	tag.put("title", getStringValue(TCQueryFilterKey.Diagnosis)); //$NON-NLS-1$
+            }
+        };
         final Label categoryLabel = new Label("tc-view-overview-category-value-label", new Model<String>(
                 getStringValue(TCQueryFilterKey.Category)
         ));
