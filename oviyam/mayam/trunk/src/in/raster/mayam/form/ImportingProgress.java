@@ -19,6 +19,7 @@
  *
  * Contributor(s):
  * Babu Hussain A
+ * Devishree V
  * Meer Asgar Hussain B
  * Prakash J
  * Suresh V
@@ -51,6 +52,13 @@ public class ImportingProgress extends javax.swing.JFrame {
     /** Creates new form SendReceiveFrame */
     public ImportingProgress() {
         initComponents();
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("in/raster/mayam/form/i18n/Bundle",ApplicationContext.currentLocale); // NOI18N
+        importingLabel.setText(bundle.getString("ImportingProgress.importingLabel.text")); // NOI18N
+    }
+
+    public ImportingProgress(String progressMsg) {
+        initComponents();
+        importingLabel.setText(progressMsg);
     }
 
     /** This method is called from within the constructor to
@@ -70,8 +78,6 @@ public class ImportingProgress extends javax.swing.JFrame {
         setUndecorated(true);
 
         importingLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("in/raster/mayam/form/i18n/Bundle",ApplicationContext.currentLocale); // NOI18N
-        importingLabel.setText(bundle.getString("ImportingProgress.importingLabel.text_1")); // NOI18N
 
         jProgressBar1.setValue(1);
 

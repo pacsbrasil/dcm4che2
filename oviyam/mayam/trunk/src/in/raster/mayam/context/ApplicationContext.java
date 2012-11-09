@@ -19,6 +19,7 @@
  *
  * Contributor(s):
  * Babu Hussain A
+ * Devishree V
  * Meer Asgar Hussain B
  * Prakash J
  * Suresh V
@@ -89,6 +90,9 @@ public class ApplicationContext {
     public static String applicationName="Mayam";
 
     public static Locale currentLocale=null;
+    
+    //For Upgrade
+    public static boolean isUpgrade = false;
 
     private ApplicationContext() {
     }
@@ -170,7 +174,7 @@ public class ApplicationContext {
     }
     public static void setAppLocale()
     {
-        openOrCreateDB();
+        //openOrCreateDB();
         String appLocale[]=databaseRef.getActiveLanguageAndCountry();     
         currentLocale=new Locale(appLocale[0],appLocale[1]);       
     }

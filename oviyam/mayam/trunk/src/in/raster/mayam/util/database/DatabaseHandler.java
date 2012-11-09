@@ -19,6 +19,7 @@
  *
  * Contributor(s):
  * Babu Hussain A
+ * Devishree V
  * Meer Asgar Hussain B
  * Prakash J
  * Suresh V
@@ -143,7 +144,7 @@ public class DatabaseHandler {
             }
             openConnection();
             statement = conn.createStatement();
-            if (!dbExists) {
+            if (!dbExists) {                
                 createTables();
                 insertModalities();
                 insertDefaultListenerDetail();
@@ -165,7 +166,7 @@ public class DatabaseHandler {
         this.dbExists = checkDBexists(ApplicationContext.getAppDirectory());
         try {
             if (!dbExists) {
-                conn = DriverManager.getConnection(protocol + databasename + ";create=true",
+                conn = DriverManager.getConnection(protocol + ApplicationContext.getAppDirectory()+File.separator+databasename + ";create=true",
                         username, password);
             } else {
                 conn = DriverManager.getConnection(protocol + databasename + ";create=false", username, password);
@@ -257,6 +258,7 @@ public class DatabaseHandler {
             rs.next();
             int pk = rs.getInt("pk");
             int n = conn.createStatement().executeUpdate("update listener set aetitle='" + aeTitle + "',port=" + port + " where pk=" + pk);
+            rs.close();
             conn.commit();
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
@@ -269,6 +271,7 @@ public class DatabaseHandler {
             rs.next();
             String status = rs.getString("value");
             int n = conn.createStatement().executeUpdate("update properties set value='" + value + "' where property='multiframeassepseries'");
+            rs.close();
             conn.commit();
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
@@ -296,6 +299,7 @@ public class DatabaseHandler {
             } else {
                 status = false;
             }
+            rs.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -312,6 +316,7 @@ public class DatabaseHandler {
                 detail[1] = Integer.toString(rs.getInt("port"));
                 detail[2] = rs.getString("storagelocation");
             }
+            rs.close();
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -405,8 +410,11 @@ public class DatabaseHandler {
                 st.setPatientName(rs1.getString("PatientName"));
                 st.setDob(rs1.getString("PatientBirthDate"));
                 st.setModalitiesInStudy(getModalitiesOfStudy(st.getStudyUID()));
-                studyList.addElement(st);
+                studyList.addElement(st);      
+                rs1.close();
             }
+            rs.close();
+                
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -428,9 +436,10 @@ public class DatabaseHandler {
                     }
                 }
             }
+            rs.close();
         } catch (Exception e) {
             e.printStackTrace();
-        }
+        }        
         return modalities;
     }
 
@@ -451,6 +460,8 @@ public class DatabaseHandler {
                 series.setInstitutionName(rs.getString("InstitutionName"));
                 series.setSeriesRelatedInstance(this.getSeriesLevelInstance(siuid, series.getSeriesInstanceUID()));
                 seriesList.addElement(series);
+                
+                rs.close();
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -475,6 +486,8 @@ public class DatabaseHandler {
                 series.setInstitutionName(rs.getString("InstitutionName"));
                 series.setSeriesRelatedInstance(this.getSeriesLevelInstance(siuid, series.getSeriesInstanceUID()));
                 seriesList.add(series);
+                
+                rs.close();
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -510,7 +523,8 @@ public class DatabaseHandler {
             conn.createStatement().execute(sql3);
             conn.createStatement().execute(sql4);
             conn.createStatement().execute(sql5);
-
+            
+            rs.close();
             conn.commit();
         } catch (Exception e) {
             e.printStackTrace();
@@ -591,6 +605,7 @@ public class DatabaseHandler {
             if (count > 0) {
                 result = true;
             }
+            rscount.close();
 
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
@@ -614,6 +629,7 @@ public class DatabaseHandler {
             rs.next();
             int n = conn.createStatement().executeUpdate("update " + localeTable + " set status='idle' where localeid='" + rs.getString("localeid") + "'");
             int m = conn.createStatement().executeUpdate("update " + localeTable + " set status='active' where localeid='" + localeName + "'");
+            rs.close();
             conn.commit();
         } catch (Exception e) {
             e.printStackTrace();
@@ -639,6 +655,7 @@ public class DatabaseHandler {
                 returnval[3] = language;
                 returnval[4] = localeid;
             }
+            resultSet.close();
         }//catch(SQLSyntaxErrorException se){
 //            upgradeDataBase();
 //            System.out.println("SQLSyntaxException :\n"+se);
@@ -683,6 +700,8 @@ public class DatabaseHandler {
                 returnval[index] = country;
                 index++;
             }
+            rscount.close();
+            resultSet.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -706,6 +725,8 @@ public class DatabaseHandler {
                 returnval[index] = language;
                 index++;
             }
+            rscount.close();
+            resultSet.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -729,6 +750,8 @@ public class DatabaseHandler {
                 returnval[index] = localeID;
                 index++;
             }
+            rscount.close();
+            resultSet.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -760,6 +783,7 @@ public class DatabaseHandler {
             rs.next();
             int n = conn.createStatement().executeUpdate("update theme set status='idle' where name='" + rs.getString("name") + "'");
             int m = conn.createStatement().executeUpdate("update theme set status='active' where name='" + themeName + "'");
+            rs.close();
             conn.commit();
         } catch (Exception e) {
             e.printStackTrace();
@@ -773,6 +797,7 @@ public class DatabaseHandler {
             ResultSet rs = conn.createStatement().executeQuery(str);
             rs.next();
             activeTheme = rs.getString("name");
+            rs.close();
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -795,6 +820,9 @@ public class DatabaseHandler {
                 modalities[index] = rs2.getString("shortname");
                 index++;
             }
+            
+            rs1.close();
+            rs2.close();
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -816,9 +844,10 @@ public class DatabaseHandler {
             ResultSet rs = conn.createStatement().executeQuery(sql1);
             while (rs.next()) {
                 int pk = rs.getInt("pk");
-                boolean insertStatus = conn.createStatement().execute("insert into" + " layout(rowcount,columncount,modality_fk) values(1,2," + pk + ")");
+                boolean insertStatus = conn.createStatement().execute("insert into" + " layout(rowcount,columncount,modality_fk) values(1,2," + pk + ")");                
                 conn.commit();
             }
+            rs.close();
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -842,6 +871,8 @@ public class DatabaseHandler {
                 boolean insertStatus = conn.createStatement().execute("insert into" + " layout(rowcount,columncount,modality_fk) values(1,2," + pk + ")");
                 conn.commit();
             }
+            rs1.close();
+            rs.close();
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -854,6 +885,7 @@ public class DatabaseHandler {
             rs.next();
             int pk = rs.getInt("pk");
             boolean insertStatus = conn.createStatement().execute("insert into" + " preset(presetname,windowwidth,windowlevel,modality_fk) values('" + presetModel.getPresetName() + "'," + presetModel.getWindowWidth() + "," + presetModel.getWindowLevel() + "," + pk + ")");
+            rs.close();
             conn.commit();
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
@@ -877,6 +909,8 @@ public class DatabaseHandler {
                 presetModel.setWindowLevel(rs1.getString("windowlevel"));
                 presetList.add(presetModel);
             }
+            rs1.close();
+            rs.close();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -949,8 +983,9 @@ public class DatabaseHandler {
                 serverModel.setWadoPort(rs1.getInt("wadoport"));
                 serverModel.setWadoProtocol(rs1.getString("wadoprotocol"));
                 serverModel.setRetrieveTransferSyntax(rs1.getString("retrievets"));
-                serverList.add(serverModel);
+                serverList.add(serverModel);                
             }
+            rs1.close();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -972,6 +1007,8 @@ public class DatabaseHandler {
             rowColumn[0] = rs1.getInt("rowcount");
             rowColumn[1] = rs1.getInt("columncount");
 
+            rs1.close();
+            rs.close();
         } catch (SQLException ex) {
             rowColumn[0] = 1;
             rowColumn[1] = 1;
@@ -990,6 +1027,7 @@ public class DatabaseHandler {
             ResultSet rs = conn.createStatement().executeQuery(sql);
             rs.next();
             modality = rs.getString("ModalityInStudy");
+            rs.close();
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -1008,6 +1046,9 @@ public class DatabaseHandler {
             ResultSet rs1 = conn.createStatement().executeQuery(sql1);
             rs1.next();
             patientName = rs1.getString("PatientName");
+            
+            rs1.close();
+            rs.close();
 
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
@@ -1024,10 +1065,12 @@ public class DatabaseHandler {
             rs = conn.createStatement().executeQuery("select count(" + fieldname + ") from " + tablename + " where " + fieldname + " = '" + compareWith.trim() + "'");
             rs.next();
             if (rs.getInt(1) > 0) {
+                rs.close();
                 return true;
             } else {
                 return false;
-            }
+            }            
+            
         } catch (SQLException e) {
             StringWriter str = new StringWriter();
             e.printStackTrace(new PrintWriter(str));
@@ -1125,14 +1168,18 @@ public class DatabaseHandler {
                     while (rs2.next()) {
                         instanceTableRowDelete(rs2.getString("SopUID"));
                     }
+                    rs2.close();
                     seriesTableRowDelete(rs1.getString("SeriesInstanceUID"));
                 }
                 studyTableRowDelete(studyUID);
-            }
+                rs1.close();
+            }            
+            rs.close();
             SwingUtilities.invokeLater(new Runnable() {
 
                 public void run() {
-                    MainScreen.refreshLocalDBStorage();
+                    if(!ApplicationContext.isUpgrade)
+                        MainScreen.refreshLocalDBStorage();
                 }
             });
 
@@ -1182,7 +1229,8 @@ public class DatabaseHandler {
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
-                MainScreen.refreshLocalDBStorage();
+                if(!ApplicationContext.isUpgrade)
+                    MainScreen.refreshLocalDBStorage();
             }
         });
     }
@@ -1253,6 +1301,7 @@ public class DatabaseHandler {
                 Object[] value = {rs.getString("logicalname")};
                 list.add(value);
             }
+            rs.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1271,6 +1320,7 @@ public class DatabaseHandler {
                 Object[] value = {rs.getString("logicalname")};
                 list.add(value);
             }
+            rs.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1286,6 +1336,7 @@ public class DatabaseHandler {
             while (rs.next()) {
                 ae = new AEModel(rs.getString("logicalname"), rs.getString("hostname"), rs.getString("aetitle"), rs.getInt("port"), rs.getString("retrievetype"));
             }
+            rs.close();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -1306,6 +1357,7 @@ public class DatabaseHandler {
                 presetModel.setWindowLevel(rs.getString("windowlevel"));
                 presetList.add(presetModel);
             }
+            rs.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1326,6 +1378,7 @@ public class DatabaseHandler {
             while (rs.next()) {
                 serverModel = new ServerModel(rs.getString("logicalname"), rs.getString("hostname"), rs.getString("aetitle"), rs.getInt("port"), rs.getString("retrievetype"), rs.getString("wadocontext"), rs.getInt("wadoport"), rs.getString("wadoprotocol"), rs.getString("retrievets"));
             }
+            rs.close();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -1344,6 +1397,7 @@ public class DatabaseHandler {
             presetModel.setPresetName(rs.getString("presetname"));
             presetModel.setWindowLevel(rs.getString("windowlevel"));
             presetModel.setWindowWidth(rs.getString("windowwidth"));
+            rs.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1386,7 +1440,9 @@ public class DatabaseHandler {
                     imageUrl = new File(rs1.getString("FileStoreUrl"));
                 }
                 fileArray.add(imageUrl);
+                rs1.close();
             }
+            rs.close();
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -1416,7 +1472,10 @@ public class DatabaseHandler {
                     File imageUrl = new File(rs2.getString("FileStoreUrl"));
                     fileArray.add(imageUrl);
                 }
+                rs2.close();
+                rs1.close();
             }
+            rs.close();            
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -1433,7 +1492,8 @@ public class DatabaseHandler {
                 File imageUrl = new File(rs1.getString("FileStoreUrl"));
                 fileArray.add(imageUrl);
             }
-
+            
+            rs1.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1485,7 +1545,9 @@ public class DatabaseHandler {
                     } while (tempi < totalFrames);
                 }
                 arr.add(series);
+                rs1.close();
             }
+            rs.close();
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -1524,7 +1586,9 @@ public class DatabaseHandler {
                     arr.add(series);
                 }
                 arr.addAll(getMultiframeSeriesList(siuid, series.getSeriesInstanceUID()));
+                rs1.close();
             }
+            rs.close();
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -1555,6 +1619,7 @@ public class DatabaseHandler {
                 series.getImageList().add(img);
                 arr.add(series);
             }
+            rs1.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -1595,9 +1660,11 @@ public class DatabaseHandler {
                         series.getImageList().add(img);
                         tempi++;
                     } while (tempi < totalFrames);
-
+                    
                 }
+                rs1.close();
             }
+            rs.close();
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -1648,8 +1715,10 @@ public class DatabaseHandler {
                     series.getImageList().add(img);
 
                 }
-
+                
+                rs1.close();
             }
+            rs.close();
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -1668,7 +1737,9 @@ public class DatabaseHandler {
                 rs1 = conn.createStatement().executeQuery(sql1);
                 rs1.next();
                 size = size + rs1.getInt(1);
+                rs1.close();
             }
+            rs.close();
         } catch (Exception ex) {
             Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -1692,6 +1763,7 @@ public class DatabaseHandler {
             ResultSet rs = conn.createStatement().executeQuery(sql);
             rs.next();
             seriesDesc = rs.getString("SeriesDescription");
+            rs.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1711,6 +1783,7 @@ public class DatabaseHandler {
             ResultSet rs = conn.createStatement().executeQuery(sql1);
             rs.next();
             size = rs.getInt(1);
+            rs.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1724,7 +1797,8 @@ public class DatabaseHandler {
             while (rs.next()) {
                 String fileUrl=rs.getString("FileStoreUrl");
                 instanceUrlList.add(fileUrl);
-            }            
+            }   
+            rs.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1745,6 +1819,7 @@ public class DatabaseHandler {
             } else {
                 hasInstance = false;
             }
+            rs.close();            
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1863,6 +1938,7 @@ public class DatabaseHandler {
             while (rs.next()) {
                 status = rs.getString("sendstatus");
             }
+            rs.close();
         } catch (SQLException e) {
             StringWriter str = new StringWriter();
             e.printStackTrace(new PrintWriter(str));
@@ -1880,6 +1956,7 @@ public class DatabaseHandler {
             while (rs.next()) {
                 count = rs.getInt("SendImgCnt");
             }
+            rs.close();
         } catch (SQLException e) {
             StringWriter str = new StringWriter();
             e.printStackTrace(new PrintWriter(str));
@@ -1897,6 +1974,7 @@ public class DatabaseHandler {
             while (rs.next()) {
                 status = rs.getString("receivestatus");
             }
+            rs.close();
         } catch (SQLException e) {
             StringWriter str = new StringWriter();
             e.printStackTrace(new PrintWriter(str));
@@ -1914,6 +1992,7 @@ public class DatabaseHandler {
             while (rs.next()) {
                 count = rs.getInt("RecdImgCnt");
             }
+            rs.close();
         } catch (Exception e) {
             StringWriter str = new StringWriter();
             e.printStackTrace(new PrintWriter(str));
@@ -1942,6 +2021,7 @@ public class DatabaseHandler {
                 String sql = "update AE SET logicalname='" + serverName + "',hostname='" + host + "',aetitle='" + aeTitle + "',port=" + port + "where pk=" + pk;
                 int n = conn.createStatement().executeUpdate(sql);
             }
+            rs.close();
             conn.commit();
         } catch (Exception e) {
             e.printStackTrace();
@@ -1970,6 +2050,7 @@ public class DatabaseHandler {
             while (rs.next()) {
                 instanceNumber = rs.getInt("instanceNo");
             }
+            rs.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1991,7 +2072,9 @@ public class DatabaseHandler {
                     study.setStudyDesc(rs1.getString("StudyDescription"));
                     studyList.add(study);
                 }
+                rs1.close();
             }
+            rs.close();
             conn.commit();
         } catch (Exception e) {
             e.printStackTrace();
@@ -2002,5 +2085,92 @@ public class DatabaseHandler {
     public static DatabaseHandler getInstance() {
         DatabaseHandler DatabaseUpdateRef = new DatabaseHandler();
         return DatabaseUpdateRef;
+    }
+    
+    public boolean checkLocaleExist() {
+        try {
+            ResultSet tablenames = conn.getMetaData().getTables(null, "MAYAM", "LOCALE", null);
+            tablenames.next();
+            if ("LOCALE".equals(tablenames.getString("TABLE_NAME"))) {
+                return true;
+            }
+            tablenames.close();
+        } catch (SQLException ex) {
+            System.out.println("");
+        }
+        return false;
+    }
+
+    public void dropTablesForUpgrade() {
+        try {
+            statement.execute("drop table " + instanceTable);
+            statement.execute("drop table " + seriesTable);
+            statement.execute("drop table " + studyTable);
+            statement.execute("drop table " + patientTable);
+            conn.commit();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void createTablesForUpgrade() {
+        try {
+            String sql = "";
+            sql = "create table " + patientTable + " (PatientId varchar(255) NOT NULL CONSTRAINT PatientId_Pk PRIMARY KEY ," + "PatientName varchar(255)," + "PatientBirthDate varchar(30)," + "PatientSex varchar(10))";
+            statement.executeUpdate(sql);
+
+            sql = "create table " + studyTable + "(StudyInstanceUID varchar(255)  NOT NULL CONSTRAINT StudyInstanceUID_pk PRIMARY KEY ," + "StudyDate varchar(30), " + "AccessionNo varchar(50), " + "ReferringPhysicianName varchar(255), " + "StudyDescription  varchar(80), " + "ModalityInStudy varchar(10), " + "NoOfSeries integer," + "NoOfInstances integer," + "RecdImgCnt Integer," + "SendImgCnt integer," + "RetrieveAET varchar(50)," + "StudyType varchar(75)," + "PatientId varchar(255), foreign key(PatientId) references Patient(PatientId))";
+            statement.executeUpdate(sql);
+
+            sql = "create table " + seriesTable + " (SeriesInstanceUID varchar(255) NOT NULL CONSTRAINT SeriesInstanceUID_pk PRIMARY KEY ," + "SeriesNo varchar(50)," + "Modality varchar(10)," + "SeriesDescription varchar(100)," + "BodyPartExamined varchar(100)," + "InstitutionName varchar(255)," + "NoOfSeriesRelatedInstances integer," + "PatientId varchar(255), foreign key(PatientId) references Patient(PatientId)," + "StudyInstanceUID varchar(255), foreign key (StudyInstanceUID) references Study(StudyInstanceUID))";
+            statement.executeUpdate(sql);
+
+            sql = "create table " + instanceTable + " (SopUID varchar(255) NOT NULL CONSTRAINT SopUID_pk PRIMARY KEY ," + "InstanceNo integer," + "multiframe varchar(50)," + "totalframe varchar(50)," + "SendStatus varchar(50)," + "ForwardDateTime varchar(30)," + "ReceivedDateTime varchar(30)," + "ReceiveStatus varchar(50)," + "FileStoreUrl varchar(750)," + "SliceLocation integer," + "EncapsulatedDocument varchar(50)," + "PatientId varchar(255), foreign key(PatientId) references Patient(PatientId)," + "StudyInstanceUID varchar(255), foreign key (StudyInstanceUID) references Study(StudyInstanceUID)," + "SeriesInstanceUID varchar(255), foreign key (SeriesInstanceUID) references Series(SeriesInstanceUID))";
+            statement.executeUpdate(sql);
+
+            sql = "create table " + localeTable + "(pk integer primary key GENERATED ALWAYS AS IDENTITY,country varchar(255),countrycode varchar(10),language varchar(255),languagecode varchar(10),localeid varchar(255),status varchar(155))";
+            statement.executeUpdate(sql);
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        insertDefaultLocales();
+    }
+
+    public ArrayList<String> getStudyUIDList() {
+        ArrayList<String> studyuid = new ArrayList<String>();
+        try {
+            ResultSet rs = conn.createStatement().executeQuery("select StudyInstanceUID from study");
+            while (rs.next()) {
+                studyuid.add(rs.getString("StudyInstanceUID"));
+            }
+            rs.close();
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return studyuid;
+    }
+
+    public ArrayList<String> getSeriesUIDList(String studyuid) {
+        ArrayList<String> seriesuid = new ArrayList<String>();
+        try {
+            ResultSet rs = conn.createStatement().executeQuery("select SeriesInstanceUID from series where StudyInstanceUID='" + studyuid + "'");
+            while (rs.next()) {
+                seriesuid.add(rs.getString("SeriesInstanceUID"));
+            }
+            rs.close();
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return seriesuid;
+    }
+    
+    public void deletePresets(){
+        try {
+            String sql = "delete from preset";
+            boolean b = conn.createStatement().execute(sql);
+            conn.commit();
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 }

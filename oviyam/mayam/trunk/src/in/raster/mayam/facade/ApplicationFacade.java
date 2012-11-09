@@ -19,6 +19,7 @@
  *
  * Contributor(s):
  * Babu Hussain A
+ * Devishree V
  * Meer Asgar Hussain B
  * Prakash J
  * Suresh V
@@ -43,6 +44,12 @@ import in.raster.mayam.delegate.InputArgumentsParser;
 import in.raster.mayam.form.display.Display;
 import in.raster.mayam.form.MainScreen;
 import in.raster.mayam.form.SplashScreen;
+import in.raster.mayam.form.dialog.ConfirmUpgrade;
+import in.raster.mayam.model.FileURLModel;
+import in.raster.mayam.util.database.UpgradeDataBase;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
@@ -59,6 +66,10 @@ public class ApplicationFacade {
     public static MainScreen mainScreen;
     //public String applicationName="Mayam";
     public static String binPath="";
+    
+    //Added For Upgrade
+    public static boolean version7 = false;        
+    private UpgradeDataBase upgradeDatabaseRef = new UpgradeDataBase();     
 
     private ApplicationFacade() {
     }
@@ -106,12 +117,101 @@ public class ApplicationFacade {
             ApplicationFacade facade = new ApplicationFacade();
             facade.setSystemProperties();
             facade.createSplash();
+            facade.checkUpgrade();
             facade.createMainScreen();
             splash.setVisible(false);
             mainScreen.setVisible(true);
         } catch (Exception ex) {
             Logger.getLogger(ApplicationFacade.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    private void checkUpgrade() {
+        String[] dir = new File(System.getProperty("user.dir")).list();
+        ApplicationContext.openOrCreateDB();
+        if (!ApplicationContext.databaseRef.checkLocaleExist()) {
+            ApplicationContext.isUpgrade = true;
+            showConfirmationForUpgrade();
+        } else {
+            for (int i = 0; i < dir.length; i++) {
+                if ("viewerdb".equals(dir[i])) {
+                    ApplicationContext.isUpgrade = version7 = true;
+                    showConfirmationForUpgrade();
+                }
+            }
+        }
+    }
+
+    private void showConfirmationForUpgrade() {
+        ConfirmUpgrade confirmUpgrade = new ConfirmUpgrade(ApplicationContext.mainScreen, true);
+        confirmUpgrade.setLocationRelativeTo(ApplicationContext.mainScreen);
+        confirmUpgrade.setVisible(true);
+        if (confirmUpgrade.getReturnStatus() == 0) {
+            System.exit(confirmUpgrade.getReturnStatus());
+        } else {
+            upgrade();
+        }
+    }
+
+    private void upgrade() {
+        if (version7) {
+            upgradeDatabaseRef.openOlderConnection();            
+            ApplicationContext.openOrCreateDB();
+            ApplicationContext.databaseRef.deletePresets();
+            upgradeDatabaseRef.savePreferences();
+            upgradeDatabaseRef.saveURLs();
+            File viewer = new File(System.getProperty("user.dir") + File.separator + "viewerdb");
+            try {
+                delete(viewer);
+            } catch (IOException ex) {
+                Logger.getLogger(ApplicationFacade.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+        } else {
+            ApplicationContext.databaseRef.openOrCreateDB();
+            ArrayList<FileURLModel> fileUrls = saveUrl();
+            ApplicationContext.databaseRef.dropTablesForUpgrade();
+            ApplicationContext.databaseRef.createTablesForUpgrade();
+            for (int i = 0; i < fileUrls.size(); i++) {
+                upgradeDatabaseRef.startImport(fileUrls.get(i).getFilesUnderStudyUID(), fileUrls.get(i).getInstancecount());
+            }
+        }
+    }
+
+    public static void delete(File file)
+            throws IOException {
+        if (file.isDirectory()) {
+            if (file.list().length == 0) {
+                file.delete();
+            } else {
+                String files[] = file.list();
+
+                for (String temp : files) {
+                    File fileDelete = new File(file, temp);
+                    delete(fileDelete);
+                }
+                if (file.list().length == 0) {
+                    file.delete();
+                }
+            }
+        } else {
+            file.delete();
+        }
+    }
+
+    private static ArrayList<FileURLModel> saveUrl() {
+        int instancecount = 0;
+        ArrayList<String> studyuidlist = ApplicationContext.databaseRef.getStudyUIDList();
+        ArrayList<FileURLModel> fileurls = new ArrayList<FileURLModel>();
+        for (int i = 0; i < studyuidlist.size(); i++) {
+            ArrayList<String> seriesuidlist = ApplicationContext.databaseRef.getSeriesUIDList(studyuidlist.get(i));
+            for (int j = 0; j < seriesuidlist.size(); j++) {
+                instancecount = ApplicationContext.databaseRef.getSeriesLevelInstance(studyuidlist.get(i), seriesuidlist.get(j));
+            }
+            FileURLModel file = new FileURLModel(studyuidlist.get(i), instancecount, ApplicationContext.databaseRef.getUrlBasedOnStudyIUID(studyuidlist.get(i)));            
+            fileurls.add(file);
+        }
+        return fileurls;
     }
 }
 
