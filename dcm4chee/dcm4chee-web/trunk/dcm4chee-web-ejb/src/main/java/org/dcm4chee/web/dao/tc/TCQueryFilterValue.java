@@ -148,86 +148,97 @@ public abstract class TCQueryFilterValue<T> implements Serializable {
                 
             	ITextOrCode[] toc = getValues();
                 boolean joinCodes = toc!=null && key.supportsCodeValue();
+                
+                int nExists = 1;
+                if (!multipleValueORConcat && toc.length>1)
+                {
+                	nExists = toc.length;
+                }
+                
+                for (int n=0; n<nExists; n++)
+                {
+                	if (n>0)
+                	{
+                		sb.append(" AND ");
+                	}
+                	
+                	sb.append("EXISTS (");
+                	sb.append("FROM ContentItem content_item");
+                	sb.append(" INNER JOIN content_item.conceptName concept_name");
 
-                sb.append("EXISTS (");
-                sb.append("FROM ContentItem content_item");
-                sb.append(" INNER JOIN content_item.conceptName concept_name");
-                
-                if (joinCodes)
-                {
-                	sb.append(" LEFT JOIN content_item.conceptCode concept_code");
+                	if (joinCodes)
+                	{
+                		sb.append(" LEFT JOIN content_item.conceptCode concept_code");
+                	}
+
+                	sb.append(" WHERE (instance.sopInstanceUID = content_item.instance.sopInstanceUID)");
+                	sb.append(" AND (content_item.relationshipType = 'CONTAINS')");
+                	sb.append(" AND (concept_name.codeValue = :"
+                			+ conceptNameValueParam.getKey() + ")");
+                	sb.append(" AND (concept_name.codingSchemeDesignator = :"
+                			+ conceptNameDesignatorParam.getKey() + ")");
+
+                	if (toc!=null && toc.length>0)
+                	{
+                		sb.append(" AND (");
+                		
+                		int start = multipleValueORConcat ? 0 : n;
+                		int end = multipleValueORConcat ? toc.length-1 : n;
+                		
+                		for (int i=start; i<=end; i++)
+                		{
+                			if (i>start) {
+                				sb.append(" OR ");
+                			}
+
+                			ITextOrCode item = toc[i];
+                			TCDicomCode code = item.getCode();
+                			String text = item.getText();
+
+                			sb.append("(");
+
+                			if (code!=null)
+                			{
+                				QueryParam valueParam = new QueryParam("conceptCodeValue", code.getValue());
+                				QueryParam designatorParam = new QueryParam("conceptCodeDesignator",code.getDesignator());
+                				QueryParam valueTextParam = new QueryParam("valueText", code.getValue().toUpperCase());
+
+                				sb.append("((concept_code.codeValue = :"
+                						+ valueParam.getKey() + ")");
+                				sb.append(" AND (concept_code.codingSchemeDesignator = :"
+                						+ designatorParam.getKey() + "))");
+                				sb.append(" OR (upper(content_item.textValue) LIKE :"
+                						+ valueTextParam.getKey() + ")");
+
+                				params.add(valueParam);
+                				params.add(designatorParam);
+                				params.add(valueTextParam);
+                			}
+                			else if (text!=null)
+                			{
+                				QueryParam param = new QueryParam("searchString",
+                						"%" + text.replaceAll("\\*","%").toUpperCase() + "%");
+
+                				sb.append("(upper(content_item.textValue) LIKE :"
+                						+ param.getKey() + ")");
+
+                				if (joinCodes)
+                				{
+                					sb.append(" OR (upper(concept_code.codeMeaning) LIKE :"
+                							+ param.getKey() + ")");
+                					sb.append(" OR (upper(concept_code.codeValue) LIKE :"
+                							+ param.getKey() + ")");
+                				}
+
+                				params.add(param);
+                			}
+
+                			sb.append(")");
+                		}
+                		sb.append(")");
+                	}
+                	sb.append(")");
                 }
-                
-                sb.append(" WHERE (instance.sopInstanceUID = content_item.instance.sopInstanceUID)");
-                sb.append(" AND (content_item.relationshipType = 'CONTAINS')");
-                sb.append(" AND (concept_name.codeValue = :"
-                        + conceptNameValueParam.getKey() + ")");
-                sb.append(" AND (concept_name.codingSchemeDesignator = :"
-                        + conceptNameDesignatorParam.getKey() + ")");
-                
-                if (toc!=null && toc.length>0)
-                {
-	                sb.append(" AND (");
-	                for (int i=0; i<toc.length; i++)
-	                {
-	                	if (i>0) {
-	                		if (multipleValueORConcat)
-	                		{
-	                			sb.append(" OR ");
-	                		}
-	                		else
-	                		{
-	                			sb.append(" AND ");
-	                		}
-	                	}
-	                	
-	                	ITextOrCode item = toc[i];
-	                	TCDicomCode code = item.getCode();
-	                	String text = item.getText();
-	                	
-	                	sb.append("(");
-	                	
-	                	if (code!=null)
-	                	{
-	    	                QueryParam valueParam = new QueryParam("conceptCodeValue", code.getValue());
-	    	                QueryParam designatorParam = new QueryParam("conceptCodeDesignator",code.getDesignator());
-	    	                QueryParam valueTextParam = new QueryParam("valueText", code.getValue().toUpperCase());
-	    	                
-	    	                sb.append("((concept_code.codeValue = :"
-	    	                        + valueParam.getKey() + ")");
-	    	                sb.append(" AND (concept_code.codingSchemeDesignator = :"
-	    	                        + designatorParam.getKey() + "))");
-	    	                sb.append(" OR (upper(content_item.textValue) LIKE :"
-	    	                		+ valueTextParam.getKey() + ")");
-	    	                
-	    	                params.add(valueParam);
-	    	                params.add(designatorParam);
-	    	                params.add(valueTextParam);
-	                	}
-	                	else if (text!=null)
-	                	{
-	                		QueryParam param = new QueryParam("searchString",
-	                                "%" + text.replaceAll("\\*","%").toUpperCase() + "%");
-	                		
-	    	                sb.append("(upper(content_item.textValue) LIKE :"
-	    	                        + param.getKey() + ")");
-	    	                
-	    	                if (joinCodes)
-	    	                {
-	    	                    sb.append(" OR (upper(concept_code.codeMeaning) LIKE :"
-	    	                            + param.getKey() + ")");
-	    	                    sb.append(" OR (upper(concept_code.codeValue) LIKE :"
-	    	                    		+ param.getKey() + ")");
-	    	                }
-	    	                
-	    	                params.add(param);
-	                	}
-	
-		                sb.append(")");
-	                }
-	                sb.append(")");
-                }
-                sb.append(")");
                 
                 return params.toArray(new QueryParam[0]);
             }
