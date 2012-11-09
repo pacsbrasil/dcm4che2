@@ -78,7 +78,6 @@ public class UpdateAttributesService extends ServiceMBeanSupport {
     private int availability;
     private int maximalNumberOfSeriesToUpdateByOneTask;
     private ObjectName queryRetrieveScpServiceName;
-    private ObjectName tarRetrieverName;
     private int fetchSize;
 
     public final ObjectName getQueryRetrieveScpServiceName() {
@@ -87,14 +86,6 @@ public class UpdateAttributesService extends ServiceMBeanSupport {
 
     public final void setQueryRetrieveScpServiceName(ObjectName name) {
         this.queryRetrieveScpServiceName = name;
-    }
-
-    public final ObjectName getTarRetrieverName() {
-        return tarRetrieverName;
-    }
-
-    public final void setTarRetrieverName(ObjectName tarRetrieverName) {
-        this.tarRetrieverName = tarRetrieverName;
     }
 
     public final String getModality() {
@@ -314,14 +305,12 @@ public class UpdateAttributesService extends ServiceMBeanSupport {
     }
 
     private File getFile(FileInfo info) throws Exception {
-        return info.basedir.startsWith("tar:") ? retrieveFileFromTAR(
-                info.basedir, info.fileID) : FileUtils.toFile(info.basedir,
-                        info.fileID);
-    }
-
-    File retrieveFileFromTAR(String fsID, String fileID) throws Exception {
-        return (File) server.invoke(tarRetrieverName, "retrieveFileFromTAR",
-                new Object[] { fsID, fileID }, new String[] {
+        //return info.basedir.startsWith("tar:") ? retrieveFileFromTAR(
+        //        info.basedir, info.fileID) : FileUtils.toFile(info.basedir,
+        //                info.fileID);
+        return (File) server.invoke(queryRetrieveScpServiceName, "getFile",
+                new Object[] { info.basedir, info.fileID }, new String[] {
                         String.class.getName(), String.class.getName() });
     }
+
 }

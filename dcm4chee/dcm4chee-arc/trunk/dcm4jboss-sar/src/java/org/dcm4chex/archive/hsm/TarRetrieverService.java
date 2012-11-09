@@ -176,7 +176,7 @@ public class TarRetrieverService extends ServiceMBeanSupport {
         this.hsmModuleServicename = NONE.equals(name) ? null : ObjectName.getInstance(name);
     }
         
-    public File retrieveFileFromTAR(String fsID, String fileID)
+    public File retrieveFile(String fsID, String fileID)
             throws IOException, VerifyTarException {
         if (!fsID.startsWith("tar:")) {
             throw new IllegalArgumentException(

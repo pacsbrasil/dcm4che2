@@ -118,14 +118,6 @@
       <name>QueryRetrieveScpServiceName</name>
       <type>javax.management.ObjectName</type>
    </attribute>
-   <attribute access="read-write"
-      getMethod="getTarRetrieverName"
-      setMethod="setTarRetrieverName">
-      <description>Used internally. Do NOT modify.
-      </description>
-      <name>TarRetrieverName</name>
-      <type>javax.management.ObjectName</type>
-   </attribute>
    &defaultAttributes;
 
    <!-- Operations -->
