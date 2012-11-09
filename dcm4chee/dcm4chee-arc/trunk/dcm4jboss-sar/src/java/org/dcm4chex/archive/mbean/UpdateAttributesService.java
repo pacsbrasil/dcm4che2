@@ -305,9 +305,6 @@ public class UpdateAttributesService extends ServiceMBeanSupport {
     }
 
     private File getFile(FileInfo info) throws Exception {
-        //return info.basedir.startsWith("tar:") ? retrieveFileFromTAR(
-        //        info.basedir, info.fileID) : FileUtils.toFile(info.basedir,
-        //                info.fileID);
         return (File) server.invoke(queryRetrieveScpServiceName, "getFile",
                 new Object[] { info.basedir, info.fileID }, new String[] {
                         String.class.getName(), String.class.getName() });
