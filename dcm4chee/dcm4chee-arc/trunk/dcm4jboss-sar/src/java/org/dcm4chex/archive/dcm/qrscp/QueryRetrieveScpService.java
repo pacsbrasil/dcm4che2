@@ -277,6 +277,8 @@ public class QueryRetrieveScpService extends AbstractScpService {
     private boolean verifyMD5OnMakeCStoreRQ = false;
     
     private HashSet<String> updateSOFrequest = new HashSet<String>();
+
+    private String ignoreFileSizeCheckFS;
     
     public QueryRetrieveScpService() {
     	moveScp = createMoveScp();
@@ -1004,6 +1006,14 @@ public class QueryRetrieveScpService extends AbstractScpService {
         this.fetchSize = fetchSize;
     }
 
+    public String getIgnoreFileSizeCheckFS() {
+        return ignoreFileSizeCheckFS;
+    }
+
+    public void setIgnoreFileSizeCheckFS(String ignoreFileSizeCheckFS) {
+        this.ignoreFileSizeCheckFS = ignoreFileSizeCheckFS;
+    }
+
     public final ObjectName getPerfMonServiceName() {
 		return dicomFindScp.getPerfMonServiceName();
 	}
@@ -1612,7 +1622,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
     protected File getFile(String fsID, String fileID, long fileSize)
             throws Exception {
         File f = getFile(fsID, fileID);
-        if (f.length() < fileSize)
+        if ((f.length() < fileSize) && !fsID.startsWith(ignoreFileSizeCheckFS))
             throw new IOException("File is of unexpected size it was truncated at "
                     + (fileSize - f.length()) + " bytes, please check file: " + f);
         return f;

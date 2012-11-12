@@ -1158,6 +1158,17 @@ DICOM JPEG-LS images by specified value. Only effective for WADO retrieval.
          <value value="50"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write" 
+      getMethod="getIgnoreFileSizeCheckFS"
+      setMethod="setIgnoreFileSizeCheckFS">
+      <description>Configurable file system prefix to ignore check of file size.
+      </description>
+      <name>IgnoreFileSizeCheckFS</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
    <attribute access="read-write"
       getMethod="getDcmServerName"
       setMethod="setDcmServerName">
