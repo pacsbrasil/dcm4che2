@@ -105,19 +105,23 @@ public class MainPage extends SecureWicketPage {
             @Override
             protected void onTimer(AjaxRequestTarget arg0) {
                 HttpSession session = ((WebRequest)getRequest()).getHttpServletRequest().getSession();
+                long now = System.currentTimeMillis();
                 if (log.isDebugEnabled()) {
                     log.debug("############### Session Timeout checker!");
                     log.debug("####### session getMaxInactiveInterval:"+session.getMaxInactiveInterval());
                     log.debug("####### session getLastAccessedTime:"+session.getLastAccessedTime());
-                    log.debug("####### session currentTime:"+System.currentTimeMillis());
+                    log.debug("####### session currentTime:"+now);
+                    log.debug("####### session currentTime-lastAccessedTime:"+(now-session.getLastAccessedTime()));
                     log.debug("####### session lastTime:"+lastTime);
+                    log.debug("####### session LastAccessedTime-lastTime:"+(session.getLastAccessedTime()-lastTime));
                 }
                 if ( session.getLastAccessedTime() < lastTime) {
                     session.invalidate();
+                    this.setUpdateInterval(Duration.milliseconds(1000));
                 } else {
-                    lastTime = System.currentTimeMillis();
                     long wait = (session.getMaxInactiveInterval()+1) * 1000 - 
-                        lastTime + session.getLastAccessedTime();
+                    now + session.getLastAccessedTime();
+                    lastTime = now+2000;
                     this.setUpdateInterval(Duration.milliseconds(wait));
                 }
             }
