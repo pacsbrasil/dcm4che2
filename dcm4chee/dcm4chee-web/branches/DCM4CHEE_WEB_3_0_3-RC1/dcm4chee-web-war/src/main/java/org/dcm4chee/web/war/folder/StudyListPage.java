@@ -1962,7 +1962,7 @@ public class StudyListPage extends Panel {
 
                 @Override
                 public boolean isVisible() {
-                    return !studyModel.hasUnlinkedSeries() && studyPermissionHelper.checkPermission(studyModel, StudyPermission.UPDATE_ACTION);
+                    return studyModel.hasSeries() && !studyModel.hasUnlinkedSeries() && studyPermissionHelper.checkPermission(studyModel, StudyPermission.UPDATE_ACTION);
                 }
                 
                 @Override

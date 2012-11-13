@@ -167,6 +167,15 @@ public class StudyModel extends AbstractEditableDicomModel implements Serializab
         return ppss;
     }
 
+    public boolean hasSeries() {
+        if (getPk() != -1) {
+            StudyListLocal dao = (StudyListLocal)
+            JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
+            return dao.countSeriesOfStudy(getPk()) > 0;
+        } else { 
+            return false;
+        }
+    }
     public boolean hasUnlinkedSeries() {
         if (unlinkedSeries == null) {
             if (getPk() != -1) {
