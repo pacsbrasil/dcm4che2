@@ -302,6 +302,13 @@ public class DicomEditBean implements DicomEditLocal {
             		.equals(pSeries.getStudy().getPatient().getPatientID()))
             	throw new EJBException("Series already exists in trash with different patient ID: SeriesInstanceUID: " 
             		+ series.getSeriesInstanceUID());
+            else
+            	if (series.getStudy().getPatient().getIssuerOfPatientID() == null
+            	|| pSeries.getStudy().getPatient().getIssuerOfPatientID() == null
+            	|| !series.getStudy().getPatient().getIssuerOfPatientID()
+                		.equals(pSeries.getStudy().getPatient().getIssuerOfPatientID()))
+                	throw new EJBException("Series already exists in trash with different issuer of patient ID: SeriesInstanceUID: " 
+                		+ series.getSeriesInstanceUID());            	
         } catch (NoResultException nre) {
             pSeries = new PrivateSeries();//we need parents initialized.
         }
@@ -327,6 +334,13 @@ public class DicomEditBean implements DicomEditLocal {
             		.equals(pStudy.getPatient().getPatientID()))
             	throw new EJBException("Study already exists in trash with different patient ID, StudyInstanceUID: " 
             		+ study.getStudyInstanceUID());
+            else
+            	if (study.getPatient().getIssuerOfPatientID() == null
+            	|| pStudy.getPatient().getIssuerOfPatientID() == null
+            	|| !study.getPatient().getIssuerOfPatientID()
+                		.equals(pStudy.getPatient().getIssuerOfPatientID()))
+                	throw new EJBException("Study already exists in trash with different issuer of patient ID: StudyInstanceUID: " 
+                		+ study.getStudyInstanceUID());
         } catch (NoResultException nre) {
             pStudy = new PrivateStudy();
         }
