@@ -304,7 +304,6 @@ public class DicomEditBean implements DicomEditLocal {
             		+ series.getSeriesInstanceUID());
             else
             	if (series.getStudy().getPatient().getIssuerOfPatientID() == null
-            	|| pSeries.getStudy().getPatient().getIssuerOfPatientID() == null
             	|| !series.getStudy().getPatient().getIssuerOfPatientID()
                 		.equals(pSeries.getStudy().getPatient().getIssuerOfPatientID()))
                 	throw new EJBException("Series already exists in trash with different issuer of patient ID: SeriesInstanceUID: " 
@@ -336,7 +335,6 @@ public class DicomEditBean implements DicomEditLocal {
             		+ study.getStudyInstanceUID());
             else
             	if (study.getPatient().getIssuerOfPatientID() == null
-            	|| pStudy.getPatient().getIssuerOfPatientID() == null
             	|| !study.getPatient().getIssuerOfPatientID()
                 		.equals(pStudy.getPatient().getIssuerOfPatientID()))
                 	throw new EJBException("Study already exists in trash with different issuer of patient ID: StudyInstanceUID: " 
