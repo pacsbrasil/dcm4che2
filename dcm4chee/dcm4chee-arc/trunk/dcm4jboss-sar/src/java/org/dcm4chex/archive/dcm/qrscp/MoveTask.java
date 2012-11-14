@@ -351,6 +351,7 @@ public class MoveTask implements Runnable {
                     }
                     if (!localUIDs.isEmpty()) {
                         service.prefetchTars(retrieveInfo.getLocalFiles());
+                        service.updateAttributes(retrieveInfo.getLocalFiles());
                         ActiveAssociation storeAssoc = openAssociation();
                         retrieveLocal(storeAssoc);
                     }

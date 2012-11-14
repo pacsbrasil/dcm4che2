@@ -22,7 +22,7 @@ QueryUsersCmd=SELECT user_id FROM users
 QueryPasswordForUserCmd=SELECT passwd FROM users WHERE user_id=?
 QueryRolesForUserCmd=SELECT roles FROM roles WHERE user_id=?
 QuerySeriesAttrsForQueryCmd=SELECT patient.pat_attrs,study.study_attrs,series.series_attrs,study.mods_in_study,study.study_status_id,study.num_series,study.num_instances,series.num_instances FROM patient INNER JOIN study ON (patient.pk=study.patient_fk) INNER JOIN series ON (study.pk=series.study_fk) WHERE series.series_iuid=?
-QuerySeriesAttrsForRetrieveCmd=SELECT patient.pat_attrs,study.study_attrs,series.series_attrs,patient.pat_id,patient.pat_name,study.study_iuid FROM patient INNER JOIN study ON (patient.pk=study.patient_fk) INNER JOIN series ON (study.pk=series.study_fk) WHERE series.series_iuid=?
+QuerySeriesAttrsForRetrieveCmd=SELECT patient.pat_attrs,study.study_attrs,series.series_attrs,patient.pat_id,patient.pat_name,study.study_iuid,series.updated_time FROM patient INNER JOIN study ON (patient.pk=study.patient_fk) INNER JOIN series ON (study.pk=series.study_fk) WHERE series.series_iuid=?
 QueryOldARRCmd=SELECT pk,xml_data FROM audit_record_old WHERE pk>? ORDER BY pk LIMIT ?
 QueryOldARRCmdLimitPos=2
 ClaimCompressingFileCmd=UPDATE files SET file_status=3 WHERE pk=? AND file_status=0 AND file_tsuid IN ('1.2.840.10008.1.2','1.2.840.10008.1.2.1','1.2.840.10008.1.2.2')

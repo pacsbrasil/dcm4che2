@@ -42,8 +42,6 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 
-import org.dcm4che.net.DcmServiceException;
-
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
  * @version $Revision$ $Date$
@@ -66,6 +64,7 @@ class QuerySeriesAttrsForRetrieveCmd extends BaseReadCmd {
                     Types.VARCHAR,  // patient.pat_id
                     Types.VARCHAR,  // patient.pat_name
                     Types.VARCHAR,  // study.study_iuid
+                    Types.TIMESTAMP // series.updatedTime
                     });
             ((PreparedStatement) stmt).setString(1, seriesIUID);
         } catch (SQLException x) {
@@ -86,6 +85,7 @@ class QuerySeriesAttrsForRetrieveCmd extends BaseReadCmd {
         info.patID = rs.getString(4);
         info.patName = rs.getString(5);
         info.studyIUID = rs.getString(6);
+        info.seriesUpdatedTime = rs.getTimestamp(7);
         return info;
     }
 }

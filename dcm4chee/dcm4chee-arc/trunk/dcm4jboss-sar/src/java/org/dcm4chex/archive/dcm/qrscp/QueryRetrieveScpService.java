@@ -46,20 +46,23 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.rmi.RemoteException;
 import java.sql.Types;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.Map.Entry;
 
 import javax.ejb.FinderException;
 import javax.management.InstanceNotFoundException;
@@ -145,6 +148,8 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     static final UIDDictionary uidDict = 
             DictionaryFactory.getInstance().getDefaultUIDDictionary();
+    
+    private static final String DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
     private boolean patchJpegLS;
 
@@ -183,6 +188,8 @@ public class QueryRetrieveScpService extends AbstractScpService {
     HashMap<String, ObjectName> protocolRetriever = new HashMap<String, ObjectName>();
 
     private ObjectName pixQueryServiceName;
+
+    private ObjectName updateAttributesServiceName;
     
     private TLSConfigDelegate tlsConfig = new TLSConfigDelegate(this);
 
@@ -279,6 +286,10 @@ public class QueryRetrieveScpService extends AbstractScpService {
     private HashSet<String> updateSOFrequest = new HashSet<String>();
 
     private String ignoreFileSizeCheckFS;
+
+    private String autoUpdateAttributesFromFS;
+
+    private Date autoUpdateAttributesBeforeDate;
     
     public QueryRetrieveScpService() {
     	moveScp = createMoveScp();
@@ -1014,6 +1025,22 @@ public class QueryRetrieveScpService extends AbstractScpService {
         this.ignoreFileSizeCheckFS = ignoreFileSizeCheckFS;
     }
 
+    public String getAutoUpdateAttributesFromFS() {
+        return autoUpdateAttributesFromFS;
+    }
+
+    public void setAutoUpdateAttributesFromFS(String updateAttributesFromFS) {
+        this.autoUpdateAttributesFromFS = updateAttributesFromFS;
+    }
+
+    public String getAutoUpdateAttributesBeforeDate() {
+        return new SimpleDateFormat(DATE_TIME_FORMAT).format(autoUpdateAttributesBeforeDate);
+    }
+
+    public void setAutoUpdateAttributesBeforeDate(String autoUpdateAttributesBeforeDate) throws ParseException {
+        this.autoUpdateAttributesBeforeDate = new SimpleDateFormat(DATE_TIME_FORMAT).parse(autoUpdateAttributesBeforeDate);
+    }
+
     public final ObjectName getPerfMonServiceName() {
 		return dicomFindScp.getPerfMonServiceName();
 	}
@@ -1023,7 +1050,15 @@ public class QueryRetrieveScpService extends AbstractScpService {
 		moveScp.setPerfMonServiceName(perfMonServiceName);
 	}
 	
-	public MoveScp getMoveScp() {
+	public ObjectName getUpdateAttributesServiceName() {
+        return updateAttributesServiceName;
+    }
+
+    public void setUpdateAttributesServiceName(ObjectName updateAttributesServiceName) {
+        this.updateAttributesServiceName = updateAttributesServiceName;
+    }
+
+    public MoveScp getMoveScp() {
 		return moveScp;
 	}
 
@@ -1796,6 +1831,40 @@ public class QueryRetrieveScpService extends AbstractScpService {
                             + " from file system " + fsID, e);
                 }
              }
+        }
+    }
+
+    void updateAttributes(Collection<List<FileInfo>> localFiles) {
+        HashSet<String> seriesIuids = new HashSet<String>();
+        try {
+            log.debug("Executing auto update attributes");
+            for (List<FileInfo> list : localFiles) {
+                final FileInfo fileInfo = list.get(0);
+                String fsID = fileInfo.basedir;
+                if (!fsID.startsWith(autoUpdateAttributesFromFS))
+                    continue;
+                
+                if (seriesIuids.contains(fileInfo.seriesIUID))
+                    continue;
+                
+                if (fileInfo.seriesUpdatedTime.before(autoUpdateAttributesBeforeDate)) {
+                    log.debug("Updating attributes of series " + fileInfo.seriesIUID);
+                    new Thread( new Runnable() {
+                        public void run() {
+                            try {
+                                server.invoke(updateAttributesServiceName, "updateSeries", 
+                                        new Object[]{fileInfo.seriesIUID}, 
+                                        new String[]{String.class.getName()});
+                            } catch (Exception e) {
+                                log.error("Failed to update Attributes for series "+fileInfo.seriesIUID, e);
+                            }
+                        }
+                    }).start();
+                }
+                seriesIuids.add(fileInfo.seriesIUID);
+            }
+        } catch (Exception e) {
+            log.debug("Failed to auto update attributes for series " + seriesIuids, e);
         }
     }
 

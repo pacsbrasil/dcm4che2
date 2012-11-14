@@ -40,6 +40,7 @@
 package org.dcm4chex.archive.ejb.jdbc;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger </a>
@@ -66,6 +67,8 @@ public class FileInfo implements Serializable, Comparable<FileInfo> {
     public String studyIUID = null;
 
     public String seriesIUID = null;
+    
+    public Date seriesUpdatedTime = null;
 
     public String sopIUID = null;
 

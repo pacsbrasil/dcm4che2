@@ -245,6 +245,7 @@ public class RetrieveCmd extends BaseReadCmd {
                     Types.VARCHAR,      // File.fileMd5Field
                     Types.INTEGER,      // File.fileSize
                     Types.INTEGER,      // File.fileStatus
+                    Types.TIMESTAMP     // Series.updatedTime
                     });
         this.sqlCmd = sql;
     }
@@ -356,6 +357,7 @@ public class RetrieveCmd extends BaseReadCmd {
         info.patID = seriesFileInfo.patID;
         info.patName = seriesFileInfo.patName;
         info.studyIUID = seriesFileInfo.studyIUID;
+        info.seriesUpdatedTime = seriesFileInfo.seriesUpdatedTime;
         addFileInfo(result, instPk, info.sopIUID, info);
     }
 
@@ -406,6 +408,7 @@ public class RetrieveCmd extends BaseReadCmd {
                 info.patID = rs.getString(6);
                 info.patName = rs.getString(7);
                 info.studyIUID = rs.getString(8);
+                info.seriesUpdatedTime = rs.getTimestamp(23);
                 seriesAttrsCache.put(info.seriesIUID,
                         new SeriesAttrsCacheEntry(info));
             } else {
@@ -419,6 +422,7 @@ public class RetrieveCmd extends BaseReadCmd {
                 info.patID = seriesFileInfo.patID;
                 info.patName = seriesFileInfo.patName;
                 info.studyIUID = seriesFileInfo.studyIUID;
+                info.seriesUpdatedTime = seriesFileInfo.seriesUpdatedTime;
             }
         } else {
             info.patAttrs = rs.getBytes(3);
@@ -427,6 +431,7 @@ public class RetrieveCmd extends BaseReadCmd {
             info.patID = rs.getString(6);
             info.patName = rs.getString(7);
             info.studyIUID = rs.getString(8);
+            info.seriesUpdatedTime = rs.getTimestamp(23);
         }
         long instPk = rs.getLong(9);
         info.sopIUID = rs.getString(10);
@@ -552,7 +557,8 @@ public class RetrieveCmd extends BaseReadCmd {
                         "File.fileTsuid",               // (19)
                         "File.fileMd5Field",            // (20)
                         "File.fileSize",                // (21)
-                        "File.fileStatus"               // (22)
+                        "File.fileStatus",              // (22)
+                        "Series.updatedTime"            // (23)
                         };
         }
 

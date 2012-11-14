@@ -1161,12 +1161,36 @@ DICOM JPEG-LS images by specified value. Only effective for WADO retrieval.
    <attribute access="read-write" 
       getMethod="getIgnoreFileSizeCheckFS"
       setMethod="setIgnoreFileSizeCheckFS">
-      <description>Configurable file system prefix to ignore check of file size.
+      <description>Configurable file system prefix to ignore check of file size or NONE.
       </description>
       <name>IgnoreFileSizeCheckFS</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="NONE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write" 
+      getMethod="getAutoUpdateAttributesFromFS"
+      setMethod="setAutoUpdateAttributesFromFS">
+      <description>Configurable file system prefix to auto update DICOM Attributes in database or NONE to disable auto update.
+      </description>
+      <name>AutoUpdateAttributesFromFS</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write" 
+      getMethod="getAutoUpdateAttributesBeforeDate"
+      setMethod="setAutoUpdateAttributesBeforeDate">
+      <description>Configurable auto update of series db attributes before specified date.
+        Format: YYYY-MM-DD hh:mm:ss, with YYYY = Year, MM = Month, DD = Day,
+        hh = Hour, mm = Minute, ss = Second.
+      </description>
+      <name>AutoUpdateAttributesBeforeDate</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="2004-01-01 00:00:00"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -1250,6 +1274,17 @@ DICOM JPEG-LS images by specified value. Only effective for WADO retrieval.
       </description>
       <name>PixQueryServiceName</name>
       <type>javax.management.ObjectName</type>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getUpdateAttributesServiceName"
+      setMethod="setUpdateAttributesServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>UpdateAttributesServiceName</name>
+      <type>javax.management.ObjectName</type>
+      <descriptors>
+        <value value="dcm4chee.archive:service=UpdateAttributesService" />
+      </descriptors>
    </attribute>
 
    <!-- Operations -->

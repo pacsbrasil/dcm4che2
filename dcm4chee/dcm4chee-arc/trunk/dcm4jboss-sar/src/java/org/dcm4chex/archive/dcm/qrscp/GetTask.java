@@ -233,6 +233,7 @@ class GetTask implements Runnable {
                 }
                 if (!localUIDs.isEmpty()) {
                     service.prefetchTars(retrieveInfo.getLocalFiles());
+                    service.updateAttributes(retrieveInfo.getLocalFiles());
                     removeInstancesOfUnsupportedStorageSOPClasses();
                     retrieveInstances();
                 }
