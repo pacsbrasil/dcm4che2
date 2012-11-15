@@ -212,7 +212,7 @@ public class DicomEditBeanTest extends BaseSessionBeanFixture<DicomEditBean>
         InitialContext jndiCtx = new InitialContext();
         DicomEditLocal dicomEdit = (DicomEditLocal) jndiCtx.lookup(DicomEditLocal.JNDI_NAME);
         em.getTransaction().begin();
-        dicomEdit.movePatientsToTrash(new long[]{p.getPk()});
+        dicomEdit.movePatientsToTrash(new long[]{p.getPk()}, true);
         em.getTransaction().commit();
         List<PrivatePatient> privP = em.createQuery("SELECT OBJECT(p) FROM PrivatePatient p").getResultList();
         assertEquals(privP.size(), 1);

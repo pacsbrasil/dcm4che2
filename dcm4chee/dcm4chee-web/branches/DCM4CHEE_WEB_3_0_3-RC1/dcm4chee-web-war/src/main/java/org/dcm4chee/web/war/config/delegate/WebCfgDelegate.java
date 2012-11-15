@@ -75,6 +75,10 @@ public class WebCfgDelegate extends BaseCfgDelegate {
         return singleton;
     }
 
+    public boolean getTrustPatientIdWithoutIssuer() {
+        return getBoolean("trustPatientIdWithoutIssuer", true);
+    }
+
     public String getDicomSecurityServletUrl() {
         return getString("dicomSecurityServletUrl");
     }

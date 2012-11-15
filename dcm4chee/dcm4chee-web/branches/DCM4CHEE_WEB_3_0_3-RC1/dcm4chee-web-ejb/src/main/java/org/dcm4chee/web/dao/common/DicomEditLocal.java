@@ -50,6 +50,7 @@ import org.dcm4chee.web.dao.vo.EntityTree;
 
 /**
  * @author Franz Willer <fwiller@gmail.com>
+ * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
  * @since Feb 01, 2010
  */
@@ -58,15 +59,15 @@ public interface DicomEditLocal {
 
     String JNDI_NAME = "dcm4chee-web-ear/DicomEditBean/local";
 
-    EntityTree moveInstancesToTrash(long[] pk);
-    EntityTree moveInstanceToTrash(String iuid);
-    EntityTree moveSeriesToTrash(long[] pk);
-    EntityTree moveSeriesToTrash(String iuid);
-    EntityTree moveSeriesOfPpsToTrash(long[] pks);
-    EntityTree moveStudiesToTrash(long[] pk);
-    EntityTree moveStudyToTrash(String iuid);
-    EntityTree movePatientsToTrash(long[] pk);
-    EntityTree movePatientToTrash(String patId, String issuer);
+    EntityTree moveInstancesToTrash(long[] pk, boolean trustPatientIdWithoutIssuer);
+    EntityTree moveInstanceToTrash(String iuid, boolean trustPatientIdWithoutIssuer);
+    EntityTree moveSeriesToTrash(long[] pk, boolean trustPatientIdWithoutIssuer);
+    EntityTree moveSeriesToTrash(String iuid, boolean trustPatientIdWithoutIssuer);
+    EntityTree moveSeriesOfPpsToTrash(long[] pks, boolean trustPatientIdWithoutIssuer);
+    EntityTree moveStudiesToTrash(long[] pk, boolean trustPatientIdWithoutIssuer);
+    EntityTree moveStudyToTrash(String iuid, boolean trustPatientIdWithoutIssuer);
+    EntityTree movePatientsToTrash(long[] pk, boolean trustPatientIdWithoutIssuer);
+    EntityTree movePatientToTrash(String patId, String issuer, boolean trustPatientIdWithoutIssuer);
     
     List<MPPS> deletePps(long[] pks);
     

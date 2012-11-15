@@ -85,6 +85,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author Franz Willer <fwiller@gmail.com>
+ * @author Robert David <robert.david@agfa.com>
  * @version $Revision$ $Date$
  * @since Feb 01, 2010
  */
@@ -103,31 +104,32 @@ public class DicomEditBean implements DicomEditLocal {
     private EntityManager em;
 
     private UpdateDerivedFieldsUtil getUpdateDerivedFieldsUtil() {
-        if ( updateUtil == null) {
+        if (updateUtil == null) {
             updateUtil = new UpdateDerivedFieldsUtil(em);
         }
         return updateUtil;
     }
+    
     @SuppressWarnings("unchecked")
-    public EntityTree moveInstancesToTrash(long[] pks) {
+    public EntityTree moveInstancesToTrash(long[] pks, boolean trustPatientIdWithoutIssuer) {
         Query q = QueryUtil.getQueryForPks(em, "SELECT OBJECT(i) FROM Instance i WHERE i.pk ", pks);
-        return moveInstancesToTrash(q.getResultList(), true);
+        return moveInstancesToTrash(q.getResultList(), true, trustPatientIdWithoutIssuer);
     }
 
     @SuppressWarnings("unchecked")
-    public EntityTree moveInstanceToTrash(String iuid) {
+    public EntityTree moveInstanceToTrash(String iuid, boolean trustPatientIdWithoutIssuer) {
         Query q = em.createNamedQuery("Instance.findByIUID");
         q.setParameter("iuid", iuid.trim());
-        return moveInstancesToTrash(q.getResultList(), true);
+        return moveInstancesToTrash(q.getResultList(), true, trustPatientIdWithoutIssuer);
     }
-    public EntityTree moveInstancesToTrash(Collection<Instance> instances, boolean deleteInstance) {
-        return moveInstancesToTrash(instances, deleteInstance, null);
+    public EntityTree moveInstancesToTrash(Collection<Instance> instances, boolean deleteInstance, boolean trustPatientIdWithoutIssuer) {
+        return moveInstancesToTrash(instances, deleteInstance, null, trustPatientIdWithoutIssuer);
     }    
-    public EntityTree moveInstancesToTrash(Collection<Instance> instances, boolean deleteInstance, EntityTree entityTree) {
+    public EntityTree moveInstancesToTrash(Collection<Instance> instances, boolean deleteInstance, EntityTree entityTree, boolean trustPatientIdWithoutIssuer) {
         log.debug("Move {} instances to trash!",instances.size());
         Set<Study> studies = new HashSet<Study>();
         for ( Instance instance : instances) {
-            moveInstanceToTrash(instance);
+            moveInstanceToTrash(instance, trustPatientIdWithoutIssuer);
             if (deleteInstance) {
                 studies.add(instance.getSeries().getStudy());
                 log.debug("Delete Instance:{}",instance.getAttributes(false));
@@ -145,21 +147,21 @@ public class DicomEditBean implements DicomEditLocal {
     }
 
     @SuppressWarnings("unchecked")
-    public EntityTree moveSeriesToTrash(long[] pks) {
+    public EntityTree moveSeriesToTrash(long[] pks, boolean trustPatientIdWithoutIssuer) {
         Query q;
         q = QueryUtil.getQueryForPks(em, "SELECT OBJECT(s) FROM Series s WHERE pk ", pks);
-        return moveSeriesToTrash(q.getResultList(), true, null);
+        return moveSeriesToTrash(q.getResultList(), true, null, trustPatientIdWithoutIssuer);
     }
 
     @SuppressWarnings("unchecked")
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public EntityTree moveSeriesToTrash(String iuid) {
+    public EntityTree moveSeriesToTrash(String iuid, boolean trustPatientIdWithoutIssuer) {
         Query q = em.createQuery("SELECT OBJECT(s) FROM Series s WHERE seriesInstanceUID = :iuid")
             .setParameter("iuid", iuid.trim());
-        return this.moveSeriesToTrash(q.getResultList(), true, null);
+        return this.moveSeriesToTrash(q.getResultList(), true, null, trustPatientIdWithoutIssuer);
     }
 
-    private EntityTree moveSeriesToTrash(Collection<Series> series, boolean deleteSeries, EntityTree entityTree) {
+    private EntityTree moveSeriesToTrash(Collection<Series> series, boolean deleteSeries, EntityTree entityTree, boolean trustPatientIdWithoutIssuer) {
         Set<Instance> instances;
         Study study;
         Set<Study> studies = new HashSet<Study>();
@@ -167,9 +169,9 @@ public class DicomEditBean implements DicomEditLocal {
             instances = s.getInstances();
             if (instances.isEmpty()) {
                 log.info("move empty series to trash:{}",s.getSeriesInstanceUID());
-                this.moveSeriesToTrash(s);
+                this.moveSeriesToTrash(s, trustPatientIdWithoutIssuer);
             } else {
-                entityTree = moveInstancesToTrash(instances, false, entityTree);
+                entityTree = moveInstancesToTrash(instances, false, entityTree, trustPatientIdWithoutIssuer);
             }
             MPPS mpps = s.getModalityPerformedProcedureStep();
             if (mpps!=null) mpps.getAccessionNumber();//initialize MPPS
@@ -189,12 +191,12 @@ public class DicomEditBean implements DicomEditLocal {
     }
 
     @SuppressWarnings("unchecked")
-    public EntityTree moveSeriesOfPpsToTrash(long[] pks)
+    public EntityTree moveSeriesOfPpsToTrash(long[] pks, boolean trustPatientIdWithoutIssuer)
     {
         Query q = QueryUtil.getQueryForPks(em, "SELECT OBJECT(p) FROM MPPS p WHERE pk ", pks);
         Query qs = QueryUtil.getQueryForPks(em, "SELECT OBJECT(s) FROM Series s WHERE s.modalityPerformedProcedureStep.pk ", pks);
         List<Series> seriess = qs.getResultList();
-        EntityTree tree = moveSeriesToTrash(seriess, true, null);
+        EntityTree tree = moveSeriesToTrash(seriess, true, null, trustPatientIdWithoutIssuer);
         List<MPPS> mppss = q.getResultList();
         for(MPPS mpps : mppss) {
             em.remove(mpps);
@@ -203,28 +205,28 @@ public class DicomEditBean implements DicomEditLocal {
     }
     
     @SuppressWarnings("unchecked")
-    public EntityTree moveStudiesToTrash(long[] pks) {
+    public EntityTree moveStudiesToTrash(long[] pks, boolean trustPatientIdWithoutIssuer) {
         Query q = QueryUtil.getQueryForPks(em, "SELECT OBJECT(s) FROM Study s WHERE pk ", pks);
-        return moveStudiesToTrash(q.getResultList(), null);
+        return moveStudiesToTrash(q.getResultList(), null, trustPatientIdWithoutIssuer);
     }
     
     @SuppressWarnings("unchecked")
-    public EntityTree moveStudyToTrash(String iuid) {
+    public EntityTree moveStudyToTrash(String iuid, boolean trustPatientIdWithoutIssuer) {
         Query q = em.createQuery("SELECT OBJECT(s) FROM Study s WHERE studyInstanceUID = :iuid")
             .setParameter("iuid", iuid.trim());
-        return this.moveStudiesToTrash(q.getResultList(), null);
+        return this.moveStudiesToTrash(q.getResultList(), null, trustPatientIdWithoutIssuer);
     }
 
     @SuppressWarnings("unchecked")
-    private EntityTree moveStudiesToTrash(Collection<Study> studies, EntityTree entityTree) {
+    private EntityTree moveStudiesToTrash(Collection<Study> studies, EntityTree entityTree, boolean trustPatientIdWithoutIssuer) {
         Set<Series> series;
         for (Study st : studies) {
             series = st.getSeries();
             if (series.isEmpty()) {
                 log.info("move empty study to trash:{}",st.getStudyInstanceUID());
-                this.moveStudyToTrash(st);
+                this.moveStudyToTrash(st, trustPatientIdWithoutIssuer);
             } else {
-                entityTree = moveSeriesToTrash(series, false, entityTree);
+                entityTree = moveSeriesToTrash(series, false, entityTree, trustPatientIdWithoutIssuer);
             }
             log.debug("Delete Study:{}",st.getAttributes(false));
             Query q = em.createQuery("SELECT OBJECT(sof) FROM StudyOnFileSystem sof WHERE study_fk = :pk");
@@ -239,17 +241,17 @@ public class DicomEditBean implements DicomEditLocal {
     }
     
     @SuppressWarnings("unchecked")
-    public EntityTree movePatientsToTrash(long[] pks) {
+    public EntityTree movePatientsToTrash(long[] pks, boolean trustPatientIdWithoutIssuer) {
         Query q = QueryUtil.getQueryForPks(em, "SELECT OBJECT(p) FROM Patient p WHERE pk ", pks);
-        return movePatientsToTrash(q.getResultList(), null);
+        return movePatientsToTrash(q.getResultList(), null, trustPatientIdWithoutIssuer);
     }
 
     @SuppressWarnings("unchecked")
-    public EntityTree movePatientToTrash(String patId, String issuer) {
-        return this.movePatientsToTrash(QueryUtil.getPatientQuery(em, patId, issuer).getResultList(), null);
+    public EntityTree movePatientToTrash(String patId, String issuer, boolean trustPatientIdWithoutIssuer) {
+        return this.movePatientsToTrash(QueryUtil.getPatientQuery(em, patId, issuer).getResultList(), null, trustPatientIdWithoutIssuer);
     }
     
-    private EntityTree movePatientsToTrash(Collection<Patient> patients, EntityTree entityTree) {
+    private EntityTree movePatientsToTrash(Collection<Patient> patients, EntityTree entityTree, boolean trustPatientIdWithoutIssuer) {
         if (entityTree == null) {
             entityTree = new EntityTree();
         }
@@ -261,7 +263,7 @@ public class DicomEditBean implements DicomEditLocal {
                 this.movePatientToTrash(p);
                 entityTree.addPatient(p);
             } else {
-                entityTree = moveStudiesToTrash(studies, entityTree);
+                entityTree = moveStudiesToTrash(studies, entityTree, trustPatientIdWithoutIssuer);
                 studies.clear();
             }
             deletePatient(p);
@@ -269,13 +271,13 @@ public class DicomEditBean implements DicomEditLocal {
         return entityTree;
     }
 
-    private void moveInstanceToTrash(Instance instance) {
+    private void moveInstanceToTrash(Instance instance, boolean trustPatientIdWithoutIssuer) {
         DicomObject attrs = instance.getAttributes(false);
         PrivateInstance pInst = new PrivateInstance();
         pInst.setAttributes(attrs);
         pInst.setPrivateType(DELETED);
         Series series = instance.getSeries();
-        PrivateSeries ps = moveSeriesToTrash(series);
+        PrivateSeries ps = moveSeriesToTrash(series, trustPatientIdWithoutIssuer);
         pInst.setSeries(ps);
         for ( File f : instance.getFiles() ) {
             PrivateFile pf = new PrivateFile();
@@ -292,7 +294,7 @@ public class DicomEditBean implements DicomEditLocal {
         em.persist(pInst);
     }
 
-    private PrivateSeries moveSeriesToTrash(Series series) {
+    private PrivateSeries moveSeriesToTrash(Series series, boolean trustPatientIdWithoutIssuer) {
         PrivateSeries pSeries;
         try {
             Query q = em.createNamedQuery("PrivateSeries.findByIUID");
@@ -303,11 +305,19 @@ public class DicomEditBean implements DicomEditLocal {
             	throw new EJBException("Series already exists in trash with different patient ID: SeriesInstanceUID: " 
             		+ series.getSeriesInstanceUID());
             else
-            	if (series.getStudy().getPatient().getIssuerOfPatientID() == null
-            	|| !series.getStudy().getPatient().getIssuerOfPatientID()
-                		.equals(pSeries.getStudy().getPatient().getIssuerOfPatientID()))
-                	throw new EJBException("Series already exists in trash with different issuer of patient ID: SeriesInstanceUID: " 
-                		+ series.getSeriesInstanceUID());            	
+            	if (trustPatientIdWithoutIssuer) {
+	               	if (series.getStudy().getPatient().getIssuerOfPatientID() != null
+	               			&& !series.getStudy().getPatient().getIssuerOfPatientID()
+	                   		.equals(pSeries.getStudy().getPatient().getIssuerOfPatientID()))
+	               		throw new EJBException("Series already exists in trash with different issuer of patient ID: SeriesInstanceUID: "
+	               				+ series.getSeriesInstanceUID());
+            	} else {
+            		if (series.getStudy().getPatient().getIssuerOfPatientID() == null
+    	            	|| !series.getStudy().getPatient().getIssuerOfPatientID()
+    	                		.equals(pSeries.getStudy().getPatient().getIssuerOfPatientID()))
+            			throw new EJBException("Series already exists in trash with different issuer of patient ID: SeriesInstanceUID: "
+            					+ series.getSeriesInstanceUID());
+            	}
         } catch (NoResultException nre) {
             pSeries = new PrivateSeries();//we need parents initialized.
         }
@@ -317,13 +327,13 @@ public class DicomEditBean implements DicomEditLocal {
         pSeries.setAttributes(attrs);
         pSeries.setPrivateType(DELETED);
         Study study = series.getStudy();
-        PrivateStudy pStudy = moveStudyToTrash(study);
+        PrivateStudy pStudy = moveStudyToTrash(study, trustPatientIdWithoutIssuer);
         pSeries.setStudy(pStudy);
         em.persist(pSeries);
         return pSeries;
     }
 
-    private PrivateStudy moveStudyToTrash(Study study) {
+    private PrivateStudy moveStudyToTrash(Study study, boolean trustPatientIdWithoutIssuer) {
         PrivateStudy pStudy;
         try {
             Query q = em.createNamedQuery("PrivateStudy.findByIUID");
@@ -334,11 +344,19 @@ public class DicomEditBean implements DicomEditLocal {
             	throw new EJBException("Study already exists in trash with different patient ID, StudyInstanceUID: " 
             		+ study.getStudyInstanceUID());
             else
-            	if (study.getPatient().getIssuerOfPatientID() == null
-            	|| !study.getPatient().getIssuerOfPatientID()
-                		.equals(pStudy.getPatient().getIssuerOfPatientID()))
-                	throw new EJBException("Study already exists in trash with different issuer of patient ID: StudyInstanceUID: " 
-                		+ study.getStudyInstanceUID());
+	        	if (trustPatientIdWithoutIssuer) {
+	               	if (study.getPatient().getIssuerOfPatientID() != null
+	               			&& !study.getPatient().getIssuerOfPatientID()
+	                   		.equals(pStudy.getPatient().getIssuerOfPatientID()))
+	               		throw new EJBException("Study already exists in trash with different issuer of patient ID: StudyInstanceUID: "
+	               				+ study.getStudyInstanceUID());
+	        	} else {
+	        		if (study.getPatient().getIssuerOfPatientID() == null
+		            	|| !study.getPatient().getIssuerOfPatientID()
+		                		.equals(pStudy.getPatient().getIssuerOfPatientID()))
+	        			throw new EJBException("Study already exists in trash with different issuer of patient ID: StudyInstanceUID: "
+	        					+ study.getStudyInstanceUID());
+	        	}
         } catch (NoResultException nre) {
             pStudy = new PrivateStudy();
         }

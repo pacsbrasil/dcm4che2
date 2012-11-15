@@ -61,6 +61,7 @@ import org.dcm4chee.web.common.exceptions.SelectionException;
 import org.dcm4chee.web.dao.vo.MppsToMwlLinkResult;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 import org.dcm4chee.web.war.common.model.AbstractEditableDicomModel;
+import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
 import org.dcm4chee.web.war.folder.MoveEntitiesPage;
 import org.dcm4chee.web.war.folder.SelectedEntities;
 import org.dcm4chee.web.war.folder.model.PPSModel;
@@ -140,8 +141,8 @@ public class ContentEditDelegate extends BaseMBeanDelegate {
     public void moveToTrash(String op, long[] pks)
             throws InstanceNotFoundException, MBeanException,
             ReflectionException, IOException {
-        server.invoke(serviceObjectName, op, new Object[]{pks}, 
-                new String[]{long[].class.getName()});
+        server.invoke(serviceObjectName, op, new Object[]{pks, WebCfgDelegate.getInstance().getTrustPatientIdWithoutIssuer()}, 
+                new String[]{long[].class.getName(), boolean.class.getName()});
     }
 
     public int moveEntities(SelectedEntities selected) throws SelectionException {
@@ -239,7 +240,7 @@ public class ContentEditDelegate extends BaseMBeanDelegate {
     private int  moveEntities(String op, long pk, long[] pks)
             throws InstanceNotFoundException, MBeanException,
             ReflectionException, IOException {
-        return (Integer) server.invoke(serviceObjectName, op, new Object[]{pks, pk}, 
+        return (Integer) server.invoke(serviceObjectName, op, new Object[]{pks, pk, WebCfgDelegate.getInstance().getTrustPatientIdWithoutIssuer()}, 
         new String[]{long[].class.getName(), long.class.getName()});
     }
     
