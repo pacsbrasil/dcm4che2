@@ -280,6 +280,10 @@
         <name>pks</name>
         <type>[J</type>
       </parameter>
+      <parameter>
+        <name>trustPatientIdWithoutIssuer</name>
+        <type>boolean</type>
+      </parameter>
       <return-type>[Lorg.dcm4che2.data.DicomObject;</return-type>
    </operation>
    <operation impact="ACTION">
@@ -302,6 +306,10 @@
         <name>pks</name>
         <type>[J</type>
       </parameter>
+      <parameter>
+        <name>trustPatientIdWithoutIssuer</name>
+        <type>boolean</type>
+      </parameter>
       <return-type>[Lorg.dcm4che2.data.DicomObject;</return-type>
    </operation>
    <operation impact="ACTION">
@@ -312,6 +320,10 @@
         <description>Array of pk's</description>
         <name>pks</name>
         <type>[J</type>
+      </parameter>
+      <parameter>
+        <name>trustPatientIdWithoutIssuer</name>
+        <type>boolean</type>
       </parameter>
       <return-type>[Lorg.dcm4che2.data.DicomObject;</return-type>
    </operation>
@@ -345,6 +357,10 @@
         <description>Array of pk's</description>
         <name>pks</name>
         <type>[J</type>
+      </parameter>
+      <parameter>
+        <name>trustPatientIdWithoutIssuer</name>
+        <type>boolean</type>
       </parameter>
       <return-type>[Lorg.dcm4che2.data.DicomObject;</return-type>
    </operation>
@@ -383,6 +399,10 @@
         <description>Array of pk's</description>
         <name>pks</name>
         <type>[J</type>
+      </parameter>
+      <parameter>
+        <name>trustPatientIdWithoutIssuer</name>
+        <type>boolean</type>
       </parameter>
       <return-type>[Lorg.dcm4che2.data.DicomObject;</return-type>
    </operation>

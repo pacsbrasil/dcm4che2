@@ -204,6 +204,8 @@ public class WebCfgService extends ServiceMBeanSupport implements
     
     private String presetStudyDateOffset;
 
+	private boolean trustPatientIdWithoutIssuer;
+
     public WebCfgService() throws MalformedObjectNameException {
         timerServiceName = new ObjectName(DEFAULT_TIMER_SERVICE);
     }
@@ -1304,6 +1306,14 @@ public class WebCfgService extends ServiceMBeanSupport implements
                 initDefaultRolesFile();
             }
         }
+    }
+
+    public void setTrustPatientIdWithoutIssuer(boolean trustPatientIdWithoutIssuer) {
+        this.trustPatientIdWithoutIssuer = trustPatientIdWithoutIssuer;
+    }
+
+    public boolean isTrustPatientIdWithoutIssuer() {
+        return trustPatientIdWithoutIssuer;
     }
 
     protected void initDefaultRolesFile() {

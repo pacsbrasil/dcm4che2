@@ -1061,6 +1061,18 @@
          <value value="8192"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="isTrustPatientIdWithoutIssuer"
+      setMethod="setTrustPatientIdWithoutIssuer">
+      <description><![CDATA[Configure if match of issuer on a move to trash respects the null issuer.<br />
+      If false, the match evaluates to false and triggers an error, if at least one of the issuers is null.
+      ]]></description>
+      <name>trustPatientIdWithoutIssuer</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
+      </descriptors>
+   </attribute>
 
    <!-- Operations -->
    <operation impact="ACTION">
