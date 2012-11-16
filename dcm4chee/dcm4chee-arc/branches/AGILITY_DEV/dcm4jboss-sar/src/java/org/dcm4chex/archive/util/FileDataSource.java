@@ -301,7 +301,8 @@ public class FileDataSource implements DataSource {
         return mergeAttrs;
     }
 
-    public void writeTo(OutputStream out, String tsUID) throws IOException {
+    @Override
+	public void writeTo(OutputStream out, String tsUID) throws IOException {
         log.info("M-READ file:" + file);
         boolean withoutPixeldata1 = withoutPixeldata 
                 || UIDs.NoPixelData.equals(tsUID)
@@ -455,7 +456,7 @@ public class FileDataSource implements DataSource {
                     };
                     ds.writeHeader(out, enc, Tags.SeqDelimitationItem,
                             VRs.NONE, 0);
-                    dis.skipBytes(itemlen);
+                    dis.skipBytes(parser.getReadLength());
                 } else {
                     // WARN frames spanning multiple data fragments not supported
                     // assume one item per frame
