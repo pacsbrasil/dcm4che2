@@ -38,6 +38,9 @@
 
 package org.dcm4chee.web.webview.weasis;
 
+import java.net.URL;
+import java.util.Properties;
+
 import org.dcm4chee.web.common.webview.link.spi.WebviewerLinkProviderSPI;
 
 /**
@@ -49,6 +52,8 @@ public class WeasisLinkProvider extends WebviewerLinkProviderSPI {
     private static final long serialVersionUID = 4548297230882756086L;
 
     private static String baseUrl = "/weasis-pacs-connector/viewer.jnlp?";
+
+    private String encryptKey;
 
     @Override
     public String getName() {
@@ -62,6 +67,16 @@ public class WeasisLinkProvider extends WebviewerLinkProviderSPI {
             if (WeasisLinkProvider.baseUrl.indexOf("?") == -1) {
                 WeasisLinkProvider.baseUrl += "?";
             }
+        }
+        try {
+            URL config = this.getClass().getResource("/weasis-pacs-connector.properties");
+            if (config != null) {
+                Properties pacsProperties = new Properties();
+                pacsProperties.load(config.openStream());
+                encryptKey = pacsProperties.getProperty("encrypt.key", null);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -103,11 +118,17 @@ public class WeasisLinkProvider extends WebviewerLinkProviderSPI {
     @Override
     public String getUrlForPatient(String patientId, String issuer) {
         StringBuilder buffer = new StringBuilder(baseUrl);
-        buffer.append("patientID=");
-        buffer.append(patientId);
-        if (issuer != null) {
-            buffer.append("%5E%5E%5E");
-            buffer.append(issuer);
+        if (encryptKey == null) {
+            buffer.append("patientID=");
+            buffer.append(patientId);
+            if (issuer != null) {
+                buffer.append("%5E%5E%5E");
+                buffer.append(issuer);
+            }
+        } else {
+            buffer.append("patientID=");
+            String message = issuer == null ? patientId : patientId + "%5E%5E%5E" + issuer;
+            buffer.append(EncryptUtils.encrypt(message, encryptKey));
         }
         return buffer.toString();
     }
@@ -116,7 +137,7 @@ public class WeasisLinkProvider extends WebviewerLinkProviderSPI {
     public String getUrlForStudy(String studyIuid) {
         StringBuilder buffer = new StringBuilder(baseUrl);
         buffer.append("studyUID=");
-        buffer.append(studyIuid);
+        buffer.append(encryptKey == null ? studyIuid : EncryptUtils.encrypt(studyIuid, encryptKey));
         return buffer.toString();
     }
 
@@ -124,7 +145,7 @@ public class WeasisLinkProvider extends WebviewerLinkProviderSPI {
     public String getUrlForSeries(String seriesIuid) {
         StringBuilder buffer = new StringBuilder(baseUrl);
         buffer.append("seriesUID=");
-        buffer.append(seriesIuid);
+        buffer.append(encryptKey == null ? seriesIuid : EncryptUtils.encrypt(seriesIuid, encryptKey));
         return buffer.toString();
     }
 
@@ -132,7 +153,7 @@ public class WeasisLinkProvider extends WebviewerLinkProviderSPI {
     public String getUrlForInstance(String sopIuid) {
         StringBuilder buffer = new StringBuilder(baseUrl);
         buffer.append("objectUID=");
-        buffer.append(sopIuid);
+        buffer.append(encryptKey == null ? sopIuid : EncryptUtils.encrypt(sopIuid, encryptKey));
         return buffer.toString();
     }
 
