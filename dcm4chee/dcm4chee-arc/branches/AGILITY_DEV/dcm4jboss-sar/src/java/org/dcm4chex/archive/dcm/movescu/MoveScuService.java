@@ -214,8 +214,13 @@ public class MoveScuService extends AbstractScuService implements
             aet = calledAET;
         }
         
-        ActiveAssociation aa = openAssociation(aet,
-                UIDs.PatientRootQueryRetrieveInformationModelMOVE);
+        ActiveAssociation aa;
+        String patId = order.getPatientId(); 
+        if (patId != null && patId.trim() != ""){
+        	aa = openAssociation(aet, UIDs.PatientRootQueryRetrieveInformationModelMOVE);        	
+        } else{
+        	aa = openAssociation(aet, UIDs.StudyRootQueryRetrieveInformationModelMOVE);
+        }        
         
         try {
             invokeDimse(aa, order);
@@ -238,9 +243,17 @@ public class MoveScuService extends AbstractScuService implements
         AssociationFactory af = AssociationFactory.getInstance();
         DcmObjectFactory dof = DcmObjectFactory.getInstance();
         Command cmd = dof.newCommand();
-        cmd.initCMoveRQ(aa.getAssociation().nextMsgID(),
-                UIDs.PatientRootQueryRetrieveInformationModelMOVE, order
-                        .getPriority(), order.getMoveDestination());
+        
+        String patId = order.getPatientId(); 
+        String asuid;
+        if (patId != null && patId.trim() != ""){
+        	asuid = UIDs.PatientRootQueryRetrieveInformationModelMOVE;        	
+        } else{
+        	asuid = UIDs.StudyRootQueryRetrieveInformationModelMOVE;
+        }
+        
+        cmd.initCMoveRQ(aa.getAssociation().nextMsgID(), asuid, 
+        		order.getPriority(), order.getMoveDestination());
         Dataset ds = dof.newDataset();
         ds.putCS(Tags.QueryRetrieveLevel, order.getQueryRetrieveLevel());
         putLO(ds, Tags.PatientID, order.getPatientId());

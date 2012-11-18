@@ -194,7 +194,11 @@ public class MoveOrder extends BaseJmsOrder implements Serializable {
     public void processOrderProperties(Object... properties) {
         this.setOrderProperty(JmsOrderProperties.RETRIEVE_AE_TITLE, this.retrieveAET);
         this.setOrderProperty(JmsOrderProperties.DESTINATION_AE_TITLE, this.moveDestination);
+        // Force a study root query if no patient id is given. This prevents problems with 
+        // systems that do not allow pat root query without pat id 
+        if (this.patientId != null){
         this.setOrderProperty(JmsOrderProperties.PATIENT_ID, this.patientId);
+        }
         this.setOrderMultiProperty(JmsOrderProperties.STUDY_INSTANCE_UID, this.studyIuids);
         this.setOrderMultiProperty(JmsOrderProperties.SERIES_INSTANCE_UID, this.seriesIuids);
     }
