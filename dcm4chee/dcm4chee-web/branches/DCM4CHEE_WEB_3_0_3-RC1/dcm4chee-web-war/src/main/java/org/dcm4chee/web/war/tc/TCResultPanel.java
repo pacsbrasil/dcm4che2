@@ -72,6 +72,7 @@ import org.apache.wicket.markup.html.navigation.paging.PagingNavigator;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.markup.repeater.Item;
+import org.apache.wicket.markup.repeater.ReuseIfModelsEqualStrategy;
 import org.apache.wicket.markup.repeater.data.DataView;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
@@ -359,10 +360,18 @@ public class TCResultPanel extends Panel {
                             }
                         }));
                 
-                if (selected!=null && selected.equals(tc))
-                {
-                    item.add(new AttributeModifier("selected", true, new Model<String>("selected")));
-                }
+                item.add(new AttributeModifier("selected", true,
+                        new AbstractReadOnlyModel<String>() {
+                            private static final long serialVersionUID = 1L;
+                            @Override
+                            public String getObject() {
+                                if (selected != null && selected.equals(tc)) {
+                                    return "selected";
+                                } else {
+                                    return null;
+                                }
+                            }
+                        }));
                 
                 item.add(new AttributeModifier("onmouseover", true,
                         new AbstractReadOnlyModel<String>() {
@@ -443,7 +452,8 @@ public class TCResultPanel extends Panel {
                 });
             }
         };
-
+        
+        dataView.setItemReuseStrategy(new ReuseIfModelsEqualStrategy());
         dataView.setItemsPerPage(WebCfgDelegate.getInstance()
                 .getDefaultFolderPagesize());
         dataView.setOutputMarkupId(true);

@@ -27,10 +27,10 @@ function selectTC(elementId, cssClassSelected, cssClassEvenUnselected, cssClassO
 			$(this).removeClass();
 			$(this).removeAttr('selected');
 			
-			if (elementId==$(this).attr('id'))
+			if (elementId==itemId)
 			{
 				$(this).addClass(cssClassSelected);
-				$(this).attr('selected','');
+				$(this).attr('selected','selected');
 			}
 			else if (index%2==0)
 			{
