@@ -232,6 +232,8 @@ public abstract class StorageBean implements SessionBean {
                         Availability.toInt(ds.getString(Tags.InstanceAvailability)));
                 instance.setExternalRetrieveAET(ds.getString(Tags.RetrieveAET));
             }
+            if (fileStatus == FileStatus.ARCHIVED)
+                instance.setArchived(true);
             instance.setInstanceStatus(RECEIVED);
             instance.getSeries().setSeriesStatus(RECEIVED);
             log.info("inserted records for instance[uid=" + iuid + "]");
