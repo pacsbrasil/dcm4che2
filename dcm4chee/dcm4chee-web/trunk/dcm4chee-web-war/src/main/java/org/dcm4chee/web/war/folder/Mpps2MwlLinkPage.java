@@ -80,7 +80,9 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.StringResourceModel;
+import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.VR;
 import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.archive.util.JNDIUtils;
@@ -134,6 +136,7 @@ public class Mpps2MwlLinkPage extends ModalWindow {
     private boolean linkDone = false;
     private int missingPPS = -1; 
     private boolean hasForeignPpsInfo;
+    private String studyAccNo;
     
     private static Logger log = LoggerFactory.getLogger(Mpps2MwlLinkPage.class);
     
@@ -218,6 +221,7 @@ public class Mpps2MwlLinkPage extends ModalWindow {
         if (studyModel.isCollapsed()) {
             studyCollapsed = true;
         }
+        studyAccNo = studyModel.getAccessionNumber();
         List<PPSModel> models = getUnlinkedPPS(studyModel);
         show(target, models, c);
     }
@@ -268,9 +272,16 @@ public class Mpps2MwlLinkPage extends ModalWindow {
         log.info("########### doLink called! missingPPS:"+missingPPS);
         if (missingPPS > 0) {
             log.info("############### Emulate MPPS of study:"+ppsModels.get(0).getStudy());
+            long studyPk = ppsModels.get(0).getStudy().getPk();
             if (hasForeignPpsInfo) {
                 log.info("############### Remove foreign PPS info of series in study:"+ppsModels.get(0).getStudy());
-                ContentEditDelegate.getInstance().removeForeignPpsInfo(ppsModels.get(0).getStudy().getPk());
+                ContentEditDelegate.getInstance().removeForeignPpsInfo(studyPk);
+            }
+            if (studyAccNo != null) {
+                log.info("############### Remove AccessionNumber in Study:"+ppsModels.get(0).getStudy());
+                DicomObject attrs = ppsModels.get(0).getStudy().getDataset();
+                attrs.putNull(Tag.AccessionNumber, VR.SH);
+                dao.updateStudy(studyPk, attrs);
             }
             int emulated = MppsEmulateDelegate.getInstance().emulateMpps(ppsModels.get(0).getStudy().getPk());
             if (emulated < 1) {
@@ -426,10 +437,12 @@ public class Mpps2MwlLinkPage extends ModalWindow {
             p.add(new DateTimeLabel("datetime"));
             p.add(new Label("studyDescription.label", new ResourceModel("link.studyDescriptionLabel")));
             p.add(new Label("studyDescription"));
-			p.add(new Label("webviewer.label", new ResourceModel("link.webviewerLabel"))
-				.setVisible(webviewerLinkProviders != null));
+            p.add(new Label("studyAccNr.label", new ResourceModel("link.studyAccNrLabel")));
+            p.add(new Label("studyAccNr"));
+            p.add(new Label("webviewer.label", new ResourceModel("link.webviewerLabel"))
+                .setVisible(webviewerLinkProviders != null));
             p.add(Webviewer.getLink(ppsModels.get(0).getStudy(), webviewerLinkProviders, StudyPermissionHelper.get(), new TooltipBehaviour("mpps2mwl.", "webviewer"), null)
-            		.setVisible(webviewerLinkProviders != null));
+                .setVisible(webviewerLinkProviders != null));
             add(p);
         }
 
@@ -567,6 +580,9 @@ public class Mpps2MwlLinkPage extends ModalWindow {
         }
         public String getStudyId() {
             return ppsModelForInfo.getStudy().getId();
+        }
+        public String getStudyAccNr() {
+            return ppsModelForInfo.getStudy().getAccessionNumber();
         }
     }
     private class ContentPanel extends Panel {
