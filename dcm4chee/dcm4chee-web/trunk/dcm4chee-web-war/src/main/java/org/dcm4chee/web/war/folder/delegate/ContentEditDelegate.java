@@ -240,7 +240,7 @@ public class ContentEditDelegate extends BaseMBeanDelegate {
     private int  moveEntities(String op, long pk, long[] pks)
             throws InstanceNotFoundException, MBeanException,
             ReflectionException, IOException {
-        return (Integer) server.invoke(serviceObjectName, op, new Object[]{pks, pk, WebCfgDelegate.getInstance().getTrustPatientIdWithoutIssuer()}, 
+        return (Integer) server.invoke(serviceObjectName, op, new Object[]{pks, pk}, 
         new String[]{long[].class.getName(), long.class.getName()});
     }
     

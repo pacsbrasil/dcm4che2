@@ -739,7 +739,15 @@ public class MoveEntitiesPage extends SecureSessionCheckPage {
                                 infoMsgId = "move.message.moveNothing";
                                 okBtn.setVisible(true);
                             } else {
-                                infoMsgId = "move.message.moveFailed";
+                                if (nrOfMovedInstances == -3) {
+                                    infoMsgId = "move.message.moveFailed.del_src_failed";
+                                } else if (nrOfMovedInstances == -2) {
+                                    infoMsgId = "move.message.del_src_failed";
+                                } else if (nrOfMovedInstances == -1) {
+                                    infoMsgId = "move.message.moveFailedPartial";
+                                } else {
+                                    infoMsgId = "move.message.moveFailed";
+                                }
                                 cancelBtn.setVisible(true);
                             }
                             moveBtn.setVisible(false);

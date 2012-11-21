@@ -251,6 +251,104 @@ public class DicomEditBean implements DicomEditLocal {
         return this.movePatientsToTrash(QueryUtil.getPatientQuery(em, patId, issuer).getResultList(), null, trustPatientIdWithoutIssuer);
     }
     
+    
+    @SuppressWarnings("unchecked")
+    public EntityTree getEntitiesOfInstance(String iuid) {
+        Query q = em.createQuery("SELECT OBJECT(i) FROM Instance i LEFT JOIN FETCH i.files WHERE sopInstanceUID = :iuid");
+        q.setParameter("iuid", iuid.trim());
+        return getEntitiesOfInstances(q.getResultList(), null);
+    }
+    @SuppressWarnings("unchecked")
+    public EntityTree getEntitiesOfInstances(long[] pks) {
+        Query q = QueryUtil.getQueryForPks(em, "SELECT OBJECT(i) FROM Instance i LEFT JOIN FETCH i.files WHERE i.pk ", pks);
+        return getEntitiesOfInstances(q.getResultList(), null);
+    }    
+    public EntityTree getEntitiesOfInstances(Collection<Instance> instances, EntityTree entityTree) {
+        for (Instance i : instances) {
+            for (File f : i.getFiles()) {
+                f.getFileSystem().getPk();
+            }
+        }
+        return entityTree == null ? new EntityTree(instances) : entityTree.addInstances(instances);
+    }
+    
+    @SuppressWarnings("unchecked")
+    public EntityTree getEntitiesOfSeries(long[] pks) {
+        Query q;
+        q = QueryUtil.getQueryForPks(em, "SELECT OBJECT(s) FROM Series s WHERE pk ", pks);
+        return getEntitiesOfSeries(q.getResultList(), null);
+    }
+
+    @SuppressWarnings("unchecked")
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    public EntityTree getEntitiesOfSeries(String iuid) {
+        Query q = em.createQuery("SELECT OBJECT(s) FROM Series s WHERE seriesInstanceUID = :iuid")
+            .setParameter("iuid", iuid.trim());
+        return this.getEntitiesOfSeries(q.getResultList(), null);
+    }
+
+    private EntityTree getEntitiesOfSeries(Collection<Series> series, EntityTree entityTree) {
+        Set<Instance> instances;
+        for (Series s : series) {
+            instances = s.getInstances();
+            if (!instances.isEmpty()) {
+                entityTree = getEntitiesOfInstances(instances, entityTree);
+            }
+            MPPS mpps = s.getModalityPerformedProcedureStep();
+            if (mpps!=null) mpps.getAccessionNumber();//initialize MPPS
+        }
+        return entityTree == null ? new EntityTree() : entityTree;
+    }
+
+    public void deleteSeries(Collection<Series> series) {
+        Study study;
+        Series s;
+        Set<Study> studies = new HashSet<Study>();
+        for (Series s1 : series) {
+            s = em.getReference(Series.class, s1.getPk());
+            MPPS mpps = s.getModalityPerformedProcedureStep();
+            removeSeriesFromMPPS(mpps, s.getSeriesInstanceUID());
+            studies.add(study = s.getStudy());
+            em.remove(s);
+            study.getSeries().remove(s);
+        }
+        for (Study st : studies) {
+            getUpdateDerivedFieldsUtil().updateDerivedFieldsOfStudy(st);
+        }
+    }
+    
+    public void deleteInstances(Collection<Instance> instances) {
+        log.debug("Delete {} instances!",instances.size());
+        Set<Study> studies = new HashSet<Study>();
+        Instance instance;
+        for ( Instance i : instances) {
+            instance = em.getReference(Instance.class, i.getPk());
+            studies.add(instance.getSeries().getStudy());
+            log.debug("Delete Instance:{}",instance.getAttributes(false));
+            em.remove(instance);
+        }
+        removeInstancesFromMpps(instances);
+        for (Study st : studies) {
+            getUpdateDerivedFieldsUtil().updateDerivedFieldsOfStudy(st);
+        }
+    }
+    
+    public void markFilePath(long filePk, String ext, boolean deleteMark) {
+        File f = em.getReference(File.class, filePk);
+        String p = f.getFilePath();
+        if (p.endsWith(ext)) {
+            if (deleteMark) {
+                f.setFilePath(p.substring(0, p.length()-ext.length()));
+                em.merge(f);
+            }
+        } else {
+            if (!deleteMark) {
+                f.setFilePath(p+ext);
+                em.merge(f);
+            }
+        }
+    }
+    
     private EntityTree movePatientsToTrash(Collection<Patient> patients, EntityTree entityTree, boolean trustPatientIdWithoutIssuer) {
         if (entityTree == null) {
             entityTree = new EntityTree();
