@@ -38,11 +38,13 @@
 
 package org.dcm4chee.web.dao.common;
 
+import java.util.Collection;
 import java.util.List;
 
 import javax.ejb.Local;
 
 import org.dcm4che2.data.DicomObject;
+import org.dcm4chee.archive.entity.Instance;
 import org.dcm4chee.archive.entity.MPPS;
 import org.dcm4chee.archive.entity.Series;
 import org.dcm4chee.archive.entity.Study;
@@ -90,4 +92,13 @@ public interface DicomEditLocal {
     int removeForeignPpsInfo(long studyPk);
     
     DicomObject getIanForForwardModifiedObject(DicomObject obj, String level);
+    
+    EntityTree getEntitiesOfInstance(String iuid);
+    EntityTree getEntitiesOfInstances(long[] pks);
+    EntityTree getEntitiesOfSeries(long[] pks);
+    EntityTree getEntitiesOfSeries(String iuid);
+    void deleteSeries(Collection<Series> series);
+    void deleteInstances(Collection<Instance> instances);
+    void markFilePath(long filePk, String ext, boolean deleteMark);
+
 }

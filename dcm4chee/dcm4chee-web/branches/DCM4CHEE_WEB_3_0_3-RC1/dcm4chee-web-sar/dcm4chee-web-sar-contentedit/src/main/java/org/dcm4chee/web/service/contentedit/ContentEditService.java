@@ -380,32 +380,28 @@ public class ContentEditService extends ServiceMBeanSupport {
         dao.removeTrashAll();
     }
 
-    public int moveInstancesToSeries(long[] instPks, long seriesPk, boolean trustPatientIdWithoutIssuer) throws InstanceNotFoundException, MBeanException, ReflectionException {
+    public int moveInstancesToSeries(long[] instPks, long seriesPk) throws InstanceNotFoundException, MBeanException, ReflectionException {
         DicomObject targetAttrs = lookupDicomEditLocal().getCompositeObjectforSeries(seriesPk);
-        EntityTree entityTree = lookupDicomEditLocal().moveInstancesToTrash(instPks, trustPatientIdWithoutIssuer);
-        processAfterMoveEntities(entityTree, targetAttrs, null);
-        return entityTree.getAllInstances().size();
+        EntityTree entityTree = lookupDicomEditLocal().getEntitiesOfInstances(instPks);
+        return processMoveEntities(entityTree, targetAttrs, null);
     }
 
-    public int moveInstanceToSeries(String sopIUID, String seriesIUID, boolean trustPatientIdWithoutIssuer) throws InstanceNotFoundException, MBeanException, ReflectionException {
+    public int moveInstanceToSeries(String sopIUID, String seriesIUID) throws InstanceNotFoundException, MBeanException, ReflectionException {
         DicomObject targetAttrs = lookupDicomEditLocal().getCompositeObjectforSeries(seriesIUID);
-        EntityTree entityTree = lookupDicomEditLocal().moveInstanceToTrash(sopIUID, trustPatientIdWithoutIssuer);
-        processAfterMoveEntities(entityTree, targetAttrs, null);
-        return entityTree.getAllInstances().size();
+        EntityTree entityTree = lookupDicomEditLocal().getEntitiesOfInstance(sopIUID);
+        return processMoveEntities(entityTree, targetAttrs, null);
     }
     
-    public int moveSeriesToStudy(long[] seriesPks, long studyPk, boolean trustPatientIdWithoutIssuer) throws InstanceNotFoundException, MBeanException, ReflectionException {
+    public int moveSeriesToStudy(long[] seriesPks, long studyPk) throws InstanceNotFoundException, MBeanException, ReflectionException {
         DicomObject targetAttrs = lookupDicomEditLocal().getCompositeObjectforStudy(studyPk);
-        EntityTree entityTree = lookupDicomEditLocal().moveSeriesToTrash(seriesPks, trustPatientIdWithoutIssuer);
-        processAfterMoveEntities(entityTree, targetAttrs, EXCLUDE_PPS_ATTRS);
-        return entityTree.getAllInstances().size();
+        EntityTree entityTree = lookupDicomEditLocal().getEntitiesOfSeries(seriesPks);
+        return processMoveEntities(entityTree, targetAttrs, EXCLUDE_PPS_ATTRS);
     }
 
-    public int moveSeriesToStudy(String seriesIUID, String studyIUID, boolean trustPatientIdWithoutIssuer) throws InstanceNotFoundException, MBeanException, ReflectionException {
+    public int moveSeriesToStudy(String seriesIUID, String studyIUID) throws InstanceNotFoundException, MBeanException, ReflectionException {
         DicomObject targetAttrs = lookupDicomEditLocal().getCompositeObjectforStudy(studyIUID);
-        EntityTree entityTree = lookupDicomEditLocal().moveSeriesToTrash(seriesIUID, trustPatientIdWithoutIssuer);
-        processAfterMoveEntities(entityTree, targetAttrs, EXCLUDE_PPS_ATTRS);
-        return entityTree.getAllInstances().size();
+        EntityTree entityTree = lookupDicomEditLocal().getEntitiesOfSeries(seriesIUID);
+        return processMoveEntities(entityTree, targetAttrs, EXCLUDE_PPS_ATTRS);
     }
 
     public int moveStudiesToPatient(long[] studyPks, long patPk) throws InstanceNotFoundException, MBeanException, ReflectionException {
@@ -463,66 +459,98 @@ public class ContentEditService extends ServiceMBeanSupport {
         return lookupDicomEditLocal().updateSeries(series);
     }
 
-    private void processAfterMoveEntities(EntityTree entityTree, DicomObject targetAttrs, int[] excludeTagsForImport)
+    private int processMoveEntities(EntityTree entityTree, DicomObject targetAttrs, int[] excludeTagsForImport)
         throws InstanceNotFoundException, MBeanException,ReflectionException {
-        if (!entityTree.isEmpty()) { 
-            processRejectionNotes(entityTree, false, "Deleted Instances for move entities:");
-            processIANs(entityTree, Availability.UNAVAILABLE);
-            importFiles(entityTree, targetAttrs, excludeTagsForImport);
+        if (entityTree.isEmpty()) {
+            log.info("Nothing to move!");
+            return 0;
+        } else {
+            log.info(entityTree.getAllInstances().size()+" instances will be moved!");
+            EntityTree movedEntities = new EntityTree();
+            int result = doMove(entityTree, targetAttrs, excludeTagsForImport, movedEntities);
+            processRejectionNotes(movedEntities, false, "Deleted Instances for move entities:");
+            processIANs(movedEntities, Availability.UNAVAILABLE);
+            return result != 0 ? result : movedEntities.getAllInstances().size();
         }
     }
 
-    private void importFiles(EntityTree entityTree, DicomObject targetAttrs, int[] excludeTags) {
-        FileImportOrder order = new FileImportOrder();
-        DicomObject headerAttrs, studyAttrs, seriesAttrs;
-        for ( Map<Study, Map<Series, Set<Instance>>> studies : entityTree.getEntityTreeMap().values() ) {
-            for (Map.Entry<Study, Map<Series, Set<Instance>>> entry : studies.entrySet() ) {
-                if (targetAttrs.containsValue(Tag.StudyInstanceUID)) {
-                    studyAttrs = null;
-                } else {
-                    studyAttrs = entry.getKey().getAttributes(false);
-                }
-                for (Map.Entry<Series, Set<Instance>> seriesEntry : entry.getValue().entrySet()) {
-                    if (targetAttrs.containsValue(Tag.SeriesInstanceUID)) {
-                        seriesAttrs = null;
-                    } else {
-                        seriesAttrs = seriesEntry.getKey().getAttributes(false);
-                        seriesAttrs.putString(Tag.SeriesInstanceUID, VR.UI, UIDUtils.createUID());
-                        seriesAttrs.putString(seriesAttrs.resolveTag(PrivateTag.CallingAET, PrivateTag.CreatorID, true), 
-                                VR.AE, seriesEntry.getKey().getSourceAET());
-                    }
-                    for ( Instance i : seriesEntry.getValue()) {
-                        if ( i.getFiles().size() < 1)
-                            continue;
-                        headerAttrs = new BasicDicomObject();
-                        targetAttrs.copyTo(headerAttrs);
-                        if ( studyAttrs != null) {
-                            studyAttrs.copyTo(headerAttrs);
+    private int doMove(EntityTree entityTree, DicomObject targetAttrs, int[] excludeTags, EntityTree movedEntities) {
+        DicomObject headerAttrs, seriesAttrs = null;
+        DicomEditLocal dicomEdit = lookupDicomEditLocal();
+        boolean studyIsTarget = !targetAttrs.containsValue(Tag.SeriesInstanceUID);
+        int result = 0;
+        try {
+            for ( Map<Study, Map<Series, Set<Instance>>> studies : entityTree.getEntityTreeMap().values() ) {
+                for (Map.Entry<Study, Map<Series, Set<Instance>>> entry : studies.entrySet() ) {
+                    for (Map.Entry<Series, Set<Instance>> seriesEntry : entry.getValue().entrySet()) {
+                        if (studyIsTarget) {
+                            seriesAttrs = seriesEntry.getKey().getAttributes(false);
+                            seriesAttrs.putString(Tag.SeriesInstanceUID, VR.UI, UIDUtils.createUID());
+                            seriesAttrs.putString(seriesAttrs.resolveTag(PrivateTag.CallingAET, PrivateTag.CreatorID, true), 
+                                    VR.AE, seriesEntry.getKey().getSourceAET());
                         }
-                        if ( seriesAttrs != null) {
-                            seriesAttrs.copyTo(headerAttrs);
-                        }
-                        i.getAttributes(false).copyTo(headerAttrs);
-                        headerAttrs.putString(Tag.SOPInstanceUID, VR.UI, UIDUtils.createUID());
-                        DicomObject importHeader = headerAttrs.exclude(excludeTags);
-                        for ( File f :  i.getFiles()) {
-                            order.addFile(f, importHeader);
+                        for ( Instance i : seriesEntry.getValue()) {
+                            if ( i.getFiles().size() < 1)
+                                continue;
+                            headerAttrs = new BasicDicomObject();
+                            targetAttrs.copyTo(headerAttrs);
+                            if ( seriesAttrs != null) {
+                                seriesAttrs.copyTo(headerAttrs);
+                            }
+                            i.getAttributes(false).copyTo(headerAttrs);
+                            headerAttrs.putString(Tag.SOPInstanceUID, VR.UI, UIDUtils.createUID());
+                            DicomObject importHeader = headerAttrs.exclude(excludeTags);
+                            FileImportOrder order = new FileImportOrder();
+                            for ( File f :  i.getFiles()) {
+                                //ensure invalid filename in case source entities can't be removed and must be deleted manually
+                                dicomEdit.markFilePath(f.getPk(), ".moved", false);
+                                order.addFile(f, importHeader);
+                            }
+                            try {
+                                importFiles(order);
+                                movedEntities.addInstance(i);
+                            } catch (Exception x) {
+                                log.error("Failed to import instance:"+i);
+                                for ( File f :  i.getFiles()) {
+                                    dicomEdit.markFilePath(f.getPk(), ".moved", true);
+                                }
+                                throw x;
+                            }
                         }
                     }
                 }
             }
+        } catch (Exception x) {
+            result = movedEntities.isEmpty() ? -4 : -1;
+            log.error("Move failed!"+movedEntities.getAllInstances().size()+
+                    " of "+entityTree.getAllInstances().size()+"already moved", x);
+        } finally {
+            if (movedEntities.isEmpty()) {
+                log.info("Nothing moved!");
+            } else {
+                try {
+                    if (studyIsTarget) {
+                       Set<Series> series = movedEntities.getEntityTreeMap().values().iterator().next()
+                           .values().iterator().next().keySet();
+                        dicomEdit.deleteSeries(series);
+                        log.info(series.size()+" series moved!");
+                    } else {
+                        dicomEdit.deleteInstances(movedEntities.getAllInstances());
+                        log.info(movedEntities.getAllInstances().size()+" instances moved!");
+                    }
+                } catch (Exception x) {
+                    log.error("Failed to delete moved entities!", x);
+                    result -= 2;
+                }
+            }
         }
-        importFiles(order);
+        return result;
     }
     
-    private void importFiles(FileImportOrder order) {
+    private void importFiles(FileImportOrder order) throws Exception {
         log.info("import Files:"+order);
-        try {
-            server.invoke(storeScpServiceName, "importFile", 
+        server.invoke(storeScpServiceName, "importFile", 
                 new Object[]{order}, new String[]{FileImportOrder.class.getName()});
-        } catch (Throwable t) {
-            log.error("Import files failed! order:"+order);
-        }
     }
 
     public MppsToMwlLinkResult linkMppsToMwl(long[] mppsPks, long mwlPk, String system, String reason) throws InstanceNotFoundException, MBeanException, ReflectionException {
