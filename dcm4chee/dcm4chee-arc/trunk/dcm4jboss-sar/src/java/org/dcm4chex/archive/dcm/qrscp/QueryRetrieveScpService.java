@@ -1664,7 +1664,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
     }
 
     public File getFile(String fsID, String fileID) throws Exception {
-        File file = fsID.indexOf(':') > 0 ? retrieveFile(fsID, fileID)
+        File file = fsID.indexOf(':',3) > 0 ? retrieveFile(fsID, fileID)
                         : FileUtils.toFile(fsID, fileID);
         if (!file.canRead()) {
             throw new FileNotFoundException(file.getPath());
