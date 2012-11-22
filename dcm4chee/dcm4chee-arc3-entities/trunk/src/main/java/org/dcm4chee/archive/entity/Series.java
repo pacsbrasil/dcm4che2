@@ -448,20 +448,21 @@ public class Series extends BaseEntity implements Serializable {
     }
 
     public void setAttributes(DicomObject attrs) {
+        AttributeFilter filter = AttributeFilter.getSeriesAttributeFilter();
         this.seriesInstanceUID = attrs.getString(Tag.SeriesInstanceUID);
         this.seriesNumber = attrs.getString(Tag.SeriesNumber, "");
-        this.seriesDescription = attrs.getString(Tag.SeriesDescription, "");
-        this.modality = attrs.getString(Tag.Modality, "");
-        this.institutionalDepartmentName = attrs.getString(
-                Tag.InstitutionalDepartmentName, "");
-        this.institutionName = attrs.getString(Tag.InstitutionName, "");
-        this.stationName = attrs.getString(Tag.StationName, "");
+        this.seriesDescription = filter.toUpperCase(attrs.getString(Tag.SeriesDescription, ""), Tag.SeriesDescription);
+        this.modality = filter.toUpperCase(attrs.getString(Tag.Modality, ""), Tag.Modality);
+        this.institutionalDepartmentName = filter.toUpperCase(attrs.getString(
+                Tag.InstitutionalDepartmentName, ""), Tag.InstitutionalDepartmentName);
+        this.institutionName = filter.toUpperCase(attrs.getString(Tag.InstitutionName, ""), Tag.InstitutionName);
+        this.stationName = filter.toUpperCase(attrs.getString(Tag.StationName, ""), Tag.StationName);
         String srcAET = attrs.getString(attrs.resolveTag(
                 PrivateTag.CallingAET, PrivateTag.CreatorID));
         if (srcAET != null && srcAET.trim().length() > 1)
             this.sourceAET = srcAET;
-        this.bodyPartExamined = attrs.getString(Tag.BodyPartExamined, "");
-        this.laterality = attrs.getString(Tag.Laterality, "");
+        this.bodyPartExamined = filter.toUpperCase(attrs.getString(Tag.BodyPartExamined, ""), Tag.BodyPartExamined);
+        this.laterality = filter.toUpperCase(attrs.getString(Tag.Laterality, ""), Tag.Laterality);
         PersonName pn = new PersonName(attrs
                 .getString(Tag.PerformingPhysicianName));
         this.performingPhysicianName = pn.componentGroupString(
@@ -480,7 +481,6 @@ public class Series extends BaseEntity implements Serializable {
         this.performedProcedureStepInstanceUID = attrs.getString(new int[] {
                 Tag.ReferencedPerformedProcedureStepSequence, 0,
                 Tag.ReferencedSOPInstanceUID });
-        AttributeFilter filter = AttributeFilter.getSeriesAttributeFilter();
         int[] fieldTags = filter.getFieldTags();
         for (int i = 0; i < fieldTags.length; i++) {
             try {
