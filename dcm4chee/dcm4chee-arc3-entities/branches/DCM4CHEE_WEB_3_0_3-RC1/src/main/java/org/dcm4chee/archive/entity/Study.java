@@ -481,10 +481,11 @@ public class Study extends BaseEntity implements Serializable {
 
 
     public void setAttributes(DicomObject attrs) {
+        AttributeFilter filter = AttributeFilter.getStudyAttributeFilter();
         this.studyInstanceUID = attrs.getString(Tag.StudyInstanceUID);
-        this.studyID = attrs.getString(Tag.StudyID, "");
+        this.studyID = filter.toUpperCase(attrs.getString(Tag.StudyID, ""), Tag.StudyID);
         this.studyDateTime = attrs.getDate(Tag.StudyDate, Tag.StudyTime);
-        this.accessionNumber = attrs.getString(Tag.AccessionNumber, "");
+        this.accessionNumber = filter.toUpperCase(attrs.getString(Tag.AccessionNumber, ""), Tag.AccessionNumber);
         PersonName pn = new PersonName(attrs
                 .getString(Tag.ReferringPhysicianName));
         this.referringPhysicianName = pn.componentGroupString(
@@ -497,8 +498,7 @@ public class Study extends BaseEntity implements Serializable {
             this.referringPhysicianFamilyNameSoundex = AttributeFilter.toSoundex(pn, PersonName.FAMILY, "*");
             this.referringPhysicianGivenNameSoundex = AttributeFilter.toSoundex(pn, PersonName.GIVEN, "*");
         }
-        this.studyDescription = attrs.getString(Tag.StudyDescription, "");
-        AttributeFilter filter = AttributeFilter.getStudyAttributeFilter();
+        this.studyDescription = filter.toUpperCase(attrs.getString(Tag.StudyDescription, ""), Tag.StudyDescription);
         int[] fieldTags = filter.getFieldTags();
         for (int i = 0; i < fieldTags.length; i++) {
             try {
