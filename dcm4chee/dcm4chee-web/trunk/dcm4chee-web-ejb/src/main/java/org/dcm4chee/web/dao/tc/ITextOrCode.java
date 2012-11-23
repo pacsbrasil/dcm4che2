@@ -7,4 +7,5 @@ public interface ITextOrCode extends Serializable {
     public String getText();
     public TCDicomCode getCode();
     public String toShortString();
+    public String toLongString();
 }
