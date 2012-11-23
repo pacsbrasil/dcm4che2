@@ -853,23 +853,18 @@ public class TCObject implements Serializable {
         public static TextOrCode code(TCDicomCode code) {
             return new TextOrCode(code);
         }
-        @Override
         public String getText() {
             return text;
         }
-        @Override
         public TCDicomCode getCode() {
             return code;
         }
-        @Override
         public String toString() {
             return toShortString();
         }
-        @Override
         public String toShortString() {
         	return toString(true);
         }
-        @Override
         public String toLongString() {
         	return toString(false);
         }
