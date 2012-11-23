@@ -191,7 +191,13 @@ public class TCKeywordTreeInput extends AbstractTCKeywordInput {
     }
     
     public List<TCKeyword> getKeywordsAsList() {
-    	return getModel().getObject();
+    	List<TCKeyword> list = new ArrayList<TCKeyword>();
+    	List<TCKeyword> modelList = getModel().getObject();
+    	if (modelList!=null)
+    	{
+    		list.addAll(modelList);
+    	}
+    	return list;
     }
     
     public void setKeywords(List<TCKeyword> keywords)

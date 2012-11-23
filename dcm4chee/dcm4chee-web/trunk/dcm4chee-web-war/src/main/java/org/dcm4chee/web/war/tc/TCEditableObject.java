@@ -666,8 +666,7 @@ public class TCEditableObject extends TCObject {
             
             if (code!=null) {
                 TCKeywordCatalogueProvider prov = TCKeywordCatalogueProvider.getInstance();   
-                if (prov!=null && prov.hasCatalogue(key) && 
-                        prov.isCatalogueExclusive(key)) {
+                if (prov!=null && prov.hasCatalogue(key)) {
                     return createCodeContent(key, code);
                 }
                 else {

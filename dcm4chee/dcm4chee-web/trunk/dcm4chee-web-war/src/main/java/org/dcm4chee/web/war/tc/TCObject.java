@@ -673,9 +673,10 @@ public class TCObject implements Serializable {
             return concatStringValues((List<?>)value, shortString);
         }
         else if (value!=null) {
-        	if (shortString && value instanceof ITextOrCode)
+        	if (value instanceof ITextOrCode)
         	{
-        		return ((ITextOrCode)value).toShortString();
+        		return shortString ? ((ITextOrCode)value).toShortString() :
+        			((ITextOrCode)value).toLongString();
         	}
             return value.toString();
         }
@@ -862,11 +863,15 @@ public class TCObject implements Serializable {
         }
         @Override
         public String toString() {
-            return toString(false);
+            return toShortString();
         }
         @Override
         public String toShortString() {
         	return toString(true);
+        }
+        @Override
+        public String toLongString() {
+        	return toString(false);
         }
         private String toString(boolean shortString) {
             if (code!=null) {
