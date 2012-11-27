@@ -118,7 +118,7 @@ public class ContentEditDelegate extends BaseMBeanDelegate {
             moveToTrash("moveSeriesOfPpsToTrash", toPks(selected.getPpss()));
         }
         if ( selected.hasSeries()) {
-            moveToTrash("moveSeriesToTrash", toPks(selected.getSeries()));
+            moveToTrash("moveSeriessToTrash", toPks(selected.getSeries()));
         }
         if ( selected.hasInstances()) {
             moveToTrash("moveInstancesToTrash", toPks(selected.getInstances()));
@@ -237,10 +237,10 @@ public class ContentEditDelegate extends BaseMBeanDelegate {
         return series;
     }
     
-    private int  moveEntities(String op, long pk, long[] pks)
+    private int moveEntities(String op, long pk, long[] pks)
             throws InstanceNotFoundException, MBeanException,
             ReflectionException, IOException {
-        return (Integer) server.invoke(serviceObjectName, op, new Object[]{pks, pk}, 
+        return (Integer) server.invoke(serviceObjectName, op, new Object[]{pks, pk, WebCfgDelegate.getInstance().getTrustPatientIdWithoutIssuer()}, 
         new String[]{long[].class.getName(), long.class.getName()});
     }
     
