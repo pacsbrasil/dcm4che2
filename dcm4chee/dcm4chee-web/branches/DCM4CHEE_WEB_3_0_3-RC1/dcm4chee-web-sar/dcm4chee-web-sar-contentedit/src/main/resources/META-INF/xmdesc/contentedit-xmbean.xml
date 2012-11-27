@@ -308,7 +308,7 @@
    <operation impact="ACTION">
       <description><![CDATA[ Delete series with given list of primary keys.
       		]]> </description>
-      <name>moveSeriesToTrash</name>
+      <name>moveSeriessToTrash</name>
       <parameter>
         <description>Array of pk's</description>
         <name>pks</name>

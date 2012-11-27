@@ -328,7 +328,7 @@ public class ContentEditService extends ServiceMBeanSupport {
         return rejNotes == null ? null : rejNotes[0];
     }
     
-    public DicomObject[] moveSeriesToTrash(long[] pks, boolean trustPatientIdWithoutIssuer) throws InstanceNotFoundException, MBeanException, ReflectionException {
+    public DicomObject[] moveSeriessToTrash(long[] pks, boolean trustPatientIdWithoutIssuer) throws InstanceNotFoundException, MBeanException, ReflectionException {
         return processInstancesDeleted(lookupDicomEditLocal().moveSeriesToTrash(pks, trustPatientIdWithoutIssuer), "Deleted Series:");
     }
 
