@@ -49,7 +49,6 @@ import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.CheckBox;
-import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.TextArea;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.image.Image;
@@ -277,31 +276,26 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
                 }
         );
         
-        final TextField<String> patientSpeciesText = new SelfUpdatingTextField("tc-view-overview-patientrace-text", getStringValue(TCQueryFilterKey.PatientSpecies)) {
-            @Override
-            protected void textUpdated(String text)
-            {
-                if (isEditing())
-                {
-                    getTC().setPatientSpecies(text);
-                }
-            }
-        };
-
-        final DropDownChoice<TCQueryFilterValue.Category> categoryChoice = TCUtilities.createEnumDropDownChoice(
-                "tc-view-overview-category-select", new Model<TCQueryFilterValue.Category>(getTC().getCategory()),
+        
+        final TCComboBox<TCQueryFilterValue.Category> categoryCBox = TCUtilities.createEnumComboBox(
+                "tc-view-overview-category-select", getTC().getCategory(),
                 Arrays.asList(TCQueryFilterValue.Category.values()), true,
                 "tc.category", NullDropDownItem.Undefined, new DropDownChangeListener<TCQueryFilterValue.Category>(TCQueryFilterKey.Category));
-        final DropDownChoice<TCQueryFilterValue.Level> levelChoice = TCUtilities.createEnumDropDownChoice(
-                "tc-view-overview-level-select", new Model<TCQueryFilterValue.Level>(getTC().getLevel()),
+        final TCComboBox<TCQueryFilterValue.Level> levelCBox = TCUtilities.createEnumComboBox(
+                "tc-view-overview-level-select", getTC().getLevel(),
                 Arrays.asList(TCQueryFilterValue.Level.values()), true,
                 "tc.level", NullDropDownItem.Undefined, new DropDownChangeListener<TCQueryFilterValue.Level>(TCQueryFilterKey.Level));
-        final DropDownChoice<TCQueryFilterValue.PatientSex> patientSexChoice = TCUtilities.createEnumDropDownChoice(
-                "tc-view-overview-patientsex-select", new Model<TCQueryFilterValue.PatientSex>(getTC().getPatientSex()),
+        final TCComboBox<TCQueryFilterValue.PatientSex> patientSexCBox = TCUtilities.createEnumComboBox(
+                "tc-view-overview-patientsex-select", getTC().getPatientSex(),
                 Arrays.asList(TCQueryFilterValue.PatientSex.values()), true,
                 "tc.patientsex", NullDropDownItem.Undefined, new DropDownChangeListener<TCQueryFilterValue.PatientSex>(TCQueryFilterKey.PatientSex));
+        final TCEditableComboBox patientSpeciesCBox = TCUtilities.createEnumEditableComboBox(
+                "tc-view-overview-patientrace-select", getTC().getValueAsString(TCQueryFilterKey.PatientSpecies),
+                Arrays.asList(TCQueryFilterValue.PatientSpecies.values()), true,
+                "tc.patient.species", NullDropDownItem.Undefined, new DropDownChangeListener<String>(TCQueryFilterKey.PatientSpecies));
 
-        final Label anatomyLabel = new Label("tc-view-overview-anatomy-value-label", new Model<String>(
+        
+        final TextField<String> anatomyText = new TextField<String>("tc-view-overview-anatomy-value-label", new Model<String>(
                 getShortStringValue(TCQueryFilterKey.Anatomy)
         )) {
 			private static final long serialVersionUID = 3465370488528419531L;
@@ -311,7 +305,7 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
             	tag.put("title", getStringValue(TCQueryFilterKey.Anatomy)); //$NON-NLS-1$
             }
         };
-        final Label pathologyLabel = new Label("tc-view-overview-pathology-value-label", new Model<String>(
+        final TextField<String> pathologyText = new TextField<String>("tc-view-overview-pathology-value-label", new Model<String>(
                 getShortStringValue(TCQueryFilterKey.Pathology)
         )) {
 			private static final long serialVersionUID = 3465370488528419531L;
@@ -321,7 +315,7 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
             	tag.put("title", getStringValue(TCQueryFilterKey.Pathology)); //$NON-NLS-1$
             }
         };
-        final Label findingLabel = new Label("tc-view-overview-finding-value-label", new Model<String>(
+        final TextField<String> findingText = new TextField<String>("tc-view-overview-finding-value-label", new Model<String>(
                 getShortStringValue(TCQueryFilterKey.Finding)
         )) {
 			private static final long serialVersionUID = 3465370488528419531L;
@@ -331,7 +325,7 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
             	tag.put("title", getStringValue(TCQueryFilterKey.Finding)); //$NON-NLS-1$
             }
         };
-        final Label diffDiagLabel = new Label("tc-view-overview-diffdiag-value-label", new Model<String>(
+        final TextField<String> diffDiagText = new TextField<String>("tc-view-overview-diffdiag-value-label", new Model<String>(
                 getShortStringValue(TCQueryFilterKey.DifferentialDiagnosis)
         )) {
 			private static final long serialVersionUID = 3465370488528419531L;
@@ -341,7 +335,7 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
             	tag.put("title", getStringValue(TCQueryFilterKey.DifferentialDiagnosis)); //$NON-NLS-1$
             }
         };
-        final Label diagLabel = new Label("tc-view-overview-diag-value-label", new Model<String>(
+        final TextField<String> diagText = new TextField<String>("tc-view-overview-diag-value-label", new Model<String>(
                 getShortStringValue(TCQueryFilterKey.Diagnosis)
         )) {
 			private static final long serialVersionUID = 3465370488528419531L;
@@ -351,16 +345,19 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
             	tag.put("title", getStringValue(TCQueryFilterKey.Diagnosis)); //$NON-NLS-1$
             }
         };
-        final Label categoryLabel = new Label("tc-view-overview-category-value-label", new Model<String>(
+        final TextField<String> categoryText = new TextField<String>("tc-view-overview-category-value-label", new Model<String>(
                 getStringValue(TCQueryFilterKey.Category)
         ));
-        final Label levelLabel = new Label("tc-view-overview-level-value-label", new Model<String>(
+        final TextField<String> levelText = new TextField<String>("tc-view-overview-level-value-label", new Model<String>(
                 getStringValue(TCQueryFilterKey.Level)
         ));
-        final Label patientSexLabel = new Label("tc-view-overview-patientsex-value-label", new Model<String>(
+        final TextField<String> patientSexText = new TextField<String>("tc-view-overview-patientsex-value-label", new Model<String>(
                 getStringValue(TCQueryFilterKey.PatientSex)
         ));
-        final Label imageCountLabel = new Label("tc-view-overview-imagecount-value-label", new Model<String>(
+        final TextField<String> patientSpeciesText = new TextField<String>("tc-view-overview-patientrace-value-label", new Model<String>(
+                getStringValue(TCQueryFilterKey.PatientSpecies)
+        ));
+        final TextField<String> imageCountText = new TextField<String>("tc-view-overview-imagecount-value-label", new Model<String>(
                 getTC().getReferencedImages()!=null ? Integer.toString(getTC().getReferencedImages().size()) : "0"
         ));
         
@@ -439,21 +436,21 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         keywordCodesContainer.setOutputMarkupId(true);
         
         final WebMarkupContainer findingRow = new WebMarkupContainer("tc-view-overview-finding-row");
-        findingRow.add(findingLabel);
+        findingRow.add(findingText);
         findingRow.add(findingInput.getComponent());
         findingRow.add(new Label("tc-view-overview-finding-label", 
                 new InternalStringResourceModel("tc.finding.text")));
         findingRow.setVisible(TCKeywordCatalogueProvider.getInstance().hasCatalogue(TCQueryFilterKey.Finding));
         
         final WebMarkupContainer diffDiagRow = new WebMarkupContainer("tc-view-overview-diffdiag-row");
-        diffDiagRow.add(diffDiagLabel);
+        diffDiagRow.add(diffDiagText);
         diffDiagRow.add(diffDiagInput.getComponent());
         diffDiagRow.add(new Label("tc-view-overview-diffdiag-label", 
                 new InternalStringResourceModel("tc.diffdiagnosis.text")));
         diffDiagRow.setVisible(TCKeywordCatalogueProvider.getInstance().hasCatalogue(TCQueryFilterKey.DifferentialDiagnosis));
         
         final WebMarkupContainer diagRow = new WebMarkupContainer("tc-view-overview-diag-row");
-        diagRow.add(diagLabel);
+        diagRow.add(diagText);
         diagRow.add(diagInput.getComponent());
         diagRow.add(new Label("tc-view-overview-diag-label", 
                 new InternalStringResourceModel("tc.diagnosis.text")));
@@ -466,29 +463,28 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         diagConfirmedRow.setVisible(TCKeywordCatalogueProvider.getInstance().hasCatalogue(TCQueryFilterKey.Diagnosis));
         
         keywordCodesContainer.add(keywordCodesView);
-        
-        titleText.add(createTextInputCssClassModifier());
-        keywordArea.add(createTextInputCssClassModifier());
-        abstractArea.add(createTextInputCssClassModifier());
-        modalitiesText.add(createTextInputCssClassModifier());
-        patientSpeciesText.add(createTextInputCssClassModifier());
-        authornameText.add(createTextInputCssClassModifier());
-        authoraffiliationText.add(createTextInputCssClassModifier());
-        authorcontactArea.add(createTextInputCssClassModifier());
+
+        AttributeModifier readonlyModifier = new AttributeAppender("readonly",true,new Model<String>("readonly"), " ");
+
+        imageCountText.add(readonlyModifier);
         
         if (!editing) {
-            
             diagConfirmedChkBox.setEnabled(false);
             
-            AttributeModifier readonlyModifier = new AttributeAppender("readonly",true,new Model<String>("readonly"), " ");
             titleText.add(readonlyModifier);
             keywordArea.add(readonlyModifier);
             abstractArea.add(readonlyModifier);
             modalitiesText.add(readonlyModifier);
-            patientSpeciesText.add(readonlyModifier);
+            patientSpeciesCBox.add(readonlyModifier);
             authornameText.add(readonlyModifier);
             authoraffiliationText.add(readonlyModifier);
             authorcontactArea.add(readonlyModifier);
+            anatomyText.add(readonlyModifier);
+            pathologyText.add(readonlyModifier);
+            categoryText.add(readonlyModifier);
+            levelText.add(readonlyModifier);
+            patientSexText.add(readonlyModifier);
+            patientSpeciesText.add(readonlyModifier);
         }
         
         boolean keywordCodeInput = editing && TCKeywordCatalogueProvider.
@@ -500,19 +496,21 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         findingInput.getComponent().setVisible(editing);
         diffDiagInput.getComponent().setVisible(editing);
         diagInput.getComponent().setVisible(editing);
-        categoryChoice.setVisible(editing);
-        levelChoice.setVisible(editing);
-        patientSexChoice.setVisible(editing);
+        categoryCBox.setVisible(editing);
+        levelCBox.setVisible(editing);
+        patientSexCBox.setVisible(editing);
+        patientSpeciesCBox.setVisible(editing);
         
         keywordArea.setVisible(!keywordCodeInput);
-        anatomyLabel.setVisible(!editing);
-        pathologyLabel.setVisible(!editing);
-        findingLabel.setVisible(!editing);
-        diffDiagLabel.setVisible(!editing);
-        diagLabel.setVisible(!editing);
-        categoryLabel.setVisible(!editing);
-        levelLabel.setVisible(!editing);
-        patientSexLabel.setVisible(!editing);
+        anatomyText.setVisible(!editing);
+        pathologyText.setVisible(!editing);
+        findingText.setVisible(!editing);
+        diffDiagText.setVisible(!editing);
+        diagText.setVisible(!editing);
+        categoryText.setVisible(!editing);
+        levelText.setVisible(!editing);
+        patientSexText.setVisible(!editing);
+        patientSpeciesText.setVisible(!editing);
         
         add(titleText);
         add(abstractArea);
@@ -521,23 +519,24 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         add(authorcontactArea);
         add(keywordArea);
         add(keywordCodesContainer);
-        add(anatomyLabel);
+        add(anatomyText);
         add(anatomyInput.getComponent());
-        add(pathologyLabel);
+        add(pathologyText);
         add(pathologyInput.getComponent());
         add(findingRow);
         add(diffDiagRow);
         add(diagRow);
         add(diagConfirmedRow);
-        add(categoryChoice);
-        add(categoryLabel);
-        add(levelChoice);
-        add(levelLabel);
-        add(patientSexChoice);
-        add(patientSexLabel);
+        add(categoryCBox);
+        add(categoryText);
+        add(levelCBox);
+        add(levelText);
+        add(patientSexCBox);
+        add(patientSexText);
         add(patientSpeciesText);
+        add(patientSpeciesCBox);
         add(modalitiesText);
-        add(imageCountLabel);
+        add(imageCountText);
     }
     
     @Override

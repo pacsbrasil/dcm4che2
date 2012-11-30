@@ -13,6 +13,7 @@ import org.apache.wicket.ajax.AjaxEventBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.markup.html.form.CheckBox;
+import org.apache.wicket.markup.html.form.ChoiceRenderer;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.EnumChoiceRenderer;
 import org.apache.wicket.markup.html.form.TextArea;
@@ -222,6 +223,138 @@ public class TCUtilities
                 !NullDropDownItem.NotValid.equals(nullItem));
 
         return choice;
+    }
+    
+    public static <T extends Enum<T>> TCComboBox<T> createEnumComboBox(
+            final String id, T selectedValue, List<T> options,
+            boolean localizeValues, final String localizePrefix) {
+        return createEnumComboBox(id, selectedValue, options, localizeValues, 
+                localizePrefix, NullDropDownItem.NotValid);
+    }
+    
+    public static <T extends Enum<T>> TCComboBox<T> createEnumComboBox(
+            final String id, T selectedValue, List<T> options,
+            boolean localizeValues, final String localizePrefix, final NullDropDownItem nullItem) {
+        return createEnumComboBox(id, selectedValue, options, localizeValues, localizePrefix, nullItem, null);
+    }
+    
+    public static <T extends Enum<T>> TCComboBox<T> createEnumComboBox(
+            final String id, T selectedValue, List<T> options,
+            boolean localizeValues, final String localizePrefix, final NullDropDownItem nullItem, final TCChangeListener<T> l) {
+        TCComboBox<T> cbox = new TCComboBox<T>(id, options, selectedValue) {
+            private static final long serialVersionUID = 1L;
+            @Override
+            protected String getNullValidKey() {
+                if (nullItem!=null)
+                {
+                    return nullItem.getKey();
+                }
+                return null;
+            }
+            @Override
+            protected void valueChanged(T value)
+            {
+                if (l!=null)
+                {
+                    l.valueChanged(value);
+                }
+            }
+        };
+
+        cbox.setNullValid(nullItem!=null && 
+                !NullDropDownItem.NotValid.equals(nullItem));
+
+        if (localizeValues) {
+            cbox.setChoiceRenderer(new EnumChoiceRenderer<T>(cbox) {
+
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                protected String resourceKey(T object) {
+                    String key = localizePrefix != null ? localizePrefix + "."
+                            + object.name() : object.name();
+
+                    return key.toLowerCase();
+                }
+            });
+        }
+
+        return cbox;
+    }
+    
+    public static <T extends Enum<T>> TCEditableComboBox createEnumEditableComboBox(
+            final String id, String selectedValue, List<T> options,
+            boolean localizeValues, final String localizePrefix) {
+        return createEnumEditableComboBox(id, selectedValue, options, localizeValues, 
+                localizePrefix, NullDropDownItem.NotValid);
+    }
+    
+    public static <T extends Enum<T>> TCEditableComboBox createEnumEditableComboBox(
+            final String id, String selectedValue, List<T> options,
+            boolean localizeValues, final String localizePrefix, final NullDropDownItem nullItem) {
+        return createEnumEditableComboBox(id, selectedValue, options, localizeValues, localizePrefix, nullItem, null);
+    }
+    
+    public static <T extends Enum<T>> TCEditableComboBox createEnumEditableComboBox(
+            final String id, String selectedValue, List<T> options,
+            boolean localizeValues, final String localizePrefix, final NullDropDownItem nullItem, final TCChangeListener<String> l) {
+        TCEditableComboBox cbox = new TCEditableComboBox(id, options, selectedValue) {
+            private static final long serialVersionUID = 1L;
+            @Override
+            protected String getNullValidKey() {
+                if (nullItem!=null)
+                {
+                    return nullItem.getKey();
+                }
+                return null;
+            }
+            @Override
+            protected void valueChanged(String value)
+            {
+                if (l!=null)
+                {
+                    l.valueChanged(value);
+                }
+            }
+        };
+
+        cbox.setNullValid(nullItem!=null && 
+                !NullDropDownItem.NotValid.equals(nullItem));
+
+        if (localizeValues) {
+        	final EnumChoiceRenderer<T> enumRenderer = new EnumChoiceRenderer<T>(cbox) {
+				private static final long serialVersionUID = 1L;
+				@Override
+                protected String resourceKey(T object) {
+                    String key = localizePrefix != null ? localizePrefix + "."
+                            + object.name() : object.name();
+
+                    return key.toLowerCase();
+                }
+        	};
+        	
+            cbox.setChoiceRenderer(new ChoiceRenderer<Serializable>() {
+                private static final long serialVersionUID = 1L;
+                @SuppressWarnings("unchecked")
+				@Override
+            	public Object getDisplayValue(Serializable object) {
+                	if (object.getClass().isEnum()) {
+                		return enumRenderer.getDisplayValue((T) object);
+                	}
+                	return super.getDisplayValue(object);
+                }
+                @SuppressWarnings("unchecked")
+				@Override
+            	public String getIdValue(Serializable object, int index) {
+                	if (object.getClass().isEnum()) {
+                		return enumRenderer.getIdValue((T)object, index);
+                	}
+                	return super.getIdValue(object, index);
+                }
+            });
+        }
+
+        return cbox;
     }
     
     public static <T extends Enum<T>> DropDownChoice<T> createEnumDropDownChoice(

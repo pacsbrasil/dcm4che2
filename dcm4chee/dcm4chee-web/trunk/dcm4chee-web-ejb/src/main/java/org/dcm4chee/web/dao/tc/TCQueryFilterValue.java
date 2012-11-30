@@ -449,6 +449,14 @@ public abstract class TCQueryFilterValue<T> implements Serializable {
             return null;
         }
     }
+    
+    public static enum PatientSpecies {
+    	NorthEuropean, WestEuropean, EastEuropean, SouthEuropean, CentralEuropean, Scandinavian, Baltic, Turk,
+    	EastAsian, SouthAsian, SouthEastAsian, Chinese, Japanese, Korean, Russian, Indian, Vietnamese, 
+    	NorthAfrican, WestAfrican, EastAfrican, SouthAfrican, CentralAfrican, Arab, 
+    	NorthAmerican, LatinAmerican, Caribbean, AngloAmerican, AfroAmerican, AfroCaribbean,
+        Australian;
+    }
 
     public static final class AcquisitionModality implements Serializable, DicomCodeEnum, DicomStringEnum 
     {

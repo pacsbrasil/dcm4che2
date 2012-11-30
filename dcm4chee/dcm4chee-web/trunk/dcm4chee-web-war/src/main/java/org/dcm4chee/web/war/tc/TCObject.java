@@ -26,6 +26,7 @@ import org.dcm4chee.web.dao.tc.TCQueryFilterValue.AcquisitionModality;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue.Category;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue.Level;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue.PatientSex;
+import org.dcm4chee.web.dao.tc.TCQueryFilterValue.PatientSpecies;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue.YesNo;
 import org.dcm4chee.web.dao.tc.TCQueryLocal;
 import org.dcm4chee.web.war.folder.delegate.TarRetrieveDelegate;
@@ -347,6 +348,18 @@ public class TCObject implements Serializable {
         } else if (TCQueryFilterKey.PatientSex.equals(key)) {
             return getPatientSex() != null ? c.getString("tc.patientsex."
                     + getPatientSex().name().toLowerCase()) : null;
+        } else if (TCQueryFilterKey.PatientSpecies.equals(key)) {
+        	String s = getPatientSpecies();
+        	if (s!=null)
+        	{
+        		try {
+		        	PatientSpecies v = s!=null ? PatientSpecies.valueOf(s) : null;
+	        		s = c.getString("tc.patient.species."+v.name().toLowerCase());
+        		}
+        		catch (Exception e){
+        		}
+        	}
+        	return s;
         } else {
             return getValueAsString(key, shortString);
         }

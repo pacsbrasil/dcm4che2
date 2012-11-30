@@ -89,6 +89,10 @@ public class TCPanel extends Panel {
     public TCPanel(final String id) {
         super(id);
 
+        if (TCPanel.THEME_CSS != null) {
+            add(CSSPackageResource.getHeaderContribution(TCPanel.THEME_CSS));
+        }
+        
         if (TCPanel.LAYOUT_CSS != null) {
             add(CSSPackageResource.getHeaderContribution(TCPanel.LAYOUT_CSS));
         }
@@ -97,9 +101,6 @@ public class TCPanel extends Panel {
             add(CSSPackageResource.getHeaderContribution(TCPanel.BASE_CSS));
         }
         
-        if (TCPanel.THEME_CSS != null) {
-            add(CSSPackageResource.getHeaderContribution(TCPanel.THEME_CSS));
-        }
 
         final ModalWindow viewDialog = new ModalWindow("tc-view-dialog") {
             private static final long serialVersionUID = 1L;
