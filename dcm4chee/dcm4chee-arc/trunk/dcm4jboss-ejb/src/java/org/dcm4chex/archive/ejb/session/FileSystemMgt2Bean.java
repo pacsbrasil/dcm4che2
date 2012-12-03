@@ -83,6 +83,7 @@ import org.dcm4chex.archive.ejb.interfaces.InstanceLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.PrivateFileLocal;
 import org.dcm4chex.archive.ejb.interfaces.PrivateFileLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.PrivateManagerLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
@@ -791,24 +792,23 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
 
     /**    
      * @ejb.interface-method
+     * 
+     * @ejb.transaction type="RequiresNew"
      */
-    public String[] deleteStudy(DeleteStudyOrder order,
+    @SuppressWarnings("unchecked")
+	public Collection<FileDTO> deleteStudy(DeleteStudyOrder order,
             boolean delStudyFromDB, boolean delPatientWithoutObjects)
-            throws ConcurrentStudyStorageException {
+            throws ConcurrentStudyStorageException, CreateException {
         try {
+        	
             long fsPk = order.getFsPk();
             StudyLocal study = studyHome.findByPrimaryKey(order.getStudyPk());
             FileSystemLocal fs = fileSystemHome.findByPrimaryKey(fsPk);
-            Collection files = study.getFiles(fsPk);
             checkConcurrentStudyStorage(study, fs);
-            String fsPath = fs.getDirectoryPath();
-            String[] fpaths = new String[files.size()];
-            int i = 0;
-            for (Iterator iter = files.iterator(); iter.hasNext(); i++) {
-                FileLocal f = (FileLocal) iter.next();
-                fpaths[i] = fsPath + '/' + f.getFilePath();
-                f.remove();
-            }
+
+			Collection<FileDTO> fileDTOs = marshallPrivFiles(
+					privManager().moveFilesToTrash(study.getFiles(fsPk)));
+
             if (delStudyFromDB && study.getAllFiles().isEmpty()) {
                 PatientLocal pat = study.getPatient();
                 study.remove();
@@ -820,13 +820,24 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
                         order.getExternalRetrieveAvailability();
                 updateStudyAvailability(study, availabilityOfExtRetr);
              }
-            return fpaths;
+            
+            return fileDTOs;
         } catch (FinderException e) {
             throw new EJBException(e);
         } catch (RemoveException e) {
             throw new EJBException(e);
         }
     }
+
+	private Collection<FileDTO> marshallPrivFiles(
+			Collection<PrivateFileLocal> privFiles) {
+		Collection<FileDTO> fileDTOs = new ArrayList<FileDTO>(privFiles.size());
+		
+		for (PrivateFileLocal privFile : privFiles) {
+			fileDTOs.add(privFile.getFileDTO());
+		}
+		return fileDTOs;
+	}
 
     private void checkConcurrentStudyStorage(StudyLocal study,
             FileSystemLocal fs) throws FinderException,
@@ -983,23 +994,21 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
 
     /**    
      * @ejb.interface-method
+     * 
+     * @ejb.transaction type="RequiresNew"
      */
-    public String[] deleteSeries(DeleteStudyOrder order, Long seriesPk,
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+	public Collection<FileDTO> deleteSeries(DeleteStudyOrder order, Long seriesPk,
             boolean delStudyFromDB, boolean delPatientWithoutObjects)
-            throws ConcurrentStudyStorageException {
+            throws ConcurrentStudyStorageException, CreateException {
         try {
             long fsPk = order.getFsPk();
             SeriesLocal series = seriesHome.findByPrimaryKey(seriesPk);
-            FileSystemLocal fs = fileSystemHome.findByPrimaryKey(fsPk);
             Collection files = series.getFiles(fsPk);
-            String fsPath = fs.getDirectoryPath();
-            String[] fpaths = new String[files.size()];
-            int i = 0;
-            for (Iterator iter = files.iterator(); iter.hasNext(); i++) {
-                FileLocal f = (FileLocal) iter.next();
-                fpaths[i] = fsPath + '/' + f.getFilePath();
-                f.remove();
-            }
+            
+			Collection<FileDTO> fileDTOs = marshallPrivFiles(privManager()
+					.moveFilesToTrash(files));
+
             StudyLocal study = series.getStudy();
             if (delStudyFromDB && series.getAllFiles().isEmpty()) {
                 series.remove();
@@ -1024,7 +1033,8 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
                 study.updateRetrieveAETs();
                 study.updateAvailability();
              }
-            return fpaths;
+            
+            return fileDTOs;
         } catch (FinderException e) {
             throw new EJBException(e);
         } catch (RemoveException e) {
@@ -1424,6 +1434,11 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
        log.info( "Study "+order.getStudyIUID()+" [pk=" + order.getStudyPk() + 
            "] on FileSystem[pk="+ order.getFsPk()+ "] "+msg);
     }
+    
+    /**
+     * @ejb.ejb-ref ejb-name="PrivateManager" view-type="local" ref-name="ejb/PrivateManagerLocal"  
+     */
+    protected abstract PrivateManagerLocal privManager();
 }
 
 

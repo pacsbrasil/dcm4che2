@@ -42,6 +42,8 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Date;
 
+import javax.ejb.CreateException;
+import javax.ejb.FinderException;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
@@ -56,15 +58,14 @@ import org.dcm4chex.archive.common.ActionOrder;
 import org.dcm4chex.archive.common.BaseJmsOrder;
 import org.dcm4chex.archive.common.DeleteStudyOrder;
 import org.dcm4chex.archive.config.RetryIntervalls;
-import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
-import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2;
-import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2Home;
+import org.dcm4chex.archive.ejb.interfaces.FileDTO;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2Local;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2LocalHome;
 import org.dcm4chex.archive.exceptions.ConcurrentStudyStorageException;
 import org.dcm4chex.archive.exceptions.NoSuchSeriesException;
 import org.dcm4chex.archive.exceptions.NoSuchStudyException;
 import org.dcm4chex.archive.notif.StudyDeleted;
-import org.dcm4chex.archive.util.EJBHomeFactory;
-import org.dcm4chex.archive.util.FileUtils;
+import org.dcm4chex.archive.util.FileDeleter;
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
@@ -88,6 +89,20 @@ public class DeleteStudyService extends ServiceMBeanSupport
     private boolean createIANonStudyDelete = false;
 
     private boolean deleteSeriesBySeries;
+
+    private final JndiHelper jndiHelper;
+    
+    private final FileDeleter fileDeleter;
+    
+    public DeleteStudyService() {
+    	jndiHelper = new JndiHelper();
+    	fileDeleter = new FileDeleter(log);
+	}
+
+	DeleteStudyService(JndiHelper jndiHelper, FileDeleter fileDeleter) {
+		this.jndiHelper = jndiHelper;
+		this.fileDeleter = fileDeleter;
+	}
 
     public boolean isDeleteSeriesBySeries() {
         return deleteSeriesBySeries;
@@ -251,19 +266,18 @@ public class DeleteStudyService extends ServiceMBeanSupport
         }
     }
 
+    @SuppressWarnings("unchecked")
     private void deleteStudy(DeleteStudyOrder order) throws Exception {
-        FileSystemMgt2 fsMgt = fileSystemMgt();
+        FileSystemMgt2Local fsMgt = fileSystemMgt2();
         Collection<Dataset> ians = null;
         // prepare IAN if study may be deleted from DB by fsMgt.deleteStudy()
         if (createIANonStudyDelete && deleteStudyFromDB) {
             ians = fsMgt.createIANforStudy(order.getStudyPk());
         }
-        String[] filePaths = fsMgt.deleteStudy(order,
-                deleteStudyFromDB, deletePatientWithoutObjects);
-        FileSystemDTO fsDto = fsMgt.getFileSystem(order.getFsPk()); 
-        for (int i = 0; i < filePaths.length; i++) {
-            FileUtils.delete(FileUtils.toFile(filePaths[i]), true, fsDto.getDirectoryPath());
-        }
+
+		fileDeleter.deleteFiles(fsMgt, fsMgt.deleteStudy(order,
+				deleteStudyFromDB, deletePatientWithoutObjects));
+        
         try {
             fsMgt.removeStudyOnFSRecord(order);
         } catch (Exception x) {
@@ -319,32 +333,45 @@ public class DeleteStudyService extends ServiceMBeanSupport
         }
     }
 
+    @SuppressWarnings("unchecked")
     private void deleteSeries(DeleteStudyOrder order) throws Exception {
-        FileSystemMgt2 fsMgt = fileSystemMgt();
+        FileSystemMgt2Local fsMgt = fileSystemMgt2();
         Collection<Long> seriesPks = fsMgt.getSeriesPks(order);
-        FileSystemDTO fsDto = fsMgt.getFileSystem(order.getFsPk()); 
+        
         for (Long seriesPk : seriesPks) {
+            internalDeleteSeries(order, seriesPk, fsMgt);
+        }
+
+        try {
+            fsMgt.removeStudyOnFSRecord(order);
+        } catch (Exception x) {
+            log.warn("Remove StudyOnFS record failed for "+order, x);
+        }
+    }
+    
+	@SuppressWarnings("unchecked")
+	private void internalDeleteSeries(DeleteStudyOrder order, Long seriesPk,
+			FileSystemMgt2Local fsMgt) throws FinderException,
+			ConcurrentStudyStorageException, CreateException {
             Dataset ian = null;
             // prepare IAN if series may be deleted from DB by fsMgt.deleteSeries()
             if (createIANonStudyDelete && deleteStudyFromDB) {
                 try {
                     ian = fsMgt.createIANforSeries(seriesPk);
                 } catch (NoSuchSeriesException e) {
-                    // Series may be already deleted from DB by previous
-                    // attempt processing this DeleteStudyOrder
-                    continue;
+		        return;
                 }
             }
-            String[] filePaths = fsMgt.deleteSeries(order, seriesPk, 
+
+		Collection<FileDTO> fileDTOs = fsMgt.deleteSeries(order, seriesPk, 
                     deleteStudyFromDB, deletePatientWithoutObjects);
-            if (filePaths.length == 0) {
-                // Files of this Series already deleted by previous attempt 
-                // processing this DeleteStudyOrder
-                continue;
+		
+		if (fileDTOs.isEmpty()) {
+		    return;
             }
-            for (int i = 0; i < filePaths.length; i++) {
-                FileUtils.delete(FileUtils.toFile(filePaths[i]), true, fsDto.getDirectoryPath());
-            }
+		
+		fileDeleter.deleteFiles(fsMgt, fileDTOs);
+
             if (createIANonStudyDelete) {
                 try {
                     try {
@@ -363,18 +390,10 @@ public class DeleteStudyService extends ServiceMBeanSupport
                 }
             }
         }
-        try {
-            fsMgt.removeStudyOnFSRecord(order);
-        } catch (Exception x) {
-            log.warn("Remove StudyOnFS record failed for "+order, x);
-        }
-    }
     
-    static FileSystemMgt2 fileSystemMgt() throws Exception {
-        FileSystemMgt2Home home = (FileSystemMgt2Home) EJBHomeFactory
-                .getFactory().lookup(FileSystemMgt2Home.class,
-                        FileSystemMgt2Home.JNDI_NAME);
-        return home.create();
+    private FileSystemMgt2Local fileSystemMgt2() throws Exception {
+		return ((FileSystemMgt2LocalHome) jndiHelper
+				.jndiLookup(FileSystemMgt2LocalHome.JNDI_NAME)).create();
     }
 
     void sendJMXNotification(Object o) {

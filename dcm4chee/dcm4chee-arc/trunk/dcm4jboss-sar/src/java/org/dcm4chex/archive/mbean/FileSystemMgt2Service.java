@@ -37,6 +37,8 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chex.archive.mbean;
 
+import static java.util.Arrays.asList;
+
 import java.io.File;
 import java.io.IOException;
 import java.rmi.RemoteException;
@@ -54,10 +56,12 @@ import org.dcm4chex.archive.common.DeleteStudyOrder;
 import org.dcm4chex.archive.common.FileSystemStatus;
 import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.config.RetryIntervalls;
-import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2Local;
+import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2LocalHome;
 import org.dcm4chex.archive.notif.StorageFileSystemSwitched;
+import org.dcm4chex.archive.util.FileDeleter;
 import org.dcm4chex.archive.util.FileSystemUtils;
 import org.dcm4chex.archive.util.FileUtils;
 
@@ -121,6 +125,18 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
 
     private ObjectName storeScpServiceName;
 
+    private final JndiHelper jndiHelper;
+    private final FileDeleter fileDeleter;
+    
+    public FileSystemMgt2Service() {
+    	this.jndiHelper = new JndiHelper();
+    	this.fileDeleter = new FileDeleter(log);
+	}
+
+	FileSystemMgt2Service(JndiHelper jndiHelper, FileDeleter fileDeleter) {
+		this.jndiHelper = jndiHelper;
+		this.fileDeleter = fileDeleter;
+	}
     
     public String getMinFreeDiskSpace() {
         return minFreeDiskSpaceRatio > 0 ? minFreeDiskSpaceRatio+"%" :
@@ -789,33 +805,26 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
             }
             isRunningDeleteOrphanedPrivateFiles = true;
         }  
+        
         try {
-            log.info("Check file system group " + getFileSystemGroupID()
-                    + " for deletion of orphaned private files");
-            FileSystemMgt2 fsMgt = fileSystemMgt();
-            FileDTO[] fileDTOs = fsMgt.getOrphanedPrivateFilesOnFSGroup(
-                    getFileSystemGroupID(), deleteOrphanedPrivateFilesBatchSize);
-            int deleted = 0;
-            for (int i = 0; i < fileDTOs.length; i++) {
-                FileDTO fileDTO = fileDTOs[i];
-                File file = FileUtils.toFile(fileDTO.getDirectoryPath(),
-                        fileDTO.getFilePath());
-                try {
-                    fsMgt.deletePrivateFile(fileDTO.getPk());
-                } catch (Exception e) {
-                    log.warn("Failed to remove File Record[pk=" + fileDTO.getPk()
-                            + "] from DB:", e);
-                    log.info("-> Keep dereferenced file: " + file);
-                    continue;
-                }
-                FileUtils.delete(file, true, fileDTO.getDirectoryPath());
-                deleted++;
-            }
-            return deleted;
+            return internalDeleteOrphanedPrivateFiles();
         } finally {
-            isRunningDeleteOrphanedPrivateFiles = false;
+        	synchronized(this) {
+	            isRunningDeleteOrphanedPrivateFiles = false;
+        	}
         }
     }
+
+	private int internalDeleteOrphanedPrivateFiles() throws Exception,
+			FinderException, RemoteException {
+		log.info("Check file system group " + getFileSystemGroupID()
+		        + " for deletion of orphaned private files");
+
+		FileSystemMgt2Local fsMgt = fileSystemMgt2();
+		
+		return fileDeleter.deleteFiles(fsMgt, asList(fsMgt.getOrphanedPrivateFilesOnFSGroup(
+				getFileSystemGroupID(), deleteOrphanedPrivateFilesBatchSize)));
+	}
 
     @Override
     protected void scheduleDeleteOrder(DeleteStudyOrder order) throws Exception {
@@ -835,5 +844,10 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
         cal.set(Calendar.SECOND, 59);
         cal.set(Calendar.MILLISECOND, 999);
         return cal.getTimeInMillis();
+    }
+    
+    private FileSystemMgt2Local fileSystemMgt2() throws Exception {
+		return ((FileSystemMgt2LocalHome) jndiHelper
+				.jndiLookup(FileSystemMgt2LocalHome.JNDI_NAME)).create();
     }
 }

@@ -39,7 +39,6 @@
 
 package org.dcm4chex.archive.ejb.session;
 
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -75,6 +74,7 @@ import org.dcm4chex.archive.ejb.interfaces.MPPSLocal;
 import org.dcm4chex.archive.ejb.interfaces.OtherPatientIDLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.PrivateFileLocal;
 import org.dcm4chex.archive.ejb.interfaces.PrivateFileLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.PrivateInstanceLocal;
 import org.dcm4chex.archive.ejb.interfaces.PrivateInstanceLocalHome;
@@ -95,7 +95,7 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
  * @version $Revision$ $Date$
  * @since 27.12.2005
  * 
- * @ejb.bean name="PrivateManager" type="Stateless" view-type="remote"
+ * @ejb.bean name="PrivateManager" type="Stateless" view-type="both"
  *           jndi-name="ejb/PrivateManager"
  * 
  * @ejb.transaction-type type="Container"
@@ -148,8 +148,7 @@ public abstract class PrivateManagerBean implements SessionBean {
     private static Logger log = Logger.getLogger(PrivateManagerBean.class
             .getName());
 
-    public void setSessionContext(SessionContext arg0) throws EJBException,
-            RemoteException {
+    public void setSessionContext(SessionContext arg0) throws EJBException {
         Context jndiCtx = null;
         try {
             jndiCtx = new InitialContext();
@@ -200,8 +199,7 @@ public abstract class PrivateManagerBean implements SessionBean {
      * @throws FinderException
      * @ejb.interface-method
      */
-    public void deletePrivateSeries(long series_pk) throws RemoteException,
-            FinderException {
+	public void deletePrivateSeries(long series_pk) throws FinderException {
         try {
             PrivateSeriesLocal series = privSeriesHome
                     .findByPrimaryKey(new Long(series_pk));
@@ -214,10 +212,8 @@ public abstract class PrivateManagerBean implements SessionBean {
                     pat.remove();
                 }
             }
-        } catch (EJBException e) {
-            throw new RemoteException("Can't delete series with pk " + series_pk, e);
         } catch (RemoveException e) {
-            throw new RemoteException("Can't delete series with pk " + series_pk, e);
+            throw new EJBException("Can't delete series with pk " + series_pk, e);
         }
     }
 
@@ -225,8 +221,7 @@ public abstract class PrivateManagerBean implements SessionBean {
      * @throws FinderException
      * @ejb.interface-method
      */
-    public Collection deletePrivateStudy(long study_pk) throws RemoteException,
-            FinderException {
+	public Collection deletePrivateStudy(long study_pk) throws FinderException {
         try {
             PrivateStudyLocal study = privStudyHome.findByPrimaryKey(new Long(
                     study_pk));
@@ -237,33 +232,27 @@ public abstract class PrivateManagerBean implements SessionBean {
                 pat.remove();
             }
             return files;
-        } catch (EJBException e) {
-            throw new RemoteException("Can't delete study with pk " + study_pk, e);
         } catch (RemoveException e) {
-            throw new RemoteException("Can't delete study with pk " + study_pk, e);
+            throw new EJBException("Can't delete study with pk " + study_pk, e);
         }
     }
 
     /**
      * @ejb.interface-method
      */
-    public void deletePrivatePatient(long patient_pk) throws RemoteException {
+    public void deletePrivatePatient(long patient_pk) {
         try {
             privPatHome.remove(new Long(patient_pk));
-        } catch (EJBException e) {
-            throw new RemoteException("Can't delete patient with pk " + patient_pk, e);
         } catch (RemoveException e) {
-            throw new RemoteException("Can't delete patient with pk " + patient_pk, e);
+            throw new EJBException("Can't delete patient with pk " + patient_pk, e);
         }
     }
 
     /**
      * @throws FinderException
-     * @throws FinderException
      * @ejb.interface-method
      */
-    public void deletePrivateInstance(long instance_pk) throws RemoteException,
-            FinderException {
+	public void deletePrivateInstance(long instance_pk) throws FinderException {
         try {
             PrivateInstanceLocal instance = privInstHome
                     .findByPrimaryKey(new Long(instance_pk));
@@ -280,10 +269,8 @@ public abstract class PrivateManagerBean implements SessionBean {
                     }
                 }
             }
-        } catch (EJBException e) {
-            throw new RemoteException("Can't delete instance with pk " + instance_pk, e);
         } catch (RemoveException e) {
-            throw new RemoteException("Can't delete instance with pk " + instance_pk, e);
+            throw new EJBException("Can't delete instance with pk " + instance_pk, e);
         }
     }
 
@@ -291,21 +278,18 @@ public abstract class PrivateManagerBean implements SessionBean {
      * @throws FinderException
      * @ejb.interface-method
      */
-    public void deletePrivateFile(long file_pk) throws RemoteException {
+    public void deletePrivateFile(long file_pk) {
         try {
             privFileHome.remove(new Long(file_pk));
-        } catch (EJBException e) {
-            throw new RemoteException("Can't delete file with pk " + file_pk, e);
         } catch (RemoveException e) {
-            throw new RemoteException("Can't delete file with pk " + file_pk, e);
+            throw new EJBException("Can't delete file with pk " + file_pk, e);
         }
     }
 
     /**
-     * @throws FinderException
      * @ejb.interface-method
      */
-    public void deletePrivateFiles(Collection fileDTOs) throws RemoteException {
+    public void deletePrivateFiles(Collection fileDTOs) {
             for (Iterator iter = fileDTOs.iterator(); iter.hasNext();) {
     		deletePrivateFile(new Long(((FileDTO) iter.next()).getPk()));
         }
@@ -314,14 +298,14 @@ public abstract class PrivateManagerBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public void deleteAll(int privateType) throws RemoteException {
+    public void deleteAll(int privateType) {
         try {
             Collection c = privPatHome.findByPrivateType(privateType);
             for (Iterator iter = c.iterator(); iter.hasNext();) {
             	deletePrivatePatient(((PrivatePatientLocal) iter.next()).getPk());
             }
         } catch (FinderException e) {
-            throw new RemoteException("Can't find patients with type " + privateType, e);
+            throw new EJBException("Can't find patients with type " + privateType, e);
         }
     }
 
@@ -336,10 +320,8 @@ public abstract class PrivateManagerBean implements SessionBean {
      *            True to delete the series/study if there's no instance/series
      * @return a collection of Dataset containing the actuall detetion
      *         information per study
-     * @throws RemoteException
      */
-    public Collection moveInstancesToTrash(String[] iuids, boolean cascading)
-            throws RemoteException {
+    public Collection moveInstancesToTrash(String[] iuids, boolean cascading) {
         try {
             // These instances may belong to multiple studies,
             // although mostly they should be the same study
@@ -392,20 +374,18 @@ public abstract class PrivateManagerBean implements SessionBean {
 
             return dss;
         } catch (CreateException e) {
-            throw new RemoteException("Can't delete instances, first instance is " + iuids[0] , e);
-        } catch (EJBException e) {
-            throw new RemoteException("Can't delete instances, first instance is " + iuids[0] , e);
+            throw new EJBException("Can't delete instances, first instance is " + iuids[0] , e);
         } catch (FinderException e) {
-            throw new RemoteException("Can't delete instances, first instance is " + iuids[0] , e);
+            throw new EJBException("Can't delete instances, first instance is " + iuids[0] , e);
         } catch (RemoveException e) {
-            throw new RemoteException("Can't delete instances, first instance is " + iuids[0] , e);
+            throw new EJBException("Can't delete instances, first instance is " + iuids[0] , e);
         }
     }
 
     /**
      * @ejb.interface-method
      */
-    public Dataset moveInstanceToTrash(long instance_pk) throws RemoteException {
+    public Dataset moveInstanceToTrash(long instance_pk) {
         try {
             InstanceLocal instance = instHome.findByPrimaryKey(new Long(
                     instance_pk));
@@ -421,20 +401,18 @@ public abstract class PrivateManagerBean implements SessionBean {
             UpdateDerivedFieldsUtils.updateDerivedFieldsOf(series.getStudy());
             return ds;
         } catch (CreateException e) {
-            throw new RemoteException("Can't move instance to trash, pk: " + instance_pk, e);
-        } catch (EJBException e) {
-        	throw new RemoteException("Can't move instance to trash, pk: " + instance_pk, e);
+        	throw new EJBException("Can't move instance to trash, pk: " + instance_pk, e);
         } catch (FinderException e) {
-        	throw new RemoteException("Can't move instance to trash, pk: " + instance_pk, e);
+        	throw new EJBException("Can't move instance to trash, pk: " + instance_pk, e);
         } catch (RemoveException e) {
-        	throw new RemoteException("Can't move instance to trash, pk: " + instance_pk, e);
+        	throw new EJBException("Can't move instance to trash, pk: " + instance_pk, e);
         }
     }
 
     /**
      * @ejb.interface-method
      */
-    public Dataset moveSeriesToTrash(long series_pk) throws RemoteException {
+    public Dataset moveSeriesToTrash(long series_pk) {
         try {
             SeriesLocal series = seriesHome
                     .findByPrimaryKey(new Long(series_pk));
@@ -447,13 +425,11 @@ public abstract class PrivateManagerBean implements SessionBean {
             UpdateDerivedFieldsUtils.updateDerivedFieldsOf(study);
             return ds;
         } catch (CreateException e) {
-        	throw new RemoteException("Can't move series to trash, pk: " + series_pk, e);
-        } catch (EJBException e) {
-        	throw new RemoteException("Can't move series to trash, pk: " + series_pk, e);
+        	throw new EJBException("Can't move series to trash, pk: " + series_pk, e);
         } catch (FinderException e) {
-        	throw new RemoteException("Can't move series to trash, pk: " + series_pk, e);
+        	throw new EJBException("Can't move series to trash, pk: " + series_pk, e);
         } catch (RemoveException e) {
-        	throw new RemoteException("Can't move series to trash, pk: " + series_pk, e);
+        	throw new EJBException("Can't move series to trash, pk: " + series_pk, e);
         }
     }
 
@@ -500,9 +476,8 @@ public abstract class PrivateManagerBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public Collection moveSeriesOfPPSToTrash(String ppsIUID,
-            boolean removeEmptyParents) throws RemoteException {
-        Collection result = new ArrayList(); // FIXME: NOT IN USE
+    public void moveSeriesOfPPSToTrash(String ppsIUID,
+            boolean removeEmptyParents) {
         try {
             Object[] ppsSeries = seriesHome.findByPpsIuid(ppsIUID).toArray();
             if (ppsSeries.length > 0) {
@@ -521,9 +496,8 @@ public abstract class PrivateManagerBean implements SessionBean {
             }
         } catch (FinderException ignore) {
         } catch (Exception e) {
-        	throw new RemoteException("Can't move series of PPS to trash, ppsIUID: " + ppsIUID, e);
+        	throw new EJBException("Can't move series of PPS to trash, ppsIUID: " + ppsIUID, e);
         }
-        return result;
     }
 
     /**
@@ -641,6 +615,7 @@ public abstract class PrivateManagerBean implements SessionBean {
         return result;
     }
 
+    @SuppressWarnings("unchecked")
     private PrivateInstanceLocal getPrivateInstance(InstanceLocal instance,
             int type, PrivateSeriesLocal privSeries) throws FinderException,
             CreateException {
@@ -657,20 +632,46 @@ public abstract class PrivateManagerBean implements SessionBean {
         } else {
             privInstance = (PrivateInstanceLocal) col.iterator().next();
         }
-        Object[] files = instance.getFiles().toArray();
-        FileLocal file;
-        for (int i = 0; i < files.length; i++) {
-            file = (FileLocal) files[i];
-            privFileHome.create(file.getFilePath(), file.getFileTsuid(), file
+        internalMoveFilesToTrash(privInstance, instance.getFiles());
+
+        return privInstance;
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public Collection<PrivateFileLocal> moveFilesToTrash(Collection files)
+			throws CreateException {
+		return internalMoveFilesToTrash(null, files);
+	}
+
+	/**
+     * @ejb.interface-method
+     */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public void moveFilesToTrash(PrivateInstanceLocal privInstance,
+			Collection files) throws CreateException {
+		internalMoveFilesToTrash(privInstance, files);
+	}
+
+	private Collection<PrivateFileLocal> internalMoveFilesToTrash(PrivateInstanceLocal privInstance,
+			Collection<FileLocal> files) throws CreateException {
+		
+		Collection<PrivateFileLocal> privateFiles = new ArrayList<PrivateFileLocal>(files.size());
+		
+		for (FileLocal file : files) {
+            privateFiles.add(privFileHome.create(file.getFilePath(), file.getFileTsuid(), file
                     .getFileSize(), file.getFileMd5(), file.getFileStatus(),
-                    privInstance, file.getFileSystem());
+                    privInstance, file.getFileSystem()));
             try {
                 file.remove();
             } catch (Exception x) {
                 log.warn("Can not remove File record:" + file, x);
             }
         }
-        return privInstance;
+		
+		return privateFiles;
     }
 
     private PrivateSeriesLocal getPrivateSeries(SeriesLocal series, int type,
