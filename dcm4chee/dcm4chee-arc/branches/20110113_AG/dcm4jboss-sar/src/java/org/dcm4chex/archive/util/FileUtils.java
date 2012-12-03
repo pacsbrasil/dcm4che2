@@ -39,6 +39,8 @@
 
 package org.dcm4chex.archive.util;
 
+import static java.lang.String.format;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -350,15 +352,22 @@ public class FileUtils {
      * 
      * @param file - the file to delete
      * @param deleteEmptyParents - removing empty parent folders flag
-     * @param parentFolderToKeep - if deleteEmptyParents is true, this parameters shows the parent folder 
+     * @param rootPath - if deleteEmptyParents is true, this parameters shows the parent folder 
      * where removing parents must stop
      * @return True, if the file has been successfully removed, otherwise returns false
      */
-    public static boolean delete(File file, boolean deleteEmptyParents, String parentFolderToKeep) {
+    public static boolean delete(File file, boolean deleteEmptyParents, String rootPath) {
         log.info("M-DELETE file: " + file);
         if (!file.exists()) {
-            log.warn("File: " + file + " was already deleted");
-            return true;
+        	File rootFile = rootPath == null ? null : toFile(rootPath);
+        	boolean isParentReliable = isReliable(file.getParentFile(), rootFile);
+        	
+			log.warn(format(
+					isParentReliable ? "File [%s] has already been deleted."
+							: "Cannot list file [%s]; is its parent-directory tree mounted and executable?",
+					file));
+            
+            return isParentReliable;
         }
         if (!file.delete()) {
             log.warn("Failed to delete file: " + file);
@@ -366,8 +375,8 @@ public class FileUtils {
         }
         if (deleteEmptyParents) {
             File parentToKeep = null;
-            if (parentFolderToKeep != null)
-            	parentToKeep = toFile(parentFolderToKeep);
+            if (rootPath != null)
+            	parentToKeep = toFile(rootPath);
             
         	File parent = file.getParentFile();
             while (!parent.equals(parentToKeep) && parent.delete()){
@@ -377,4 +386,11 @@ public class FileUtils {
         }
         return true;
     }
+
+	private static boolean isReliable(File file, File rootFile) {
+		return file != null
+				&& (file.exists() && !file.equals(rootFile)
+						&& file.canExecute() || !file.exists()
+						&& isReliable(file.getParentFile(), rootFile));
+	}
 }
