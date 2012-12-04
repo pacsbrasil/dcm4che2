@@ -664,11 +664,12 @@ public abstract class PrivateManagerBean implements SessionBean {
 	}
 
 	private Collection<PrivateFileLocal> internalMoveFilesToTrash(PrivateInstanceLocal privInstance,
-			Collection<FileLocal> files) throws CreateException {
+			Collection<FileLocal> fileCollection) throws CreateException {
 		
-		Collection<PrivateFileLocal> privateFiles = new ArrayList<PrivateFileLocal>(files.size());
+		FileLocal[] fileArray = fileCollection.toArray(new FileLocal[fileCollection.size()]);
+		Collection<PrivateFileLocal> privateFiles = new ArrayList<PrivateFileLocal>(fileCollection.size());
 		
-		for (FileLocal file : files) {
+		for (FileLocal file : fileArray) {
             privateFiles.add(privFileHome.create(file.getFilePath(), file.getFileTsuid(), file
                     .getFileSize(), file.getFileMd5(), file.getFileStatus(),
                     privInstance, file.getFileSystem()));
