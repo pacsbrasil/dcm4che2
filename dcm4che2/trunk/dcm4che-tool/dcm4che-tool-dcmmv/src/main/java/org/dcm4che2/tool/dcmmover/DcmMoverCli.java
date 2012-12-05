@@ -37,7 +37,7 @@ public class DcmMoverCli {
     
     private static final String EXAMPLE = 
         "\nExample:\n"
-        + "org.dcm4che2.tool.dcmmover.DcmMoverCli IMPX_QR_SCP@localhost:104\n"
+        + "dcmmover IMPX_QR_SCP@localhost:104\n"
         + "DCM4CHEE_STORE_SCP@localhost:306 100.118.116.2005.2.1.1132055943.796.3\n"
         + "-stgcmt -x PatientName=JONES^JOHN PatientId=9001\n"
         + "=> Move the study with uid '100.118.116.2005.2.1.1132055943.796.3'\n"
