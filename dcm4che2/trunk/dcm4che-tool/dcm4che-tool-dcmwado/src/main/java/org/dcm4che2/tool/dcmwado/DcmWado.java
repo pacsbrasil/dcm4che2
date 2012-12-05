@@ -209,7 +209,7 @@ public class DcmWado {
         OptionBuilder.withDescription("Return rectangular region of image " +
                 "matrix specified by top left (x1,y1) and bottom right (x2,y2) " +
                 "corner in relative coordinates within the range 0.0 to 1.0.");
-        opts.addOption(OptionBuilder.create("window"));
+        opts.addOption(OptionBuilder.create("region"));
         
         OptionBuilder.withArgName("center/width");
         OptionBuilder.hasArgs(2);
@@ -230,12 +230,6 @@ public class DcmWado {
                 "working directory by default");
         opts.addOption(OptionBuilder.create("dir"));
         
-        OptionBuilder.withArgName("dirpath");
-        OptionBuilder.hasArg();
-        OptionBuilder.withDescription("Directory to store retrieved objects, " +
-                "working directory by default");
-        opts.addOption(OptionBuilder.create("dir"));
-
         OptionBuilder.withArgName("file");
         OptionBuilder.hasArg();
         OptionBuilder.withDescription("Store retrieved object to specified file, "
@@ -386,26 +380,26 @@ public class DcmWado {
                 dcmwado.setAnnotation(cl.getOptionValues("annotation"));
             }
             if (cl.hasOption("rows")) {
-                dcmwado.setRows(parseInt(cl.getOptionValue("h"), 
-                        "Invalid value of -h", 1, Integer.MAX_VALUE));
+                dcmwado.setRows(parseInt(cl.getOptionValue("rows"), 
+                        "Invalid value of -rows", 1, Integer.MAX_VALUE));
             }
             if (cl.hasOption("columns")) {
-                dcmwado.setColumns(parseInt(cl.getOptionValue("w"), 
-                        "Invalid value of -w", 1, Integer.MAX_VALUE));
+                dcmwado.setColumns(parseInt(cl.getOptionValue("columns"), 
+                        "Invalid value of -columns", 1, Integer.MAX_VALUE));
             }
             if (cl.hasOption("frame")) {
-                dcmwado.setFrameNumber(parseInt(cl.getOptionValue("f"), 
-                        "Invalid value of -f", 1, Integer.MAX_VALUE));
+                dcmwado.setFrameNumber(parseInt(cl.getOptionValue("frame"), 
+                        "Invalid value of -frame", 1, Integer.MAX_VALUE));
             }
             if (cl.hasOption("region")) {
-                dcmwado.setRegion(cl.getOptionValues("reg"));
+                dcmwado.setRegion(cl.getOptionValues("region"));
             }
             if (cl.hasOption("window")) {
-                dcmwado.setWindow(cl.getOptionValues("voi"));
+                dcmwado.setWindow(cl.getOptionValues("window"));
             }
             if (cl.hasOption("quality")) {
-                dcmwado.setImageQuality(parseInt(cl.getOptionValue("q"), 
-                        "Invalid value of -q", 1, Integer.MAX_VALUE));
+                dcmwado.setImageQuality(parseInt(cl.getOptionValue("quality"), 
+                        "Invalid value of -quality", 1, Integer.MAX_VALUE));
             }
             if (cl.hasOption("dir")) {
                 dcmwado.setDirectory(new File(cl.getOptionValue("dir")));
