@@ -4,12 +4,12 @@
   <parent>
     <groupId>dcm4che.dcm4chee</groupId>
     <artifactId>dcm4chee-arr-parent</artifactId>
-    <version>3.0.11</version>
+    <version>3.0.12</version>
   </parent>
   <groupId>dcm4che.dcm4chee</groupId>
   <artifactId>dcm4chee-arr-seam-ejb</artifactId>
   <packaging>ejb</packaging>
-  <version>3.0.11</version>
+  <version>3.0.12</version>
   <name>Seam (EJB3) Components for ARR</name>
   <dependencies>
     <dependency>
@@ -28,7 +28,7 @@
       <groupId>dcm4che.dcm4chee</groupId>
       <artifactId>dcm4chee-arr-entities</artifactId>
       <classifier>${db}</classifier>
-      <version>3.0.11</version>
+      <version>3.0.12</version>
       <scope>provided</scope>
     </dependency>
     <dependency>

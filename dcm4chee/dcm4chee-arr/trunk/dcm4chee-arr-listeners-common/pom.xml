@@ -4,12 +4,12 @@
   <parent>
     <groupId>dcm4che.dcm4chee</groupId>
     <artifactId>dcm4chee-arr-parent</artifactId>
-    <version>3.0.11</version>
+    <version>3.0.12</version>
   </parent>
   <name>Common Components for TCP and UCP Listener of ARR</name>
   <groupId>dcm4che.dcm4chee</groupId>
   <artifactId>dcm4chee-arr-listeners-common</artifactId>
-  <version>3.0.11</version>
+  <version>3.0.12</version>
   <packaging>jboss-sar</packaging>
   <dependencies>
     <dependency>

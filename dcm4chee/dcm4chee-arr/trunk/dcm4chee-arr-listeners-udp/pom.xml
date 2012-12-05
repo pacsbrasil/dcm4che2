@@ -4,18 +4,18 @@
   <parent>
     <groupId>dcm4che.dcm4chee</groupId>
     <artifactId>dcm4chee-arr-parent</artifactId>
-    <version>3.0.11</version>
+    <version>3.0.12</version>
   </parent>
   <name>UDP Listener of ARR</name>
   <groupId>dcm4che.dcm4chee</groupId>
   <artifactId>dcm4chee-arr-listeners-udp</artifactId>
-  <version>3.0.11</version>
+  <version>3.0.12</version>
   <packaging>jboss-sar</packaging>
   <dependencies>
     <dependency>
       <groupId>dcm4che.dcm4chee</groupId>
       <artifactId>dcm4chee-arr-listeners-common</artifactId>
-      <version>3.0.11</version>
+      <version>3.0.12</version>
       <type>jboss-sar</type>
       <scope>provided</scope>
     </dependency>

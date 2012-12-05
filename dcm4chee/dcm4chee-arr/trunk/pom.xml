@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>dcm4che.dcm4chee</groupId>
   <artifactId>dcm4chee-arr-parent</artifactId>
-  <version>3.0.11</version>
+  <version>3.0.12</version>
   <packaging>pom</packaging>
   <name>Audit Record Repository</name>
   <properties>
