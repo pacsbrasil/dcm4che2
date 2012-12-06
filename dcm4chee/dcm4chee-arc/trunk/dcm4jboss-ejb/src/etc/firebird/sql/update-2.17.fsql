@@ -6,3 +6,5 @@ CREATE INDEX priv_inst_created ON priv_instance(created_time);
 
 ALTER TABLE ae ADD ae_group VARCHAR(255);
 CREATE INDEX ae_group ON ae(ae_group);
+
+CREATE INDEX filepath ON files(filepath);
