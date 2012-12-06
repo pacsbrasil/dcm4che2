@@ -67,5 +67,12 @@
         <include>dcm4che.dcm4chee:dcm4chee-web-sar-auditlog:xml:webcfg-xmbean</include>
       </includes>
     </dependencySet>
+    <dependencySet>
+	  <useProjectArtifact>false</useProjectArtifact>
+      <outputDirectory>cleanup</outputDirectory>
+      <includes>
+        <include>dcm4che.dcm4chee:dcm4chee-cleanup-ear:ear:${db}</include>
+      </includes>
+    </dependencySet>
   </dependencySets>
 </assembly>

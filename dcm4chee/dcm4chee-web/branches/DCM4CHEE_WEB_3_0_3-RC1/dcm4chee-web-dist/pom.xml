@@ -31,6 +31,13 @@
     </dependency>
     <dependency>
       <groupId>dcm4che.dcm4chee</groupId>
+      <artifactId>dcm4chee-cleanup-ear</artifactId>
+      <classifier>${db}</classifier>
+      <type>ear</type>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>dcm4che.dcm4chee</groupId>
       <artifactId>dcm4chee-dashboard-sar-auditlog</artifactId>
       <classifier>config-xmbean</classifier>
       <type>xml</type>

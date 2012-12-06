@@ -50,7 +50,8 @@
 		        <module>../dcm4chee-web-common</module>
 		        <module>../dcm4chee-dashboard</module>
 		        <module>../dcm4chee-usr</module>
-		    
+		        <module>../dcm4chee-cleanup</module>
+		        
 		        <module>dcm4chee-web-ejb</module>
 		        <module>dcm4chee-web-urlprovider</module>
 		        <module>dcm4chee-web-licenseprovider</module>
