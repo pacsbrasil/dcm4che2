@@ -177,6 +177,7 @@ CREATE INDEX file_tsuid ON files(file_tsuid(64));
 CREATE INDEX md5_check_time ON files(md5_check_time);
 CREATE INDEX file_created ON files(created_time);
 CREATE INDEX file_status ON files(file_status);
+CREATE INDEX filepath ON files(filepath);
 ALTER TABLE study_on_fs
     ADD UNIQUE INDEX i_study_on_fs (study_fk, filesystem_fk),
     ADD CONSTRAINT i_study_on_fs FOREIGN KEY (study_fk) REFERENCES study(pk);

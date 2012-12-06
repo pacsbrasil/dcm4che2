@@ -177,6 +177,7 @@ ALTER TABLE files DROP INDEX file_tsuid;
 ALTER TABLE files DROP INDEX md5_check_time;
 ALTER TABLE files DROP INDEX file_created;
 ALTER TABLE files DROP INDEX file_status;
+ALTER TABLE files DROP INDEX filepath;
 ALTER TABLE study_on_fs
    DROP FOREIGN KEY i_study_on_fs,
    DROP INDEX i_study_on_fs;

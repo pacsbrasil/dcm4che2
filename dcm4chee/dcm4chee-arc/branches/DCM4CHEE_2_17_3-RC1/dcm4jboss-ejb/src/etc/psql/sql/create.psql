@@ -414,6 +414,7 @@ CREATE INDEX file_tsuid ON files(file_tsuid);
 CREATE INDEX md5_check_time ON files(md5_check_time);
 CREATE INDEX file_created ON files(created_time);
 CREATE INDEX file_status ON files(file_status);
+CREATE INDEX filepath ON files(filepath);
 
 CREATE TABLE study_on_fs (
     pk                SERIAL8 NOT NULL CONSTRAINT study_on_fs_pk PRIMARY KEY,
