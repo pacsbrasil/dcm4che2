@@ -130,5 +130,21 @@
      </includes>
       <useDefaultExcludes>true</useDefaultExcludes>
     </fileSet>
+   <fileSet>
+      <outputDirectory>dcm4chee-cleanup</outputDirectory>
+      <directory>../../dcm4chee-cleanup</directory>
+      <includes>
+        <include>pom.xml</include>
+        <include>dcm4chee-cleanup-ear/pom.xml</include>
+        <include>dcm4chee-cleanup-ear/src/*/**</include>
+        <include>dcm4chee-cleanup-sar/pom.xml</include>
+        <include>dcm4chee-cleanup-sar/src/*/**</include>
+        <include>dcm4chee-cleanup-sar/*-config/pom.xml</include>
+        <include>dcm4chee-cleanup-sar/*-config/src/*/**</include>
+        <include>dcm4chee-cleanup-ejb/pom.xml</include>
+        <include>dcm4chee-cleanup-ejb/src/*/**</include>
+     </includes>
+      <useDefaultExcludes>true</useDefaultExcludes>
+    </fileSet>
   </fileSets>
 </assembly>
