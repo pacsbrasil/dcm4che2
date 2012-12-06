@@ -587,6 +587,10 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
 
     private synchronized boolean switchFileSystem(FileSystemMgt2 fsMgt,
             FileSystemDTO fsDTO) throws Exception {
+        if (storageFileSystem == null || fsDTO == null) {
+            log.info("Storage filesystem not set! No RW filesystem configured or no space left!");
+            return false;
+        }
         if (storageFileSystem.getPk() != fsDTO.getPk()) {
             log.info("Storage file system has already been switched from "
                     + fsDTO + " to " + storageFileSystem
