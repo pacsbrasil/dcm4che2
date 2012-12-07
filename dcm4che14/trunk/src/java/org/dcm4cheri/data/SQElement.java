@@ -211,15 +211,9 @@ class SQElement extends DcmElementImpl
      *
      * @return    Description of the Return Value
      */
-    public String toString()
-    {
+    public String toString() {
         StringBuffer sb = new StringBuffer(DICT.toString(tag));
-        sb.append(",SQ");
-        if (!isEmpty()) {
-            for (int i = 0, n = list.size(); i < n; ++i) {
-                sb.append("\n\tItem-").append(i + 1).append(getItem(i));
-            }
-        }
+        sb.append(",SQ[size=").append(list.size()).append("]");
         return sb.toString();
     }
 
