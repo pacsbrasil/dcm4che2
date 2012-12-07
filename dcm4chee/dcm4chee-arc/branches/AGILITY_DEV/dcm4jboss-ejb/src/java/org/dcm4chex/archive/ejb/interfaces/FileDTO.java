@@ -79,7 +79,7 @@ public final class FileDTO implements Serializable, Comparable {
 
     private int availability;
 
-    public String toString() {
+	public String toString() {
         return "FileDTO[pk=" + pk + ", basedir=" + basedir + ", fsgrid="
                 + fsgrid + ", path=" + path + ", status=" + status + "]";
     }
@@ -235,18 +235,18 @@ public final class FileDTO implements Serializable, Comparable {
     }
 
     public String getSopInstanceUID() {
-        return sopCuid;
+        return sopIuid;
     }
 
-    public void setSopInstanceUID(String sopClassUID) {
-        this.sopCuid = sopClassUID;
+    public void setSopInstanceUID(String sopInstanceUID) {
+        this.sopIuid = sopInstanceUID;
     }
 
     /**
      * This will make sure the most available - and for files with equal
      * availability, the most recent - file will be listed first
      */
-    public int compareTo(Object o) {
+	public int compareTo(Object o) {
         FileDTO fi2 = (FileDTO) o;
         int diffAvail = getAvailability() - fi2.getAvailability();
         return diffAvail != 0 ? diffAvail : fi2.getPk() < getPk() ? -1 : 1;
