@@ -28,7 +28,7 @@
 
     <!-- Override with your dcm4che-1.4.x source dist location -->
     <property name="dcm4che14.home"
-      value="${user.home}/dcm4che14/build/dcm4che-1.4.32"/>
+      value="${user.home}/dcm4che14/build/dcm4che-1.4.33"/>
     <property name="dcm4che.jar" value="${dcm4che14.home}/lib/dcm4che.jar"/>
     <property name="jai_imagio.jar" value="${dcm4che14.home}/lib/jai_imageio.jar"/>
     <property name="slf4j-api.jar" value="${dcm4che14.home}/lib/slf4j-api-1.6.1.jar"/>
