@@ -123,11 +123,15 @@ public class CleanupDuplicatedFilesService extends ServiceMBeanSupport {
         StringBuilder sb = new StringBuilder();
         int i = 0;
         for (PrivateFile f : files) {
-            sb.append("TrashFile (").append(++i).append(") - pk:").append(f.getPk())
-            .append(" Pat:").append(f.getInstance().getSeries().getStudy().getPatient())
-            .append(" Study:").append(f.getInstance().getSeries().getStudy().getStudyInstanceUID())
-            .append(" Series:").append(f.getInstance().getSeries().getSeriesInstanceUID())
-            .append(" filePath:"+f.getFilePath()).append("\n");
+            sb.append("TrashFile (").append(++i).append(") - pk:").append(f.getPk());
+            if (f.getInstance() == null) {
+                sb.append(" REMOVED from trash");
+            } else {
+                sb.append(" Pat:").append(f.getInstance().getSeries().getStudy().getPatient())
+                .append(" Study:").append(f.getInstance().getSeries().getStudy().getStudyInstanceUID())
+                .append(" Series:").append(f.getInstance().getSeries().getSeriesInstanceUID())
+                .append(" filePath:").append(f.getFilePath()).append("\n");
+            }
         }
         return sb.toString();
     }

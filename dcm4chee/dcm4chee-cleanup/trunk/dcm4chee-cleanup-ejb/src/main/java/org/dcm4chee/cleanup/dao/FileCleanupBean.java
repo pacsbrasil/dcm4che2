@@ -47,7 +47,6 @@ import javax.persistence.Query;
 
 import org.dcm4chee.archive.entity.File;
 import org.dcm4chee.archive.entity.PrivateFile;
-import org.dcm4chee.archive.entity.PrivateInstance;
 import org.jboss.annotation.ejb.LocalBinding;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -104,7 +103,11 @@ public class FileCleanupBean implements FileCleanupLocal {
         log.info("Found "+files.size()+" PrivateFiles duplicated in folder!");
         for (PrivateFile f : files) {
             log.info("Found PrivateFile pk:"+f.getPk());
-            log.info("PatID:"+f.getInstance().getSeries().getStudy().getPatient().getPatientID());
+            if (f.getInstance() == null) {
+                log.info("Deleted from trash!");
+            } else {
+                log.info("PatID:"+f.getInstance().getSeries().getStudy().getPatient().getPatientID());
+            }
         }
         return files;
     }
