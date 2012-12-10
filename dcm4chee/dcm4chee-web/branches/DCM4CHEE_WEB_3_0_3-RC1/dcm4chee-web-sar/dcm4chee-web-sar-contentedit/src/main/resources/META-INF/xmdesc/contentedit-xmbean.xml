@@ -98,6 +98,19 @@
          <value value="NONE" />
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="isEnableForwardOnPatientUpdate"
+      setMethod="setEnableForwardOnPatientUpdate">
+      <description><![CDATA[Enable forwarding of instances if patient attributes are modified.<br />
+        If enabled, one instance (online) is sent to all AE's listed in <b>ForwardModifiedToAETs</b><br />
+      	You should enable this feature only if you have to update a system that does NOT support HL7 ADT update messages!
+      ]]></description>
+      <name>EnableForwardOnPatientUpdate</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
 
    <attribute access="read-write"
       getMethod="getModifyingSystem"

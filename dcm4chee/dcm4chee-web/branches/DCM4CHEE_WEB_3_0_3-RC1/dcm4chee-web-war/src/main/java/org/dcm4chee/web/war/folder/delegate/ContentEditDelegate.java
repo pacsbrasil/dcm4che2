@@ -237,7 +237,7 @@ public class ContentEditDelegate extends BaseMBeanDelegate {
         return series;
     }
     
-    private int  moveEntities(String op, long pk, long[] pks)
+    private int moveEntities(String op, long pk, long[] pks)
             throws InstanceNotFoundException, MBeanException,
             ReflectionException, IOException {
         return (Integer) server.invoke(serviceObjectName, op, new Object[]{pks, pk}, 

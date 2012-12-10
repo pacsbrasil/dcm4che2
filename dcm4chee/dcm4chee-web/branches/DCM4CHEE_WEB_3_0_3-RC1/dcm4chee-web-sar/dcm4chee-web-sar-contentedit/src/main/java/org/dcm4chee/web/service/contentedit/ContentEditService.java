@@ -152,6 +152,8 @@ public class ContentEditService extends ServiceMBeanSupport {
     protected TemplatesDelegate templates = new TemplatesDelegate(this);
     private String dcm2To14TplName, dcm14To2TplName;
     private Templates dcm2To14Tpl, dcm14To2Tpl;
+
+    private boolean enableForwardOnPatientUpdate;
     
     public String getUIDRoot() {
         return UIDUtils.getRoot();
@@ -191,6 +193,15 @@ public class ContentEditService extends ServiceMBeanSupport {
 
     public void setForwardModifiedToAETs(String aets) {
         this.forwardModifiedToAETs = NONE.equals(aets) ? null : StringUtils.split(aets, '\\');
+    }
+
+    public boolean isEnableForwardOnPatientUpdate() {
+        return enableForwardOnPatientUpdate;
+    }
+
+    public void setEnableForwardOnPatientUpdate(
+            boolean enableForwardOnPatientUpdate) {
+        this.enableForwardOnPatientUpdate = enableForwardOnPatientUpdate;
     }
 
     public boolean isSendIANonMppsLinked() {
@@ -432,6 +443,13 @@ public class ContentEditService extends ServiceMBeanSupport {
             log.info("Schedule PATIENT level Attributes Modification Notification (Move Study To Patient)");
             server.invoke(attrModScuServiceName, "scheduleModification", 
                     new Object[]{obj}, new String[]{DicomObject.class.getName()});
+            if (forwardModifiedToAETs != null) {
+                for (int j = 0 ; j < suids.length ; j++ ) {
+                    obj.putString(Tag.StudyInstanceUID, VR.UI, suids[j]);
+                    DicomObject fwdIan = lookupDicomEditLocal().getIanForForwardModifiedObject(obj, "STUDY");
+                    scheduleForward(fwdIan);
+                }
+            }
         } catch (Exception e) {
             log.error("Scheduling Attributes Modification Notification (Move Study To Patient) failed!", e);
         }
@@ -990,6 +1008,15 @@ public class ContentEditService extends ServiceMBeanSupport {
         sendDicomActionNotification(obj, DicomActionNotification.UPDATE, qrLevel);
         if ("PATIENT".equals(qrLevel)) {
             Auditlog.logPatientRecord(AuditEvent.ActionCode.UPDATE, true, patId, patName);
+            if (enableForwardOnPatientUpdate && forwardModifiedToAETs != null) {
+                if (studyIUIDs.length > 0) {
+                    obj.putString(Tag.StudyInstanceUID, VR.UI, studyIUIDs[0]);
+                    DicomObject fwdIan = lookupDicomEditLocal().getIanForForwardModifiedObject(obj, "STUDY");
+                    scheduleForward(fwdIan);
+                } else {
+                    log.info("Patient has no Study! Forward of modified patient ignored!");
+                }
+            }
        } else {
             Auditlog.logDicomObjectUpdated(true, patId, patName, studyIUIDs, obj, "Dicom Attributes updated on "+qrLevel+" level!");
             if ("STUDY".equals(qrLevel) || "SERIES".equals(qrLevel) || "IMAGE".equals(qrLevel)) {
