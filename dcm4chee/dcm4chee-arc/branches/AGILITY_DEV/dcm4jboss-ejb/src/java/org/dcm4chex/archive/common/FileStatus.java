@@ -19,6 +19,7 @@ import java.util.Arrays;
 public class FileStatus {
 
     private static final String[] ENUM = { 
+    	"UNCOMPRESSABLE",
     	"QUERY_HSM_FAILED",
     	"MD5_CHECK_FAILED",
     	"VERIFY_COMPRESS_FAILED", 
@@ -29,6 +30,7 @@ public class FileStatus {
         "COMPRESSING", 
     };
 
+    public static final int UNCOMPRESSABLE = -5;
     public static final int QUERY_HSM_FAILED = -4;
     public static final int MD5_CHECK_FAILED = -3;
     public static final int VERIFY_COMPRESS_FAILED = -2;
