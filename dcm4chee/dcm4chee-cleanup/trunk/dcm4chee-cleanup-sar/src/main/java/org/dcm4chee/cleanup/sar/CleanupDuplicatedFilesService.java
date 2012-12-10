@@ -125,7 +125,7 @@ public class CleanupDuplicatedFilesService extends ServiceMBeanSupport {
         for (PrivateFile f : files) {
             sb.append("TrashFile (").append(++i).append(") - pk:").append(f.getPk());
             if (f.getInstance() == null) {
-                sb.append(" REMOVED from trash");
+                sb.append(" REMOVED from trash\n");
             } else {
                 sb.append(" Pat:").append(f.getInstance().getSeries().getStudy().getPatient())
                 .append(" Study:").append(f.getInstance().getSeries().getStudy().getStudyInstanceUID())
