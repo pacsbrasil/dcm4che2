@@ -240,7 +240,7 @@ public class ContentEditDelegate extends BaseMBeanDelegate {
     private int moveEntities(String op, long pk, long[] pks)
             throws InstanceNotFoundException, MBeanException,
             ReflectionException, IOException {
-        return (Integer) server.invoke(serviceObjectName, op, new Object[]{pks, pk, WebCfgDelegate.getInstance().getTrustPatientIdWithoutIssuer()}, 
+        return (Integer) server.invoke(serviceObjectName, op, new Object[]{pks, pk}, 
         new String[]{long[].class.getName(), long.class.getName()});
     }
     
@@ -292,11 +292,16 @@ public class ContentEditDelegate extends BaseMBeanDelegate {
         DicomObject obj = model.getDataset();
         if (model.levelOfModel() == AbstractDicomModel.PATIENT_LEVEL) {
             pat = (PatientModel) model;
+            boolean collapsed = pat.isCollapsed();
+            if (collapsed)
+                pat.expand();
             List<StudyModel> studies = pat.getStudies();
             studyIUIDs = new String[studies.size()];
             for (int i = 0 ; i < studyIUIDs.length ; i++) {
                 studyIUIDs[i] = studies.get(i).getStudyInstanceUID();
             }
+            if (collapsed)
+                pat.collapse();
         } else {
             StudyModel study = (StudyModel) getModelOfLevel(model, AbstractDicomModel.STUDY_LEVEL);
             studyIUIDs = new String[]{study.getStudyInstanceUID()};
