@@ -51,6 +51,7 @@ import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.web.common.secure.SecureSessionCheckPage;
 import org.dcm4chee.web.common.webview.link.WebviewerLinkProvider;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
+import org.dcm4chee.web.war.folder.webviewer.Webviewer.WebviewerLinkClickedCallback;
 
 /**
  * @author Franz Willer <franz.willer@gmail.com>
@@ -59,7 +60,8 @@ import org.dcm4chee.web.war.common.model.AbstractDicomModel;
  */
 public class WebviewerSelectionPage extends SecureSessionCheckPage {
     
-    public WebviewerSelectionPage(AbstractDicomModel model, WebviewerLinkProvider[] providers, final ModalWindow modalWindow) {
+    public WebviewerSelectionPage(AbstractDicomModel model, WebviewerLinkProvider[] providers, final ModalWindow modalWindow,
+    		final WebviewerLinkClickedCallback callback) {
         super();        
         add(new Label("header", new ResourceModel("webviewer.selection.header")));
         add(new Label("info", model.toString()));
@@ -73,17 +75,22 @@ public class WebviewerSelectionPage extends SecureSessionCheckPage {
                 ExternalLink link = new ExternalLink("link", url, providers[i].getName())
                     .setPopupSettings(new PopupSettings(PageMap.forName(providers[i].getName()), 
                         PopupSettings.RESIZABLE|PopupSettings.SCROLLBARS));
-                if (modalWindow != null) {
+                if (modalWindow != null || callback!=null) {
                     link.add(new AjaxEventBehavior("onclick") {
                         private static final long serialVersionUID = 1L;
-
                         @Override
                         protected void onEvent(AjaxRequestTarget target)
                         {
-                            modalWindow.close(target);
+                        	if (modalWindow!=null) {
+                        		modalWindow.close(target);
+                        	}
+                            if (callback!=null) {
+                            	callback.linkClicked(target);
+                            }
                         }
                     });
                 }
+
                 mc.add(link);
                 rv.add(mc);
             }

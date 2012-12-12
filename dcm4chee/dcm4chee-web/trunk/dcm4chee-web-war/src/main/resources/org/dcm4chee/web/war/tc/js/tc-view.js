@@ -19,16 +19,28 @@ function updateTCViewDialog() {
 }
 
 function updateTCViewDialogToUseQueryUI() {
+	styleComboBoxes($("#tc-view"));
+	styleTextFields($("#tc-view"));
+	styleTextAreas($("#tc-view"));
+	styleYearSpinners($("#tc-view"));
+	styleMonthSpinners($("#tc-view"));
+	
 	$('#tc-view-content').tabs({
 		show: function(event, ui) {
 			updateTCViewTabsLayout();
 			checkToLoadThumbnails();
+		},
+		activate: function( event, ui ) {
+			tabActivated(event, ui, $(this).attr('activation-callback-url'));
 		}
 	});
 	$('#tc-view-editable-content').tabs({
 		show: function(event, ui) {
 			updateTCViewTabsLayout();
 			checkToLoadThumbnails();
+		},
+		activate: function( event, ui ) {
+			tabActivated(event, ui, $(this).attr('activation-callback-url'));
 		}
 	});
 	$('#tc-view-images-tab-container').parent().addClass("tc-view-images-tab-container-parent");
@@ -72,7 +84,7 @@ function updateTCViewTabsLayout() {
 	});
 	
 	//adapt height of individual elements
-	$('#tc-view-diagnosis-text').height($('#tc-view-diagnosis-text').parent().innerHeight()-$('#tc-view-diagnosis-confirmed-chkbox').outerHeight()-13);
+	$('#tc-view-diagnosis-text').height($('#tc-view-diagnosis-text').parent().innerHeight()-$('#tc-view-diagnosis-confirmed-chkbox').outerHeight()-33);
 	$('#tc-view-bibliography-container').outerHeight(
 		$('#tc-view-bibliography-container').parent().innerHeight()-
 		$('#tc-view-bibliography-header').outerHeight() -
@@ -92,6 +104,32 @@ function updateTCViewTabsLayout() {
 		btn.css('left',textarea.position().left+textarea.outerWidth()-btn.outerWidth()-4);
 	});
 	*/
+}
+
+function tabActivated(event, ui, callbackURL)
+{
+	if (callbackURL) {
+		var url = callbackURL;				
+		if (ui.newPanel) {
+			if (url.indexOf('?')==-1) {
+				url += '?newTabId=';
+			}
+			else {
+				url += '&newTabId=';
+			}
+			url += ui.newPanel.attr('id');
+		}
+		if (ui.oldPanel) {
+			if (url.indexOf('?')==-1) {
+				url += '?oldTabId=';
+			}
+			else {
+				url += '&oldTabId=';
+			}
+			url += ui.oldPanel.attr('id');
+		}
+		wicketAjaxGet(url,function(){},function(){});
+	}
 }
 
 function checkToLoadThumbnails()

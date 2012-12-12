@@ -69,8 +69,12 @@ import org.dcm4chee.web.war.tc.TCObject.TextOrCode;
 import org.dcm4chee.web.war.tc.TCUtilities.NullDropDownItem;
 import org.dcm4chee.web.war.tc.TCUtilities.SelfUpdatingTextArea;
 import org.dcm4chee.web.war.tc.TCUtilities.SelfUpdatingTextField;
+import org.dcm4chee.web.war.tc.TCUtilities.TCChangeListener;
 import org.dcm4chee.web.war.tc.TCViewPanel.AbstractEditableTCViewTab;
 import org.dcm4chee.web.war.tc.keywords.TCKeywordCatalogueProvider;
+import org.dcm4chee.web.war.tc.widgets.TCComboBox;
+import org.dcm4chee.web.war.tc.widgets.TCEditableComboBox;
+import org.dcm4chee.web.war.tc.widgets.TCSpinner;
 
 /**
  * @author Bernhard Ableitinger <bernhard.ableitinger@agfa.com>
@@ -105,6 +109,8 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
                 new InternalStringResourceModel("tc.level.text")));
         add(new Label("tc-view-overview-patientsex-label", 
                 new InternalStringResourceModel("tc.patient.sex.text")));
+        add(new Label("tc-view-overview-patientage-label", 
+                new InternalStringResourceModel("tc.patient.age.text")));
         add(new Label("tc-view-overview-patientrace-label", 
                 new InternalStringResourceModel("tc.patient.species.text")));
         add(new Label("tc-view-overview-modalities-label", 
@@ -354,12 +360,36 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         final TextField<String> patientSexText = new TextField<String>("tc-view-overview-patientsex-value-label", new Model<String>(
                 getStringValue(TCQueryFilterKey.PatientSex)
         ));
+        final TextField<String> patientAgeText = new TextField<String>("tc-view-overview-patientage-value-label", new Model<String>(
+                TCPatientAgeUtilities.format(getTC().getPatientAge())
+        ));
         final TextField<String> patientSpeciesText = new TextField<String>("tc-view-overview-patientrace-value-label", new Model<String>(
                 getStringValue(TCQueryFilterKey.PatientSpecies)
         ));
         final TextField<String> imageCountText = new TextField<String>("tc-view-overview-imagecount-value-label", new Model<String>(
                 getTC().getReferencedImages()!=null ? Integer.toString(getTC().getReferencedImages().size()) : "0"
         ));
+        
+        final TCSpinner<Integer> patientAgeYearSpinner = TCSpinner.createYearSpinner("tc-view-overview-patientage-years-input", 
+        		TCPatientAgeUtilities.toYears(getTC().getPatientAge()), new TCChangeListener<Integer>() {
+ 					private static final long serialVersionUID = 1L;
+ 					@Override
+					public void valueChanged(Integer value) {
+        				getTC().setPatientAge(TCPatientAgeUtilities.toDays(value,
+        						TCPatientAgeUtilities.toRemainingMonths(getTC().getPatientAge())));
+        			}
+        		}
+        );
+        final TCSpinner<Integer> patientAgeMonthSpinner = TCSpinner.createMonthSpinner("tc-view-overview-patientage-months-input", 
+        		TCPatientAgeUtilities.toRemainingMonths(getTC().getPatientAge()), new TCChangeListener<Integer>() {
+ 					private static final long serialVersionUID = 1L;
+ 					@Override
+					public void valueChanged(Integer value) {
+        				getTC().setPatientAge(TCPatientAgeUtilities.toDays(
+        						TCPatientAgeUtilities.toYears(getTC().getPatientAge()), value));
+        			}
+        		}
+        );
         
         final KeywordsListModel keywordsModel = new KeywordsListModel();
         final WebMarkupContainer keywordCodesContainer = new WebMarkupContainer("tc-view-overview-keyword-input-container");
@@ -484,6 +514,7 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
             categoryText.add(readonlyModifier);
             levelText.add(readonlyModifier);
             patientSexText.add(readonlyModifier);
+            patientAgeText.add(readonlyModifier);
             patientSpeciesText.add(readonlyModifier);
         }
         
@@ -500,6 +531,8 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         levelCBox.setVisible(editing);
         patientSexCBox.setVisible(editing);
         patientSpeciesCBox.setVisible(editing);
+        patientAgeYearSpinner.setVisible(editing);
+        patientAgeMonthSpinner.setVisible(editing);
         
         keywordArea.setVisible(!keywordCodeInput);
         anatomyText.setVisible(!editing);
@@ -510,6 +543,7 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         categoryText.setVisible(!editing);
         levelText.setVisible(!editing);
         patientSexText.setVisible(!editing);
+        patientAgeText.setVisible(!editing);
         patientSpeciesText.setVisible(!editing);
         
         add(titleText);
@@ -533,6 +567,9 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         add(levelText);
         add(patientSexCBox);
         add(patientSexText);
+        add(patientAgeText);
+        add(patientAgeYearSpinner);
+        add(patientAgeMonthSpinner);
         add(patientSpeciesText);
         add(patientSpeciesCBox);
         add(modalitiesText);

@@ -338,6 +338,19 @@ public class TCDetailsInfoTab extends Panel {
                 return getStringValue(TCQueryFilterKey.PatientSex);
             }
         }));
+        
+        WebMarkupContainer patientAgeWmc = new WebMarkupContainer(
+                "details-patient-age-row");
+        patientAgeWmc.add(new Label("details-patient-age", new Model<String>() {
+
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public String getObject() {
+                return TCPatientAgeUtilities.format(
+                		getTCObject().getPatientAge());
+            }
+        }));
 
         WebMarkupContainer patientSpeciesWmc = new WebMarkupContainer(
                 "details-patient-species-row");
@@ -386,6 +399,7 @@ public class TCDetailsInfoTab extends Panel {
         add(levelWmc);
         add(modalitiesWmc);
         add(patientSexWmc);
+        add(patientAgeWmc);
         add(patientSpeciesWmc);
     }
 

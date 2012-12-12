@@ -99,6 +99,8 @@ import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
 import org.dcm4chee.web.war.folder.StudyListPage;
 import org.dcm4chee.web.war.folder.ViewPort;
 import org.dcm4chee.web.war.folder.webviewer.Webviewer;
+import org.dcm4chee.web.war.folder.webviewer.Webviewer.WebviewerLinkClickedCallback;
+import org.dcm4chee.web.war.tc.widgets.TCMultiLineLabel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -205,7 +207,12 @@ public class TCResultPanel extends Panel {
                 
                 item.add(Webviewer.getLink(tc, webviewerLinkProviders,
                         stPermHelper,
-                        new TooltipBehaviour("tc.result.table.", "webviewer"), modalWindow)
+                        new TooltipBehaviour("tc.result.table.", "webviewer"), modalWindow,
+                        new WebviewerLinkClickedCallback() {
+                        	public void linkClicked(AjaxRequestTarget target) {
+                        		TCAuditLog.logTFImagesViewed(tc);
+                        	}
+                        })
                         .add(new SecurityBehavior(TCPanel.getModuleName()
                                 + ":webviewerInstanceLink")));
 

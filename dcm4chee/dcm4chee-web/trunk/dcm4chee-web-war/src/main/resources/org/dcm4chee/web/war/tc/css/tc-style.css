@@ -8,6 +8,46 @@
 
 
 /******************************************************  
+ * additional styles for jqueryui-based widgets
+ * attention: ordering of css rules matters!
+ *****************************************************/
+
+.ui-text, .ui-widget-content .ui-text {
+	background: #E6E6E6;
+}
+
+.ui-text-readonly, .ui-widget-content .ui-text-readonly {
+	border: 1px solid transparent;
+	background: #E6E6E6;
+	color: #808080;
+}
+
+.ui-text-hover, .ui-widget-content .ui-text-hover {
+	background: #E6E6E6;
+}
+
+.ui-combobox-input, .ui-widget-content .ui-combobox-input {
+	background: #E6E6E6;
+}
+
+.ui-combobox-input-readonly, .ui-widget-content .ui-combobox-input-readonly {
+	border: 1px solid #C0C0C0;
+	border-right: none;
+	background: #E6E6E6;
+	color: #808080;
+}
+
+.ui-combobox-input-hover, .ui-widget-content .ui-combobox-input-hover {
+	background: #E6E6E6;
+	border: 1px solid #808080;
+}
+
+.ui-spinner {
+	vertical-align: baseline;
+}
+
+
+/******************************************************  
  * style of common elements 
  *****************************************************/
  

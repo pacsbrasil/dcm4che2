@@ -44,6 +44,7 @@ import org.apache.wicket.Component;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
+import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow.WindowClosedCallback;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
@@ -187,7 +188,7 @@ public class TCPanel extends Panel {
             }
             
             @Override
-            protected void openTC(final TCModel tc, boolean edit, AjaxRequestTarget target)
+            protected void openTC(final TCModel tc, final boolean edit, AjaxRequestTarget target)
             {
                 try
                 {
@@ -209,27 +210,42 @@ public class TCPanel extends Panel {
 				            TCStoreDelegate storeDelegate = TCStoreDelegate.getInstance();
 
 				            //store new SR
-				            DicomObject dataset = model.getObject().toDataset();
+				            TCEditableObject tcObject = model.getObject();
+				            DicomObject dataset = tcObject.toDataset();
 				            if (storeDelegate.storeImmediately(dataset))
 				            {
 				                //delete old SR
-				                storeDelegate.store(model.getObject().toRejectionNoteDataset());
+				                storeDelegate.store(tcObject.toRejectionNoteDataset());
 
 				                //trigger new search and select new SR
 				                listModel.addToFilter(tc);
 				                searchPanel.redoSearch(target, dataset.getString(Tag.SOPInstanceUID));
 				            }
+				            
+				            TCAuditLog.logTFEdited(tcObject);
 				        }
 				        catch (Exception e)
 				        {
 				            log.error("Saving teaching-file failed!", e);
 				        }
 				    }
+				    else {
+				    	TCAuditLog.logTFViewed(model.getObject());
+				    }
 				}
                             };
 
                     viewDialog.setContent(viewPanel);
-                    
+                    viewDialog.setWindowClosedCallback(new WindowClosedCallback() {
+						private static final long serialVersionUID = 25714973706600845L;
+						@Override
+						public void onClose(AjaxRequestTarget target) {
+							if (!edit)
+							{
+								TCAuditLog.logTFViewed(model.getObject());
+							}
+                    	}
+                    });
                     openTCDialog(viewDialog, null, target);
                 }
                 catch (Exception e)

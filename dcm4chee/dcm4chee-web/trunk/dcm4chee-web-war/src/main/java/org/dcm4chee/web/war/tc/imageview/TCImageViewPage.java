@@ -67,7 +67,6 @@ import org.dcm4chee.archive.entity.Series;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.archive.entity.StudyPermission;
 import org.dcm4chee.archive.util.JNDIUtils;
-import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
 import org.dcm4chee.web.dao.tc.TCQueryLocal;
 import org.dcm4chee.web.war.StudyPermissionHelper;

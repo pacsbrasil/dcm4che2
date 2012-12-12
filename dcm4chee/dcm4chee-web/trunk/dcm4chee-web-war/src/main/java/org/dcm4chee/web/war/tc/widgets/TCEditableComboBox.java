@@ -1,4 +1,4 @@
-package org.dcm4chee.web.war.tc;
+package org.dcm4chee.web.war.tc.widgets;
 
 import java.io.Serializable;
 import java.util.List;

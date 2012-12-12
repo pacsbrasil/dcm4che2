@@ -38,8 +38,11 @@
 
 package org.dcm4chee.web.war.folder.webviewer;
 
+import java.io.Serializable;
+
 import org.apache.wicket.Page;
 import org.apache.wicket.PageMap;
+import org.apache.wicket.ajax.AjaxEventBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.html.image.Image;
@@ -76,6 +79,12 @@ public class Webviewer  {
 
     public static AbstractLink getLink(final AbstractDicomModel model, final WebviewerLinkProvider[] providers,
             final StudyPermissionHelper studyPermissionHelper, TooltipBehaviour tooltip, ModalWindow modalWindow) {
+    	return getLink(model, providers, studyPermissionHelper, tooltip, modalWindow, null);
+    }
+    	
+    public static AbstractLink getLink(final AbstractDicomModel model, final WebviewerLinkProvider[] providers,
+            final StudyPermissionHelper studyPermissionHelper, TooltipBehaviour tooltip, ModalWindow modalWindow,
+            final WebviewerLinkClickedCallback callback) {
         WebviewerLinkProvider p = null;
         AbstractLink link = null;
         if (providers != null)
@@ -84,7 +93,7 @@ public class Webviewer  {
                     if (p == null) {
                         p = providers[i];
                     } else {
-                        link = getWebviewerSelectionPageLink(model, providers, modalWindow);
+                        link = getWebviewerSelectionPageLink(model, providers, modalWindow, callback);
                         break;
                     }
                 }
@@ -98,6 +107,15 @@ public class Webviewer  {
                 link = new ExternalLink(WEBVIEW_ID, url)
                     .setPopupSettings(new PopupSettings(PageMap.forName("webviewPage"), 
                         PopupSettings.RESIZABLE|PopupSettings.SCROLLBARS));
+                if (callback!=null) {
+                	link.add(new AjaxEventBehavior("onclick") {
+						private static final long serialVersionUID = -3551733660906853373L;
+						@Override
+						public void onEvent(AjaxRequestTarget target) {
+                			callback.linkClicked(target);
+                		}
+                	});
+                }
             }
             if (model instanceof PatientModel) {
                 link.setVisible(studyPermissionHelper.checkPermission(model.getDicomModelsOfNextLevel(), 
@@ -113,7 +131,8 @@ public class Webviewer  {
         return link;
     }
 
-    private static AbstractLink getWebviewerSelectionPageLink(final AbstractDicomModel model, final WebviewerLinkProvider[] providers, final ModalWindow modalWindow) {
+    private static AbstractLink getWebviewerSelectionPageLink(final AbstractDicomModel model, final WebviewerLinkProvider[] providers, final ModalWindow modalWindow,
+    		final WebviewerLinkClickedCallback callback) {
         log.debug("Use SelectionLINK for model:{}", model);
         if (modalWindow == null) {
             Link<Object> link =  new Link<Object>(WEBVIEW_ID) {
@@ -121,7 +140,7 @@ public class Webviewer  {
     
                 @Override
                 public void onClick() {
-                    setResponsePage(new WebviewerSelectionPage(model, providers, null));
+                    setResponsePage(new WebviewerSelectionPage(model, providers, null, callback));
                 }
             };
             link.setPopupSettings(new PopupSettings(PageMap.forName("webviewPage"), 
@@ -142,7 +161,7 @@ public class Webviewer  {
                           
                         @Override
                         public Page createPage() {
-                            return new WebviewerSelectionPage(model, providers, modalWindow);
+                            return new WebviewerSelectionPage(model, providers, modalWindow, callback);
                         }
                     });
                     modalWindow.setTitle("");
@@ -194,5 +213,9 @@ public class Webviewer  {
         }
         log.debug("WebviewerProvider {} doesn't support DICOM model with level:{}", provider.getName(), model.levelOfModel());
         return null;
+    }
+    
+    public static interface WebviewerLinkClickedCallback extends Serializable {
+    	public void linkClicked(AjaxRequestTarget target);
     }
 }

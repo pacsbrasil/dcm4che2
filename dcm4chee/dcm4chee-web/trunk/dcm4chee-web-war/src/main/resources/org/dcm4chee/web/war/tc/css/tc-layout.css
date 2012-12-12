@@ -5,6 +5,41 @@
  *
  ******************************************************/
 
+.ui-autocomplete {
+     max-height: 200px;
+     overflow-y: auto;
+}
+    
+.ui-combobox-base {
+    position: relative;
+    display: inline-block;
+}
+
+.ui-combobox-toggle {
+    position: absolute !important;
+    top: 0;
+    bottom: 0;
+    margin-left: -1px;
+    padding: 0;
+}
+
+.ui-combobox-input, .ui-widget-content .ui-combobox-input {
+	padding: 0.3em;
+}
+
+.ui-combobox-input-readonly, .ui-widget-content .ui-combobox-input-readonly {
+	padding: 0.3em;
+}
+
+.ui-text {
+	margin: 0;
+    padding: 0.3em;
+}
+
+.ui-text-readonly {
+	margin: 0;
+    padding: 0.3em;
+}
 
 
 /******************************************************  
@@ -660,9 +695,8 @@ div.tc-view-bibliography-options
 
 .tc-view-bibliography-list
 {
-	border: 1px solid gray;
 	margin-bottom: 8px;
-	margin-right: 5px;
+	position: relative;	
 }
 
 .tc-view-bibliography-text
@@ -670,13 +704,15 @@ div.tc-view-bibliography-options
 	border: medium none;
 	min-height: 64px;
 	resize:none;
-	width: 100%;
+	width: 98.5%;
 	overflow-y: auto;
 }
 
 .tc-view-bibliography-remove-btn
 {
-    float: right;
+    position: absolute;
+    right: 8px;
+    top: 2px;
 }
 
 .tc-view-bibliography-remove-btn .ui-button-text
@@ -827,7 +863,7 @@ div.tc-view-bibliography-options
 .tc-view-overview-row-key
 {
 	float: left;
-	margin-top: 0.1em;
+	margin-top: 0.3em;
 	width: 7.25em;
 }
 
@@ -845,7 +881,7 @@ div.tc-view-bibliography-options
 	margin-left: 7.5em;
 	margin-right: 0.5em;
 	position: relative;
-	min-height: 1.7em;
+	min-height: 2.3em;
 }
 
 .tc-view-overview-row-value-left-column
@@ -865,13 +901,6 @@ div.tc-view-bibliography-options
     height:0; 
     overflow:hidden; 
     visibility:hidden;
-}
-
-.tc-view-overview-row-value > input, 
-.tc-view-overview-row-value > select
-{
-	position: absolute;
-	bottom: 0.2em;
 }
 
 .tc-view-overview-area

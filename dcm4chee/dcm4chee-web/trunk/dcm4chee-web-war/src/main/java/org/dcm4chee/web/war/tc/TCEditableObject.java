@@ -220,6 +220,13 @@ public class TCEditableObject extends TCObject {
             this.modified = true;
         }
     }
+    
+    public void setPatientAge(Integer ageInDays) {
+    	if (!TCUtilities.equals(this.patientAge, ageInDays)) {
+    		this.patientAge = ageInDays;
+    		this.modified = true;
+    	}
+    }
 
     public void setPatientSex(PatientSex patientSex) {
         if (!TCUtilities.equals(this.patientSex, patientSex))
@@ -353,7 +360,7 @@ public class TCEditableObject extends TCObject {
         
         //SOP common module; need to create new iuid?
         ds.putString(Tag.SOPInstanceUID, null, UIDUtils.createUID());
-        
+
         //proprietary; used to show some useful info in the GUI when doing c-find
         ds.putString(Tag.ContentLabel, null, getTitle());
         ds.putString(Tag.ContentDescription, null, getAbstr());

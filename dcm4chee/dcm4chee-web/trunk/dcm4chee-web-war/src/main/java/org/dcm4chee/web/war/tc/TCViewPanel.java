@@ -6,8 +6,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.wicket.AttributeModifier;
+import org.apache.wicket.RequestCycle;
+import org.apache.wicket.ajax.AbstractDefaultAjaxBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
+import org.apache.wicket.behavior.AbstractAjaxBehavior;
 import org.apache.wicket.behavior.AttributeAppender;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.ComponentTag;
@@ -27,6 +30,7 @@ import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 import org.dcm4chee.web.war.StudyPermissionHelper;
 import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
 import org.dcm4chee.web.war.folder.webviewer.Webviewer;
+import org.dcm4chee.web.war.folder.webviewer.Webviewer.WebviewerLinkClickedCallback;
 
 /**
  * @author Bernhard Ableitinger <bernhard.ableitinger@agfa.com>
@@ -39,7 +43,11 @@ public class TCViewPanel extends Panel
     
     private Map<AbstractTCViewTab, Integer> tabsToIndices =
         new HashMap<AbstractTCViewTab, Integer>();
+    
+    private AbstractAjaxBehavior tabActivationBehavior;
 
+    private boolean sendImagesViewedLog = true;
+    
     public TCViewPanel(final String id, IModel<TCEditableObject> model, final TCModel tc)
     {
         super(id, model==null ? new Model<TCEditableObject>() : model);
@@ -63,7 +71,12 @@ public class TCViewPanel extends Panel
 
         add(Webviewer.getLink(tc, webviewerLinkProviders,
                     StudyPermissionHelper.get(),
-                    new TooltipBehaviour("tc.view.", "webviewer"), webviewerSelectionWindow)
+                    new TooltipBehaviour("tc.view.", "webviewer"), webviewerSelectionWindow,
+                    new WebviewerLinkClickedCallback() {
+                    	public void linkClicked(AjaxRequestTarget target) {
+                    		TCAuditLog.logTFImagesViewed(getTC());
+                    	}
+                    })
             .add(new SecurityBehavior(TCPanel.getModuleName()
                             + ":webviewerInstanceLink"))
             .setOutputMarkupId(true)
@@ -91,7 +104,6 @@ public class TCViewPanel extends Panel
         				return false;
         			}
         		};
-        		
         final TCViewGenericTextTab diffDiagnosisTab = new TCViewGenericTextTab("tc-view-diffDiagnosis", getModel(), isEditable()) {
             @Override
             public String getTabTitle()
@@ -167,7 +179,36 @@ public class TCViewPanel extends Panel
             }
         });
         
-        WebMarkupContainer content = new WebMarkupContainer("tc-view-content");
+        overviewTab.setMarkupId("tabs-overview");
+        diagnosisTab.setMarkupId("tabs-diagnosis");
+        diffDiagnosisTab.setMarkupId("tabs-diffDiagnosis");
+        findingTab.setMarkupId("tabs-finding");
+        historyTab.setMarkupId("tabs-history");
+        discussionTab.setMarkupId("tabs-discussion");
+        organSystemTab.setMarkupId("tabs-organSystem");
+        biblioTab.setMarkupId("tabs-bibliography");
+        imagesTab.setMarkupId("tabs-images");
+        
+        tabActivationBehavior = new AbstractDefaultAjaxBehavior() {
+        	public void respond(AjaxRequestTarget target) {
+        		String newTabId = RequestCycle.get().getRequest().getParameter("newTabId");
+        		String oldTabId = RequestCycle.get().getRequest().getParameter("oldTabId");
+        		
+        		AbstractTCViewTab newTab = newTabId!=null ? getTabByMarkupId(newTabId) : null;
+        		AbstractTCViewTab oldTab = oldTabId!=null ? getTabByMarkupId(oldTabId) : null;
+        		
+        		tabSelectionChanged(target, newTab, oldTab);
+        	}
+        };
+        
+        WebMarkupContainer content = new WebMarkupContainer("tc-view-content") {
+            @Override
+            protected void onComponentTag(ComponentTag tag)
+            {
+                super.onComponentTag(tag);
+                tag.put("activation-callback-url", tabActivationBehavior.getCallbackUrl());
+            }
+        };
         content.setOutputMarkupId(true);
         content.setMarkupId(isEditable() ? 
                 "tc-view-editable-content" : "tc-view-content");
@@ -270,6 +311,8 @@ public class TCViewPanel extends Panel
         content.add(biblioTab);
         content.add(imagesTab);
         
+        content.add(tabActivationBehavior);
+        
         add(content);
     }
     
@@ -314,8 +357,19 @@ public class TCViewPanel extends Panel
     protected void onComponentTag(ComponentTag tag)
     {
         super.onComponentTag(tag);
-        
         tag.put("style", "height:100%;width:100%");
+    }
+    
+    protected void tabSelectionChanged(AjaxRequestTarget target, AbstractTCViewTab newTab, AbstractTCViewTab oldTab)
+    {
+    	if (sendImagesViewedLog && newTab instanceof TCViewImagesTab) {
+    		try {
+    			TCAuditLog.logTFImagesViewed(getTC());
+    		}
+    		finally {
+    			sendImagesViewedLog = false;
+    		}
+    	}
     }
     
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -344,6 +398,18 @@ public class TCViewPanel extends Panel
                         .setBaseUrl(baseUrls.get(names.get(i)));
             }
         }
+    }
+    
+    private AbstractTCViewTab getTabByMarkupId(String id)
+    {
+    	for (AbstractTCViewTab tab : tabsToIndices.keySet())
+    	{
+    		if (tab.getMarkupId().equals(id))
+    		{
+    			return tab;
+    		}
+    	}
+    	return null;
     }
     
     public abstract static class AbstractTCViewTab extends Panel

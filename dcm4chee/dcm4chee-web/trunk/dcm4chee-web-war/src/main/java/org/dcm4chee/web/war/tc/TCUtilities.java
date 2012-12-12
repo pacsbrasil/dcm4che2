@@ -9,6 +9,7 @@ import java.util.List;
 import org.apache.wicket.Page;
 import org.apache.wicket.Request;
 import org.apache.wicket.RequestCycle;
+import org.apache.wicket.Session;
 import org.apache.wicket.ajax.AjaxEventBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
@@ -21,6 +22,7 @@ import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.link.PopupSettings;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.PropertyModel;
+import org.apache.wicket.resource.loader.PackageStringResourceLoader;
 import org.dcm4chee.archive.entity.Code;
 import org.dcm4chee.web.dao.tc.ITextOrCode;
 import org.dcm4chee.web.dao.tc.TCDicomCode;
@@ -31,6 +33,8 @@ import org.dcm4chee.web.war.tc.keywords.TCKeywordCatalogue;
 import org.dcm4chee.web.war.tc.keywords.TCKeywordCatalogueProvider;
 import org.dcm4chee.web.war.tc.keywords.TCKeywordInput;
 import org.dcm4chee.web.war.tc.keywords.TCKeywordTextInput;
+import org.dcm4chee.web.war.tc.widgets.TCComboBox;
+import org.dcm4chee.web.war.tc.widgets.TCEditableComboBox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,6 +46,8 @@ import org.slf4j.LoggerFactory;
 public class TCUtilities 
 {
     private static final Logger log = LoggerFactory.getLogger(TCUtilities.class);
+    
+    private static PackageStringResourceLoader stringLoader;
     
     public static enum PopupAlign {
         TopLeft("left top"),
@@ -61,6 +67,16 @@ public class TCUtilities
         {
             return align;
         }
+    }
+    
+    public static synchronized String getLocalizedString(String key) {
+    	if (stringLoader==null)
+    	{
+    		stringLoader = new PackageStringResourceLoader();
+    	}
+    	
+    	return stringLoader.loadStringResource(TCUtilities.class, key, 
+    			Session.get().getLocale(), null);
     }
     
     public static boolean equals(Object o1, Object o2)

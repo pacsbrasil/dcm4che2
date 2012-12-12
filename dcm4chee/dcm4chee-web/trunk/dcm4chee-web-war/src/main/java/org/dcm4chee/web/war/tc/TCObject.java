@@ -47,6 +47,16 @@ public class TCObject implements Serializable {
     private final static Logger log = LoggerFactory.getLogger(TCObject.class);
     
     private String iuid;
+    
+    private String suid;
+    
+    private String stuid;
+    
+    private String patId;
+    
+    private String patIdIssuer;
+    
+    private String patName;
 
     protected String abstr;
 
@@ -119,9 +129,34 @@ public class TCObject implements Serializable {
         }
     }
     
-    public String getUID()
+    public String getInstanceUID()
     {
         return iuid;
+    }
+    
+    public String getSeriesInstanceUID()
+    {
+    	return suid;
+    }
+    
+    public String getStudyInstanceUID()
+    {
+    	return stuid;
+    }
+    
+    public String getPatientId()
+    {
+    	return patId;
+    }
+    
+    public String getPatientIdIssuer()
+    {
+    	return patIdIssuer;
+    }
+    
+    public String getPatientName()
+    {
+    	return patName;
     }
     
     public String getAbstr() {
@@ -199,7 +234,7 @@ public class TCObject implements Serializable {
     public Integer getPatientAge() {
         return patientAge;
     }
-
+    
     public PatientSex getPatientSex() {
         return patientSex;
     }
@@ -391,6 +426,11 @@ public class TCObject implements Serializable {
 
     private void parse(DicomObject o) {
         iuid = o.getString(Tag.SOPInstanceUID);
+        suid = o.getString(Tag.SeriesInstanceUID);
+        stuid = o.getString(Tag.StudyInstanceUID);
+        patId= o.getString(Tag.PatientID);
+        patIdIssuer = o.getString(Tag.IssuerOfPatientID);
+        patName = o.getString(Tag.PatientName);
         
         DicomElement content = o != null ? o.get(Tag.ContentSequence) : null;
         DicomElement ref = o != null ? o
