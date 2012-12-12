@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE elements [
-<!ENTITY p07 SYSTEM "../../../target/xml/p7_element.xml">
-<!ENTITY p06 SYSTEM "../../../target/xml/p6_element.xml">
-]>
-<elements>
-&p07;
-&p06;
-</elements>
