@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -117,8 +118,34 @@ class SequenceDicomElement extends AbstractDicomElement {
             return false;
         }
         SequenceDicomElement other = (SequenceDicomElement) o;
-        return tag() == other.tag() && vr() == other.vr()
-                && items.equals(other.items);
+
+		if (items == other.items) {
+			return true;
+		}
+
+		if (tag() != other.tag() ||  vr() != other.vr() || items.size() != other.items.size()){
+			return false;
+		}
+		
+		for (int i = 0; i < items.size(); i++) {
+			// quick memory address check
+			if (items.get(i) == other.items.get(i)) {
+				continue;
+			} 
+			VR vr = vr();
+			if (vr == VR.OB || vr == VR.OW){							
+				byte[] item = (byte[])items.get(i);
+				byte[] otherItem = (byte[]) other.items.get(i);
+
+				if (!Arrays.equals(item, otherItem)) {
+					return false;
+				}
+			} else if (!items.get(i).equals(other.items.get(i))) {				
+				// VR was not OB or OW, and comparator otherwise did not succeed					
+				return false;				
+			}
+		}        
+		return true;
     }
 
     public DicomElement share() {
