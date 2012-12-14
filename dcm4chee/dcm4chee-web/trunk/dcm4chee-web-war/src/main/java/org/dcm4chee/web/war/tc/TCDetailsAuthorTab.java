@@ -40,9 +40,11 @@ package org.dcm4chee.web.war.tc;
 import org.apache.wicket.Component;
 import org.apache.wicket.behavior.AbstractBehavior;
 import org.apache.wicket.markup.ComponentTag;
+import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.basic.MultiLineLabel;
 import org.apache.wicket.markup.html.panel.Panel;
+import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 
@@ -55,55 +57,65 @@ public class TCDetailsAuthorTab extends Panel {
 
     private static final long serialVersionUID = 1L;
 
-    public TCDetailsAuthorTab(final String id) {
+    @SuppressWarnings("serial")
+	public TCDetailsAuthorTab(final String id, final IModel<Boolean> trainingModeModel) {
         super(id);
 
-        add(new Label("details-author-name", new Model<String>() {
-
-            private static final long serialVersionUID = 1L;
-
+        add(new WebMarkupContainer("author-name-row") {
             @Override
-            public String getObject() {
-                return getStringValue(TCQueryFilterKey.AuthorName);
+            public boolean isVisible() {
+            	return TCUtilities.isKeyAvailable(trainingModeModel, 
+            			TCQueryFilterKey.AuthorName);
             }
-        }).add(new AbstractBehavior() {
+        }
+	        .add(new Label("details-author-name", new Model<String>() {
+	            @Override
+	            public String getObject() {
+	                return getStringValue(TCQueryFilterKey.AuthorName);
+	            }
+	        }).add(new AbstractBehavior() {
+	            @Override
+	            public void onComponentTag(Component c, ComponentTag tag) {
+	                tag.put("title", getStringValue(TCQueryFilterKey.AuthorName));
+	            }
+	        }))
+        );
 
-            private static final long serialVersionUID = 1L;
+        add(new WebMarkupContainer("author-affiliation-row") {
+	            @Override
+	            public boolean isVisible() {
+	            	return TCUtilities.isKeyAvailable(trainingModeModel, 
+	            			TCQueryFilterKey.AuthorAffiliation);
+	            }
+	        }
+	        .add(new Label("details-author-affiliation", new Model<String>() {
+	            @Override
+	            public String getObject() {
+	                return getStringValue(TCQueryFilterKey.AuthorAffiliation);
+	            }
+	        }).add(new AbstractBehavior() {
+	            @Override
+	            public void onComponentTag(Component c, ComponentTag tag) {
+	                tag.put("title",
+	                        getStringValue(TCQueryFilterKey.AuthorAffiliation));
+	            }
+	        }))
+        );
 
-            @Override
-            public void onComponentTag(Component c, ComponentTag tag) {
-                tag.put("title", getStringValue(TCQueryFilterKey.AuthorName));
-            }
-        }));
-
-        add(new Label("details-author-affiliation", new Model<String>() {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public String getObject() {
-                return getStringValue(TCQueryFilterKey.AuthorAffiliation);
-            }
-        }).add(new AbstractBehavior() {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void onComponentTag(Component c, ComponentTag tag) {
-                tag.put("title",
-                        getStringValue(TCQueryFilterKey.AuthorAffiliation));
-            }
-        }));
-
-        add(new MultiLineLabel("details-author-contact", new Model<String>() {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public String getObject() {
-                return getStringValue(TCQueryFilterKey.AuthorContact);
-            }
-        }));
+        add(new WebMarkupContainer("author-contact-row") {
+	            @Override
+	            public boolean isVisible() {
+	            	return TCUtilities.isKeyAvailable(trainingModeModel, 
+	            			TCQueryFilterKey.AuthorContact);
+	            }
+	        }
+	        .add(new MultiLineLabel("details-author-contact", new Model<String>() {
+	            @Override
+	            public String getObject() {
+	                return getStringValue(TCQueryFilterKey.AuthorContact);
+	            }
+	        }))
+	    );
     }
 
     private TCObject getTCObject() {

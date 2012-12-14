@@ -38,9 +38,9 @@ public class TCEditableObject extends TCObject {
     private DicomObject ds;
     private boolean modified;
     
-    private TCEditableObject(DicomObject ds)
+    private TCEditableObject(String id, DicomObject ds)
     {
-        super(ds);
+        super(id, ds);
         this.ds = ds;
     }
     
@@ -53,7 +53,7 @@ public class TCEditableObject extends TCObject {
         	dis = new DicomInputStream(fsID.startsWith("tar:") ? 
         			TarRetrieveDelegate.getInstance().retrieveFileFromTar(fsID, fileID) :
         				FileUtils.resolve(new File(fsID, fileID)));
-            return new TCEditableObject(dis.readDicomObject());
+            return new TCEditableObject(model.getId(), dis.readDicomObject());
         } finally {
             if (dis != null) {
                 dis.close();

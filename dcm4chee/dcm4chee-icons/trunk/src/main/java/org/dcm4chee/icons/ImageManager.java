@@ -199,4 +199,10 @@ public class ImageManager {
         new ResourceReference(ImageManager.class, "tc/cancel-mono.png");
     public static final ResourceReference IMAGE_TC_ARROW_DOWN =
         new ResourceReference(ImageManager.class, "tc/arrow-down.png");
+    public static final ResourceReference IMAGE_TC_LIGHT_BULB =
+    	new ResourceReference(ImageManager.class, "tc/light-bulb.png");
+    public static final ResourceReference IMAGE_TC_BUTTON_GREEN =
+        	new ResourceReference(ImageManager.class, "tc/button-green.png");
+    public static final ResourceReference IMAGE_TC_BUTTON_RED =
+        	new ResourceReference(ImageManager.class, "tc/button-red.png");
 }

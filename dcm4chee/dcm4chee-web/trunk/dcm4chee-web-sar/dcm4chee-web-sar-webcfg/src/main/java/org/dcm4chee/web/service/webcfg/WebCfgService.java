@@ -146,6 +146,7 @@ public class WebCfgService extends ServiceMBeanSupport implements
     private Map<String, String> tcKeywordCatalogues = new LinkedHashMap<String, String>();
     private Map<String, String> tcKeywordCataloguesExclusive = new LinkedHashMap<String, String>();
     private List<String> tcRestrictedSrcAETs = new ArrayList<String>();
+    private List<String> tcTrainingModeHiddenAttributes = new ArrayList<String>();
     private boolean tcEditOnDoubleClick;
     private boolean tcMultipleKeywordSearch;
     private boolean tcMultipleKeywordORConcat;
@@ -411,6 +412,42 @@ public class WebCfgService extends ServiceMBeanSupport implements
     public void setTCKeywordCatalogues(String s) {
         this.tcKeywordCatalogues = parseKeywordCatalogues(s, false);
         this.tcKeywordCataloguesExclusive = parseKeywordCatalogues(s, true);
+    }
+    
+    public List<String> getTCTrainingModeHiddenAttributesList() {
+    	if (tcTrainingModeHiddenAttributes!=null) {
+    		return tcTrainingModeHiddenAttributes;
+    	}
+    	return Collections.emptyList();
+    }
+    
+    public String getTCTrainingModeHiddenAttributes() {
+    	if (tcTrainingModeHiddenAttributes==null || 
+    			tcTrainingModeHiddenAttributes.isEmpty()) {
+    		return NONE;
+    	}
+    	else {
+    		StringBuilder sbuilder = new StringBuilder();
+    		sbuilder.append(tcTrainingModeHiddenAttributes.get(0));
+    		for (int i=1; i<tcTrainingModeHiddenAttributes.size(); i++) {
+    			sbuilder.append(NEWLINE).append(
+    					tcTrainingModeHiddenAttributes.get(i));
+    		}
+    		return sbuilder.toString();
+    	}
+    }
+    
+    public void setTCTrainingModeHiddenAttributes(String s) {
+    	if (tcTrainingModeHiddenAttributes!=null) {
+    		tcTrainingModeHiddenAttributes.clear();
+    	}
+        if (s!= null && !NONE.equals(s.trim()))
+        {
+	        for (StringTokenizer st = new StringTokenizer(s, "\t\r\n;") ; st.hasMoreTokens() ;) {
+	            tcTrainingModeHiddenAttributes.add(
+	            		st.nextToken().trim());
+	        }
+        }
     }
 
     public String getTCRestrictedSourceAETs() {

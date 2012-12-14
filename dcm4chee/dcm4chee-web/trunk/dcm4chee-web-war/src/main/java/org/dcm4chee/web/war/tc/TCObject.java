@@ -46,6 +46,8 @@ public class TCObject implements Serializable {
 
     private final static Logger log = LoggerFactory.getLogger(TCObject.class);
     
+    private String id;
+    
     private String iuid;
     
     private String suid;
@@ -108,7 +110,8 @@ public class TCObject implements Serializable {
     
     private List<TCReferencedImage> imageRefs;
     
-    protected TCObject(DicomObject object) {
+    protected TCObject(String id, DicomObject object) {
+    	this.id = id;
         parse(object);
     }
 
@@ -121,12 +124,17 @@ public class TCObject implements Serializable {
         	dis = new DicomInputStream(fsID.startsWith("tar:") ? 
         			TarRetrieveDelegate.getInstance().retrieveFileFromTar(fsID, fileID) :
         				FileUtils.resolve(new File(fsID, fileID)));
-            return new TCObject(dis.readDicomObject());
+            return new TCObject(model.getId(), dis.readDicomObject());
         } finally {
             if (dis != null) {
                 dis.close();
             }
         }
+    }
+    
+    public String getId() 
+    {
+    	return id;
     }
     
     public String getInstanceUID()

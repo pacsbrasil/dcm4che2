@@ -6,14 +6,14 @@
 <body>
     <wicket:panel>
         <div id="tc-view-overview-container-left">
-            <div class="tc-view-overview-row">
+            <div wicket:id="tc-view-overview-title-row" class="tc-view-overview-row">
                 <div wicket:id="tc-view-overview-title-label" 
                 	class="tc-view-overview-row-key tc-view-overview-row-key-left-column"/>
                 <div class="tc-view-overview-row-value tc-view-overview-row-value-left-column">
                     <input type="text" wicket:id="tc-view-overview-title-text" style="width:99%" class="ui-textfield"/>
                 </div>
             </div>
-            <div class="tc-view-overview-row">
+            <div wicket:id="tc-view-overview-abstract-row" class="tc-view-overview-row">
                 <div wicket:id="tc-view-overview-abstract-label" 
                 	class="tc-view-overview-row-key tc-view-overview-row-key-left-column"/>
                 <div class="tc-view-overview-row-value tc-view-overview-row-value-left-column">
@@ -22,21 +22,21 @@
                 </div>
             </div>
             <div class="tc-separator-horz"/>
-            <div class="tc-view-overview-row">
+            <div wicket:id="tc-view-overview-authorname-row" class="tc-view-overview-row">
                 <div wicket:id="tc-view-overview-authorname-label" 
                 	class="tc-view-overview-row-key tc-view-overview-row-key-left-column"/>
                 <div class="tc-view-overview-row-value tc-view-overview-row-value-left-column">
                     <input type="text" wicket:id="tc-view-overview-authorname-text" style="width:99%" class="ui-textfield"/>
                 </div>
             </div> 
-            <div class="tc-view-overview-row">
+            <div wicket:id="tc-view-overview-authoraffiliation-row" class="tc-view-overview-row">
                 <div wicket:id="tc-view-overview-authoraffiliation-label" 
                 	class="tc-view-overview-row-key tc-view-overview-row-key-left-column"/>
                 <div class="tc-view-overview-row-value tc-view-overview-row-value-left-column">
                     <input type="text" wicket:id="tc-view-overview-authoraffiliation-text" style="width:99%" class="ui-textfield"/>
                 </div>
             </div>
-            <div class="tc-view-overview-row">
+            <div wicket:id="tc-view-overview-authorcontact-row" class="tc-view-overview-row">
                 <div wicket:id="tc-view-overview-authorcontact-label" 
                 	class="tc-view-overview-row-key tc-view-overview-row-key-left-column"/>
                 <div class="tc-view-overview-row-value tc-view-overview-row-value-left-column">
@@ -47,7 +47,7 @@
         </div>
         <div id="tc-view-overview-container-separator" class="tc-separator-vert"/>
         <div id="tc-view-overview-container-right">
-            <div class="tc-view-overview-row">
+            <div wicket:id="tc-view-overview-keyword-row" class="tc-view-overview-row">
                 <div wicket:id="tc-view-overview-keyword-label" 
                 	class="tc-view-overview-row-key tc-view-overview-row-key-right-column"/>
                 <div class="tc-view-overview-row-value tc-view-overview-row-value-right-column">
@@ -66,7 +66,7 @@
                     </div>
                 </div>
             </div>
-            <div class="tc-view-overview-row">
+            <div wicket:id="tc-view-overview-anatomy-row" class="tc-view-overview-row">
                 <div wicket:id="tc-view-overview-anatomy-label" 
                 	class="tc-view-overview-row-key tc-view-overview-row-key-right-column"/>
                 <div class="tc-view-overview-row-value tc-view-overview-row-value-right-column">
@@ -74,7 +74,7 @@
                     <div wicket:id="tc-view-overview-anatomy-input" style="width:98%"/>
                 </div>
             </div> 
-            <div class="tc-view-overview-row">
+            <div wicket:id="tc-view-overview-pathology-row" class="tc-view-overview-row">
                 <div wicket:id="tc-view-overview-pathology-label" 
                 	class="tc-view-overview-row-key tc-view-overview-row-key-right-column"/>
                 <div class="tc-view-overview-row-value tc-view-overview-row-value-right-column">
@@ -113,7 +113,7 @@
                     <input wicket:id="tc-view-overview-diagconfirmed-input" type="checkbox" style="width:98%"/>
                 </div>
             </div>
-            <div class="tc-view-overview-row">
+            <div wicket:id="tc-view-overview-category-row" class="tc-view-overview-row">
                 <div wicket:id="tc-view-overview-category-label" 
                 	class="tc-view-overview-row-key tc-view-overview-row-key-right-column"/>
                 <div class="tc-view-overview-row-value tc-view-overview-row-value-right-column">
@@ -123,7 +123,7 @@
                 	</div>
                 </div>
             </div>
-            <div class="tc-view-overview-row">
+            <div wicket:id="tc-view-overview-level-row" class="tc-view-overview-row">
                 <div wicket:id="tc-view-overview-level-label" 
                 	class="tc-view-overview-row-key tc-view-overview-row-key-right-column"/>
                 <div class="tc-view-overview-row-value tc-view-overview-row-value-right-column">
@@ -133,7 +133,7 @@
                 	</div>
                 </div>
             </div>
-            <div class="tc-view-overview-row">
+            <div wicket:id="tc-view-overview-patientsex-row" class="tc-view-overview-row">
                 <div wicket:id="tc-view-overview-patientsex-label" 
                 	class="tc-view-overview-row-key tc-view-overview-row-key-right-column"/>
                 <div class="tc-view-overview-row-value tc-view-overview-row-value-right-column">
@@ -143,7 +143,7 @@
                 	</div>
                 </div>
             </div>
-            <div class="tc-view-overview-row">
+            <div wicket:id="tc-view-overview-patientage-row" class="tc-view-overview-row">
                 <div wicket:id="tc-view-overview-patientage-label" 
                 	class="tc-view-overview-row-key tc-view-overview-row-key-right-column"/>
                 <div class="tc-view-overview-row-value tc-view-overview-row-value-right-column">
@@ -152,7 +152,7 @@
                 	<input type="text" wicket:id="tc-view-overview-patientage-months-input" class="ui-spinner-month"/>
                 </div>
             </div>  
-            <div class="tc-view-overview-row">
+            <div wicket:id="tc-view-overview-patientrace-row" class="tc-view-overview-row">
                 <div wicket:id="tc-view-overview-patientrace-label" 
                 	class="tc-view-overview-row-key tc-view-overview-row-key-right-column"/>
                 <div class="tc-view-overview-row-value tc-view-overview-row-value-right-column">
@@ -162,14 +162,14 @@
                 	</div>
                 </div>
             </div> 
-            <div class="tc-view-overview-row">
+            <div wicket:id="tc-view-overview-modalities-row"  class="tc-view-overview-row">
                 <div wicket:id="tc-view-overview-modalities-label" 
                 	class="tc-view-overview-row-key tc-view-overview-row-key-right-column"/>
                 <div class="tc-view-overview-row-value tc-view-overview-row-value-right-column">
                     <input type="text" wicket:id="tc-view-overview-modalities-text" style="width:98%" class="ui-textfield"/>
                 </div>
             </div>
-            <div class="tc-view-overview-row">
+            <div wicket:id="tc-view-overview-imagecount-row" class="tc-view-overview-row">
                 <div wicket:id="tc-view-overview-imagecount-label" 
                 	class="tc-view-overview-row-key tc-view-overview-row-key-right-column"/>
                 <div class="tc-view-overview-row-value tc-view-overview-row-value-right-column">

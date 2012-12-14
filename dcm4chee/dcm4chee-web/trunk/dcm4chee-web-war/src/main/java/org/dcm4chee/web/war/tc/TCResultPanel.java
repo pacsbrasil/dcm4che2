@@ -93,6 +93,7 @@ import org.dcm4chee.web.common.secure.SecurityBehavior;
 import org.dcm4chee.web.common.webview.link.WebviewerLinkProvider;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
 import org.dcm4chee.web.dao.tc.TCQueryFilter;
+import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 import org.dcm4chee.web.dao.tc.TCQueryLocal;
 import org.dcm4chee.web.war.StudyPermissionHelper;
 import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
@@ -124,7 +125,8 @@ public class TCResultPanel extends Panel {
 
     private MessageWindow msgWin = new MessageWindow("msgWin");
     
-    public TCResultPanel(final String id, final TCListModel model) {
+    @SuppressWarnings("serial")
+	public TCResultPanel(final String id, final TCListModel model, final IModel<Boolean> trainingModeModel) {
         super(id, model != null ? model : new TCListModel());
 
         setOutputMarkupId(true);
@@ -155,14 +157,12 @@ public class TCResultPanel extends Panel {
         final DataView<TCModel> dataView = new DataView<TCModel>("row",
                 tclistProvider) {
 
-            private static final long serialVersionUID = 1L;
-            
-            private final StudyListLocal dao = (StudyListLocal) JNDIUtils
+        	private final StudyListLocal dao = (StudyListLocal) JNDIUtils
                     .lookup(StudyListLocal.JNDI_NAME);
 
             private final Map<String, List<String>> studyActions = new HashMap<String, List<String>>();
 
-            @Override
+			@Override
             protected void populateItem(final Item<TCModel> item) {
                 final TCModel tc = item.getModelObject();
 
@@ -170,9 +170,31 @@ public class TCResultPanel extends Panel {
                 		"var event=arguments[0] || window.event; if (event.stopPropagation) {event.stopPropagation();} else {event.cancelBubble=True;};");
                 
                 item.setOutputMarkupId(true);
-                item.add(new TCMultiLineLabel("title", tc.getTitle(), 80));
-                item.add(new TCMultiLineLabel("abstract", tc.getAbstract(), 80));
-                item.add(new TCMultiLineLabel("author", tc.getAuthor(), 80));
+                item.add(new TCMultiLineLabel("title", new AbstractReadOnlyModel<String>() {
+                	public String getObject() {
+                		if (!TCUtilities.isKeyAvailable(trainingModeModel, TCQueryFilterKey.Title)) {
+                			return TCUtilities.getLocalizedString("tc.case.text") + 
+                					" " + tc.getId();
+                		}
+                		return tc.getTitle();
+                	}
+                }, 80));
+                item.add(new TCMultiLineLabel("abstract", new AbstractReadOnlyModel<String>() {
+                	public String getObject() {
+                		if (!TCUtilities.isKeyAvailable(trainingModeModel, TCQueryFilterKey.Abstract)) {
+                			return TCUtilities.getLocalizedString("tc.obfuscation.text");
+                		}
+                		return tc.getAbstract();
+                	}
+                }, 80));
+                item.add(new TCMultiLineLabel("author", new AbstractReadOnlyModel<String>() {
+                	public String getObject() {
+                		if (!TCUtilities.isKeyAvailable(trainingModeModel, TCQueryFilterKey.AuthorName)) {
+                			return TCUtilities.getLocalizedString("tc.obfuscation.text");
+                		}
+                		return tc.getAuthor();
+                	}
+                }, 80));
                 item.add(new Label("date",
                         new Model<Date>(tc.getCreationDate())) {
 

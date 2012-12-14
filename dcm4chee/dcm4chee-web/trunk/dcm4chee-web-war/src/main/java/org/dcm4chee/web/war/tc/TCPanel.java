@@ -38,22 +38,31 @@
 package org.dcm4chee.web.war.tc;
 
 import java.lang.reflect.Field;
-import java.util.List;
 
 import org.apache.wicket.Component;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.markup.html.AjaxLink;
+import org.apache.wicket.behavior.AttributeAppender;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow.WindowClosedCallback;
 import org.apache.wicket.markup.html.CSSPackageResource;
+import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
+import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4chee.icons.ImageManager;
+import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.ajax.MaskingAjaxCallBehavior;
+import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.dao.tc.TCQueryFilter;
+import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
+import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
 import org.dcm4chee.web.war.tc.TCResultPanel.TCListModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,12 +91,13 @@ public class TCPanel extends Panel {
 
     private static final MaskingAjaxCallBehavior macb = new MaskingAjaxCallBehavior();
 
+    private IModel<Boolean> trainingModeModel;
     private TCPopupManager popupManager;
-    
     private TCSearchPanel searchPanel;
     private TCResultPanel listPanel;
     
-    public TCPanel(final String id) {
+    @SuppressWarnings("serial")
+	public TCPanel(final String id) {
         super(id);
 
         if (TCPanel.THEME_CSS != null) {
@@ -101,8 +111,9 @@ public class TCPanel extends Panel {
         if (TCPanel.BASE_CSS != null) {
             add(CSSPackageResource.getHeaderContribution(TCPanel.BASE_CSS));
         }
-        
 
+        trainingModeModel = new Model<Boolean>(false);
+        
         final ModalWindow viewDialog = new ModalWindow("tc-view-dialog") {
             private static final long serialVersionUID = 1L;
 
@@ -125,30 +136,11 @@ public class TCPanel extends Panel {
                         TCViewPanel viewPanel = (TCViewPanel) content;
                         if (!viewPanel.isEditable())
                         {
-                            List<Integer> disabledIndices = viewPanel.getDisabledTabIndices();
-                            if (disabledIndices!=null && !disabledIndices.isEmpty())
-                            {
-                                StringBuffer sbuf = new StringBuffer();
-                                sbuf.append("[").append(disabledIndices.get(0));
-                                for (int i=1; i<disabledIndices.size(); i++)
-                                {
-                                    sbuf.append(",").append(disabledIndices.get(i));
-                                }
-                                sbuf.append("]");
-
-                                target.appendJavascript("disableTCViewTabs(" + sbuf.toString() + ");");
-                            }
+                            target.appendJavascript(viewPanel.getDisableTabsJavascript());
                         }
                         
                         //hide tabs
-                        List<Integer> hiddenIndices = viewPanel.getHiddenTabIndices();
-                        if (hiddenIndices!=null)
-                        {
-                            for (Integer index : hiddenIndices)
-                            {
-                                target.appendJavascript("hideTCViewTab(" + index + ");");
-                            }
-                        }
+                        target.appendJavascript(viewPanel.getHideTabsJavascript());
                     }
                     
                     try
@@ -164,10 +156,10 @@ public class TCPanel extends Panel {
                 }
             }
         };
-        final TCDetailsPanel detailsPanel = new TCDetailsPanel("details-panel");
+        final TCDetailsPanel detailsPanel = new TCDetailsPanel("details-panel",
+        		trainingModeModel);
         final TCListModel listModel = new TCListModel();
-        listPanel = new TCResultPanel("result-panel",
-                listModel) {
+        listPanel = new TCResultPanel("result-panel", listModel, trainingModeModel) {
 
             private static final long serialVersionUID = 1L;
 
@@ -194,8 +186,8 @@ public class TCPanel extends Panel {
                 {
                     final IModel<TCEditableObject> model = new Model<TCEditableObject>(TCEditableObject.create(tc));
                     final TCViewPanel viewPanel = !edit ?
-                            new TCViewPanel(viewDialog.getContentId(), model, tc) :
-                            new TCViewEditablePanel(viewDialog.getContentId(), model, tc) {
+                            new TCViewPanel(viewDialog.getContentId(), model, tc, trainingModeModel) :
+                            new TCViewEditablePanel(viewDialog.getContentId(), model, tc, trainingModeModel) {
 				private static final long serialVersionUID = 1L;
 
 				@Override
@@ -295,6 +287,47 @@ public class TCPanel extends Panel {
                 }
             }
         }));
+        
+        add(new AjaxLink<Object>("trainingmode-link") {
+	        	@Override
+	        	public void onClick(AjaxRequestTarget target) {
+	        		trainingModeModel.setObject(
+	        				!trainingModeModel.getObject());
+	        		target.addComponent(this);
+	        		target.addComponent(detailsPanel);
+	        		
+	        		if (WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey(
+	        				TCQueryFilterKey.Title) ||
+	        			WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey(
+	        					TCQueryFilterKey.Abstract) ||
+	        			WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey(
+	        					TCQueryFilterKey.AuthorName)) {
+	        			target.addComponent(listPanel);
+	        		}
+	        	}
+        	}
+        	.add(new Image("trainingmode-link-img",
+                        new AbstractReadOnlyModel<ResourceReference>() {
+                            @Override
+                            public ResourceReference getObject() {
+                                return trainingModeModel.getObject()==Boolean.TRUE ? 
+                                		ImageManager.IMAGE_TC_BUTTON_GREEN
+                                        : ImageManager.IMAGE_TC_BUTTON_RED;
+                            }
+            }).add(new ImageSizeBehaviour("vertical-align:middle")))
+            .add(new Label("trainingmode-link-text", new AbstractReadOnlyModel<String>() {
+	        	public String getObject() {
+	        		if (trainingModeModel.getObject()==Boolean.TRUE) {
+	        			return TCPanel.this.getString("tc.trainingmode.enabled.text");
+	        		}
+	        		else {
+	        			return TCPanel.this.getString("tc.trainingmode.disabled.text");
+	        		}
+	        	}
+            }).add(new AttributeAppender("style",true,new Model<String>("vertical-align:middle")," ")))
+            .add(new TooltipBehaviour("tc.trainingmode."))
+            .setOutputMarkupId(true).setMarkupId("trainingmode-link")
+        );
 
         add(listPanel);
         add(detailsPanel);

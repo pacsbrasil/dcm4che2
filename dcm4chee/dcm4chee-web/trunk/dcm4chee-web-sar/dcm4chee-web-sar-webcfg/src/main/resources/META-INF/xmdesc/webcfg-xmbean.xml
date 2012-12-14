@@ -756,6 +756,37 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getTCTrainingModeHiddenAttributes"
+      setMethod="setTCTrainingModeHiddenAttributes">
+      <description><![CDATA[
+        List of teaching-file attributes which should be first be unavailable or hidden
+        if training-mode is active.<br/>
+        <br/>
+        Possible values/attributes are: Titel, Abstract, AcquisitionModality,
+        Anatomy, AuthorAffiliation, AuthorContact, AuthorName, Category, Diagnosis,
+        DifferentialDiagnosis, Discussion, Finding, History, Level, OrganSystem,
+        Pathology, PatientAge, PatientSex, PatientSpecies, BibliographicReference. 
+        A value of NONE means, that none of the attributes are hidden/invisible in 
+        training-mode.
+        ]]>
+      </description>
+      <name>TCTrainingModeHiddenAttributes</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="
+           Titel;
+           Abstract;
+           Anatomy;
+           Diagnosis;
+           DifferentialDiagnosis;
+           Discussion;
+           Finding;
+           OrganSystem;
+           Pathology
+           "/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="isTCEditOnDoubleClick"
       setMethod="setTCEditOnDoubleClick">
       <description><![CDATA[
@@ -1154,6 +1185,11 @@
       <description>Get a map of teaching-file field id's to non-exclusive keyword catalogue id's</description>
       <name>getTCKeywordCataloguesMapNonExclusive</name>
       <return-type>java.util.Map</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description>Get list of hidden attributes/keys when training-mode is on</description>
+      <name>getTCTrainingModeHiddenAttributesList</name>
+      <return-type>java.util.List</return-type>
    </operation>
    <operation impact="ACTION">
       <description>Get list of matching teaching-file source AETs</description>

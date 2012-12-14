@@ -40,6 +40,7 @@ package org.dcm4chee.web.war.tc.widgets;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.MarkupStream;
 import org.apache.wicket.markup.html.basic.MultiLineLabel;
+import org.apache.wicket.model.IModel;
 
 /**
  * @author Bernhard Ableitinger <bernhard.ableitinger@agfa.com>
@@ -60,6 +61,16 @@ public class TCMultiLineLabel extends MultiLineLabel {
 
     public TCMultiLineLabel(final String id, String text) {
         this(id, text, -1);
+    }
+    
+    public TCMultiLineLabel(final String id, IModel<String> textModel, int cutAtIndex) {
+        super(id, textModel);
+
+        this.cutAtIndex = cutAtIndex;
+    }
+
+    public TCMultiLineLabel(final String id, IModel<String> textModel) {
+        this(id, textModel, -1);
     }
 
     @Override

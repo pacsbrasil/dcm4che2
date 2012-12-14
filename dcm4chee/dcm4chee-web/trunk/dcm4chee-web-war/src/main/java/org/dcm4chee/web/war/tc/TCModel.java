@@ -92,6 +92,10 @@ public class TCModel extends InstanceModel {
         setParent(seriesModel);
     }
 
+    public String getId() {
+    	return Long.toString(getPk());
+    }
+    
     public String getTitle() {
         return dataset.getString(Tag.ContentLabel);
     }

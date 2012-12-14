@@ -21,9 +21,10 @@ public abstract class TCViewEditablePanel extends TCViewPanel
 {
     private static final Logger log = LoggerFactory.getLogger(TCViewEditablePanel.class);
     
-    public TCViewEditablePanel(final String id, IModel<TCEditableObject> model, final TCModel tc)
+    public TCViewEditablePanel(final String id, IModel<TCEditableObject> model, 
+    		final TCModel tc, final IModel<Boolean> trainingModeModel)
     {
-        super(id, model, tc);
+        super(id, model, tc, trainingModeModel);
         
         add(new AjaxLink<Void>("tc-view-ok-btn") {
             @Override

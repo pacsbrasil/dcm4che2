@@ -39,9 +39,11 @@ package org.dcm4chee.web.war.tc;
 
 import org.apache.wicket.behavior.AttributeAppender;
 import org.apache.wicket.markup.html.form.TextArea;
+import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
+import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
 import org.dcm4chee.web.war.tc.TCUtilities.SelfUpdatingTextArea;
 import org.dcm4chee.web.war.tc.TCViewPanel.AbstractEditableTCViewTab;
 import org.dcm4chee.web.war.tc.keywords.TCKeywordCatalogueProvider;
@@ -57,15 +59,20 @@ public abstract class TCViewGenericTextTab extends AbstractEditableTCViewTab
     private static final long serialVersionUID = 1L;
 
     private TextArea<String> area;
+    private AbstractReadOnlyModel<Boolean> infoVisibilityModel;
     
-    public TCViewGenericTextTab(final String id, IModel<TCEditableObject> model) 
+    public TCViewGenericTextTab(final String id, IModel<TCEditableObject> model,
+    		AbstractReadOnlyModel<Boolean> infoVisibilityModel) 
     {
-        this(id, model, false);
+        this(id, model, false, infoVisibilityModel);
     }
         
-    public TCViewGenericTextTab(final String id, IModel<TCEditableObject> model, boolean editing) {
+    @SuppressWarnings("serial")
+	public TCViewGenericTextTab(final String id, IModel<TCEditableObject> model, 
+    		boolean editing, AbstractReadOnlyModel<Boolean> infoVisibilityModel) {
         super(id, model, editing);
-
+        this.infoVisibilityModel = infoVisibilityModel;
+        
         this.area = new SelfUpdatingTextArea("tc-view-text", 
                 getStringValue(getKey()))
         {
@@ -95,14 +102,18 @@ public abstract class TCViewGenericTextTab extends AbstractEditableTCViewTab
     }
     
     @Override
-    public boolean isTabVisible()
-    {
-        if (TCQueryFilterKey.Finding.equals(getKey()))
-        {
-            return !TCKeywordCatalogueProvider.getInstance().hasCatalogue(getKey());
-        }
-        
-        return super.isTabVisible();
+    public boolean isTabVisible() {
+    	boolean defaultVisibility = super.isTabVisible();
+    	
+    	if (defaultVisibility) {
+	    	if (infoVisibilityModel!=null) {
+	    		return infoVisibilityModel.getObject() ||
+	    			!WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey(
+	    					getKey());
+	    	}
+    	}
+    	
+    	return defaultVisibility;
     }
     
     @Override

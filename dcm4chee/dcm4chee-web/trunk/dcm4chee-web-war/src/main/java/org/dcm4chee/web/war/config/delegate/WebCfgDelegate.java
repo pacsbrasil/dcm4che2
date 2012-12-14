@@ -38,6 +38,7 @@
 
 package org.dcm4chee.web.war.config.delegate;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
@@ -48,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.dcm4chee.web.common.delegate.BaseCfgDelegate;
+import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 import org.dcm4chee.web.service.common.RetryIntervalls;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -337,6 +339,30 @@ public class WebCfgDelegate extends BaseCfgDelegate {
             }
         }
         return parsedMap;
+    }
+    
+    public List<TCQueryFilterKey> getTCTrainingModeHiddenKeys() {
+    	List<TCQueryFilterKey> keys = new ArrayList<TCQueryFilterKey>();
+    	List<String> list = getStringList("getTCTrainingModeHiddenAttributesList");
+    	if (list!=null) {
+    		for (String s : list) {
+    			try {
+    				TCQueryFilterKey key = TCQueryFilterKey.valueOf(s);
+    				if (key!=null && !keys.contains(key)) {
+    					keys.add(key);
+    				}
+    			}
+    			catch (Exception e) {
+    				log.warn("Not recognized value '" + s + "' in 'TCTrainingModeHiddenAttributes'! Skipped value ...", e);
+    			}
+    		}
+     	}
+    	return keys;
+    }
+        
+    public boolean isTCTrainingModeHiddenKey(TCQueryFilterKey key) {
+    	List<String> list = getStringList("getTCTrainingModeHiddenAttributesList");
+    	return list!=null && list.contains(key.name());
     }
     
     public boolean isTCKeywordCatalogueExclusive(String key)

@@ -6,7 +6,7 @@
 <body>
     <wicket:panel>
         <div class="details-author">
-            <div class="table-property-row">
+            <div wicket:id="author-name-row" class="table-property-row">
                 <span class="table-property-key">
                     <wicket:message key="tc.author.name.text"/>
                  </span>
@@ -15,7 +15,7 @@
             
             <div class="spacer"/>
                         
-            <div class="table-property-row">
+            <div wicket:id="author-affiliation-row" class="table-property-row">
                 <span class="table-property-key">
                     <wicket:message key="tc.author.affiliation.text"/>
                 </span>
@@ -24,7 +24,7 @@
             
             <div class="spacer"/>
             
-            <div class="table-property-row" style="height:100%">
+            <div wicket:id="author-contact-row" class="table-property-row" style="height:100%">
                 <span class="table-property-key" style="height:100%">
                     <wicket:message key="tc.author.contact.text"/>
                 </span>

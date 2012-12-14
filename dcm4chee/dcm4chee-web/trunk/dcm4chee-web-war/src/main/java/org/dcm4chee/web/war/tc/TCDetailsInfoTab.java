@@ -44,6 +44,7 @@ import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.basic.MultiLineLabel;
 import org.apache.wicket.markup.html.panel.Panel;
+import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 import org.dcm4chee.web.war.tc.keywords.TCKeywordCatalogueProvider;
@@ -60,23 +61,23 @@ public class TCDetailsInfoTab extends Panel {
     private static final TCKeywordCatalogueProvider catProv = TCKeywordCatalogueProvider
             .getInstance();
 
-    public TCDetailsInfoTab(final String id) {
+    @SuppressWarnings("serial")
+	public TCDetailsInfoTab(final String id, final IModel<Boolean> trainingModeModel) {
         super(id);
 
         WebMarkupContainer titleWmc = new WebMarkupContainer(
                 "details-title-row");
         titleWmc.add(new Label("details-title", new Model<String>() {
-
-            private static final long serialVersionUID = 1L;
-
             @Override
             public String getObject() {
+            	if (!TCUtilities.isKeyAvailable(trainingModeModel,
+            			TCQueryFilterKey.Title)) {
+            		return TCUtilities.getLocalizedString("tc.case.text")+
+            				" " + getTCObject().getId();
+            	}
                 return getStringValue(TCQueryFilterKey.Title);
             }
         }).add(new AbstractBehavior() {
-
-            private static final long serialVersionUID = 1L;
-
             @Override
             public void onComponentTag(Component c, ComponentTag tag) {
                 tag.put("title", getStringValue(TCQueryFilterKey.Title));
@@ -87,29 +88,30 @@ public class TCDetailsInfoTab extends Panel {
                 "details-abstract-row");
         abstractWmc.add(new MultiLineLabel("details-abstract",
                 new Model<String>() {
-
-                    private static final long serialVersionUID = 1L;
-
                     @Override
                     public String getObject() {
+                    	if (!TCUtilities.isKeyAvailable(trainingModeModel,
+                    			TCQueryFilterKey.Abstract)) {
+                    		return TCUtilities.getLocalizedString("tc.obfuscation.text");
+                    	}
                         return getStringValue(TCQueryFilterKey.Abstract);
                     }
                 }));
 
         WebMarkupContainer keywordWmc = new WebMarkupContainer(
-                "details-keyword-row");
+                "details-keyword-row") {
+        	private static final long serialVersionUID = 921119399664942983L;
+			@Override
+            public boolean isVisible() {
+            	return TCUtilities.isKeyAvailable(trainingModeModel, TCQueryFilterKey.Keyword);
+            }
+        };
         keywordWmc.add(new Label("details-keyword", new Model<String>() {
-
-            private static final long serialVersionUID = 1L;
-
             @Override
             public String getObject() {
                 return getShortStringValue(TCQueryFilterKey.Keyword);
             }
         }).add(new AbstractBehavior() {
-
-            private static final long serialVersionUID = 1L;
-
             @Override
             public void onComponentTag(Component c, ComponentTag tag) {
             	String s = getTooltipString(TCQueryFilterKey.Keyword);
@@ -121,7 +123,12 @@ public class TCDetailsInfoTab extends Panel {
         }));
 
         WebMarkupContainer anatomyWmc = new WebMarkupContainer(
-                "details-anatomy-row");
+                "details-anatomy-row") {
+            @Override
+            public boolean isVisible() {
+            	return TCUtilities.isKeyAvailable(trainingModeModel, TCQueryFilterKey.Anatomy);
+            }
+        };
         anatomyWmc.add(new Label("details-anatomy", new Model<String>() {
 
             private static final long serialVersionUID = 1L;
@@ -145,19 +152,18 @@ public class TCDetailsInfoTab extends Panel {
         }));
 
         WebMarkupContainer pathologyWmc = new WebMarkupContainer(
-                "details-pathology-row");
+                "details-pathology-row") {
+            @Override
+            public boolean isVisible() {
+            	return TCUtilities.isKeyAvailable(trainingModeModel, TCQueryFilterKey.Pathology);
+            }
+        };
         pathologyWmc.add(new Label("details-pathology", new Model<String>() {
-
-            private static final long serialVersionUID = 1L;
-
             @Override
             public String getObject() {
                 return getShortStringValue(TCQueryFilterKey.Pathology);
             }
         }).add(new AbstractBehavior() {
-
-            private static final long serialVersionUID = 1L;
-
             @Override
             public void onComponentTag(Component c, ComponentTag tag) {
             	String s = getTooltipString(TCQueryFilterKey.Pathology);
@@ -169,20 +175,19 @@ public class TCDetailsInfoTab extends Panel {
         }));
 
         WebMarkupContainer findingWmc = new WebMarkupContainer(
-                "details-finding-row");
+                "details-finding-row") {
+            @Override
+            public boolean isVisible() {
+            	return TCUtilities.isKeyAvailable(trainingModeModel, TCQueryFilterKey.Finding);
+            }
+        };
         findingWmc.add(new MultiLineLabel("details-finding",
                 new Model<String>() {
-
-                    private static final long serialVersionUID = 1L;
-
                     @Override
                     public String getObject() {
                         return getShortStringValue(TCQueryFilterKey.Finding);
                     }
                 }).add(new AbstractBehavior() {
-
-            private static final long serialVersionUID = 1L;
-
             @Override
             public void onComponentTag(Component c, ComponentTag tag) {
             	String s = getTooltipString(TCQueryFilterKey.Finding);
@@ -194,19 +199,20 @@ public class TCDetailsInfoTab extends Panel {
         }));
 
         WebMarkupContainer diagnosisWmc = new WebMarkupContainer(
-                "details-diagnosis-row");
+                "details-diagnosis-row") {
+            @Override
+            public boolean isVisible() {
+            	return catProv.hasCatalogue(TCQueryFilterKey.Diagnosis) && 
+                        TCUtilities.isKeyAvailable(trainingModeModel, 
+                        		TCQueryFilterKey.Diagnosis);
+            }
+        };
         diagnosisWmc.add(new Label("details-diagnosis", new Model<String>() {
-
-            private static final long serialVersionUID = 1L;
-
             @Override
             public String getObject() {
                 return getShortStringValue(TCQueryFilterKey.Diagnosis);
             }
         }).add(new AbstractBehavior() {
-
-            private static final long serialVersionUID = 1L;
-
             @Override
             public void onComponentTag(Component c, ComponentTag tag) {
             	String s = getTooltipString(TCQueryFilterKey.Diagnosis);
@@ -218,20 +224,21 @@ public class TCDetailsInfoTab extends Panel {
         }));
 
         WebMarkupContainer diffdiagnosisWmc = new WebMarkupContainer(
-                "details-diffdiagnosis-row");
+                "details-diffdiagnosis-row") {
+            @Override
+            public boolean isVisible() {
+            	return catProv.hasCatalogue(TCQueryFilterKey.DifferentialDiagnosis) &&
+            			TCUtilities.isKeyAvailable(trainingModeModel, 
+            					TCQueryFilterKey.DifferentialDiagnosis);
+            }
+        };
         diffdiagnosisWmc.add(new Label("details-diffdiagnosis",
                 new Model<String>() {
-
-                    private static final long serialVersionUID = 1L;
-
                     @Override
                     public String getObject() {
                         return getShortStringValue(TCQueryFilterKey.DifferentialDiagnosis);
                     }
                 }).add(new AbstractBehavior() {
-
-            private static final long serialVersionUID = 1L;
-
             @Override
             public void onComponentTag(Component c, ComponentTag tag) {
             	String s = getTooltipString(TCQueryFilterKey.DifferentialDiagnosis);
@@ -243,12 +250,16 @@ public class TCDetailsInfoTab extends Panel {
         }));
 
         WebMarkupContainer diagnosisConfirmedWmc = new WebMarkupContainer(
-                "details-diagnosis-confirmed-row");
+                "details-diagnosis-confirmed-row") {
+            @Override
+            public boolean isVisible() {
+            	return catProv.hasCatalogue(TCQueryFilterKey.Diagnosis) &&
+                        TCUtilities.isKeyAvailable(trainingModeModel, 
+                        		TCQueryFilterKey.Diagnosis);
+            }
+        };
         diagnosisConfirmedWmc.add(new Label("details-diagnosis-confirmed",
                 new Model<String>() {
-
-                    private static final long serialVersionUID = 1L;
-
                     @Override
                     public String getObject() {
                         return getStringValue(TCQueryFilterKey.DiagnosisConfirmed);
@@ -256,19 +267,18 @@ public class TCDetailsInfoTab extends Panel {
                 }));
 
         WebMarkupContainer categoryWmc = new WebMarkupContainer(
-                "details-category-row");
+                "details-category-row") {
+            @Override
+            public boolean isVisible() {
+            	return TCUtilities.isKeyAvailable(trainingModeModel, TCQueryFilterKey.Category);
+            }
+        };
         categoryWmc.add(new Label("details-category", new Model<String>() {
-
-            private static final long serialVersionUID = 1L;
-
             @Override
             public String getObject() {
                 return getStringValue(TCQueryFilterKey.Category);
             }
         }).add(new AbstractBehavior() {
-
-            private static final long serialVersionUID = 1L;
-
             @Override
             public void onComponentTag(Component c, ComponentTag tag) {
             	String s = getTooltipString(TCQueryFilterKey.Category);
@@ -280,19 +290,18 @@ public class TCDetailsInfoTab extends Panel {
         }));
 
         WebMarkupContainer levelWmc = new WebMarkupContainer(
-                "details-level-row");
+                "details-level-row") {
+            @Override
+            public boolean isVisible() {
+            	return TCUtilities.isKeyAvailable(trainingModeModel, TCQueryFilterKey.Level);
+            }
+        };
         levelWmc.add(new Label("details-level", new Model<String>() {
-
-            private static final long serialVersionUID = 1L;
-
             @Override
             public String getObject() {
                 return getStringValue(TCQueryFilterKey.Level);
             }
         }).add(new AbstractBehavior() {
-
-            private static final long serialVersionUID = 1L;
-
             @Override
             public void onComponentTag(Component c, ComponentTag tag) {
             	String s = getTooltipString(TCQueryFilterKey.Level);
@@ -304,19 +313,18 @@ public class TCDetailsInfoTab extends Panel {
         }));
 
         WebMarkupContainer modalitiesWmc = new WebMarkupContainer(
-                "details-modalities-row");
+                "details-modalities-row") {
+            @Override
+            public boolean isVisible() {
+            	return TCUtilities.isKeyAvailable(trainingModeModel, TCQueryFilterKey.AcquisitionModality);
+            }
+        };
         modalitiesWmc.add(new Label("details-modalities", new Model<String>() {
-
-            private static final long serialVersionUID = 1L;
-
             @Override
             public String getObject() {
                 return getStringValue(TCQueryFilterKey.AcquisitionModality);
             }
         }).add(new AbstractBehavior() {
-
-            private static final long serialVersionUID = 1L;
-
             @Override
             public void onComponentTag(Component c, ComponentTag tag) {
             	String s = getTooltipString(TCQueryFilterKey.AcquisitionModality);
@@ -328,11 +336,13 @@ public class TCDetailsInfoTab extends Panel {
         }));
 
         WebMarkupContainer patientSexWmc = new WebMarkupContainer(
-                "details-patient-sex-row");
+                "details-patient-sex-row") {
+            @Override
+            public boolean isVisible() {
+            	return TCUtilities.isKeyAvailable(trainingModeModel, TCQueryFilterKey.PatientSex);
+            }
+        };
         patientSexWmc.add(new Label("details-patient-sex", new Model<String>() {
-
-            private static final long serialVersionUID = 1L;
-
             @Override
             public String getObject() {
                 return getStringValue(TCQueryFilterKey.PatientSex);
@@ -340,11 +350,13 @@ public class TCDetailsInfoTab extends Panel {
         }));
         
         WebMarkupContainer patientAgeWmc = new WebMarkupContainer(
-                "details-patient-age-row");
+                "details-patient-age-row") {
+            @Override
+            public boolean isVisible() {
+            	return TCUtilities.isKeyAvailable(trainingModeModel, TCQueryFilterKey.PatientAge);
+            }
+        };
         patientAgeWmc.add(new Label("details-patient-age", new Model<String>() {
-
-            private static final long serialVersionUID = 1L;
-
             @Override
             public String getObject() {
                 return TCPatientAgeUtilities.format(
@@ -353,20 +365,19 @@ public class TCDetailsInfoTab extends Panel {
         }));
 
         WebMarkupContainer patientSpeciesWmc = new WebMarkupContainer(
-                "details-patient-species-row");
+                "details-patient-species-row") {
+            @Override
+            public boolean isVisible() {
+            	return TCUtilities.isKeyAvailable(trainingModeModel, TCQueryFilterKey.PatientSpecies);
+            }
+        };
         patientSpeciesWmc.add(new Label("details-patient-species",
                 new Model<String>() {
-
-                    private static final long serialVersionUID = 1L;
-
                     @Override
                     public String getObject() {
                         return getStringValue(TCQueryFilterKey.PatientSpecies);
                     }
                 }).add(new AbstractBehavior() {
-
-            private static final long serialVersionUID = 1L;
-
             @Override
             public void onComponentTag(Component c, ComponentTag tag) {
             	String s = getTooltipString(TCQueryFilterKey.PatientSpecies);
@@ -376,15 +387,6 @@ public class TCDetailsInfoTab extends Panel {
             	}
             }
         }));
-
-        if (catProv != null) {
-            diffdiagnosisWmc.setVisible(catProv
-                    .hasCatalogue(TCQueryFilterKey.DifferentialDiagnosis));
-            diagnosisWmc.setVisible(catProv
-                    .hasCatalogue(TCQueryFilterKey.Diagnosis));
-            diagnosisConfirmedWmc.setVisible(catProv
-                    .hasCatalogue(TCQueryFilterKey.Diagnosis));
-        }
 
         add(titleWmc);
         add(abstractWmc);

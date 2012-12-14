@@ -58,6 +58,12 @@ div.content-area
 	border-top: 2px solid transparent;
 } 
 
+#trainingmode-link {
+	float:right;
+	line-height:24px;
+	margin-top: 5px;
+}
+
 div.result-area 
 {
    margin-right: 36em;
@@ -66,10 +72,11 @@ div.result-area
  
 div.details-area
 {
-   float: right;
+   float:right;
+   clear:right;
    width: 34.75em;
    height: 41.5em;
-   margin-top: 30px;
+   margin-top: 3px;
 }
 
 div.diagnosis-warning  {
@@ -579,11 +586,11 @@ div.details-tabs div.tab-panel div.table-property-row
 {
 	height: 1.25em;
 	overflow: hidden;
+	margin-top: 5px;
 }
 
 div.details-tabs div.tab-panel div.spacer
 {
-	height: 5px;
 	clear: left;
 }
 

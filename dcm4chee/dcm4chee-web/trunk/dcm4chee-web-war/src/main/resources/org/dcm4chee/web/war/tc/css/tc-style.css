@@ -51,6 +51,10 @@
  * style of common elements 
  *****************************************************/
  
+#trainingmode-link {
+	text-decoration: none;
+}
+ 
 .tc-popup
 {
     background-color: #F5F5F5;

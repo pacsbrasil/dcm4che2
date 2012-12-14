@@ -52,17 +52,32 @@ function updateTCViewDialogToUseQueryUI() {
 	});
 }
 
-function disableTCViewTabs(indices)
+function setDisabledTCViewTabs(indices)
 {
 	$('#tc-view-content').tabs('option','disabled',indices);
 	$('#tc-view-editable-content').tabs('option','disabled',indices);
 }
 
-function hideTCViewTab(index)
+function setHiddenTCViewTabs(indices)
 {
-	$('#tc-view-content').tabs('remove', index);
-	$('#tc-view-editable-content').tabs('remove', index);
+	$('#tc-view-content .ui-tabs-nav li').each(function(i) {
+		if ($.inArray(i,indices)>=0) {
+			$(this).css('display','none');
+		}
+		else {
+			$(this).css('display','');
+		}
+	});
+	$('#tc-view-editable-content .ui-tabs-nav li').each(function(i) {
+		if ($.inArray(i,indices)>=0) {
+			$(this).css('display','none');
+		}
+		else {
+			$(this).css('display','');
+		}
+	});
 }
+
 
 function updateTCViewDialogLayout() {
 	updateTCViewTabsLayout();

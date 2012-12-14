@@ -1,6 +1,5 @@
 package org.dcm4chee.web.war.tc;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,12 +30,14 @@ import org.dcm4chee.web.war.StudyPermissionHelper;
 import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
 import org.dcm4chee.web.war.folder.webviewer.Webviewer;
 import org.dcm4chee.web.war.folder.webviewer.Webviewer.WebviewerLinkClickedCallback;
+import org.dcm4chee.web.war.tc.keywords.TCKeywordCatalogueProvider;
 
 /**
  * @author Bernhard Ableitinger <bernhard.ableitinger@agfa.com>
  * @version $Revision$ $Date$
  * @since Nov 25, 2011
  */
+@SuppressWarnings("serial")
 public class TCViewPanel extends Panel
 {
     private WebviewerLinkProvider[] webviewerLinkProviders;
@@ -48,7 +49,10 @@ public class TCViewPanel extends Panel
 
     private boolean sendImagesViewedLog = true;
     
-    public TCViewPanel(final String id, IModel<TCEditableObject> model, final TCModel tc)
+    private boolean showAllIfTrainingModeIsOn = false;
+
+	public TCViewPanel(final String id, IModel<TCEditableObject> model, final TCModel tc, 
+    		final IModel<Boolean> trainingModeModel)
     {
         super(id, model==null ? new Model<TCEditableObject>() : model);
 
@@ -56,7 +60,7 @@ public class TCViewPanel extends Panel
         
         final ModalWindow webviewerSelectionWindow = new ModalWindow("tc-view-webviewer-selection-window");
         add(webviewerSelectionWindow);
-        
+                
         add(new AjaxLink<Void>("tc-print-btn") {
                 @Override
                 public void onClick(AjaxRequestTarget target) {
@@ -90,12 +94,22 @@ public class TCViewPanel extends Panel
             }
         }));
         
+        final AbstractReadOnlyModel<Boolean> infoVisibilityModel = new AbstractReadOnlyModel<Boolean>() {
+        	@Override
+        	public Boolean getObject() {
+        		if (!isEditable() && trainingModeModel.getObject()) {
+        			return showAllIfTrainingModeIsOn;
+        		}
+        		return true;
+        	}
+        };
+        
         final Label biblioTitleLabel = new Label("tc.view.bibliography.tab.title");
         biblioTitleLabel.setOutputMarkupId(true);
         
         final boolean showImagesTab = WebCfgDelegate.getInstance().isTCShowImagesInDialogEnabled();
-        final TCViewOverviewTab overviewTab = new TCViewOverviewTab("tc-view-overview", getModel(), isEditable());
-        final TCViewDiagnosisTab diagnosisTab = new TCViewDiagnosisTab("tc-view-diagnosis", getModel(), isEditable());
+        final TCViewOverviewTab overviewTab = new TCViewOverviewTab("tc-view-overview", getModel(), isEditable(), infoVisibilityModel);
+        final TCViewDiagnosisTab diagnosisTab = new TCViewDiagnosisTab("tc-view-diagnosis", getModel(), isEditable(), infoVisibilityModel);
         final WebMarkupContainer imagesTab =  showImagesTab ?
         		new TCViewImagesTab("tc-view-images", getModel()) : new WebMarkupContainer("tc-view-images") {
 					private static final long serialVersionUID = 1L;
@@ -104,7 +118,8 @@ public class TCViewPanel extends Panel
         				return false;
         			}
         		};
-        final TCViewGenericTextTab diffDiagnosisTab = new TCViewGenericTextTab("tc-view-diffDiagnosis", getModel(), isEditable()) {
+        final TCViewGenericTextTab diffDiagnosisTab = new TCViewGenericTextTab("tc-view-diffDiagnosis", getModel(), 
+        		isEditable(), infoVisibilityModel) {
             @Override
             public String getTabTitle()
             {
@@ -115,18 +130,29 @@ public class TCViewPanel extends Panel
                 return TCQueryFilterKey.DifferentialDiagnosis;
             }
         };
-        final TCViewGenericTextTab findingTab = new TCViewGenericTextTab("tc-view-finding", getModel(), isEditable()) {
+        final TCViewGenericTextTab findingTab = new TCViewGenericTextTab("tc-view-finding", getModel(), 
+        		isEditable(), infoVisibilityModel) {
             @Override
             public String getTabTitle()
             {
                 return getString("tc.view.finding.tab.title");
             }
             @Override
+            public boolean isTabVisible()
+            {
+            	if (!TCKeywordCatalogueProvider.getInstance().hasCatalogue(getKey()))
+            	{
+            		return super.isTabVisible();
+            	}
+            	return false;
+            }
+            @Override
             protected TCQueryFilterKey getKey() {
                 return TCQueryFilterKey.Finding;
             }
         };
-        final TCViewGenericTextTab historyTab = new TCViewGenericTextTab("tc-view-history", getModel(), isEditable()) {
+        final TCViewGenericTextTab historyTab = new TCViewGenericTextTab("tc-view-history", getModel(), 
+        		isEditable(), infoVisibilityModel) {
             @Override
             public String getTabTitle()
             {
@@ -137,7 +163,8 @@ public class TCViewPanel extends Panel
                 return TCQueryFilterKey.History;
             }
         };
-        final TCViewGenericTextTab discussionTab = new TCViewGenericTextTab("tc-view-discussion", getModel(), isEditable()) {
+        final TCViewGenericTextTab discussionTab = new TCViewGenericTextTab("tc-view-discussion", getModel(), 
+        		isEditable(), infoVisibilityModel) {
             @Override
             public String getTabTitle()
             {
@@ -148,7 +175,8 @@ public class TCViewPanel extends Panel
                 return TCQueryFilterKey.Discussion;
             }
         };
-        final TCViewGenericTextTab organSystemTab = new TCViewGenericTextTab("tc-view-organSystem", getModel(), isEditable()) {
+        final TCViewGenericTextTab organSystemTab = new TCViewGenericTextTab("tc-view-organSystem", getModel(), 
+        		isEditable(), infoVisibilityModel) {
             @Override
             public String getTabTitle()
             {
@@ -160,8 +188,9 @@ public class TCViewPanel extends Panel
             }
         };
                
-        final TCViewBibliographyTab biblioTab = new TCViewBibliographyTab("tc-view-bibliography", getModel(), isEditable()) {
-            @Override
+        final TCViewBibliographyTab biblioTab = new TCViewBibliographyTab("tc-view-bibliography", getModel(), 
+        		isEditable(), infoVisibilityModel) {
+        	@Override
             protected void tabTitleChanged(AjaxRequestTarget target)
             {
                 if (target!=null)
@@ -179,16 +208,6 @@ public class TCViewPanel extends Panel
             }
         });
         
-        overviewTab.setMarkupId("tabs-overview");
-        diagnosisTab.setMarkupId("tabs-diagnosis");
-        diffDiagnosisTab.setMarkupId("tabs-diffDiagnosis");
-        findingTab.setMarkupId("tabs-finding");
-        historyTab.setMarkupId("tabs-history");
-        discussionTab.setMarkupId("tabs-discussion");
-        organSystemTab.setMarkupId("tabs-organSystem");
-        biblioTab.setMarkupId("tabs-bibliography");
-        imagesTab.setMarkupId("tabs-images");
-        
         tabActivationBehavior = new AbstractDefaultAjaxBehavior() {
         	public void respond(AjaxRequestTarget target) {
         		String newTabId = RequestCycle.get().getRequest().getParameter("newTabId");
@@ -201,7 +220,7 @@ public class TCViewPanel extends Panel
         	}
         };
         
-        WebMarkupContainer content = new WebMarkupContainer("tc-view-content") {
+        final WebMarkupContainer content = new WebMarkupContainer("tc-view-content") {
             @Override
             protected void onComponentTag(ComponentTag tag)
             {
@@ -287,6 +306,7 @@ public class TCViewPanel extends Panel
         	}
         })));
         
+        
         tabsToIndices.put(overviewTab, 0);
         tabsToIndices.put(diagnosisTab, 1);
         tabsToIndices.put(diffDiagnosisTab, 2);
@@ -300,7 +320,7 @@ public class TCViewPanel extends Panel
         {
         	tabsToIndices.put((TCViewImagesTab)imagesTab, 8);
         }
-        
+                
         content.add(overviewTab);
         content.add(diagnosisTab);
         content.add(diffDiagnosisTab);
@@ -314,6 +334,34 @@ public class TCViewPanel extends Panel
         content.add(tabActivationBehavior);
         
         add(content);
+        
+        add(new AjaxLink<Void>("tc-solve-btn") {
+			@Override
+        	public void onClick(AjaxRequestTarget target) {
+        		showAllIfTrainingModeIsOn=true;
+        		target.addComponent(this);
+        		target.addComponent(content);
+        		target.appendJavascript("updateTCViewDialog();");
+        		target.appendJavascript(getHideTabsJavascript());
+        	}
+			@Override
+			public boolean isEnabled() {
+				return !showAllIfTrainingModeIsOn;
+			}
+			@Override
+			public boolean isVisible() {
+				return !isEditable() && trainingModeModel.getObject();
+			}
+			@Override
+			protected void onComponentTag(ComponentTag tag) {
+				super.onComponentTag(tag);
+				tag.put("title", TCUtilities.getLocalizedString("tc.view.solve.tooltip"));
+			}
+        }
+        .add(new Label("tc-solve-label", new Model<String>(TCUtilities.getLocalizedString("tc.view.solve.text"))))
+        .add(new Image("tc-solve-img", ImageManager.IMAGE_TC_LIGHT_BULB).add(
+        		(new ImageSizeBehaviour("vertical-align: middle;"))))
+        .setOutputMarkupId(true));
     }
     
     public boolean isEditable()
@@ -327,30 +375,42 @@ public class TCViewPanel extends Panel
         return (TCObject) getDefaultModelObject();
     }
     
-    public List<Integer> getDisabledTabIndices()
-    {
-        List<Integer> indices = new ArrayList<Integer>();
+    public String getDisableTabsJavascript() {
+    	boolean appendDelimiter=false;
+    	StringBuffer sbuf = new StringBuffer();
+    	sbuf.append("setDisabledTCViewTabs([");
         for (Map.Entry<AbstractTCViewTab, Integer> me : tabsToIndices.entrySet())
         {
             if (!me.getKey().isTabEnabled())
             {
-                indices.add(me.getValue());
+            	if (appendDelimiter) {
+            		sbuf.append(",");
+            	}
+            	appendDelimiter = true;
+            	sbuf.append(me.getValue());
             }
         }
-        return indices;
+        sbuf.append("]);");
+        return sbuf.toString();
     }
     
-    public List<Integer> getHiddenTabIndices()
-    {
-        List<Integer> indices = new ArrayList<Integer>();
+    public String getHideTabsJavascript() {
+    	boolean appendDelimiter=false;
+    	StringBuffer sbuf = new StringBuffer();
+    	sbuf.append("setHiddenTCViewTabs([");
         for (Map.Entry<AbstractTCViewTab, Integer> me : tabsToIndices.entrySet())
         {
             if (!me.getKey().isTabVisible())
             {
-                indices.add(me.getValue());
+            	if (appendDelimiter) {
+            		sbuf.append(",");
+            	}
+            	appendDelimiter = true;
+            	sbuf.append(me.getValue());
             }
         }
-        return indices;
+        sbuf.append("]);");
+        return sbuf.toString();
     }
     
     @Override
