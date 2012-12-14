@@ -75,12 +75,13 @@ public class TCViewPanel extends Panel
 
         add(Webviewer.getLink(tc, webviewerLinkProviders,
                     StudyPermissionHelper.get(),
-                    new TooltipBehaviour("tc.view.", "webviewer"), webviewerSelectionWindow,
+                    new TooltipBehaviour("tc.view.", "webview"), webviewerSelectionWindow,
                     new WebviewerLinkClickedCallback() {
                     	public void linkClicked(AjaxRequestTarget target) {
                     		TCAuditLog.logTFImagesViewed(getTC());
                     	}
                     })
+            .add(new Label("webview-label", new Model<String>(TCUtilities.getLocalizedString("tc.view.webview.text"))))
             .add(new SecurityBehavior(TCPanel.getModuleName()
                             + ":webviewerInstanceLink"))
             .setOutputMarkupId(true)
