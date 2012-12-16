@@ -368,6 +368,9 @@ public class CompressionService extends ServiceMBeanSupport {
                                 }
                             }
                             limit -= files.length;
+                            if (limit <= 0) {
+                            	break;
+                            }
                         }
                     }
                 }
