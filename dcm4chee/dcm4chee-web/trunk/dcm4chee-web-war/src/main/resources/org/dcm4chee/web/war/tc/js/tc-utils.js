@@ -163,3 +163,99 @@ function shouldHandlePopupMouseOut(event, popupId)
 	
 	return false;
 }
+
+Mask = { };
+
+/**
+Shows a mask that blocks user input
+*/
+Mask.show = function(parentId, showWaitCursor)
+{
+	Mask.showImpl(parentId, false, showWaitCursor);
+};
+
+/**
+Shows a transparent mask that blocks user input
+*/
+Mask.showTransparent = function(parentId, showWaitCursor)
+{
+	Mask.showImpl(parentId, true, showWaitCursor);
+};
+
+/**
+ Shows a mask
+*/
+Mask.showImpl = function(parentId, showTransparentMask, showWaitCursor)
+{
+	var target=null;
+
+	if (parentId==null)
+	{
+		target = document.getElementsByTagName("body")[0];
+	}
+	else
+	{
+		target = document.getElementById(parentId);
+	}
+
+	var mask=document.createElement("div");
+	mask.id="wicket_mask_";
+	mask.innerHTML="&nbsp;";
+	mask.style.position="absolute";
+	mask.style.top="0";
+	mask.style.left="0";
+	mask.style.width="100%";
+	mask.style.height="100%";
+	mask.style.zIndex="21000"; // wicket mask for modal dialogs has zIndex=20000
+
+	if (showTransparentMask)
+	{
+		if (showWaitCursor)
+		{
+			mask.className="wicket-mask-transparent wicket-mask-cursor";
+		}
+		else
+		{
+			mask.className="wicket-mask-transparent";
+		}
+	}
+	else
+	{
+		if (showWaitCursor)
+		{
+			mask.className="wicket-mask wicket-mask-cursor";
+		}
+		else
+		{
+			mask.className="wicket-mask";
+		}
+	}
+
+	target.appendChild(mask);
+
+	Mask.offsetMask(mask);
+};
+
+/**
+ Hides the mask
+*/
+Mask.hide = function()
+{
+  var mask=document.getElementById("wicket_mask_");
+  if (mask!=null) {
+	  mask.style.display="none";
+	  mask.parentNode.removeChild(mask);
+  }
+};
+
+/**
+ * Offsets the mask to the scroll position.
+ */ 
+Mask.offsetMask = function(mask)
+{
+  var offsetX =   document.body.scrollLeft;
+  var offsetY =  document.body.scrollTop;
+  
+  mask.style.left = offsetX + "px";
+  mask.style.top = offsetY + "px";
+};

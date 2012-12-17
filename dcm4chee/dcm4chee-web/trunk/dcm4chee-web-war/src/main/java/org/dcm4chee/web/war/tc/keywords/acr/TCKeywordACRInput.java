@@ -138,22 +138,6 @@ public class TCKeywordACRInput extends AbstractTCKeywordInput {
         add(popup);
     }
 
-    public List<TCKeyword> getKeywordsAsList() {
-    	List<TCKeyword> list = new ArrayList<TCKeyword>();
-    	List<TCKeyword> modelList = getModel().getObject();
-    	if (modelList!=null)
-    	{
-    		list.addAll(modelList);
-    	}
-    	return list;
-    }
-    
-    public void setKeywords(List<TCKeyword> keywords)
-    {
-    	getModel().setObject(keywords);
-    	((MultipleKeywordsTextModel)text.getModel()).setKeywordItems(keywords);
-    }
-
     @Override
     public TCKeyword[] getKeywords() {
         List<TCKeyword> keywords = getKeywordsAsList();
@@ -175,12 +159,26 @@ public class TCKeywordACRInput extends AbstractTCKeywordInput {
         }
         return null;
     }
-
-    @Override
-    public void resetKeywords() {
-        getModel().setObject(null);
-        text.getModel().setObject(null);
-    }
+    
+	@Override
+	public void setKeywords(TCKeyword...keywords)
+	{
+		if (keywords==null || keywords.length==0)
+		{
+			setKeywordsAsList(null);
+		}
+		else {
+	    	List<TCKeyword> list = new ArrayList<TCKeyword>(3);
+	    	if (keywords!=null) {
+	    		for (TCKeyword keyword : keywords) {
+	    			if (keyword!=null) {
+	    				list.add(keyword);
+	    			}
+	    		}
+	    	}
+	    	setKeywordsAsList(list);
+		}
+	}
     
     @Override
     public boolean isExclusive()
@@ -192,6 +190,22 @@ public class TCKeywordACRInput extends AbstractTCKeywordInput {
     public void setExclusive(boolean exclusive)
     {
         text.setEnabled(!exclusive);
+    }
+    
+    public List<TCKeyword> getKeywordsAsList() {
+    	List<TCKeyword> list = new ArrayList<TCKeyword>();
+    	List<TCKeyword> modelList = getModel().getObject();
+    	if (modelList!=null)
+    	{
+    		list.addAll(modelList);
+    	}
+    	return list;
+    }
+    
+    private void setKeywordsAsList(List<TCKeyword> keywords)
+    {
+    	getModel().setObject(keywords);
+    	((MultipleKeywordsTextModel)text.getModel()).setKeywordItems(keywords);
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -520,12 +534,12 @@ public class TCKeywordACRInput extends AbstractTCKeywordInput {
                 	List<TCKeyword> keywords = new ArrayList<TCKeyword>();
         			keywords.addAll(getKeywordsAsList());
         			keywords.addAll(selectedKeywords);
-        			setKeywords(keywords);
+        			setKeywordsAsList(keywords);
         		}
         	}
         	else
         	{
-        		setKeywords((List)selectedKeywords);
+        		setKeywordsAsList((List)selectedKeywords);
         	}
 
             target.addComponent(text);

@@ -9,6 +9,7 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
+import org.dcm4chee.web.war.tc.TCResultPanel.ITCCaseProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,9 +23,9 @@ public abstract class TCViewEditablePanel extends TCViewPanel
     private static final Logger log = LoggerFactory.getLogger(TCViewEditablePanel.class);
     
     public TCViewEditablePanel(final String id, IModel<TCEditableObject> model, 
-    		final TCModel tc, final IModel<Boolean> trainingModeModel)
+    		final TCModel tc, final IModel<Boolean> trainingModeModel, ITCCaseProvider caseProvider)
     {
-        super(id, model, tc, trainingModeModel);
+        super(id, model, tc, trainingModeModel, caseProvider);
         
         add(new AjaxLink<Void>("tc-view-ok-btn") {
             @Override

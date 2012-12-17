@@ -618,7 +618,7 @@ div.tc-view
 	left: 1em;
 	right: 1em;
 	top: 2.5em;
-	height: 4em;
+	height: 5em;
 	line-height: 4em; /* vertically center elements */
 }
 
@@ -627,7 +627,7 @@ div.tc-view
 	position: absolute;
 	left: 1em;
 	right: 1em;
-	top: 6.5em;
+	top: 7em;
 	bottom: 1.2em;
 	border: medium none;
 }
@@ -654,16 +654,34 @@ div.tc-view
 div.tc-view-title
 {
 	float:left;
-	line-height: 50px;
 	font-weight: bold;
 	font-size: 1.25em;
 	padding-left: 20px;
 }
 
+div.tc-view-title #tc-view-title-text {
+	font-size: 1.25em;
+	line-height: 30px;
+	margin-top: 5px;
+	margin-bottom: 2px;
+}
+
+div.tc-view-title #tc-view-case-navigator {
+	font-weight: normal;
+	font-size: 11px;
+	line-height: 14px;
+}
+
+div.tc-view-title #tc-view-case-navigator button {
+	height: 20px;
+}
+
+div.tc-view-title #tc-view-case-navigator button span {
+	padding: 0 5px;
+}
+
 div.tc-view-options
 {
-	height: 50px;
-	line-height: 50px; /* vertically center elements */
 	float: right;
 	padding-right: 10px;
 }

@@ -21,6 +21,7 @@ import org.apache.wicket.markup.html.form.TextArea;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.link.PopupSettings;
 import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.resource.loader.PackageStringResourceLoader;
 import org.dcm4chee.archive.entity.Code;
@@ -269,7 +270,13 @@ public class TCUtilities
     public static <T extends Enum<T>> TCComboBox<T> createEnumComboBox(
             final String id, T selectedValue, List<T> options,
             boolean localizeValues, final String localizePrefix, final NullDropDownItem nullItem, final TCChangeListener<T> l) {
-        TCComboBox<T> cbox = new TCComboBox<T>(id, options, selectedValue) {
+    	return createEnumComboBox(id, new Model<T>(selectedValue), options, localizeValues, localizePrefix, nullItem, l);
+    }
+    
+    public static <T extends Enum<T>> TCComboBox<T> createEnumComboBox(
+            final String id, IModel<T> selectedValue, List<T> options,
+            boolean localizeValues, final String localizePrefix, final NullDropDownItem nullItem, final TCChangeListener<T> l) {
+        TCComboBox<T> cbox = new TCComboBox<T>(id, options, selectedValue, null) {
             private static final long serialVersionUID = 1L;
             @Override
             protected String getNullValidKey() {
@@ -311,22 +318,22 @@ public class TCUtilities
     }
     
     public static <T extends Enum<T>> TCEditableComboBox createEnumEditableComboBox(
-            final String id, String selectedValue, List<T> options,
+            final String id, IModel<String> selectedValue, List<T> options,
             boolean localizeValues, final String localizePrefix) {
         return createEnumEditableComboBox(id, selectedValue, options, localizeValues, 
                 localizePrefix, NullDropDownItem.NotValid);
     }
     
     public static <T extends Enum<T>> TCEditableComboBox createEnumEditableComboBox(
-            final String id, String selectedValue, List<T> options,
+            final String id, IModel<String> selectedValue, List<T> options,
             boolean localizeValues, final String localizePrefix, final NullDropDownItem nullItem) {
         return createEnumEditableComboBox(id, selectedValue, options, localizeValues, localizePrefix, nullItem, null);
     }
     
     public static <T extends Enum<T>> TCEditableComboBox createEnumEditableComboBox(
-            final String id, String selectedValue, List<T> options,
+            final String id, IModel<String> selectedValue, List<T> options,
             boolean localizeValues, final String localizePrefix, final NullDropDownItem nullItem, final TCChangeListener<String> l) {
-        TCEditableComboBox cbox = new TCEditableComboBox(id, options, selectedValue) {
+        TCEditableComboBox cbox = new TCEditableComboBox(id, options, selectedValue, null) {
             private static final long serialVersionUID = 1L;
             @Override
             protected String getNullValidKey() {
@@ -495,47 +502,55 @@ public class TCUtilities
     
     public static class SelfUpdatingTextField extends TextField<String> 
     {
-        private String text;
+        private IModel<String> model;
 
         public SelfUpdatingTextField(String id, String text) 
         {
+        	this(id, new Model<String>(text));
+        }
+        public SelfUpdatingTextField(String id, IModel<String> model) 
+        {
             super(id);
-            this.text = text;
-            setModel(new PropertyModel<String>(this, "text"));
+            this.model = model!=null ? model : new Model<String>(""); 
+            setModel(model);
             add(new AjaxFormComponentUpdatingBehavior("onchange"){
                 @Override
                 protected void onUpdate(AjaxRequestTarget target) {
-                    textUpdated(SelfUpdatingTextField.this.text);
+                    textUpdated(SelfUpdatingTextField.this.model.getObject());
                 }
             });
             add(new AutoSelectInputTextBehaviour());
         }
 
-        public String getText(){ return text; }
-        public void setText(String text) { this.text = text; }
+        public String getText(){ return model.getObject(); }
+        public void setText(String text) { model.setObject(text); }
         protected void textUpdated(String text) {}
     }
     
     public static class SelfUpdatingTextArea extends TextArea<String> 
     {
-        private String text;
-
+        private IModel<String> model;
+        
         public SelfUpdatingTextArea(String id, String text) 
         {
+        	this(id, new Model<String>(text));
+        }
+        public SelfUpdatingTextArea(String id, IModel<String> model) 
+        {
             super(id);
-            this.text = text;
+            this.model = model!=null ? model : new Model<String>(""); 
             setModel(new PropertyModel<String>(this, "text"));
             add(new AjaxFormComponentUpdatingBehavior("onchange"){
                 @Override
                 protected void onUpdate(AjaxRequestTarget target) {
-                    textUpdated(SelfUpdatingTextArea.this.text);
+                    textUpdated(SelfUpdatingTextArea.this.model.getObject());
                 }
             });
             add(new AutoSelectInputTextBehaviour());
         }
 
-        public String getText(){ return text; }
-        public void setText(String text) { this.text = text; }
+        public String getText(){ return model.getObject(); }
+        public void setText(String text) { model.setObject(text); }
         protected void textUpdated(String text) {}
     }
     

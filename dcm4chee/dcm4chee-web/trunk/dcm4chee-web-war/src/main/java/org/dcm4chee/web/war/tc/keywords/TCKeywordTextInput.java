@@ -37,6 +37,7 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.web.war.tc.keywords;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.dcm4chee.web.dao.tc.ITextOrCode;
@@ -91,10 +92,10 @@ public class TCKeywordTextInput extends AbstractTCInput {
     public ITextOrCode[] getValues() {
     	return ((MultipleKeywordsTextModel)getDefaultModel()).getItems();
     }
-
+    
     @Override
-    public void resetValues() {
-        textField.setText(null);
+    public void setValues(ITextOrCode...values) {
+    	((MultipleKeywordsTextModel)getDefaultModel()).setItems(values);
     }
 
     private class MultipleKeywordsTextModel extends MultipleItemsTextModel
@@ -105,6 +106,11 @@ public class TCKeywordTextInput extends AbstractTCInput {
     	{
     		super(text);
     	}
+		
+		public void setItems(ITextOrCode...items) {
+			setObject(items!=null ? 
+					toString(Arrays.asList(items)) : null);
+		}
     	
     	public ITextOrCode[] getItems()
     	{

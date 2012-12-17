@@ -145,21 +145,21 @@ public abstract class AbstractTCInput extends Panel implements TCInput
         	return list;
     	}
 		
-    	protected String toString(List<TCKeyword> keywords)
+    	protected String toString(List<? extends ITextOrCode> items)
     	{
-    		if (keywords!=null)
+    		if (items!=null)
     		{
     			StringBuilder sbuilder = new StringBuilder();
-    			for (int i=0; i<keywords.size(); i++)
+    			for (int i=0; i<items.size(); i++)
     			{
-    				TCKeyword keyword = keywords.get(i);
-    				if (keyword!=null)
+    				ITextOrCode item = items.get(i);
+    				if (item!=null)
     				{
     					if (i>0)
     					{
     						sbuilder.append(getMultipleKeywordDelimiter());
     					}
-    					sbuilder.append(keyword);
+    					sbuilder.append(item);
     				}
     			}
     			return sbuilder.toString();

@@ -186,8 +186,10 @@ public class TCPanel extends Panel {
                 {
                     final IModel<TCEditableObject> model = new Model<TCEditableObject>(TCEditableObject.create(tc));
                     final TCViewPanel viewPanel = !edit ?
-                            new TCViewPanel(viewDialog.getContentId(), model, tc, trainingModeModel) :
-                            new TCViewEditablePanel(viewDialog.getContentId(), model, tc, trainingModeModel) {
+                            new TCViewPanel(viewDialog.getContentId(), model, tc, 
+                            		trainingModeModel, listPanel.getCaseProvider()) :
+                            new TCViewEditablePanel(viewDialog.getContentId(), model, 
+                            		tc, trainingModeModel, listPanel.getCaseProvider()) {
 				private static final long serialVersionUID = 1L;
 
 				@Override
@@ -325,7 +327,7 @@ public class TCPanel extends Panel {
 	        		}
 	        	}
             }).add(new AttributeAppender("style",true,new Model<String>("vertical-align:middle")," ")))
-            .add(new TooltipBehaviour("tc.trainingmode."))
+            .add(new TooltipBehaviour("tc.","trainingmode"))
             .setOutputMarkupId(true).setMarkupId("trainingmode-link")
         );
 

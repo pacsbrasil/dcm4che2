@@ -79,6 +79,34 @@ public class TCKeyword implements ITextOrCode {
 
         return keyword;
     }
+    
+    public static TCKeyword create(TCKeywordCatalogue cat, ITextOrCode toc) {
+    	String svalue = null;
+    	
+    	if (toc!=null) {
+    		TCDicomCode code = toc.getCode();
+	        if (code!=null) {
+	            svalue = code.getValue();
+	        }
+	        else {
+	            svalue = toc.getText();
+	        }
+    	}
+    	
+        TCKeyword keyword = null;
+        
+        if (svalue!=null && !svalue.trim().isEmpty()) {
+        	if (cat!=null) {
+        		keyword = cat.findKeyword(svalue);
+        	}
+        }
+        
+        if (keyword==null && svalue!=null) {
+            keyword = new TCKeyword(svalue, null, false);
+        }
+        
+        return keyword;
+    }
 
     public String getName() {
         return name;

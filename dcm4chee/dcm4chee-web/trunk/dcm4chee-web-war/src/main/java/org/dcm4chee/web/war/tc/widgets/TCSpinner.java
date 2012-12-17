@@ -45,13 +45,14 @@ public class TCSpinner<T extends Serializable> extends TextField<T> {
 	}
 	
 	public static TCSpinner<Integer> createYearSpinner(final String id, IModel<Integer> model, TCChangeListener<Integer> l) {
+		final String syears = TCUtilities.getLocalizedString("tc.years.text");
 		return new TCSpinner<Integer>(id, model, l) {
 			private static final long serialVersionUID = 7945115163952095613L;
 			@Override
 			protected Integer convertValue(String[] values) throws ConversionException {
 				try {
 					if (values!=null && values.length>0) {
-						return Integer.valueOf(trim(values[0]));
+						return Integer.valueOf(trim(values[0].replaceAll(syears, "")));
 					}
 					return null;
 				}
@@ -63,7 +64,7 @@ public class TCSpinner<T extends Serializable> extends TextField<T> {
 			protected void onComponentTag(ComponentTag tag) {
 				super.onComponentTag(tag);
 				tag.put("readonly", "readonly");
-				tag.put("loc-years", TCUtilities.getLocalizedString("tc.years.text"));
+				tag.put("loc-years", syears);
 			}
 		};
 	}
@@ -77,13 +78,14 @@ public class TCSpinner<T extends Serializable> extends TextField<T> {
 	}
 	
 	public static TCSpinner<Integer> createMonthSpinner(final String id, IModel<Integer> model, TCChangeListener<Integer> l) {
+		final String smonths = TCUtilities.getLocalizedString("tc.months.text");
 		return new TCSpinner<Integer>(id, model, l) {
 			private static final long serialVersionUID = 7945115163952095613L;
 			@Override
 			protected Integer convertValue(String[] values) throws ConversionException {
 				try {
 					if (values!=null && values.length>0) {
-						return Integer.valueOf(trim(values[0]));
+						return Integer.valueOf(trim(values[0].replaceAll(smonths, "")));
 					}
 					return null;
 				}
@@ -95,7 +97,7 @@ public class TCSpinner<T extends Serializable> extends TextField<T> {
 			protected void onComponentTag(ComponentTag tag) {
 				super.onComponentTag(tag);
 				tag.put("readonly", "readonly");
-				tag.put("loc-months", TCUtilities.getLocalizedString("tc.months.text"));
+				tag.put("loc-months", smonths);
 			}
 		};
 	}

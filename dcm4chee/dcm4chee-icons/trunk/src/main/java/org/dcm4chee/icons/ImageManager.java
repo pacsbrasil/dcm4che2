@@ -205,4 +205,10 @@ public class ImageManager {
         	new ResourceReference(ImageManager.class, "tc/button-green.png");
     public static final ResourceReference IMAGE_TC_BUTTON_RED =
         	new ResourceReference(ImageManager.class, "tc/button-red.png");
+    public static final ResourceReference IMAGE_TC_ARROW_PREV =
+        	new ResourceReference(ImageManager.class, "tc/arrow-prev.png");
+    public static final ResourceReference IMAGE_TC_ARROW_NEXT =
+        	new ResourceReference(ImageManager.class, "tc/arrow-next.png");
+    public static final ResourceReference IMAGE_TC_ARROW_NEXT_RANDOM =
+        	new ResourceReference(ImageManager.class, "tc/arrow-next-random.png");
 }

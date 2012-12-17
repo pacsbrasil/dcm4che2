@@ -15,8 +15,8 @@ public interface TCInput extends Serializable {
 	public ITextOrCode getValue();
 	
     public ITextOrCode[] getValues();
-
-    public void resetValues();
+    
+    public void setValues(ITextOrCode...values);
 
     public Component getComponent();
 

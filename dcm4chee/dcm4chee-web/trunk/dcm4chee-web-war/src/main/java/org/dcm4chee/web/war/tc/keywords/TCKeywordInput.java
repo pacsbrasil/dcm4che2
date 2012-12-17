@@ -7,8 +7,8 @@ public interface TCKeywordInput extends TCInput
 	public TCKeyword getKeyword();
 	
     public TCKeyword[] getKeywords();
-
-    public void resetKeywords();
+    
+    public void setKeywords(TCKeyword...keywords);
     
     public void setExclusive(boolean exclusive);
     

@@ -8,6 +8,7 @@ import org.apache.wicket.markup.html.IHeaderContributor;
 import org.apache.wicket.markup.html.IHeaderResponse;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.IChoiceRenderer;
+import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 
 public class TCComboBox<T extends Serializable> extends DropDownChoice<T> implements IHeaderContributor {
@@ -17,12 +18,12 @@ public class TCComboBox<T extends Serializable> extends DropDownChoice<T> implem
 
 	public TCComboBox(final String id, List<? extends T> options)
 	{
-		this(id, options, null, null);
+		this(id, options, (T) null, null);
 	}
 	
 	public TCComboBox(final String id, List<? extends T> options, IChoiceRenderer<T> renderer)
 	{
-		this(id, options, null, renderer);
+		this(id, options, (T) null, renderer);
 	}
 	
 	public TCComboBox(final String id, List<? extends T> options, T selectedValue)
@@ -33,7 +34,13 @@ public class TCComboBox<T extends Serializable> extends DropDownChoice<T> implem
 	public TCComboBox(final String id, List<? extends T> options, 
 			T selectedValue, IChoiceRenderer<T> renderer)
 	{
-		super(id, new Model<T>(selectedValue), options, renderer);
+		this(id, options, new Model<T>(selectedValue), renderer);
+	}
+	
+	public TCComboBox(final String id, List<? extends T> options, 
+			IModel<T> selectedValue, IChoiceRenderer<T> renderer)
+	{
+		super(id, selectedValue, options, renderer);
 
 		setOutputMarkupId(true);
 		add(new AttributeAppender("class",new Model<String>(COMBOBOX_CLASS)," "));

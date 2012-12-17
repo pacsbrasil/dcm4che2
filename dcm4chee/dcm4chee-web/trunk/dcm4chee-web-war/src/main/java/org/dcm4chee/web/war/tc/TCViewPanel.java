@@ -4,10 +4,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.apache.wicket.AttributeModifier;
+import org.apache.wicket.Component;
 import org.apache.wicket.RequestCycle;
 import org.apache.wicket.ajax.AbstractDefaultAjaxBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.IAjaxCallDecorator;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.behavior.AbstractAjaxBehavior;
 import org.apache.wicket.behavior.AttributeAppender;
@@ -20,6 +23,7 @@ import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
+import org.apache.wicket.model.StringResourceModel;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
@@ -30,7 +34,9 @@ import org.dcm4chee.web.war.StudyPermissionHelper;
 import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
 import org.dcm4chee.web.war.folder.webviewer.Webviewer;
 import org.dcm4chee.web.war.folder.webviewer.Webviewer.WebviewerLinkClickedCallback;
+import org.dcm4chee.web.war.tc.TCResultPanel.ITCCaseProvider;
 import org.dcm4chee.web.war.tc.keywords.TCKeywordCatalogueProvider;
+import org.dcm4chee.web.war.tc.widgets.TCMaskingAjaxDecorator;
 
 /**
  * @author Bernhard Ableitinger <bernhard.ableitinger@agfa.com>
@@ -40,6 +46,9 @@ import org.dcm4chee.web.war.tc.keywords.TCKeywordCatalogueProvider;
 @SuppressWarnings("serial")
 public class TCViewPanel extends Panel
 {
+	private static final Logger log = Logger.getLogger(TCViewPanel.class);
+	
+	private ModalWindow webviewerSelectionWindow;
     private WebviewerLinkProvider[] webviewerLinkProviders;
     
     private Map<AbstractTCViewTab, Integer> tabsToIndices =
@@ -47,19 +56,32 @@ public class TCViewPanel extends Panel
     
     private AbstractAjaxBehavior tabActivationBehavior;
 
-    private boolean sendImagesViewedLog = true;
+    private TCModel tcModel;
     
+    private boolean sendImagesViewedLog = true;
     private boolean showAllIfTrainingModeIsOn = false;
 
-	public TCViewPanel(final String id, IModel<TCEditableObject> model, final TCModel tc, 
-    		final IModel<Boolean> trainingModeModel)
+	public TCViewPanel(final String id, IModel<TCEditableObject> model, TCModel tc, 
+    		final IModel<Boolean> trainingModeModel, final ITCCaseProvider caseProvider)
     {
         super(id, model==null ? new Model<TCEditableObject>() : model);
 
+        tcModel = tc;
+        
         initWebviewerLinkProvider();
         
-        final ModalWindow webviewerSelectionWindow = new ModalWindow("tc-view-webviewer-selection-window");
-        add(webviewerSelectionWindow);
+        final AbstractReadOnlyModel<Boolean> infoVisibilityModel = new AbstractReadOnlyModel<Boolean>() {
+        	@Override
+        	public Boolean getObject() {
+        		if (!isEditable() && trainingModeModel.getObject()) {
+        			return showAllIfTrainingModeIsOn;
+        		}
+        		return true;
+        	}
+        };
+
+        add(webviewerSelectionWindow = new ModalWindow("tc-view-webviewer-selection-window"));
+        add(createWebviewerLink(tcModel));
                 
         add(new AjaxLink<Void>("tc-print-btn") {
                 @Override
@@ -72,39 +94,130 @@ public class TCViewPanel extends Panel
             .setOutputMarkupId(true)
             .setVisible(false) //for now
         );
-
-        add(Webviewer.getLink(tc, webviewerLinkProviders,
-                    StudyPermissionHelper.get(),
-                    new TooltipBehaviour("tc.view.", "webview"), webviewerSelectionWindow,
-                    new WebviewerLinkClickedCallback() {
-                    	public void linkClicked(AjaxRequestTarget target) {
-                    		TCAuditLog.logTFImagesViewed(getTC());
-                    	}
-                    })
-            .add(new Label("webview-label", new Model<String>(TCUtilities.getLocalizedString("tc.view.webview.text"))))
-            .add(new SecurityBehavior(TCPanel.getModuleName()
-                            + ":webviewerInstanceLink"))
-            .setOutputMarkupId(true)
-        );
         
-        add(new Label("tc-view-title-text", new AbstractReadOnlyModel<String>() {
-            @Override
-            public String getObject()
-            {
-                return TCViewPanel.this.getTC().getTitle();
-            }
-        }));
-        
-        final AbstractReadOnlyModel<Boolean> infoVisibilityModel = new AbstractReadOnlyModel<Boolean>() {
+        WebMarkupContainer caseNavigator = new WebMarkupContainer("tc-view-case-navigator") {
         	@Override
-        	public Boolean getObject() {
-        		if (!isEditable() && trainingModeModel.getObject()) {
-        			return showAllIfTrainingModeIsOn;
-        		}
-        		return true;
+        	public boolean isVisible() {
+        		return !isEditable();
         	}
         };
-        
+        caseNavigator.setMarkupId("tc-view-case-navigator");
+        caseNavigator.setOutputMarkupId(true);
+        caseNavigator.add(new Label("tc-view-casenumber", new StringResourceModel(
+                "tc.view.casenumber.text", this, null,
+                new Object[] { new Model<Integer>() {
+                    @Override
+                    public Integer getObject() {
+                        return caseProvider.getIndexOfCase(tcModel)+1;
+                    }
+                },
+                new Model<Integer>() {
+                    @Override
+                    public Integer getObject() {
+                        return caseProvider.getCaseCount();
+                    }
+                }})
+        ));
+        caseNavigator.add(new AjaxLink<Void>("tc-view-prev") {
+	            @Override
+	            public void onClick(AjaxRequestTarget target) {
+	            	TCModel prev = caseProvider.getPrevCase(tcModel);
+	            	if (prev!=null) {
+	            		tcModel = prev;
+	            		setCase(target, prev);
+	            	}
+	            }
+	            @Override
+	            public boolean isEnabled() {
+	            	return caseProvider.getPrevCase(tcModel)!=null;
+	            }
+	            @Override
+	        	protected IAjaxCallDecorator getAjaxCallDecorator()
+	        	{
+	        		return new TCMaskingAjaxDecorator(false, true);
+	        	}
+	        }
+	        .add(new Image("tc-view-prev-img", ImageManager.IMAGE_TC_ARROW_PREV).add(
+	            (new ImageSizeBehaviour("vertical-align: middle;"))))
+	        .add(new TooltipBehaviour("tc.view.case.","prev"))
+	        .setOutputMarkupId(true)
+        );
+        caseNavigator.add(new AjaxLink<Void>("tc-view-next") {
+	            @Override
+	            public void onClick(AjaxRequestTarget target) {
+	            	TCModel next = caseProvider.getNextCase(tcModel);
+	            	if (next!=null) {
+	            		tcModel = next;
+	            		setCase(target, next);
+	            	}
+	            }
+	            @Override
+	            public boolean isEnabled() {
+	            	return caseProvider.getNextCase(tcModel)!=null;
+	            }
+	            @Override
+	        	protected IAjaxCallDecorator getAjaxCallDecorator()
+	        	{
+	        		return new TCMaskingAjaxDecorator(false, true);
+	        	}
+	        }
+	        .add(new Image("tc-view-next-img", ImageManager.IMAGE_TC_ARROW_NEXT).add(
+	            (new ImageSizeBehaviour("vertical-align: middle;"))))
+	        .add(new TooltipBehaviour("tc.view.case.","next"))
+	        .setOutputMarkupId(true)
+	    );
+        caseNavigator.add(new AjaxLink<Void>("tc-view-next-random") {
+	            @Override
+	            public void onClick(AjaxRequestTarget target) {
+	            	TCModel next = caseProvider.getNextRandomCase(tcModel);
+	            	if (next!=null) {
+	            		tcModel = next;
+	            		setCase(target, next);
+	            	}
+	            }
+	            @Override
+	            public boolean isEnabled() {
+	            	return caseProvider.getCaseCount()>1;
+	            }
+	            @Override
+	        	protected IAjaxCallDecorator getAjaxCallDecorator()
+	        	{
+	        		return new TCMaskingAjaxDecorator(false, true);
+	        	}
+	        }
+	        .add(new Image("tc-view-next-random-img", ImageManager.IMAGE_TC_ARROW_NEXT_RANDOM).add(
+	            (new ImageSizeBehaviour(24,16,"vertical-align: middle"))))
+	        .add(new TooltipBehaviour("tc.view.case.","nextrandom"))
+	        .setOutputMarkupId(true)
+	        .setVisible(!isEditable() && trainingModeModel.getObject())
+	    );
+            
+        add(caseNavigator);
+        final Component titleText = new Label("tc-view-title-text", new AbstractReadOnlyModel<String>() {
+	            @Override
+	            public String getObject()
+	            {
+	        		if (!infoVisibilityModel.getObject() && 
+	        				WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey(
+	        						TCQueryFilterKey.Title)) {
+	        			return TCUtilities.getLocalizedString("tc.case.text")+" " + getTC().getId();
+	        		}
+	        		return getTC().getTitle();
+	            }
+	        })
+	        .add(new AttributeAppender("style",new AbstractReadOnlyModel<String>() {
+	        	@Override
+	        	public String getObject() {
+	        		if (isEditable()) {
+	        			return "display:inline-block";
+	        		}
+	        		return "";
+	        	}
+	        }, ";"))
+	        .setMarkupId("tc-view-title-text")
+	        .setOutputMarkupId(true);
+        add(titleText);
+                
         final Label biblioTitleLabel = new Label("tc.view.bibliography.tab.title");
         biblioTitleLabel.setOutputMarkupId(true);
         
@@ -341,8 +454,10 @@ public class TCViewPanel extends Panel
         	public void onClick(AjaxRequestTarget target) {
         		showAllIfTrainingModeIsOn=true;
         		target.addComponent(this);
+        		target.addComponent(titleText);
         		target.addComponent(content);
         		target.appendJavascript("updateTCViewDialog();");
+        		target.appendJavascript(getDisableTabsJavascript());
         		target.appendJavascript(getHideTabsJavascript());
         	}
 			@Override
@@ -412,6 +527,54 @@ public class TCViewPanel extends Panel
         }
         sbuf.append("]);");
         return sbuf.toString();
+    }
+    
+    private Component createWebviewerLink(TCModel tcModel) {
+    	return Webviewer.getLink(tcModel, webviewerLinkProviders,
+	                StudyPermissionHelper.get(),
+	                new TooltipBehaviour("tc.view.", "webview"), webviewerSelectionWindow,
+	                new WebviewerLinkClickedCallback() {
+	                	public void linkClicked(AjaxRequestTarget target) {
+	                		TCAuditLog.logTFImagesViewed(getTC());
+	                	}
+	                })
+	        .add(new Label("webview-label", new Model<String>(TCUtilities.getLocalizedString("tc.view.webview.text"))))
+	        .add(new SecurityBehavior(TCPanel.getModuleName()
+	                        + ":webviewerInstanceLink"))
+	        .setOutputMarkupId(true);
+    }
+    
+    private void setCase(AjaxRequestTarget target, TCModel tc) {
+    	try
+    	{
+    		if (!isEditable()) {
+    			TCAuditLog.logTFViewed(getTC());
+    		}
+    		
+    		showAllIfTrainingModeIsOn = false;
+    		
+	    	setDefaultModelObject(TCEditableObject.create(tc));
+
+	    	addOrReplace(createWebviewerLink(tc));
+	    	
+	        setVisible(true);
+	    	target.addComponent(this);
+	    	
+	        target.appendJavascript("updateTCViewDialog();");
+	        
+	        //disable tabs
+	        if (!isEditable())
+	        {
+	        	target.appendJavascript(getDisableTabsJavascript());
+	        }
+	        
+	        //hide tabs
+	        target.appendJavascript(getHideTabsJavascript());
+    	}
+    	catch (Exception e)
+    	{
+    		log.error("Unable to set teaching-file case!", e);
+    	}
     }
     
     @Override

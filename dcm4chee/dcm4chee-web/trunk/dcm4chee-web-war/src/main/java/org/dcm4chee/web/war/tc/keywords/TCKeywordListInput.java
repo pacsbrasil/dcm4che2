@@ -63,8 +63,6 @@ import org.dcm4chee.web.war.tc.TCPopupManager.AbstractTCPopup;
 import org.dcm4chee.web.war.tc.TCPopupManager.TCPopupPosition;
 import org.dcm4chee.web.war.tc.TCPopupManager.TCPopupPosition.PopupAlign;
 import org.dcm4chee.web.war.tc.TCUtilities;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Bernhard Ableitinger <bernhard.ableitinger@agfa.com>
@@ -74,8 +72,7 @@ import org.slf4j.LoggerFactory;
 public class TCKeywordListInput extends AbstractTCKeywordInput {
 
     private static final long serialVersionUID = 1L;
-    private final static Logger log = LoggerFactory
-            .getLogger(TCKeywordListInput.class);
+
 	private Map<String, TCKeyword> keywordMap;
     private AutoCompleteTextField<String> text;
 
@@ -179,27 +176,25 @@ public class TCKeywordListInput extends AbstractTCKeywordInput {
         }
         return null;
     }
-    
-    public List<TCKeyword> getKeywordsAsList() {
-    	List<TCKeyword> list = new ArrayList<TCKeyword>();
-    	List<TCKeyword> modelList = getModel().getObject();
-    	if (modelList!=null)
-    	{
-    		list.addAll(modelList);
-    	}
-    	return list;
-    }
-    
-    public void setKeywords(List<TCKeyword> keywords)
-    {
-    	getModel().setObject(keywords);
-    	((MultipleKeywordsTextModel)text.getModel()).setKeywordItems(keywords);
-    }
-
+        
     @Override
-    public void resetKeywords() {
-        getModel().setObject(null);
-        text.setModelObject(null);
+    public void setKeywords(TCKeyword...keywords)
+    {
+    	if (keywords==null || keywords.length==0)
+    	{
+    		setKeywordsAsList(null);
+    	}
+    	else {
+	    	List<TCKeyword> list = new ArrayList<TCKeyword>(3);
+	    	if (keywords!=null) {
+	    		for (TCKeyword keyword : keywords) {
+	    			if (keyword!=null) {
+	    				list.add(keyword);
+	    			}
+	    		}
+	    	}
+	    	setKeywordsAsList(list);
+    	}
     }
     
     @Override
@@ -213,10 +208,25 @@ public class TCKeywordListInput extends AbstractTCKeywordInput {
     {
         text.setEnabled(!exclusive);
     }
+    
+    public List<TCKeyword> getKeywordsAsList() {
+    	List<TCKeyword> list = new ArrayList<TCKeyword>();
+    	List<TCKeyword> modelList = getModel().getObject();
+    	if (modelList!=null)
+    	{
+    		list.addAll(modelList);
+    	}
+    	return list;
+    }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private ListModel<TCKeyword> getModel() {
         return (ListModel) getDefaultModel();
+    }
+    
+    private void setKeywordsAsList(List<TCKeyword> keywords) {
+        getModel().setObject(keywords);
+        ((MultipleKeywordsTextModel)text.getModel()).setKeywordItems(keywords);
     }
 
     private class MultipleKeywordsTextModel extends MultipleItemsTextModel
@@ -391,7 +401,7 @@ public class TCKeywordListInput extends AbstractTCKeywordInput {
         @Override
         public void beforeHiding(AjaxRequestTarget target) 
         {
-            setKeywords(listCreator.getSelection());
+            setKeywordsAsList(listCreator.getSelection());
             
             if (target!=null)
             {

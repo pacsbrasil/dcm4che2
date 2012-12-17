@@ -69,6 +69,12 @@ public class ImageSizeBehaviour extends AbstractBehavior {
         this.additionalCSS = additionalCSS;
     }
     
+    public ImageSizeBehaviour(int width, int height, String additionalCSS) {
+    	this.width = width;
+    	this.height = height;
+    	this.additionalCSS = additionalCSS;
+    }
+    
     public void onComponentTag(Component c, ComponentTag tag) {
         tag.put("style", "width: " + this.width + "px; height: " + this.height + "px;" 
                 + (this.additionalCSS == null ? "" : " " + this.additionalCSS));

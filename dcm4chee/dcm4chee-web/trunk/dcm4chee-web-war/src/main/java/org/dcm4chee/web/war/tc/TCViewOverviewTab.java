@@ -64,13 +64,16 @@ import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.dao.tc.ITextOrCode;
 import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue;
+import org.dcm4chee.web.dao.tc.TCQueryFilterValue.Category;
+import org.dcm4chee.web.dao.tc.TCQueryFilterValue.Level;
+import org.dcm4chee.web.dao.tc.TCQueryFilterValue.PatientSex;
+import org.dcm4chee.web.dao.tc.TCQueryFilterValue.YesNo;
 import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
 import org.dcm4chee.web.war.tc.TCInput.ValueChangeListener;
 import org.dcm4chee.web.war.tc.TCObject.TextOrCode;
 import org.dcm4chee.web.war.tc.TCUtilities.NullDropDownItem;
 import org.dcm4chee.web.war.tc.TCUtilities.SelfUpdatingTextArea;
 import org.dcm4chee.web.war.tc.TCUtilities.SelfUpdatingTextField;
-import org.dcm4chee.web.war.tc.TCUtilities.TCChangeListener;
 import org.dcm4chee.web.war.tc.TCViewPanel.AbstractEditableTCViewTab;
 import org.dcm4chee.web.war.tc.keywords.TCKeywordCatalogueProvider;
 import org.dcm4chee.web.war.tc.widgets.TCComboBox;
@@ -85,6 +88,13 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
 {
     private static final long serialVersionUID = 1L;
 
+    private String tcId;
+    private TCInput anatomyInput;
+    private TCInput pathologyInput;
+    private TCInput diagnosisInput;
+    private TCInput diffDiagnosisInput;
+    private TCInput findingInput;
+    
     public TCViewOverviewTab(final String id, IModel<TCEditableObject> model,
     		AbstractReadOnlyModel<Boolean> infoVisbilityModel) 
     {
@@ -95,6 +105,8 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
 	public TCViewOverviewTab(final String id, IModel<TCEditableObject> model,
     		final boolean editing, final AbstractReadOnlyModel<Boolean> infoVisibilityModel) {
         super(id, model, editing);
+        
+        tcId = getTC().getId();
         
         AttributeModifier readonlyModifier = new AttributeAppender("readonly",true,new Model<String>("readonly"), " ") {
         	@Override
@@ -109,50 +121,48 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         titleRow.add(new Label("tc-view-overview-title-label", 
                 new InternalStringResourceModel("tc.title.text")));
         titleRow.add(new SelfUpdatingTextField("tc-view-overview-title-text",
-        		getStringValue(TCQueryFilterKey.Title)) {
-        	@Override
-        	public String getText() {
-        		if (!infoVisibilityModel.getObject() && 
-        				WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey(
-        						TCQueryFilterKey.Title)) {
-        			return TCUtilities.getLocalizedString("tc.case.text")+" " + getTC().getId();
+        		new Model<String>() {
+		        	@Override
+		        	public String getObject() {
+		        		if (!infoVisibilityModel.getObject() && 
+		        				WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey(
+		        						TCQueryFilterKey.Title)) {
+		        			return TCUtilities.getLocalizedString("tc.case.text")+" " + getTC().getId();
+		        		}
+		        		return getStringValue(TCQueryFilterKey.Title);
+		        	}
+		            @Override
+		            public void setObject(String text){
+		                if (isEditing()){
+		                    getTC().setTitle(text);
+		                }
+		            }
         		}
-        		return super.getText();
-        	}
-            @Override
-            protected void textUpdated(String text)
-            {
-                if (isEditing())
-                {
-                    getTC().setTitle(text);
-                }
-            }
-        }.add(readonlyModifier));
+        ).add(readonlyModifier));
         
         // ABSTRACT
         final WebMarkupContainer abstractRow = new WebMarkupContainer("tc-view-overview-abstract-row");
         abstractRow.add(new Label("tc-view-overview-abstract-label", 
                 new InternalStringResourceModel("tc.abstract.text")));
         abstractRow.add(new SelfUpdatingTextArea("tc-view-overview-abstract-area", 
-        		getStringValue(TCQueryFilterKey.Abstract)) {
-        	@Override
-        	public String getText() {
-        		if (!infoVisibilityModel.getObject() && 
-        				WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey(
-        						TCQueryFilterKey.Abstract)) {
-        			return TCUtilities.getLocalizedString("tc.obfuscation.text");
-        		}
-        		return super.getText();
+        		new Model<String>() {
+		        	@Override
+		        	public String getObject() {
+		        		if (!infoVisibilityModel.getObject() && 
+		        				WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey(
+		        						TCQueryFilterKey.Abstract)) {
+		        			return TCUtilities.getLocalizedString("tc.obfuscation.text");
+		        		}
+		        		return getStringValue(TCQueryFilterKey.Abstract);
+		        	}
+		        	@Override
+		            public void setObject(String text) {
+		                if (isEditing()){
+		                    getTC().setAbstract(text);
+		                }
+		            }
         	}
-        	@Override
-            protected void textUpdated(String text)
-            {
-                if (isEditing())
-                {
-                    getTC().setAbstract(text);
-                }
-            }
-        }.add(readonlyModifier).setOutputMarkupId(true).setMarkupId("tc-view-overview-abstract-area"));
+        ).add(readonlyModifier).setOutputMarkupId(true).setMarkupId("tc-view-overview-abstract-area"));
         
         // AUTHOR NAME
         final WebMarkupContainer authorNameRow = new WebMarkupContainer("tc-view-overview-authorname-row") {
@@ -164,16 +174,25 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         };
         authorNameRow.add(new Label("tc-view-overview-authorname-label", 
                 new InternalStringResourceModel("tc.author.name.text")));
-        authorNameRow.add(new SelfUpdatingTextField("tc-view-overview-authorname-text", getStringValue(TCQueryFilterKey.AuthorName)) {
-            @Override
-            protected void textUpdated(String text)
-            {
-                if (isEditing())
-                {
-                    getTC().setAuthorName(text);
-                }
-            }
-        }.add(readonlyModifier));
+        authorNameRow.add(new SelfUpdatingTextField("tc-view-overview-authorname-text", 
+        		new Model<String>() {
+        			@Override
+        			public String getObject() {
+		        		if (!infoVisibilityModel.getObject() && 
+		        				WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey(
+		        						TCQueryFilterKey.AuthorName)) {
+		        			return TCUtilities.getLocalizedString("tc.obfuscation.text");
+		        		}
+		        		return getStringValue(TCQueryFilterKey.AuthorName);
+        			}
+		            @Override
+		            public void setObject(String text) {
+		                if (isEditing()) {
+		                    getTC().setAuthorName(text);
+		                }
+		            }
+        	}
+        ).add(readonlyModifier));
         
         // AUTHOR AFFILIATION
         final WebMarkupContainer authorAffiliationRow = new WebMarkupContainer("tc-view-overview-authoraffiliation-row") {
@@ -185,16 +204,25 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         };
         authorAffiliationRow.add(new Label("tc-view-overview-authoraffiliation-label", 
                 new InternalStringResourceModel("tc.author.affiliation.text")));
-        authorAffiliationRow.add(new SelfUpdatingTextField("tc-view-overview-authoraffiliation-text", getStringValue(TCQueryFilterKey.AuthorAffiliation)) {
-            @Override
-            protected void textUpdated(String text)
-            {
-                if (isEditing())
-                {
-                    getTC().setAuthorAffiliation(text);
-                }
-            }
-        }.add(readonlyModifier));
+        authorAffiliationRow.add(new SelfUpdatingTextField("tc-view-overview-authoraffiliation-text", 
+        		new Model<String>() {
+        			@Override
+        			public String getObject() {
+		        		if (!infoVisibilityModel.getObject() && 
+		        				WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey(
+		        						TCQueryFilterKey.AuthorAffiliation)) {
+		        			return TCUtilities.getLocalizedString("tc.obfuscation.text");
+		        		}
+		        		return getStringValue(TCQueryFilterKey.AuthorAffiliation);
+        			}
+		            @Override
+		            public void setObject(String text) {
+		                if (isEditing()) {
+		                    getTC().setAuthorAffiliation(text);
+		                }
+		            }
+        	}
+        ).add(readonlyModifier));
         
         // AUTHOR CONTACT
         final WebMarkupContainer authorContactRow = new WebMarkupContainer("tc-view-overview-authorcontact-row") {
@@ -206,17 +234,26 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         };
         authorContactRow.add(new Label("tc-view-overview-authorcontact-label", 
                 new InternalStringResourceModel("tc.author.contact.text")));
-        authorContactRow.add(new SelfUpdatingTextArea("tc-view-overview-authorcontact-area", getStringValue(TCQueryFilterKey.AuthorContact)) {
-            @Override
-            protected void textUpdated(String text)
-            {
-                if (isEditing())
-                {
-                    getTC().setAuthorContact(text);
-                }
-            }
-        }.add(readonlyModifier));
-        
+        authorContactRow.add(new SelfUpdatingTextArea("tc-view-overview-authorcontact-area", 
+        		new Model<String>() {
+		        	@Override
+		        	public String getObject() {
+		        		if (!infoVisibilityModel.getObject() && 
+		        				WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey(
+		        						TCQueryFilterKey.AuthorContact)) {
+		        			return TCUtilities.getLocalizedString("tc.obfuscation.text");
+		        		}
+		        		return getStringValue(TCQueryFilterKey.AuthorContact);
+		        	}
+		        	@Override
+		            public void setObject(String text) {
+		                if (isEditing()){
+		                    getTC().setAuthorContact(text);
+		                }
+		            }
+        	}
+        ).add(readonlyModifier));
+                
         // KEYWORDS
         final boolean keywordCodeInput = editing && TCKeywordCatalogueProvider.
                 getInstance().hasCatalogue(TCQueryFilterKey.Keyword);
@@ -299,31 +336,42 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         	@Override
         	public boolean isVisible() {
         		return infoVisibilityModel.getObject() || 
-        				!WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey(TCQueryFilterKey.Keyword);
+        				!WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey(
+        						TCQueryFilterKey.Keyword);
         	}
         };
         keywordRow.add(new Label("tc-view-overview-keyword-label", 
                 new InternalStringResourceModel("tc.keyword.text")));
         keywordRow.add(keywordCodesContainer);
-        keywordRow.add( new SelfUpdatingTextArea("tc-view-overview-keyword-area", getShortStringValue(TCQueryFilterKey.Keyword)) {
-            @Override
-            protected void textUpdated(String text)
-            {
-                if (isEditing())
-                {
-                    String[] strings = text!=null?text.trim().split(";"):null;
-                    List<ITextOrCode> keywords = null;
-                    
-                    if (strings!=null && strings.length>0) {
-                        keywords = new ArrayList<ITextOrCode>(strings.length);
-                        for (String s : strings) {
-                            keywords.add(TextOrCode.text(s));
-                        }
-                    }
-                    
-                    getTC().setKeywords(keywords);
-                }
-            }
+        keywordRow.add(new SelfUpdatingTextArea("tc-view-overview-keyword-area", 
+        		new Model<String>() {
+		        	@Override
+		        	public String getObject() {
+		        		if (!infoVisibilityModel.getObject() && 
+		        				WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey(
+		        						TCQueryFilterKey.Keyword)) {
+		        			return TCUtilities.getLocalizedString("tc.obfuscation.text");
+		        		}
+		        		return getStringValue(TCQueryFilterKey.Keyword);
+		        	}
+		        	@Override
+		            public void setObject(String text) {
+		                if (isEditing()) {
+		                    String[] strings = text!=null?text.trim().split(";"):null;
+		                    List<ITextOrCode> keywords = null;
+		                    
+		                    if (strings!=null && strings.length>0) {
+		                        keywords = new ArrayList<ITextOrCode>(strings.length);
+		                        for (String s : strings) {
+		                            keywords.add(TextOrCode.text(s));
+		                        }
+		                    }
+		                    
+		                    getTC().setKeywords(keywords);
+		                }
+		            }
+        	}
+        ) {
             @Override
             public boolean isVisible() {
             	return !keywordCodeInput;
@@ -334,9 +382,10 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
             	tag.put("title", getStringValue(TCQueryFilterKey.Keyword)); //$NON-NLS-1$
             }
         }.add(readonlyModifier).setOutputMarkupId(true).setMarkupId("tc-view-overview-keyword-area"));
+
         
         // ANATOMY
-        final TCInput anatomyInput = TCUtilities.createInput("tc-view-overview-anatomy-input", 
+        anatomyInput = TCUtilities.createInput("tc-view-overview-anatomy-input", 
                 TCQueryFilterKey.Anatomy, getTC().getValue(TCQueryFilterKey.Anatomy),true);
         anatomyInput.getComponent().setVisible(editing);
         anatomyInput.addChangeListener(
@@ -358,9 +407,12 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         anatomyRow.add(new Label("tc-view-overview-anatomy-label", 
                 new InternalStringResourceModel("tc.anatomy.text")));
         anatomyRow.add(anatomyInput.getComponent());
-        anatomyRow.add(new TextField<String>("tc-view-overview-anatomy-value-label", new Model<String>(
-                getShortStringValue(TCQueryFilterKey.Anatomy)
-        )) {
+        anatomyRow.add(new TextField<String>("tc-view-overview-anatomy-value-label", new Model<String>() {
+        		public String getObject() {
+        			return getShortStringValue(TCQueryFilterKey.Anatomy);
+        		}
+        	}   
+        ) {
 			private static final long serialVersionUID = 3465370488528419531L;
 			@Override
             protected void onComponentTag(ComponentTag tag)
@@ -374,7 +426,7 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         }.add(readonlyModifier));
         
         // PATHOLOGY
-        final TCInput pathologyInput = TCUtilities.createInput("tc-view-overview-pathology-input", 
+        pathologyInput = TCUtilities.createInput("tc-view-overview-pathology-input", 
                 TCQueryFilterKey.Pathology, getTC().getValue(TCQueryFilterKey.Pathology),true);
         pathologyInput.getComponent().setVisible(editing);
         pathologyInput.addChangeListener(
@@ -396,9 +448,13 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         pathologyRow.add(new Label("tc-view-overview-pathology-label", 
                 new InternalStringResourceModel("tc.pathology.text")));
         pathologyRow.add(pathologyInput.getComponent());
-        pathologyRow.add(new TextField<String>("tc-view-overview-pathology-value-label", new Model<String>(
-                getShortStringValue(TCQueryFilterKey.Pathology)
-        )) {
+        pathologyRow.add(new TextField<String>("tc-view-overview-pathology-value-label", 
+        		new Model<String>() {
+        			public String getObject() {
+        				return getShortStringValue(TCQueryFilterKey.Pathology);
+        			}
+        	}  
+        ) {
 			private static final long serialVersionUID = 3465370488528419531L;
 			@Override
             protected void onComponentTag(ComponentTag tag)
@@ -414,9 +470,18 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         
         // CATEGORY
         final TCComboBox<TCQueryFilterValue.Category> categoryCBox = TCUtilities.createEnumComboBox(
-                "tc-view-overview-category-select", getTC().getCategory(),
+                "tc-view-overview-category-select", new Model<Category>() {
+                	@Override
+                	public Category getObject() {
+                		return getTC().getCategory();
+                	}
+                	@Override
+                	public void setObject(Category value) {
+                		getTC().setCategory(value);
+                	}
+                },
                 Arrays.asList(TCQueryFilterValue.Category.values()), true,
-                "tc.category", NullDropDownItem.Undefined, new DropDownChangeListener<TCQueryFilterValue.Category>(TCQueryFilterKey.Category));
+                "tc.category", NullDropDownItem.Undefined, null);
         final WebMarkupContainer categoryRow = new WebMarkupContainer("tc-view-overview-category-row") {
         	@Override
         	public boolean isVisible() {
@@ -428,15 +493,27 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         categoryRow.add(new Label("tc-view-overview-category-label", 
                 new InternalStringResourceModel("tc.category.text")));
         categoryRow.add(categoryCBox);
-        categoryRow.add(new TextField<String>("tc-view-overview-category-value-label", new Model<String>(
-                getStringValue(TCQueryFilterKey.Category)
-        )).add(readonlyModifier).setVisible(!editing));
+        categoryRow.add(new TextField<String>("tc-view-overview-category-value-label", new Model<String>() {
+        	@Override
+        	public String getObject() {
+        		return getStringValue(TCQueryFilterKey.Category);
+        	}
+        }).add(readonlyModifier).setVisible(!editing));
         
         // LEVEL
         final TCComboBox<TCQueryFilterValue.Level> levelCBox = TCUtilities.createEnumComboBox(
-                "tc-view-overview-level-select", getTC().getLevel(),
+                "tc-view-overview-level-select", new Model<Level>() {
+                	@Override
+                	public Level getObject() {
+                		return getTC().getLevel();
+                	}
+                	@Override
+                	public void setObject(Level level) {
+                		getTC().setLevel(level);
+                	}
+                },
                 Arrays.asList(TCQueryFilterValue.Level.values()), true,
-                "tc.level", NullDropDownItem.Undefined, new DropDownChangeListener<TCQueryFilterValue.Level>(TCQueryFilterKey.Level));
+                "tc.level", NullDropDownItem.Undefined, null);
         final WebMarkupContainer levelRow = new WebMarkupContainer("tc-view-overview-level-row") {
         	@Override
         	public boolean isVisible() {
@@ -447,16 +524,28 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         levelCBox.setVisible(editing);
         levelRow.add(new Label("tc-view-overview-level-label", 
                 new InternalStringResourceModel("tc.level.text")));
-        levelRow.add(new TextField<String>("tc-view-overview-level-value-label", new Model<String>(
-                getStringValue(TCQueryFilterKey.Level)
-        )).add(readonlyModifier).setVisible(!editing));
+        levelRow.add(new TextField<String>("tc-view-overview-level-value-label", new Model<String>() {
+        		@Override
+        		public String getObject() {
+        			return getStringValue(TCQueryFilterKey.Level);
+        		}
+        }).add(readonlyModifier).setVisible(!editing));
         levelRow.add(levelCBox);
         
         // PATIENT SEX
         final TCComboBox<TCQueryFilterValue.PatientSex> patientSexCBox = TCUtilities.createEnumComboBox(
-                "tc-view-overview-patientsex-select", getTC().getPatientSex(),
+                "tc-view-overview-patientsex-select", new Model<PatientSex>() {
+                	@Override
+                	public PatientSex getObject() {
+                		return getTC().getPatientSex();
+                	}
+                	@Override
+                	public void setObject(PatientSex value) {
+                		getTC().setPatientSex(value);
+                	}
+                },
                 Arrays.asList(TCQueryFilterValue.PatientSex.values()), true,
-                "tc.patientsex", NullDropDownItem.Undefined, new DropDownChangeListener<TCQueryFilterValue.PatientSex>(TCQueryFilterKey.PatientSex));
+                "tc.patientsex", NullDropDownItem.Undefined, null);
         final WebMarkupContainer patientSexRow = new WebMarkupContainer("tc-view-overview-patientsex-row") {
         	@Override
         	public boolean isVisible() {
@@ -467,46 +556,57 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         patientSexCBox.setVisible(editing);
         patientSexRow.add(new Label("tc-view-overview-patientsex-label", 
                 new InternalStringResourceModel("tc.patient.sex.text")));
-        patientSexRow.add(new TextField<String>("tc-view-overview-patientsex-value-label", new Model<String>(
-                getStringValue(TCQueryFilterKey.PatientSex)
-        )).add(readonlyModifier).setVisible(!editing));
+        patientSexRow.add(new TextField<String>("tc-view-overview-patientsex-value-label", new Model<String>() {
+        	public String getObject() {
+        		return getStringValue(TCQueryFilterKey.PatientSex);
+        	}
+        }).add(readonlyModifier).setVisible(!editing));
         patientSexRow.add(patientSexCBox);
-        
+
         // PATIENT AGE
         final TCSpinner<Integer> patientAgeYearSpinner = TCSpinner.createYearSpinner("tc-view-overview-patientage-years-input", 
-        		TCPatientAgeUtilities.toYears(getTC().getPatientAge()), new TCChangeListener<Integer>() {
- 					private static final long serialVersionUID = 1L;
- 					@Override
-					public void valueChanged(Integer value) {
-        				getTC().setPatientAge(TCPatientAgeUtilities.toDays(value,
+        		new Model<Integer>() {
+        			@Override
+        			public Integer getObject() {
+        				return TCPatientAgeUtilities.toYears(getTC().getPatientAge());
+        			}
+        			@Override
+        			public void setObject(Integer years) {
+        				getTC().setPatientAge(TCPatientAgeUtilities.toDays(years,
         						TCPatientAgeUtilities.toRemainingMonths(getTC().getPatientAge())));
         			}
-        		}
+        		}, null
         );
         final TCSpinner<Integer> patientAgeMonthSpinner = TCSpinner.createMonthSpinner("tc-view-overview-patientage-months-input", 
-        		TCPatientAgeUtilities.toRemainingMonths(getTC().getPatientAge()), new TCChangeListener<Integer>() {
- 					private static final long serialVersionUID = 1L;
- 					@Override
-					public void valueChanged(Integer value) {
-        				getTC().setPatientAge(TCPatientAgeUtilities.toDays(
-        						TCPatientAgeUtilities.toYears(getTC().getPatientAge()), value));
-        			}
-        		}
+        		new Model<Integer>() {
+					@Override
+					public Integer getObject() {
+						return TCPatientAgeUtilities.toRemainingMonths(getTC().getPatientAge());
+					}
+					@Override
+					public void setObject(Integer months) {
+						getTC().setPatientAge(TCPatientAgeUtilities.toDays(
+								TCPatientAgeUtilities.toYears(getTC().getPatientAge()),months));
+					}
+		}, null
         );
         final WebMarkupContainer patientAgeRow = new WebMarkupContainer("tc-view-overview-patientage-row") {
         	@Override
         	public boolean isVisible() {
         		return infoVisibilityModel.getObject() || 
-        				!WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey(TCQueryFilterKey.PatientAge);
+        				!WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey(
+        						TCQueryFilterKey.PatientAge);
         	}
         };
         patientAgeYearSpinner.setVisible(editing);
         patientAgeMonthSpinner.setVisible(editing);
         patientAgeRow.add(new Label("tc-view-overview-patientage-label", 
                 new InternalStringResourceModel("tc.patient.age.text")));
-        patientAgeRow.add(new TextField<String>("tc-view-overview-patientage-value-label", new Model<String>(
-                TCPatientAgeUtilities.format(getTC().getPatientAge())
-        )).add(readonlyModifier).setVisible(!editing));
+        patientAgeRow.add(new TextField<String>("tc-view-overview-patientage-value-label", new Model<String>() {
+        	public String getObject() {
+        		return TCPatientAgeUtilities.format(getTC().getPatientAge());
+        	}
+        }).add(readonlyModifier).setVisible(!editing));
         patientAgeRow.add(patientAgeYearSpinner);
         patientAgeRow.add(patientAgeMonthSpinner);
         
@@ -515,45 +615,65 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         	@Override
         	public boolean isVisible() {
         		return infoVisibilityModel.getObject() || 
-        				!WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey(TCQueryFilterKey.PatientSpecies);
+        				!WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey(
+        						TCQueryFilterKey.PatientSpecies);
         	}
         };
         patientSpeciesRow.add(new Label("tc-view-overview-patientrace-label", 
                 new InternalStringResourceModel("tc.patient.species.text")));
-        patientSpeciesRow.add(new TextField<String>("tc-view-overview-patientrace-value-label", new Model<String>(
-                getStringValue(TCQueryFilterKey.PatientSpecies)
-        )).add(readonlyModifier).setVisible(!editing));
+        patientSpeciesRow.add(new TextField<String>("tc-view-overview-patientrace-value-label", new Model<String>() {
+	        	@Override
+	        	public String getObject() {
+	        		return getStringValue(TCQueryFilterKey.PatientSpecies);
+	        	}
+        	}     
+        ).add(readonlyModifier).setVisible(!editing));
         patientSpeciesRow.add(TCUtilities.createEnumEditableComboBox(
-                "tc-view-overview-patientrace-select", getTC().getValueAsString(TCQueryFilterKey.PatientSpecies),
+                "tc-view-overview-patientrace-select", new Model<String>() {
+                	@Override
+                	public String getObject() {
+                		return getTC().getValueAsString(
+                				TCQueryFilterKey.PatientSpecies);
+                	}
+                	@Override
+                	public void setObject(String value) {
+                		getTC().setValue(TCQueryFilterKey.PatientSpecies, value);
+                	}
+                },
                 Arrays.asList(TCQueryFilterValue.PatientSpecies.values()), true,
-                "tc.patient.species", NullDropDownItem.Undefined, new DropDownChangeListener<String>(TCQueryFilterKey.PatientSpecies)).add(readonlyModifier).setVisible(editing));
+                "tc.patient.species", NullDropDownItem.Undefined, null).add(readonlyModifier).setVisible(editing));
         
         // MODALITIES
         final WebMarkupContainer modalitiesRow = new WebMarkupContainer("tc-view-overview-modalities-row") {
         	@Override
         	public boolean isVisible() {
         		return infoVisibilityModel.getObject() || 
-        				!WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey(TCQueryFilterKey.AcquisitionModality);
+        				!WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey(
+        						TCQueryFilterKey.AcquisitionModality);
         	}
         };
         modalitiesRow.add(new Label("tc-view-overview-modalities-label", 
                 new InternalStringResourceModel("tc.modalities.text")));
         modalitiesRow.add(new SelfUpdatingTextField("tc-view-overview-modalities-text", 
-        		getStringValue(TCQueryFilterKey.AcquisitionModality)) {
-            @Override
-            protected void textUpdated(String text)
-            {
-                if (isEditing())
-                {
-                    String[] modalities = text!=null?text.trim().split(";"):null;
-                    getTC().setValue(TCQueryFilterKey.AcquisitionModality, modalities!=null?
-                            Arrays.asList(modalities):null);
-                }
-            }
-        }.add(readonlyModifier));
+        		new Model<String>() {
+        			@Override 
+        			public String getObject() { 
+        				return getStringValue(
+        						TCQueryFilterKey.AcquisitionModality);
+        			}
+        			@Override
+        			public void setObject(String value) {
+                        if (isEditing())
+                        {
+                            String[] modalities = value!=null?value.trim().split(";"):null;
+                            getTC().setValue(TCQueryFilterKey.AcquisitionModality, modalities!=null?
+                                    Arrays.asList(modalities):null);
+                        }
+        			}
+        }).add(readonlyModifier));
         
         // FINDING
-        final TCInput findingInput = TCUtilities.createInput("tc-view-overview-finding-input", 
+        findingInput = TCUtilities.createInput("tc-view-overview-finding-input", 
                 TCQueryFilterKey.Finding, getTC().getValue(TCQueryFilterKey.Finding),true);
         findingInput.getComponent().setVisible(editing);
         findingInput.addChangeListener(
@@ -576,10 +696,12 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         findingRow.add(new Label("tc-view-overview-finding-label", 
                 new InternalStringResourceModel("tc.finding.text")));
         findingRow.add(findingInput.getComponent());
-        findingRow.add(new TextField<String>("tc-view-overview-finding-value-label", new Model<String>(
-                getShortStringValue(TCQueryFilterKey.Finding)
-        )) {
-			private static final long serialVersionUID = 3465370488528419531L;
+        findingRow.add(new TextField<String>("tc-view-overview-finding-value-label", new Model<String>() {
+        	@Override
+        	public String getObject() {
+        		return getShortStringValue(TCQueryFilterKey.Finding);
+        	}
+        }) {
 			@Override
             protected void onComponentTag(ComponentTag tag)
             {
@@ -592,10 +714,10 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         });
                 
         // DIAGNOSIS
-        final TCInput diagInput = TCUtilities.createInput("tc-view-overview-diag-input", 
+        diagnosisInput = TCUtilities.createInput("tc-view-overview-diag-input", 
                 TCQueryFilterKey.Diagnosis, getTC().getValue(TCQueryFilterKey.Diagnosis),true);
-        diagInput.getComponent().setVisible(editing);
-        diagInput.addChangeListener(
+        diagnosisInput.getComponent().setVisible(editing);
+        diagnosisInput.addChangeListener(
                 new ValueChangeListener() {
                     @Override
                     public void valueChanged(ITextOrCode[] values)
@@ -614,11 +736,13 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         };
         diagRow.add(new Label("tc-view-overview-diag-label", 
                 new InternalStringResourceModel("tc.diagnosis.text")));
-        diagRow.add(diagInput.getComponent());
-        diagRow.add(new TextField<String>("tc-view-overview-diag-value-label", new Model<String>(
-                getShortStringValue(TCQueryFilterKey.Diagnosis)
-        )) {
-			private static final long serialVersionUID = 3465370488528419531L;
+        diagRow.add(diagnosisInput.getComponent());
+        diagRow.add(new TextField<String>("tc-view-overview-diag-value-label", new Model<String>() {
+        	@Override
+        	public String getObject() {
+        		return getShortStringValue(TCQueryFilterKey.Diagnosis);
+        	}
+        }) {
 			@Override
             protected void onComponentTag(ComponentTag tag)
             {
@@ -641,13 +765,33 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         };
         diagConfirmedRow.add(new Label("tc-view-overview-diagconfirmed-label", 
                 new InternalStringResourceModel("tc.diagnosis.confirmed.text")));
-        diagConfirmedRow.add(new CheckBox("tc-view-overview-diagconfirmed-input").setEnabled(editing));
+        diagConfirmedRow.add(new CheckBox("tc-view-overview-diagconfirmed-input", new Model<Boolean>() {
+        	@Override
+        	public Boolean getObject() {
+        		YesNo yesno = getTC().getDiagnosisConfirmed();
+        		if (yesno!=null && YesNo.Yes.equals(yesno)) {
+        			return true;
+        		}
+        		else {
+        			return false;
+        		}
+        	}
+        	@Override
+        	public void setObject(Boolean value) {
+        		if (value!=null && value==true) {
+        			getTC().setDiagnosisConfirmed(YesNo.Yes);
+        		}
+        		else {
+        			getTC().setDiagnosisConfirmed(null);
+        		}
+        	}
+        }).setEnabled(editing));
         
         // DIFFERENTIAL DIAGNOSIS
-        final TCInput diffDiagInput = TCUtilities.createInput("tc-view-overview-diffdiag-input", 
+        diffDiagnosisInput = TCUtilities.createInput("tc-view-overview-diffdiag-input", 
                 TCQueryFilterKey.DifferentialDiagnosis, getTC().getValue(TCQueryFilterKey.DifferentialDiagnosis),true);
-        diffDiagInput.getComponent().setVisible(editing);
-        diffDiagInput.addChangeListener(
+        diffDiagnosisInput.getComponent().setVisible(editing);
+        diffDiagnosisInput.addChangeListener(
                 new ValueChangeListener() {
                     @Override
                     public void valueChanged(ITextOrCode[] values)
@@ -666,11 +810,13 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         };
         diffDiagRow.add(new Label("tc-view-overview-diffdiag-label", 
                 new InternalStringResourceModel("tc.diffdiagnosis.text")));
-        diffDiagRow.add(diffDiagInput.getComponent());
-        diffDiagRow.add(new TextField<String>("tc-view-overview-diffdiag-value-label", new Model<String>(
-                getShortStringValue(TCQueryFilterKey.DifferentialDiagnosis)
-        )) {
-			private static final long serialVersionUID = 3465370488528419531L;
+        diffDiagRow.add(diffDiagnosisInput.getComponent());
+        diffDiagRow.add(new TextField<String>("tc-view-overview-diffdiag-value-label", new Model<String>() {
+        	@Override
+        	public String getObject() {
+        		return getShortStringValue(TCQueryFilterKey.DifferentialDiagnosis);
+        	}
+        }) {
 			@Override
             protected void onComponentTag(ComponentTag tag)
             {
@@ -687,9 +833,12 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         final WebMarkupContainer imageCountRow = new WebMarkupContainer("tc-view-overview-imagecount-row");
         imageCountRow.add(new Label("tc-view-overview-imagecount-label", 
                 new InternalStringResourceModel("tc.view.images.count.text")));
-        imageCountRow.add(new TextField<String>("tc-view-overview-imagecount-value-label", new Model<String>(
-                getTC().getReferencedImages()!=null ? Integer.toString(getTC().getReferencedImages().size()) : "0"
-        )).add(readonlyModifier));
+        imageCountRow.add(new TextField<String>("tc-view-overview-imagecount-value-label", new Model<String>() {
+        	public String getObject() {
+        		return getTC().getReferencedImages()!=null ? 
+        				Integer.toString(getTC().getReferencedImages().size()) : "0";
+        	}
+        }).add(readonlyModifier));
 
         add(titleRow);
         add(abstractRow);
@@ -728,6 +877,21 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
     protected void saveImpl()
     {
     }
+    
+    @Override
+	protected void onBeforeRender()
+	{
+    	String curId = getTC().getId();
+    	if (tcId!=curId) {
+    		// the TC object has changed -> change keyword input values appropriately
+    		anatomyInput.setValues(getTC().getAnatomy());
+    		pathologyInput.setValues(getTC().getPathology());
+    		findingInput.setValues(getTC().getFinding());
+    		diagnosisInput.setValues(getTC().getDiagnosis());
+    		diffDiagnosisInput.setValues(getTC().getDiffDiagnosis());
+    	}
+    	super.onBeforeRender();
+	}
     
     @SuppressWarnings("serial")
 	private class KeywordsListModel extends ListModel<ITextOrCode>
@@ -794,21 +958,5 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
             return value;
         }
     }
-    
-    @SuppressWarnings("serial")
-	private class DropDownChangeListener<T> implements TCUtilities.TCChangeListener<T>
-    {
-        private TCQueryFilterKey key;
-        
-        public DropDownChangeListener(TCQueryFilterKey key)
-        {
-            this.key = key;
-        }
-        
-        @Override
-        public void valueChanged(T value)
-        {
-            getTC().setValue(key, value);
-        }
-    }
+
 }

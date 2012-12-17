@@ -49,6 +49,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Random;
 
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
@@ -125,6 +126,8 @@ public class TCResultPanel extends Panel {
 
     private MessageWindow msgWin = new MessageWindow("msgWin");
     
+    private SortableTCListProvider tclistProvider;
+    
     @SuppressWarnings("serial")
 	public TCResultPanel(final String id, final TCListModel model, final IModel<Boolean> trainingModeModel) {
         super(id, model != null ? model : new TCListModel());
@@ -151,7 +154,7 @@ public class TCResultPanel extends Panel {
 
         add(studyWindow);
                   
-        final SortableTCListProvider tclistProvider = new SortableTCListProvider(
+        tclistProvider = new SortableTCListProvider(
                 (TCListModel) getDefaultModel());
 
         final DataView<TCModel> dataView = new DataView<TCModel>("row",
@@ -589,6 +592,9 @@ public class TCResultPanel extends Panel {
         selected = null;
     }
     
+    public ITCCaseProvider getCaseProvider() {
+    	return tclistProvider;
+    }
     
     protected Component[] selectionChanged(TCModel tc)
     {
@@ -852,11 +858,20 @@ public class TCResultPanel extends Panel {
             }
         }
     }
+    
+    
+    public static interface ITCCaseProvider {
+    	int getCaseCount();
+    	int getIndexOfCase(TCModel tc);
+    	TCModel getCaseAt(int index);
+    	TCModel getNextCase(TCModel tc);
+    	TCModel getNextRandomCase(TCModel tc);
+    	TCModel getPrevCase(TCModel tc);
+    }
 
     
-    public class SortableTCListProvider extends SortableDataProvider<TCModel> {
-
-        private static final long serialVersionUID = 1L;
+    public class SortableTCListProvider extends SortableDataProvider<TCModel> 
+    	implements ITCCaseProvider {
 
         private TCListModel model;
 
@@ -930,6 +945,59 @@ public class TCResultPanel extends Panel {
 
             return null;
         }
+        
+        @Override
+    	public int getCaseCount() {
+    		return size();
+    	}
+        @Override
+    	public int getIndexOfCase(TCModel tc) {
+        	return getCurrentIndex(tc);
+        }
+        @Override
+    	public TCModel getCaseAt(int index) {
+        	List<TCModel> items = model.getObject();
+        	if (items!=null && !items.isEmpty()) {
+                Comparator<TCModel> comparator = getComparator(getSort());
+                if (comparator != null) {
+                    Collections.sort(items, comparator);
+                }
+        		return items.get(index);
+        	}
+        	return null;
+        }
+        @Override
+    	public TCModel getPrevCase(TCModel tc) {
+    		int i = getIndexOfCase(tc);
+    		if (i>0) {
+    			return getCaseAt(--i);
+    		}
+    		return null;
+        }
+    	@Override
+        public TCModel getNextCase(TCModel tc) {
+    		int i = getIndexOfCase(tc);
+    		if (i<getCaseCount()-1) {
+    			return getCaseAt(++i);
+    		}
+    		return null;
+    	}
+    	@Override
+    	public TCModel getNextRandomCase(TCModel tc) {
+    		TCModel next = null;
+    		int count = getCaseCount();
+    		if (count>1) {
+    			do {
+    				next = model.getObject().get(
+    						new Random().nextInt(count));
+    			}
+    			while (next!=null && tc!=null && next.equals(tc));
+    		}
+    		else if (count==1 && tc==null) {
+    			return next = model.getObject().get(0);
+    		}
+    		return next;
+    	}
     }
     
     private static class GlobalTCFilter

@@ -80,14 +80,14 @@ public class TCKeywordTreeInput extends AbstractTCKeywordInput {
     private TCKeywordNode root;
     private AutoCompleteTextField<String> text;
     
-    public TCKeywordTreeInput(final String id, TCQueryFilterKey filterKey, boolean usedForSearch, 
-    		TCKeyword selectedKeyword, final TCKeywordNode root) {
+    public TCKeywordTreeInput(final String id, TCQueryFilterKey filterKey,
+    		boolean usedForSearch, TCKeyword selectedKeyword, final TCKeywordNode root) {
     	this(id, filterKey, usedForSearch, selectedKeyword!=null ? 
     			Collections.singletonList(selectedKeyword) : null, root);
     }
     
-    public TCKeywordTreeInput(final String id, TCQueryFilterKey filterKey, boolean usedForSearch, 
-    		List<TCKeyword> selectedKeywords, final TCKeywordNode root) {
+    public TCKeywordTreeInput(final String id, TCQueryFilterKey filterKey, 
+    		boolean usedForSearch, List<TCKeyword> selectedKeywords, final TCKeywordNode root) {
         super(id, filterKey, usedForSearch);
 
         setDefaultModel(new ListModel<TCKeyword>(selectedKeywords) {
@@ -200,10 +200,23 @@ public class TCKeywordTreeInput extends AbstractTCKeywordInput {
     	return list;
     }
     
-    public void setKeywords(List<TCKeyword> keywords)
-    {
-    	getModel().setObject(keywords);
-    	((MultipleKeywordsTextModel)text.getModel()).setKeywordItems(keywords);
+    @Override
+    public void setKeywords(TCKeyword...keywords){
+    	if (keywords==null || keywords.length==0)
+    	{
+    		setKeywordsAsList(null);
+    	}
+    	else {
+	    	List<TCKeyword> list = new ArrayList<TCKeyword>(3);
+	    	if (keywords!=null) {
+	    		for (TCKeyword keyword : keywords) {
+	    			if (keyword!=null) {
+	    				list.add(keyword);
+	    			}
+	    		}
+	    	}
+	    	setKeywordsAsList(list);
+    	}
     }
 
     @Override
@@ -227,12 +240,6 @@ public class TCKeywordTreeInput extends AbstractTCKeywordInput {
         }
         return null;
     }
-
-    @Override
-    public void resetKeywords() {
-        getModel().setObject(null);
-        text.setModelObject(null);
-    }
     
     @Override
     public boolean isExclusive()
@@ -249,6 +256,12 @@ public class TCKeywordTreeInput extends AbstractTCKeywordInput {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private ListModel<TCKeyword> getModel() {
         return (ListModel) getDefaultModel();
+    }
+    
+    private void setKeywordsAsList(List<TCKeyword> keywords)
+    {
+    	getModel().setObject(keywords);
+    	((MultipleKeywordsTextModel)text.getModel()).setKeywordItems(keywords);
     }
 
     private void ensurePathExpanded(Tree tree, TCKeywordNode node) {
@@ -465,7 +478,7 @@ public class TCKeywordTreeInput extends AbstractTCKeywordInput {
         		}
         	}
 
-            setKeywords(keywords);
+            setKeywordsAsList(keywords);
 
             target.addComponent(text);
         }

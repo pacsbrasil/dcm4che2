@@ -274,12 +274,12 @@ public abstract class TCSearchPanel extends Panel {
                         .getDefaultModelObject();
                 filter.clear();
 
-                keywordInput.resetValues();
-                anatomyInput.resetValues();
-                pathologyInput.resetValues();
-                findingInput.resetValues();
-                diagnosisInput.resetValues();
-                diffDiagnosisInput.resetValues();
+                keywordInput.setValues();
+                anatomyInput.setValues();
+                pathologyInput.setValues();
+                findingInput.setValues();
+                diagnosisInput.setValues();
+                diffDiagnosisInput.setValues();
                 modalityChoice.setModelObject(null);
                 levelChoice.setModelObject(null);
                 patientSexChoice.setModelObject(null);

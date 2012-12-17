@@ -1,5 +1,9 @@
 package org.dcm4chee.web.war.tc.keywords;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.dcm4chee.web.dao.tc.ITextOrCode;
 import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 
 public abstract class AbstractTCKeywordInput extends AbstractTCInput implements TCKeywordInput 
@@ -31,8 +35,25 @@ public abstract class AbstractTCKeywordInput extends AbstractTCInput implements 
     }
     
     @Override
-    public void resetValues()
-    {
-        resetKeywords();
+    public void setValues(ITextOrCode...values) {
+    	List<TCKeyword> keywords = new ArrayList<TCKeyword>(3);
+    	if (values!=null) {
+    		for (ITextOrCode toc : values) {
+    			TCKeyword keyword = TCKeyword.create(
+    					TCKeywordCatalogueProvider.getInstance().getCatalogue(
+    							getFilterKey()), toc);
+    			if (keyword!=null) {
+    				keywords.add(keyword);
+    			}
+    		}
+    	}
+    	
+    	if (keywords!=null && !keywords.isEmpty()) {
+    		setKeywords(keywords.toArray(new TCKeyword[0]));
+    	}
+    	else
+    	{
+    		setKeywords();
+    	}
     }
 }
