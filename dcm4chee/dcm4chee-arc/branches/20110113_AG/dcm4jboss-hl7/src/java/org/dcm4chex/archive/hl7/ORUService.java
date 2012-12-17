@@ -108,20 +108,20 @@ public class ORUService extends ORU_MDMService
         this.fetchSize = fetchSize;
     }
 
-    public boolean process(MSH msh, Document msg, ContentHandler hl7out)
+    public boolean process(MSH msh, Document msg, ContentHandler hl7out, String[] xslSubdirs)
     throws HL7Exception {
         String status = getOBXStatus(msg);
         if ( obxIgnoreStati.contains(status) ) {
             log.info("Ignore ORU message with OBX status='"+status+"'! MSH:"+msh);
         } else {
-            process(msg);
+            process(msg, xslSubdirs);
         }
         return true;
     }
 
-    public void process(Document msg) throws HL7Exception {
+    public void process(Document msg, String[] xslSubdirs) throws HL7Exception {
         try {
-            Dataset doc = xslt(msg, xslPath);
+            Dataset doc = xslt(msg, xslPath, xslSubdirs);
             addIUIDs(doc);
             storeSR(doc);
         } catch (Exception e) {

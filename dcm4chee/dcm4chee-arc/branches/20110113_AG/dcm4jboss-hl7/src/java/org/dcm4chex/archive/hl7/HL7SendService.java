@@ -42,10 +42,12 @@ package org.dcm4chex.archive.hl7;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.text.SimpleDateFormat;
@@ -72,6 +74,7 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
+import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
@@ -93,15 +96,19 @@ import org.dcm4chex.archive.ejb.interfaces.AEManagerHome;
 import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.dcm4chex.archive.mbean.JMSDelegate;
 import org.dcm4chex.archive.mbean.TLSConfigDelegate;
+import org.dcm4chex.archive.mbean.TemplatesDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.XSLTUtils;
 import org.dom4j.Document;
 import org.dom4j.Element;
+import org.dom4j.io.DocumentSource;
 import org.dom4j.io.SAXContentHandler;
 import org.jboss.system.ServiceMBeanSupport;
 import org.regenstrief.xhl7.HL7XMLLiterate;
 import org.regenstrief.xhl7.HL7XMLReader;
+import org.regenstrief.xhl7.HL7XMLWriter;
 import org.regenstrief.xhl7.MLLPDriver;
+import org.regenstrief.xhl7.XMLWriter;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -123,6 +130,9 @@ public class HL7SendService extends ServiceMBeanSupport implements
     private static final String LOCAL_HL7_AET = "LOCAL^LOCAL";
 
     private static final String DATETIME_FORMAT = "yyyyMMddHHmmss";
+    
+    private static final String FORWARD_XSL = "hl7forward";
+    private static final String XSL_EXT = ".xsl";
 
     private static long msgCtrlid = System.currentTimeMillis();
 
@@ -148,11 +158,12 @@ public class HL7SendService extends ServiceMBeanSupport implements
 
     private ForwardingRules forwardingRules = new ForwardingRules("");
     
-    private volatile long messageControlID = System.currentTimeMillis();
-
     private int concurrency = 1;
 
     private JMSDelegate jmsDelegate = new JMSDelegate(this);
+    
+    protected TemplatesDelegate templates = new TemplatesDelegate(this);
+
 
     public String getCharsetName() {
         try {
@@ -236,6 +247,14 @@ public class HL7SendService extends ServiceMBeanSupport implements
         this.auditPIXQuery = auditPIXQuery;
     }
 
+    public final String getForwardTemplateDir() {
+        return templates.getConfigDir();
+    }
+
+    public final void setForwardTemplateDir(String path) {
+        templates.setConfigDir(path);
+    }
+
     public final ObjectName getTLSConfigName() {
         return tlsConfig.getTLSConfigName();
     }
@@ -266,6 +285,14 @@ public class HL7SendService extends ServiceMBeanSupport implements
 
     public final void setForwardingRules(String s) {
         this.forwardingRules = new ForwardingRules(s);
+    }
+
+    public final ObjectName getTemplatesServiceName() {
+        return templates.getTemplatesServiceName();
+    }
+
+    public final void setTemplatesServiceName(ObjectName serviceName) {
+        templates.setTemplatesServiceName(serviceName);
     }
 
     protected void startService() throws Exception {
@@ -303,13 +330,16 @@ public class HL7SendService extends ServiceMBeanSupport implements
     private int forward(byte[] hl7msg, Document msg) {
         MSH msh = new MSH(msg);
         Map<String,String[]> param = new HashMap<String,String[]>();
-        param.put("sending", new String[] { msh.sendingApplication + '^'
-                + msh.sendingFacility });
+        String sending = msh.sendingApplication + '^' + msh.sendingFacility;
+        param.put("sending", new String[] { sending });
         param.put("receiving", new String[] { msh.receivingApplication + '^'
                 + msh.receivingFacility });
         param.put("msgtype", new String[] { msh.messageType + '^'
                 + msh.triggerEvent });
         String[] dests = forwardingRules.getForwardDestinationsFor(param);
+        if (dests.length > 0) {
+            hl7msg = preprocessForward(hl7msg, msg, msh, sending);
+        }
         int count = 0;
         for (int i = 0; i < dests.length; i++) {
             HL7SendOrder order = new HL7SendOrder(hl7msg, dests[i]);
@@ -328,6 +358,26 @@ public class HL7SendService extends ServiceMBeanSupport implements
             }
         }
         return count;
+    }
+
+    private byte[] preprocessForward(byte[] hl7msg, Document msg, MSH msh, String sending) {
+        String[] variations = new String[] {"_"+msh.messageType+"^"+msh.triggerEvent, "_"+msh.messageType, "" };
+        Templates xslt = templates.findTemplates(new String[]{sending}, FORWARD_XSL, variations, XSL_EXT);
+        if (xslt != null) {
+            log.info("Transform HL7 message with hl7forward stylesheet!");
+            try {
+                Transformer t = xslt.newTransformer();
+                ByteArrayOutputStream bos = new ByteArrayOutputStream(hl7msg.length);
+                XMLWriter xmlWriter = new HL7XMLWriter(
+                        new OutputStreamWriter(bos, getCharsetName()));
+                t.transform(new DocumentSource(msg), new SAXResult(xmlWriter.getContentHandler()));
+                hl7msg = bos.toByteArray();
+            } catch (Exception x) {
+                log.error("Can not apply hl7forward stylesheet!", x);
+            }
+            
+        }
+        return hl7msg;
     }
 
     public void onMessage(Message message) {
@@ -441,37 +491,28 @@ public class HL7SendService extends ServiceMBeanSupport implements
     private void writeMessage(byte[] message, String receiving, OutputStream out)
             throws UnsupportedEncodingException, IOException {
         final String charsetName = getCharsetName();
-		out.write("MSH|^~\\&|".getBytes(charsetName));
-        out.write(sendingApplication.getBytes(charsetName));
-        out.write('|');
-        out.write(sendingFacility.getBytes(charsetName));
-        out.write('|');
+        int offs = writePartTo(out, message, '|', 0, 4); //write MSH 1-4
         final int delim = receiving.indexOf('^');
         out.write(receiving.substring(0, delim).getBytes(charsetName));
         out.write('|');
         out.write(receiving.substring(delim + 1).getBytes(charsetName));
-        out.write('|');
-        final SimpleDateFormat tsFormat = new SimpleDateFormat(
-                "yyyyMMddHHmmss.SSS");
-        out.write(tsFormat.format(new Date()).getBytes(charsetName));
-        // skip MSH:1-7
-        int left = 0;
-        for (int i = 0; i < 7; ++i)
-            while (message[left++] != '|')
-                ;
-        // write MSH:8-9
-        int right = left;
-        while (message[right++] != '|')
-            ;
-        while (message[right++] != '|')
-            ;
-        out.write(message, left - 1, right - left + 1);
-        out.write(String.valueOf(++messageControlID).getBytes(charsetName));
-        // skip MSH:10
-        while (message[right++] != '|')
-            ;
+        while (message[++offs] != '|') {} //skip MSH-5 receiving application
+        while (message[++offs] != '|') {} //skip MSH-6 receiving facility
         // write remaining message
-        out.write(message, right - 1, message.length - right + 1);
+        out.write(message, offs, message.length - offs);
+    }
+    
+    private int writePartTo(OutputStream out, byte[] ba, char b, int offs, int count) throws IOException {
+        for ( int i = offs ; i < ba.length ; i++) {
+            if (ba[i]==b) {
+                count--;
+                if (count == 0) {
+                    out.write(ba, offs, i-offs+1);
+                    return i;
+                }
+            }
+        }
+        return -1;
     }
 
     public void sendHL7PatientXXX(Dataset ds, String msgType, String sending,
@@ -703,8 +744,8 @@ public class HL7SendService extends ServiceMBeanSupport implements
             throws Exception {
         String timestamp = new SimpleDateFormat(DATETIME_FORMAT)
                 .format(new Date());
-        long msgCtrlid = ++this.msgCtrlid;
-        long queryTag = ++this.queryTag;
+        long msgCtrlid = ++HL7SendService.msgCtrlid;
+        long queryTag = ++HL7SendService.queryTag;
         StringBuffer sb = makeMSH(timestamp, "QBP^Q23", null, pixManager, msgCtrlid, "2.5");
         String qpd = makeQPD(pixQueryName, queryTag, patientID, issuer, domains);
         sb.append('\r').append(qpd).append("\rRCP|I||||||\r");
@@ -965,6 +1006,13 @@ public class HL7SendService extends ServiceMBeanSupport implements
         return home.create();
     }
     
+    public void sendHL7File(File file, String receiver) throws Exception {
+        FileInputStream fis = new FileInputStream(file);
+        byte[] msg = new byte[(int)file.length()];
+        fis.read(msg);
+        this.sendTo(msg, receiver);
+    }
+    
     public boolean sendHl7FromDataset( String dsFilename, String xslFilename, String sender, String receiver) throws IOException, TransformerConfigurationException, TransformerFactoryConfigurationError {
         Dataset ds = DcmObjectFactory.getInstance().newDataset(); 
         ds.readFile(new File(dsFilename), null, Tags.PixelData);
@@ -1048,7 +1096,7 @@ public class HL7SendService extends ServiceMBeanSupport implements
         XSLTUtils.setDateParameters(th);
         Transformer t = th.getTransformer();
         final SimpleDateFormat tsFormat = new SimpleDateFormat("yyyyMMddHHmmss.SSS");
-        t.setParameter("messageControlID", String.valueOf(++messageControlID) );
+        t.setParameter("messageControlID", String.valueOf(++msgCtrlid) );
         t.setParameter("messageDateTime", tsFormat.format(new Date()));
         int pos = receiver.indexOf('^');
         t.setParameter("receivingApplication", receiver.substring(0, pos++));

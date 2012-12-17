@@ -50,6 +50,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.charset.Charset;
 import java.text.DecimalFormat;
@@ -61,9 +62,12 @@ import javax.management.NotificationFilter;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXResult;
+import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 
 import org.dcm4che.server.Server;
@@ -74,6 +78,7 @@ import org.dcm4chex.archive.mbean.TLSConfigDelegate;
 import org.dcm4chex.archive.mbean.TemplatesDelegate;
 import org.dcm4chex.archive.util.FileUtils;
 import org.dom4j.Document;
+import org.dom4j.io.DocumentResult;
 import org.dom4j.io.DocumentSource;
 import org.dom4j.io.SAXContentHandler;
 import org.jboss.system.ServiceMBeanSupport;
@@ -108,6 +113,8 @@ public class HL7ServerService extends ServiceMBeanSupport implements
         }
     };
 
+    private static final String PREPROCESS_XSL = "preprocess";
+    private static final String XSL_EXT = ".xsl";
     private String charsetName = "ISO-8859-1";
 
     private String ackXslPath;
@@ -132,6 +139,8 @@ public class HL7ServerService extends ServiceMBeanSupport implements
     private boolean suppressErrorResponse;
 
     private boolean sendNotification;
+    
+    private boolean useHostSubdirs;
 
     private int soTimeout = 0;
 
@@ -171,6 +180,22 @@ public class HL7ServerService extends ServiceMBeanSupport implements
         this.logXslPath = path;
     }
 
+    public final String getTemplateDir() {
+        return templates.getConfigDir();
+    }
+
+    public final void setTemplateDir(String path) {
+        templates.setConfigDir(path);
+    }
+
+    public boolean isUseHostSubdirs() {
+        return useHostSubdirs;
+    }
+
+    public void setUseHostSubdirs(boolean useHostSubdirs) {
+        this.useHostSubdirs = useHostSubdirs;
+    }
+
     public final ObjectName getTemplatesServiceName() {
         return templates.getTemplatesServiceName();
     }
@@ -178,7 +203,7 @@ public class HL7ServerService extends ServiceMBeanSupport implements
     public final void setTemplatesServiceName(ObjectName serviceName) {
         templates.setTemplatesServiceName(serviceName);
     }
-    
+        
     public final ObjectName getTLSConfigName() {
         return tlsConfig.getTLSConfigName();
     }
@@ -404,6 +429,7 @@ public class HL7ServerService extends ServiceMBeanSupport implements
         if (soTimeout > 0) {
             s.setSoTimeout(soTimeout);
         }
+        InetSocketAddress inetAddr = (InetSocketAddress) s.getRemoteSocketAddress();
         MLLPDriver mllpDriver = new MLLPDriver(s.getInputStream(), 
                 new BufferedOutputStream(s.getOutputStream()), false);
         InputStream mllpIn = mllpDriver.getInputStream();
@@ -451,9 +477,31 @@ public class HL7ServerService extends ServiceMBeanSupport implements
                         fileReceivedHL7AsXML(msg, new File(logDir, 
                                 new DecimalFormat("'hl7-'000000'.xml'").format(msgNo)));
                     }
+                    Document newMsg = preprocessHL7(msg, inetAddr);
+                    if (newMsg != null) {
+                        msg = newMsg;
+                        log.info("HL7 message changed by preprocess.xsl!");
+                        logMessage(msg);
+                        if (fileReceivedHL7AsXML) {
+                            fileReceivedHL7AsXML(msg, new File(logDir, 
+                                    new DecimalFormat("'hl7-'000000'.preprocessed.xml'").format(msgNo)));
+                        }
+                        ByteArrayOutputStream bos = new ByteArrayOutputStream(msglen);
+                        XMLWriter xmlWriter1 = new HL7XMLWriter(
+                                new OutputStreamWriter(bos, getCharsetName()));
+                        SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory.newInstance();
+                        try {
+                            Transformer t = tf.newTransformer();
+                            t.transform(new DocumentSource(msg), new SAXResult(xmlWriter1.getContentHandler()));
+                            bb = bos.toByteArray();
+                            msglen = bb.length;
+                        } catch (Exception x) {
+                            log.error("Failed to preprocess HL7 message!", x);
+                        }
+                    }
                     MSH msh = new MSH(msg);
                     HL7Service service = getService(msh);
-                    if (service == null || service.process(msh, msg, hl7out)) {
+                    if (service == null || service.process(msh, msg, hl7out, getXsltSearchDirectories(inetAddr, msh))) {
                         ack(msg, hl7out, null);
                     }
                     if (sendNotification) {
@@ -484,6 +532,37 @@ public class HL7ServerService extends ServiceMBeanSupport implements
         }
     }
 
+    private String[] getXsltSearchDirectories(InetSocketAddress inetAddr, MSH msh) {
+        String sending = msh.sendingApplication+"^"+msh.sendingFacility;
+        String ipAddr = !useHostSubdirs || inetAddr == null ? null : inetAddr.getAddress().getHostAddress();
+        String hostname = ipAddr == null ? null : inetAddr.getHostName();
+        if (log.isDebugEnabled() ) log.debug("get XSLT search subdirs for ipAddr:"+ipAddr+" hostname:"+hostname+" sending:"+sending);
+        String[] subdirs = ipAddr == null ? new String[]{sending} : 
+                hostname == null ? new String[]{ipAddr, sending} : new String[]{ipAddr, hostname, sending};
+        return subdirs;
+    }
+
+    private Document preprocessHL7(Document msg, InetSocketAddress inetAddr) {
+        MSH msh = new MSH(msg);
+        String[] subdirs = getXsltSearchDirectories(inetAddr, msh);
+        String[] variations = new String[] {"_"+msh.messageType+"^"+msh.triggerEvent, "_"+msh.messageType, "" };
+        Templates xslt = templates.findTemplates(subdirs, PREPROCESS_XSL, variations, XSL_EXT);
+        if (xslt != null) {
+            log.info("Preprocess HL7 message with stylesheet!");
+            try {
+                Transformer t;
+                t = xslt.newTransformer();
+                DocumentResult result =new DocumentResult();
+                t.transform(new DocumentSource(msg), result);
+                return result.getDocument();
+            } catch (Exception x) {
+                log.error("Can not apply preprocess stylesheet!", x);
+            }
+            
+        }
+        return null;
+    }
+    
     private void fileReceivedHL7(byte[] bb, int msglen, File logfile) {
         if (logfile.getParentFile().mkdirs()) {
             log.info("M-WRITE " + logfile.getParentFile());

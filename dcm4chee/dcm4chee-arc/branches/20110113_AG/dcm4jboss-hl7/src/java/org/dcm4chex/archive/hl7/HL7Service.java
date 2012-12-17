@@ -51,6 +51,6 @@ import org.xml.sax.ContentHandler;
  */
 public interface HL7Service {
 
-    boolean process(MSH msh, Document msg, ContentHandler hl7out) throws HL7Exception;
+    boolean process(MSH msh, Document msg, ContentHandler hl7out, String[] xslSubDirs) throws HL7Exception;
 
 }

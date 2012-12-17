@@ -43,7 +43,7 @@ import java.io.File;
 import java.util.StringTokenizer;
 
 import javax.management.ObjectName;
-import javax.xml.transform.Transformer;
+import javax.xml.transform.Templates;
 import javax.xml.transform.sax.SAXResult;
 
 import org.dcm4che.data.Dataset;
@@ -111,12 +111,31 @@ public abstract class AbstractHL7Service extends ServiceMBeanSupport implements
         }
     }
 
-    protected Dataset xslt(Document msg, String xslPath) throws Exception {
+    public final String getTemplateDir() {
+        return templates.getConfigDir();
+    }
+
+    public final void setTemplateDir(String path) {
+        templates.setConfigDir(path);
+    }
+    
+    protected Dataset xslt(Document msg, String xslPath, String[] subdirs) throws Exception {
+        Templates tpl;
+        if (xslPath.indexOf('/') != -1 || xslPath.indexOf('\\') != -1) {
+            File pidXslFile = FileUtils.toExistingFile(xslPath);
+            tpl = templates.getTemplates(pidXslFile);
+        } else {
+            if (subdirs == null) {
+                MSH msh = new MSH(msg);
+                tpl = templates.getTemplatesForAET(msh.sendingApplication+"^"+msh.sendingFacility, xslPath);
+            } else {
+                tpl = templates.findTemplates(subdirs, null, new String[]{xslPath}, null);
+            }
+        }
+        if (tpl == null)
+            throw new HL7Exception("AR","Missing style sheet to process HL7 message! xslPath:" + xslPath);
         Dataset ds = DcmObjectFactory.getInstance().newDataset();
-        File pidXslFile = FileUtils.toExistingFile(xslPath);
-        Transformer t = templates.getTemplates(pidXslFile).newTransformer();
-        t.transform(new DocumentSource(msg), new SAXResult(ds
-                .getSAXHandler2(null)));
+        tpl.newTransformer().transform(new DocumentSource(msg), new SAXResult(ds.getSAXHandler2(null)));
         return ds;
     }
 

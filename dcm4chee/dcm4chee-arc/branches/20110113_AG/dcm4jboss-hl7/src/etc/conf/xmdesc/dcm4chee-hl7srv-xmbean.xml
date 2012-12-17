@@ -301,6 +301,38 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getTemplateDir"
+      setMethod="setTemplateDir">
+      <description><![CDATA[Directory where template file(s) are located
+      to preprocess the received HL7 message.<br />
+      A style sheet can be message type specific ("preprocess_&lt;MSG Type&gt;^&lt;Event Type&gt;.xsl" or "preprocess_&lt;MSG Type&gt;.xsl")
+      or generic "preprocess.xsl" 
+      and placed in this directory or in a sub-directory to select a style sheet according to the sender.<br />
+      This sub-directory can be &lt;IPAddr&gt;, &lt;hostname&gt; or '&lt;Sending Application&gt;^&lt;Sending Facility&gt;' (In this order).<br />
+      (See also UseHostSubdirs attribute in HL7Server service to enable IP/hostname selection)<br />
+      A relative path name is resolved relative to
+      <i>archive-install-directory</i>/server/default/.]]>
+      </description>
+      <name>PreprocessTemplateDir</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="conf/dcm4chee-hl7"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isUseHostSubdirs"
+      setMethod="setUseHostSubdirs">
+      <description><![CDATA[Enable selection of style sheets depending on IP address/hostname.<br />
+         If disabled, only Sending Application and Sending Facility can be used to select style sheet 
+         depending on message sender but eliminates need of DNS lookup to get hostname.
+	  ]]></description>
+      <name>UseHostSubdirs</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getTLSConfigName"
       setMethod="setTLSConfigName">
       <description>Used internally - do NOT modify.

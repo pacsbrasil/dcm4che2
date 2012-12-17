@@ -174,16 +174,32 @@ attributes by HL7 ORM messages! => Only change the default value of
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getTemplateDir"
+      setMethod="setTemplateDir">
+      <description><![CDATA[Directory where template file(s) are located.<br />
+      A stylesheet can be placed in this directory or in a sub-directory equal to '&lt;Sending Application&gt;^&lt;Sending Facility&gt;'.<br />
+      A relative path name is resolved relative to
+      <i>archive-install-directory</i>/server/default/.]]>
+      </description>
+      <name>TemplateDir</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="conf/dcm4chee-hl7"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getStylesheet"
       setMethod="setStylesheet">
-      <description><![CDATA[Stylesheet for HL7 ORM^O01 to DICOM MWL mapping.
-      A relative path name is resolved relative to
+      <description><![CDATA[Name of stylesheet for HL7 ORM^O01 to DICOM MWL mapping.<br />
+      Base dir: <code>TemplateDir</code><br/>
+      If this name contains a '/' or '\' the configured <code>TemplateDir</code> will be NOT applied! 
+      In this case the name is the full path of the stylesheet and a relative path name is resolved relative to
       <i>archive-install-directory</i>/server/default/.]]>
       </description>
       <name>Stylesheet</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="conf/dcm4chee-hl7/orm2dcm.xsl" />
+         <value value="orm2dcm.xsl" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -232,21 +248,4 @@ attributes by HL7 ORM messages! => Only change the default value of
 
    <!-- Operations -->
    &defaultOperations;
-   <operation impact="ACTION">
-      <description>Process XML message</description>
-      <name>process</name>
-      <parameter>
-        <name>orderControl</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <parameter>
-        <name>orderStatus</name>
-        <type>java.lang.String</type>
-      </parameter>
-      <parameter>
-        <name>msg</name>
-        <type>org.dom4j.Document</type>
-      </parameter>
-      <return-type>void</return-type>
-   </operation>
 </mbean>

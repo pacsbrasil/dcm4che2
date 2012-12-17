@@ -195,29 +195,49 @@ attributes by HL7 ADT messages! => Only change the default value of
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getTemplateDir"
+      setMethod="setTemplateDir">
+      <description><![CDATA[Directory where template file(s) are located.<br />
+      A style sheet can be placed in this directory or in a sub-directory to select a style sheet according to the sender.<br />
+      This sub-directory can be &lt;IPAddr&gt;, &lt;hostname&gt; or '&lt;Sending Application&gt;^&lt;Sending Facility&gt;' (In this order).<br />
+      (See also UseHostSubdirs attribute in HL7Server service to enable IP/hostname selection)<br />
+      A relative path name is resolved relative to
+      <i>archive-install-directory</i>/server/default/.]]>
+      </description>
+      <name>TemplateDir</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="conf/dcm4chee-hl7"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getPidStylesheet"
       setMethod="setPidStylesheet">
-      <description><![CDATA[Stylesheet for HL7 PID to DICOM Patient Module
-      mapping. A relative path name is resolved relative to
+      <description><![CDATA[Stylesheet for HL7 PID to DICOM Patient Module mapping. <br />
+      Base dir: <code>TemplateDir</code><br/>
+      If this name contains a '/' or '\' the configured <code>TemplateDir</code> will be NOT applied! 
+      In this case the name is the full path of the stylesheet and a relative path name is resolved relative to
       <i>archive-install-directory</i>/server/default/.]]>
       </description>
       <name>PidStylesheet</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="conf/dcm4chee-hl7/pid2dcm.xsl" />
+         <value value="pid2dcm.xsl" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
       getMethod="getMrgStylesheet"
       setMethod="setMrgStylesheet">
-      <description><![CDATA[Stylesheet for HL7 MRG to DICOM Patient Module
-      mapping. A relative path name is resolved relative to
+      <description><![CDATA[Stylesheet for HL7 MRG to DICOM Patient Module mapping.<br />
+      Base dir: <code>TemplateDir</code><br/>
+      If this name contains a '/' or '\' the configured <code>TemplateDir</code> will be NOT applied! 
+      In this case the name is the full path of the stylesheet and a relative path name is resolved relative to
       <i>archive-install-directory</i>/server/default/.]]>
       </description>
       <name>MrgStylesheet</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="conf/dcm4chee-hl7/mrg2dcm.xsl" />
+         <value value="mrg2dcm.xsl" />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -285,23 +305,5 @@ attributes by HL7 ADT messages! => Only change the default value of
 
    <!-- Operations -->
    &defaultOperations;
-   <operation impact="ACTION">
-      <description>Update Patient Information</description>
-      <name>updatePatient</name>
-      <parameter>
-        <name>msg</name>
-        <type>org.dom4j.Document</type>
-      </parameter>
-      <return-type>void</return-type>
-   </operation>   
-   <operation impact="ACTION">
-      <description>Merge two Patient Records</description>
-      <name>mergePatient</name>
-      <parameter>
-        <name>msg</name>
-        <type>org.dom4j.Document</type>
-      </parameter>
-      <return-type>void</return-type>
-   </operation>   
 </mbean>
     
