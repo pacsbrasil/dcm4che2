@@ -13,6 +13,7 @@
     <depends optional-attribute-name="TemplatesServiceName">dcm4chee.archive:service=Templates</depends>
     <depends optional-attribute-name="StoreScpServiceName">dcm4chee.web:service=StoreBridge</depends>
     <depends optional-attribute-name="AttributesModificationScuServiceName">dcm4chee.web:service=AttributesModificationSCU</depends>
+    <depends optional-attribute-name="QRServiceName">dcm4chee.archive:service=QueryRetrieveScp</depends>
 
   </mbean>
 </server>
