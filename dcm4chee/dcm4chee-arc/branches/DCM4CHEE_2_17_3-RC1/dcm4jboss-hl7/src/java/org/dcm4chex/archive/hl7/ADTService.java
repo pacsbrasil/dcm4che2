@@ -59,6 +59,7 @@ import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.PatientMatching;
 import org.dcm4chex.archive.ejb.interfaces.PatientUpdate;
 import org.dcm4chex.archive.ejb.interfaces.PatientUpdateHome;
+import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
 import org.dcm4chex.archive.exceptions.PatientAlreadyExistsException;
 import org.dcm4chex.archive.exceptions.PatientMergedException;
 import org.dcm4chex.archive.util.EJBHomeFactory;
@@ -327,14 +328,17 @@ public class ADTService extends AbstractHL7Service {
 
     protected void mergePatient(Dataset dominant, Dataset prior, PatientMatching patientMatching) throws Exception {
         getPatientUpdate().mergePatient(dominant, prior, patientMatching, keepPriorPatientAfterMerge);
+        RetrieveCmd.clearCachedSeriesAttrs();
     }
 
     protected void updatePatient(Dataset attrs, PatientMatching patientMatching) throws Exception {
         getPatientUpdate().updatePatient(attrs, patientMatching);
+        RetrieveCmd.clearCachedSeriesAttrs();
     }
 
     protected void changePatientIdentifierList(Dataset correct, Dataset prior, PatientMatching patientMatching) throws Exception {
         getPatientUpdate().changePatientIdentifierList(correct, prior, patientMatching, keepPriorPatientAfterMerge);
+        RetrieveCmd.clearCachedSeriesAttrs();
     }
 
     protected boolean deletePatient(Dataset ds, PatientMatching patientMatching) throws Exception {
