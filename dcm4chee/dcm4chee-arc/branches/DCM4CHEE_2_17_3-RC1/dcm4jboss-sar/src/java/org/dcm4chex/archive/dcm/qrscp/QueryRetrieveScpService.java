@@ -1809,4 +1809,9 @@ public class QueryRetrieveScpService extends AbstractScpService {
 			Dataset mergeAttrs, byte[] buf, DatasetUpdater datasetUpdater) {
 		return new FileDataSource(f, mergeAttrs, buf, datasetUpdater);
 	}
+	
+    public void clearCachedSeriesAttrs() {
+        RetrieveCmd.clearCachedSeriesAttrs();
+    }
+	
 }
