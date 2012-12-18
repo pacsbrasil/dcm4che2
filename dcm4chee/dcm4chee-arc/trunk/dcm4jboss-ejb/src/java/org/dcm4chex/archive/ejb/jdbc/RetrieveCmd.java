@@ -389,6 +389,13 @@ public class RetrieveCmd extends BaseReadCmd {
         }
         seriesAttrsCache.remove(seriesIUID);
     }
+    
+    public static void clearCachedSeriesAttrs() {
+        if (!seriesAttrsCache.isEmpty()) {
+            log.debug("Clear Series attributes from cache");
+            seriesAttrsCache.clear();
+        }
+    }
 
     private void addFileInfoWithEagerFetchSeriesAttrs(Map result)
             throws SQLException {

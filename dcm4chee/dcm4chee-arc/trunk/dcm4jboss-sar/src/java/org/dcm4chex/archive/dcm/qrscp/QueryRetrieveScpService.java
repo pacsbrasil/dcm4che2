@@ -1912,16 +1912,20 @@ public class QueryRetrieveScpService extends AbstractScpService {
         this.cFindRspDebugLogDeferToDoBeforeRsp = defer;
     }
 
-	public void setVerifyMD5OnMakeCStoreRQ(boolean verifyMD5OnMakeCStoreRQ) {
-		this.verifyMD5OnMakeCStoreRQ = verifyMD5OnMakeCStoreRQ;
-	}
+    public void setVerifyMD5OnMakeCStoreRQ(boolean verifyMD5OnMakeCStoreRQ) {
+        this.verifyMD5OnMakeCStoreRQ = verifyMD5OnMakeCStoreRQ;
+    }
 
-	public boolean isVerifyMD5OnMakeCStoreRQ() {
-		return verifyMD5OnMakeCStoreRQ;
-	}
+    public boolean isVerifyMD5OnMakeCStoreRQ() {
+        return verifyMD5OnMakeCStoreRQ;
+    }
+
+    protected FileDataSource createFileDataSource(File f,
+            Dataset mergeAttrs, byte[] buf, DatasetUpdater datasetUpdater) {
+        return new FileDataSource(f, mergeAttrs, buf, datasetUpdater);
+    }
     
-	protected FileDataSource createFileDataSource(File f,
-			Dataset mergeAttrs, byte[] buf, DatasetUpdater datasetUpdater) {
-		return new FileDataSource(f, mergeAttrs, buf, datasetUpdater);
-	}
+    public void clearCachedSeriesAttrs() {
+        RetrieveCmd.clearCachedSeriesAttrs();
+    }
 }

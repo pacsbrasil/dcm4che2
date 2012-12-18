@@ -1481,6 +1481,12 @@ DICOM JPEG-LS images by specified value. Only effective for WADO retrieval.
       <return-type>boolean</return-type>
    </operation>
 
+   <operation impact="ACTION">
+      <description><![CDATA[Clear cached Series attributes]]>
+      </description>
+      <name>clearCachedSeriesAttrs</name>
+      <return-type>void</return-type>
+   </operation>
    <!-- Notifications -->
 </mbean>
 

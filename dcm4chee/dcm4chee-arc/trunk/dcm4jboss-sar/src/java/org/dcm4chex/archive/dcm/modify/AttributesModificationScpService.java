@@ -45,6 +45,7 @@ import org.dcm4che.dict.UIDs;
 import org.dcm4che.net.AcceptorPolicy;
 import org.dcm4che.net.DcmServiceRegistry;
 import org.dcm4chex.archive.dcm.AbstractScpService;
+import org.dcm4chex.archive.ejb.jdbc.RetrieveCmd;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -123,6 +124,7 @@ public class AttributesModificationScpService extends AbstractScpService {
     }
 
     void sendAttributesModificationNotification(Dataset ds) {
+        RetrieveCmd.clearCachedSeriesAttrs();
         long eventID = super.getNextNotificationSequenceNumber();
         Notification notif = new Notification(NOTIF_TYPE, this, eventID);
         notif.setUserData(ds);
