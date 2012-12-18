@@ -266,6 +266,14 @@
       <name>AttributesModificationScuServiceName</name>
       <type>javax.management.ObjectName</type>
    </attribute>
+   <attribute access="read-write"
+      getMethod="getQRServiceName"
+      setMethod="setQRServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>QRServiceName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
 
    &defaultAttributes;
    

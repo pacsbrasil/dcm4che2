@@ -127,6 +127,7 @@ public class ContentEditService extends ServiceMBeanSupport {
     private ObjectName moveScuServiceName;
     private ObjectName storeScpServiceName;
     private ObjectName attrModScuServiceName;
+    private ObjectName qrServiceName;
 
     private boolean processIAN;
     private boolean sendIANonMppsLinked;
@@ -279,6 +280,14 @@ public class ContentEditService extends ServiceMBeanSupport {
 
     public void setAttrModificationScuServiceName(ObjectName name) {
         attrModScuServiceName = name;
+    }
+    
+    public ObjectName getQRServiceName() {
+        return this.qrServiceName;
+    }
+
+    public void setQRServiceName(ObjectName name) {
+        qrServiceName = name;
     }
     
     public final ObjectName getTemplatesServiceName() {
@@ -441,6 +450,8 @@ public class ContentEditService extends ServiceMBeanSupport {
             studies.iterator().next().getPatient().getAttributes().copyTo(obj);
             obj.putStrings(Tag.StudyInstanceUID, VR.UI, suids);
             log.info("Schedule PATIENT level Attributes Modification Notification (Move Study To Patient)");
+            server.invoke(qrServiceName, "clearCachedSeriesAttrs", 
+                    new Object[]{}, new String[]{});
             server.invoke(attrModScuServiceName, "scheduleModification", 
                     new Object[]{obj}, new String[]{DicomObject.class.getName()});
             if (forwardModifiedToAETs != null) {
@@ -1006,6 +1017,14 @@ public class ContentEditService extends ServiceMBeanSupport {
     
     public void doAfterDicomEdit(String patId, String patName, String[] studyIUIDs, DicomObject obj, String qrLevel) {
         sendDicomActionNotification(obj, DicomActionNotification.UPDATE, qrLevel);
+        if (!"IMAGE".equals(qrLevel)) {
+            try {
+                server.invoke(qrServiceName, "clearCachedSeriesAttrs", 
+                        new Object[]{}, new String[]{});
+            } catch (Exception ignore) {
+                log.info("Clear cached Series Attributes in QR service failed!");
+            }
+        }
         if ("PATIENT".equals(qrLevel)) {
             Auditlog.logPatientRecord(AuditEvent.ActionCode.UPDATE, true, patId, patName);
             if (enableForwardOnPatientUpdate && forwardModifiedToAETs != null) {
