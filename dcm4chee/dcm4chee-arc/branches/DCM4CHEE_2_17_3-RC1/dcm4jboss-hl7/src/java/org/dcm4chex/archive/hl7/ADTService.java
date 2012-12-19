@@ -332,8 +332,10 @@ public class ADTService extends AbstractHL7Service {
     }
 
     protected void updatePatient(Dataset attrs, PatientMatching patientMatching) throws Exception {
-        getPatientUpdate().updatePatient(attrs, patientMatching);
-        RetrieveCmd.clearCachedSeriesAttrs();
+        Dataset modified = DcmObjectFactory.getInstance().newDataset();
+        getPatientUpdate().updatePatient(attrs, modified, patientMatching);
+        if (modified.size() > 0)
+            RetrieveCmd.clearCachedSeriesAttrs();
     }
 
     protected void changePatientIdentifierList(Dataset correct, Dataset prior, PatientMatching patientMatching) throws Exception {
