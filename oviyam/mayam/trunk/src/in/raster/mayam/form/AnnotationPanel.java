@@ -258,8 +258,8 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
             ShapeCoordinates shapeCoordinates = new ShapeCoordinates(t.getX1(), t.getY1(), t.getX2(), t.getY2());
             int mousePointBoxSize = 2;
             Shape lineObject = new Line2D.Float(t.getX1(), t.getY1(), t.getX2(), t.getY2());
-            int pointX = evt.getX() - mousePointBoxSize / 2;
-            int pointY = evt.getY() - mousePointBoxSize / 2;
+            int pointX = (int) Math.round(evt.getX() / ApplicationContext.imgPanel.getScaleFactor());
+            int pointY = (int) Math.round(evt.getY() / ApplicationContext.imgPanel.getScaleFactor());
             int width = mousePointBoxSize;
             int height = mousePointBoxSize;
             if (lineObject.intersects(pointX, pointY, width, height)) {
@@ -279,8 +279,8 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
             AnnotationObj t = ite.next();
             int mousePointBoxSize = 2;
             Shape arrowObject = new Line2D.Float(t.getX1(), t.getY1(), t.getX2(), t.getY2());
-            int pointX = evt.getX() - mousePointBoxSize / 2;
-            int pointY = evt.getY() - mousePointBoxSize / 2;
+            int pointX = (int) Math.round(evt.getX() / ApplicationContext.imgPanel.getScaleFactor());
+            int pointY = (int) Math.round(evt.getY() / ApplicationContext.imgPanel.getScaleFactor());
             int width = mousePointBoxSize;
             int height = mousePointBoxSize;
             if (arrowObject.intersects(pointX, pointY, width, height)) {
@@ -355,8 +355,8 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
             ShapeCoordinates shapeCoordinates = new ShapeCoordinates(t.getX1(), t.getY1(), t.getX2(), t.getY2());
             int mousePointBoxSize = 2;
             Shape lineObject = new Line2D.Float(t.getX1(), t.getY1(), t.getX2(), t.getY2());
-            int pointX = evt.getX() - mousePointBoxSize / 2;
-            int pointY = evt.getY() - mousePointBoxSize / 2;
+            int pointX = (int) Math.round(evt.getX() / ApplicationContext.imgPanel.getScaleFactor());
+            int pointY = (int) Math.round(evt.getY() / ApplicationContext.imgPanel.getScaleFactor());
             int width = mousePointBoxSize;
             int height = mousePointBoxSize;
             if (lineObject.intersects(pointX, pointY, width, height)) {
@@ -388,8 +388,8 @@ public class AnnotationPanel extends javax.swing.JPanel implements MouseMotionLi
             ShapeCoordinates shapeCoordinates = new ShapeCoordinates(t.getX1(), t.getY1(), t.getX2(), t.getY2());
             int mousePointBoxSize = 2;
             Shape lineObject = new Line2D.Float(t.getX1(), t.getY1(), t.getX2(), t.getY2());
-            int pointX = evt.getX() - mousePointBoxSize / 2;
-            int pointY = evt.getY() - mousePointBoxSize / 2;
+            int pointX = (int) Math.round(evt.getX() / ApplicationContext.imgPanel.getScaleFactor());
+            int pointY = (int) Math.round(evt.getY() / ApplicationContext.imgPanel.getScaleFactor());
             int width = mousePointBoxSize;
             int height = mousePointBoxSize;
             if (lineObject.intersects(pointX, pointY, width, height)) {
