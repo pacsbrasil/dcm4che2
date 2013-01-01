@@ -19,6 +19,7 @@
  *
  * Contributor(s):
  * Babu Hussain A
+ * Devishree V
  * Meer Asgar Hussain B
  * Prakash J
  * Suresh V
@@ -118,6 +119,8 @@ public class LayeredCanvas extends JLayeredPane implements FocusListener, MouseL
         setTextOverlayParam();
         findMultiframeStatus();
         createLayers();
+        this.imgpanel.firstTime = false;
+        this.imgpanel.reset();
         this.imgpanel.revalidate();
         this.imgpanel.repaint();
         this.annotationPanel.revalidate();

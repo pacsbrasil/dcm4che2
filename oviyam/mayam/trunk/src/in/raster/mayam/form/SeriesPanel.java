@@ -19,6 +19,7 @@
  *
  * Contributor(s):
  * Babu Hussain A
+ * Devishree V
  * Meer Asgar Hussain B
  * Prakash J
  * Suresh V
@@ -145,18 +146,24 @@ public class SeriesPanel extends javax.swing.JPanel implements MouseListener {
      */
     private void retrieveInfo() {
         synchronized (this) {
-            if(dataset==null) readDicomFile(new File(fileUrl));
-            studyUID = dataset.getString(Tags.StudyInstanceUID);
-            seriesUID = dataset.getString(Tags.SeriesInstanceUID);
-            if (ApplicationContext.databaseRef.getMultiframeStatus()) {
-                setTotalInstacne();
-            } else {
-                totalInstace = ApplicationContext.databaseRef.getSeriesLevelInstance(studyUID, seriesUID);
+            try {
+                if (dataset == null) {
+                    readDicomFile(new File(fileUrl));
+                }
+                studyUID = dataset.getString(Tags.StudyInstanceUID);
+                seriesUID = dataset.getString(Tags.SeriesInstanceUID);
+                if (ApplicationContext.databaseRef.getMultiframeStatus()) {
+                    setTotalInstacne();
+                } else {
+                    totalInstace = ApplicationContext.databaseRef.getSeriesLevelInstance(studyUID, seriesUID);
+                }
+                seriesDesc = dataset.getString(Tags.SeriesDescription);
+                modality = dataset.getString(Tags.Modality);
+                institutionName = dataset.getString(Tags.InstitutionName);
+                instanceUID = dataset.getString(Tags.SOPInstanceUID);
+            } catch (NullPointerException npe) {
+                System.out.println("Null Pointer");
             }
-            seriesDesc = dataset.getString(Tags.SeriesDescription);
-            modality = dataset.getString(Tags.Modality);
-            institutionName = dataset.getString(Tags.InstitutionName);
-            instanceUID = dataset.getString(Tags.SOPInstanceUID);
         }
     }
 

@@ -19,6 +19,7 @@
  *
  * Contributor(s):
  * Babu Hussain A
+ * Devishree V
  * Meer Asgar Hussain B
  * Prakash J
  * Suresh V
@@ -102,6 +103,10 @@ public class ImageToolbar extends javax.swing.JPanel {
     DicomMPR2D dcmMPR2D = null;
     DicomMPR3DSlider mpr3DSlider = null;
     DicomVolumeRendering dicomVolumeRendering = null;
+    public int rows = 0;
+    public int columns = 0;    
+    public boolean layoutChanged = false;
+
 
     public ImageToolbar() {
         initComponents();
@@ -728,7 +733,7 @@ public class ImageToolbar extends javax.swing.JPanel {
     public void doReset() {
         if (ApplicationContext.annotationPanel != null && ApplicationContext.imgPanel != null) {
             ApplicationContext.imgPanel.reset();
-            ApplicationContext.annotationPanel.reset();
+            //ApplicationContext.annotationPanel.reset();
             setWindowing();
             // ApplicationContext.annotationPanel.clearAllMeasurement();
         } else {
@@ -1388,6 +1393,9 @@ public class ImageToolbar extends javax.swing.JPanel {
     }
 
     public void changeLayout(int row, int col) {
+        layoutChanged = true;
+        this.rows = row;
+        this.columns = col;
         String siuid;
         LayeredCanvas tempCanvas = null;
         if (((JPanel) ApplicationContext.imgView.jTabbedPane1.getSelectedComponent()).getComponent(0) instanceof LayeredCanvas) {

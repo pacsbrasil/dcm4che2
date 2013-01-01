@@ -19,6 +19,7 @@
  *
  * Contributor(s):
  * Babu Hussain A
+ * Devishree V
  * Meer Asgar Hussain B
  * Prakash J
  * Suresh V
@@ -75,6 +76,8 @@ public class TextOverlayParam {
     SimpleDateFormat sourceDateFormat = new SimpleDateFormat("yyyyMMdd");
     SimpleDateFormat destinationDateFormat = new SimpleDateFormat("yyyy/MM/dd");
     private String framePosition = "";
+    private String imageSize = "";
+    private String viewSize = "";
 
     public TextOverlayParam() {
     }
@@ -263,5 +266,20 @@ public class TextOverlayParam {
     public void setStudyDescription(String studyDescription) {
         this.studyDescription = studyDescription;
     }
+    
+    public String getImageSize() {
+        return imageSize;
+    }
 
+    public void setImageSize(String imageSize) {
+        this.imageSize = imageSize;
+    }
+
+    public String getViewSize() {
+        return viewSize;
+    }
+
+    public void setViewSize(String viewSize) {
+        this.viewSize = viewSize;
+    }
 }

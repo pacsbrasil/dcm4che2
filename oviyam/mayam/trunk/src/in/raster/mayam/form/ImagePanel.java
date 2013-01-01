@@ -19,6 +19,7 @@
  *
  * Contributor(s):
  * Babu Hussain A
+ * Devishree V
  * Meer Asgar Hussain B
  * Prakash J
  * Suresh V
@@ -89,11 +90,7 @@ import java.util.Iterator;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
-import javax.swing.ImageIcon;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-import javax.swing.MenuElement;
+import javax.swing.*;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.imageio.plugins.DcmMetadata;
 import org.dcm4che2.data.Tag;
@@ -115,11 +112,11 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
     private boolean invertFlag = false;
     private boolean newBufferedImage = false;
     private boolean scaleFlag = false;
-    private boolean firstTime = true;
+    public boolean firstTime = true;
     private boolean mousePressed = false;
     private static boolean widowingFlag = false;
     private static boolean probeFlag;
-    private double scaleFactor = 1;
+    public double scaleFactor = 1;
     public int rotateRightAngle = 0;
     private int rotateLeftAngle = 0;
     public static String tool = "windowing";
@@ -147,7 +144,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
     private ImageInputStream iis;
     private Iterator iter;
     private ImageReader reader;
-    private Dataset dataset;
+    public Dataset dataset;
     //Mouse pointer variables
     private int mouseLocX1;
     private int mouseLocX2;
@@ -246,6 +243,9 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
     public PagePanel page = null;
     private int curpage = -1;
     private boolean isEncapsulatedDocument = false;
+    public int imageWidth=0;
+    public int imageHeight=0; 
+    public boolean layout = false;    
 
     public ImagePanel() {
         initComponents();
@@ -332,6 +332,13 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
             System.out.println("Instance Number is null, set to 1");
             currentInstanceNo = 1;
         }
+        try{
+            this.imageWidth = dataset.getInteger(Tags.Rows);
+            this.imageHeight = dataset.getInteger(Tags.Columns);
+         } catch(Exception e){             
+             this.imageWidth = 0;
+             this.imageHeight = 0;
+         }
     }
 
     private void retrieveScoutParam() {
@@ -911,10 +918,9 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         windowLevel = (int) WC;
         windowWidth = (int) WW;
         windowChanged(windowLevel, windowWidth);
-        firstTime = true;
-        scaleFactor = 1;
-        scaleProcess();
-        this.getCanvas().getLayeredCanvas().annotationPanel.scaleProcess();
+        JPanel panel = (JPanel) (ApplicationContext.imgView.jTabbedPane1.getSelectedComponent());
+        setScaleFactor(panel.getComponent(0).getWidth(), panel.getComponent(0).getHeight());                         
+        this.getCanvas().getLayeredCanvas().annotationPanel.scaleProcess();        
         invertFlag = false;
         flipHorizontalFlag = false;
         flipVerticalFlag = false;
@@ -1169,6 +1175,22 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
             originalWidth = this.getSize().width;
             firstTime = false;
         }
+        if (ApplicationContext.imgView.getImageToolbar().layoutChanged) {
+            this.layout = true;
+            JPanel panel = (JPanel) (ApplicationContext.imgView.jTabbedPane1.getSelectedComponent());
+            LayeredCanvas tempCanvas1 = ((LayeredCanvas) ((JPanel) ApplicationContext.imgView.jTabbedPane1.getSelectedComponent()).getComponent(0));
+            String suid = tempCanvas1.imgpanel.getStudyUID();
+            ArrayList tempRef = ApplicationContext.databaseRef.getUrlBasedOnStudyIUID(suid);
+            int i = 0;
+            for (int x = 0; x < panel.getComponentCount() && x < tempRef.size(); x++) {
+                LayeredCanvas tempcanvas = (LayeredCanvas) panel.getComponent(i);
+                if (tempcanvas != null) {
+                    tempcanvas.imgpanel.setScaleFactor(ApplicationContext.imgView.jTabbedPane1.getWidth() / ApplicationContext.imgView.getImageToolbar().columns, ApplicationContext.imgView.jTabbedPane1.getHeight() / ApplicationContext.imgView.getImageToolbar().rows);
+                    i++;
+                }
+            }
+            ApplicationContext.imgView.getImageToolbar().layoutChanged = false;
+        }
     }
 
     public void setScoutCoordinates(int line1X1, int line1Y1, int line1X2, int line1Y2, int line2X1, int line2Y1, int line2X2, int line2Y2) {
@@ -1373,11 +1395,9 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
     public void doZoomOut() {
         scaleFlag = true;
         scaleFactor = scaleFactor - 0.5;
-        if (scaleFactor > 0) {
-            scaleProcess();
-        } else {
-            scaleFactor = 0.5;
-        }
+        if(scaleFactor<=0.5)
+            scaleFactor = 0.5;        
+        scaleProcess();
         displayZoomLevel();
         this.getCanvas().repaint();
     }
@@ -1402,10 +1422,17 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
     }
 
     private void scaleProcess() {
+        double newWidth;
+        double newHeight;
         double currentWidth = this.getSize().width;
         double currentHeight = this.getSize().height;
-        double newWidth = originalWidth * scaleFactor;
-        double newHeight = originalHeight * scaleFactor;
+        if (layout) {
+            newWidth = originalWidth * scaleFactor;
+            newHeight = originalHeight * scaleFactor;
+        } else {
+            newWidth = maxWidth * scaleFactor;
+            newHeight = maxHeight * scaleFactor;
+        }
         double widthDiff = newWidth - currentWidth;
         double heightDiff = newHeight - currentHeight;
         int currentX = this.getBounds().x;
@@ -2570,6 +2597,52 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
 
     private void changeSeries(ActionEvent e, String studyUID, String seriesUID, boolean multiframe, String instanceUID) {
         SeriesChooserDelegate seriesChooser = new SeriesChooserDelegate(studyUID, seriesUID, multiframe, instanceUID, this.getCanvas().getLayeredCanvas());
+    }
+    
+    public void setScaleFactor(float parentWidth, float parentHeight) {
+        float orgwidth = ApplicationContext.imgView.jTabbedPane1.getWidth();
+        float orgHeight = ApplicationContext.imgView.jTabbedPane1.getHeight();
+        int rows = ApplicationContext.imgView.getImageToolbar().rows;
+        JPanel panel = (JPanel) (ApplicationContext.imgView.jTabbedPane1.getSelectedComponent());
+        float initialSize;
+        float zoomingFactor;
+        zoomingFactor = Math.min(parentWidth / imageWidth, parentHeight / imageHeight);
+        try {
+            if (isMulitiFrame()) {                
+                zoom(zoomingFactor);
+            } else if (zoomingFactor < 1) {
+                if ((panel.getComponentCount() > 3 && panel.getComponentCount() < 9 && rows != 3) || rows == 2) {
+                    initialSize = ((float) ((float) orgHeight / maxHeight) - ((float) (maxWidth / maxHeight)));
+                    zoom(Math.round(initialSize * 10.0) / 10.0f);
+                } else if (panel.getComponentCount() == 2) {
+                    zoom((float) imageHeight / imageWidth);
+                } else if (rows >= 3) {
+                    if (imageWidth > maxWidth) {
+                        zoom((float) (orgHeight / orgwidth) + zoomingFactor);
+                    } else {
+                        zoom(zoomingFactor);
+                    }
+                } else {
+                    initialSize = parentWidth / parentHeight;
+                    zoom(initialSize + zoomingFactor);
+
+                }
+            } else {
+                zoom((zoomingFactor) / (maxWidth / dataset.getInteger(Tags.Rows)));
+            }
+        } catch (NullPointerException npe) {
+            System.out.println("Rows and Columns Null");
+        }
+        this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setImageSize(" Image Size: " + (imageWidth + "*" + imageHeight));
+        this.getCanvas().getLayeredCanvas().textOverlay.getTextOverlayParam().setViewSize(" View Size: " + ((int) parentWidth + "*" + (int) parentHeight));
+    }
+
+    public void zoom(double scalefactor) {
+        scaleFlag = true;
+        scaleFactor = scalefactor;
+        displayZoomLevel();
+        scaleProcess();
+        this.getCanvas().repaint();
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPopupMenu jPopupMenu1;

@@ -19,6 +19,7 @@
  *
  * Contributor(s):
  * Babu Hussain A
+ * Devishree V
  * Meer Asgar Hussain B
  * Prakash J
  * Suresh V
@@ -119,45 +120,46 @@ public class TextOverlay extends javax.swing.JPanel {
         windowingLabel = new javax.swing.JLabel();
         slicePositionLabel = new javax.swing.JLabel();
         zoomLabel = new javax.swing.JLabel();
-        multiframeStatusText = new javax.swing.JLabel();
-        frameNumberText = new javax.swing.JLabel();
         seriesDescLabel = new javax.swing.JLabel();
-        instanceNum = new javax.swing.JLabel();
+        viewSizeLabel = new javax.swing.JLabel();
+        imageSizeLabel = new javax.swing.JLabel();
+        frameNumberText = new javax.swing.JLabel();
+        multiframeStatusText = new javax.swing.JLabel();
 
         patientNameLabel.setBackground(new java.awt.Color(0, 0, 0));
-        patientNameLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14));
+        patientNameLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14)); // NOI18N
         patientNameLabel.setForeground(new java.awt.Color(255, 255, 255));
         patientNameLabel.setText("Name");
 
         patientSexLabel.setBackground(new java.awt.Color(0, 0, 0));
-        patientSexLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14));
+        patientSexLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14)); // NOI18N
         patientSexLabel.setForeground(new java.awt.Color(255, 255, 255));
         patientSexLabel.setText("Sex");
 
         patientIDLabel.setBackground(new java.awt.Color(0, 0, 0));
-        patientIDLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14));
+        patientIDLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14)); // NOI18N
         patientIDLabel.setForeground(new java.awt.Color(255, 255, 255));
         patientIDLabel.setText("ID");
 
         huLabel.setBackground(new java.awt.Color(0, 0, 0));
-        huLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14));
+        huLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14)); // NOI18N
         huLabel.setForeground(new java.awt.Color(255, 255, 255));
         huLabel.setText("hu");
 
         studyDescLabel.setBackground(new java.awt.Color(0, 0, 0));
-        studyDescLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14));
+        studyDescLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14)); // NOI18N
         studyDescLabel.setForeground(new java.awt.Color(255, 255, 255));
         studyDescLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         studyDescLabel.setText("Study Desc");
 
         studyDateLabel.setBackground(new java.awt.Color(0, 0, 0));
-        studyDateLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14));
+        studyDateLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14)); // NOI18N
         studyDateLabel.setForeground(new java.awt.Color(255, 255, 255));
         studyDateLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         studyDateLabel.setText("Study Date");
 
         institutionLabel.setBackground(new java.awt.Color(0, 0, 0));
-        institutionLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14));
+        institutionLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14)); // NOI18N
         institutionLabel.setForeground(new java.awt.Color(255, 255, 255));
         institutionLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         institutionLabel.setText("Institution");
@@ -165,54 +167,60 @@ public class TextOverlay extends javax.swing.JPanel {
         jLabel8.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
 
         patientPositionLabel.setBackground(new java.awt.Color(0, 0, 0));
-        patientPositionLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14));
+        patientPositionLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14)); // NOI18N
         patientPositionLabel.setForeground(new java.awt.Color(255, 255, 255));
         patientPositionLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         patientPositionLabel.setText("Patient Position");
 
         instanceNoLabel.setBackground(new java.awt.Color(0, 0, 0));
-        instanceNoLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14));
+        instanceNoLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14)); // NOI18N
         instanceNoLabel.setForeground(new java.awt.Color(255, 255, 255));
         instanceNoLabel.setText("Im");
 
         windowingLabel.setBackground(new java.awt.Color(0, 0, 0));
-        windowingLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14));
+        windowingLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14)); // NOI18N
         windowingLabel.setForeground(new java.awt.Color(255, 255, 255));
         windowingLabel.setText("Windowing");
 
         slicePositionLabel.setBackground(new java.awt.Color(0, 0, 0));
-        slicePositionLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14));
+        slicePositionLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14)); // NOI18N
         slicePositionLabel.setForeground(new java.awt.Color(255, 255, 255));
         slicePositionLabel.setText("Slice Position");
 
         zoomLabel.setBackground(new java.awt.Color(0, 0, 0));
-        zoomLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14));
+        zoomLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14)); // NOI18N
         zoomLabel.setForeground(new java.awt.Color(255, 255, 255));
         zoomLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         zoomLabel.setText("Zoom");
 
-        multiframeStatusText.setBackground(new java.awt.Color(255, 255, 153));
-        multiframeStatusText.setFont(new java.awt.Font("Lucida Grande", 0, 14));
-        multiframeStatusText.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-        multiframeStatusText.setText("Multiframe");
-        multiframeStatusText.setOpaque(true);
-
-        frameNumberText.setFont(new java.awt.Font("Lucida Grande", 0, 14));
-        frameNumberText.setForeground(java.awt.Color.white);
-        frameNumberText.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-        frameNumberText.setText("Frame");
-
         seriesDescLabel.setBackground(new java.awt.Color(0, 0, 0));
-        seriesDescLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14));
+        seriesDescLabel.setFont(new java.awt.Font("Lucida Grande", 0, 14)); // NOI18N
         seriesDescLabel.setForeground(new java.awt.Color(255, 255, 255));
         seriesDescLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         seriesDescLabel.setText("Series Desc");
 
-        instanceNum.setBackground(new java.awt.Color(0, 0, 0));
-        instanceNum.setFont(new java.awt.Font("Lucida Grande", 0, 14)); // NOI18N
-        instanceNum.setForeground(new java.awt.Color(255, 255, 255));
-        instanceNum.setHorizontalAlignment(4);
-        instanceNum.setText("Instance Number");
+        viewSizeLabel.setBackground(new java.awt.Color(0, 0, 0));
+        viewSizeLabel.setFont(new java.awt.Font("Lucida Sans", 0, 14)); // NOI18N
+        viewSizeLabel.setForeground(new java.awt.Color(255, 255, 255));
+        viewSizeLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        viewSizeLabel.setText("View Size");
+
+        imageSizeLabel.setBackground(new java.awt.Color(0, 0, 0));
+        imageSizeLabel.setFont(new java.awt.Font("Lucida Sans", 0, 14)); // NOI18N
+        imageSizeLabel.setForeground(new java.awt.Color(255, 255, 255));
+        imageSizeLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        imageSizeLabel.setText("Image Size");
+
+        frameNumberText.setFont(new java.awt.Font("Liberation Sans", 0, 14)); // NOI18N
+        frameNumberText.setForeground(java.awt.Color.white);
+        frameNumberText.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        frameNumberText.setText("Frame");
+
+        multiframeStatusText.setBackground(new java.awt.Color(255, 255, 153));
+        multiframeStatusText.setFont(new java.awt.Font("Lucida Sans", 0, 14)); // NOI18N
+        multiframeStatusText.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        multiframeStatusText.setText("Multiframe");
+        multiframeStatusText.setOpaque(true);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -220,44 +228,43 @@ public class TextOverlay extends javax.swing.JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, instanceNoLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 178, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, patientNameLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 167, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, patientIDLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 152, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, huLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 187, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, windowingLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 234, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, slicePositionLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 185, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, patientSexLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 91, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(jLabel8, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 257, Short.MAX_VALUE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(studyDateLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 118, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap())
-                    .add(layout.createSequentialGroup()
-                        .add(multiframeStatusText)
-                        .addContainerGap())
-                    .add(layout.createSequentialGroup()
-                        .add(frameNumberText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 147, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap())
-                    .add(layout.createSequentialGroup()
-                        .add(zoomLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 95, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap())
-                    .add(layout.createSequentialGroup()
-                        .add(patientPositionLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 151, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap())
-                    .add(layout.createSequentialGroup()
-                        .add(institutionLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 237, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap())
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(seriesDescLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 237, Short.MAX_VALUE)
-                        .add(20, 20, 20))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(studyDescLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 237, Short.MAX_VALUE)
-                        .addContainerGap())
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(instanceNum, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 237, Short.MAX_VALUE)
-                        .add(20, 20, 20))))
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, instanceNoLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 178, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, patientNameLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 167, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, patientIDLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 152, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, huLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 187, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, windowingLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 234, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, slicePositionLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 185, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, patientSexLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 91, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                                .add(jLabel8, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(multiframeStatusText)
+                                .addContainerGap())
+                            .add(layout.createSequentialGroup()
+                                .add(seriesDescLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .add(20, 20, 20))
+                            .add(layout.createSequentialGroup()
+                                .add(studyDescLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addContainerGap())
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                                .add(0, 0, Short.MAX_VALUE)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, studyDateLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 118, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, zoomLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 95, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, patientPositionLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 151, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, institutionLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 237, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, viewSizeLabel)
+                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, imageSizeLabel))
+                                .addContainerGap())))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(0, 0, Short.MAX_VALUE)
+                        .add(frameNumberText)
+                        .addContainerGap())))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -276,31 +283,33 @@ public class TextOverlay extends javax.swing.JPanel {
                     .add(studyDescLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(seriesDescLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                    .add(layout.createSequentialGroup()
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 20, Short.MAX_VALUE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                                .add(frameNumberText)
+                                .add(6, 6, 6))
+                            .add(layout.createSequentialGroup()
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                                    .add(multiframeStatusText)
+                                    .add(jLabel8))
+                                .add(32, 32, 32)))
+                        .add(imageSizeLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(viewSizeLabel))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(huLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(instanceNoLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(windowingLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 17, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(slicePositionLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 17, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(16, 16, 16)
-                        .add(jLabel8)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(instanceNum)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .add(multiframeStatusText)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(frameNumberText)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(zoomLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(patientPositionLabel)
-                        .add(8, 8, 8)))
-                .addContainerGap())
+                        .add(instanceNoLabel)))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(windowingLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 17, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(zoomLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(slicePositionLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 17, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(patientPositionLabel)))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -318,7 +327,8 @@ public class TextOverlay extends javax.swing.JPanel {
         studyDescLabel.setText("Study Desc: "+textOverlayParam.getStudyDescription()!=null ? textOverlayParam.getStudyDescription(): "");
         seriesDescLabel.setText("Series Desc: "+textOverlayParam.getSeriesDescription()!=null ? textOverlayParam.getSeriesDescription(): "");
         slicePositionLabel.setText(textOverlayParam.getSlicePosition() != null ? " Slice pos: " + textOverlayParam.getSlicePosition() : "");
-        instanceNum.setText(textOverlayParam.getInstanceNumber()!=null ? "Instance Number : "+textOverlayParam.getInstanceNumber() :"");
+        imageSizeLabel.setText(textOverlayParam.getImageSize() !=null ? textOverlayParam.getImageSize() : "");
+        viewSizeLabel.setText(textOverlayParam.getViewSize() !=null ? textOverlayParam.getViewSize() : "");
         if (ImagePanel.isProbeFlag()) {
             huLabel.setText(" " + "X:  " + textOverlayParam.getXPosition() + "  Y:  " + textOverlayParam.getYPosition() + "  Px:  " + textOverlayParam.getPxValue());
         } else {
@@ -351,7 +361,8 @@ public class TextOverlay extends javax.swing.JPanel {
         studyDescLabel.setText("");
         seriesDescLabel.setText("");
         slicePositionLabel.setText("");
-        instanceNum.setText("");
+        imageSizeLabel.setText("");
+        viewSizeLabel.setText("");
         huLabel.setText("");
         instanceNoLabel.setText("");
         institutionLabel.setText("");
@@ -388,8 +399,8 @@ public class TextOverlay extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel frameNumberText;
     private javax.swing.JLabel huLabel;
+    private javax.swing.JLabel imageSizeLabel;
     private javax.swing.JLabel instanceNoLabel;
-    private javax.swing.JLabel instanceNum;
     private javax.swing.JLabel institutionLabel;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel multiframeStatusText;
@@ -401,6 +412,7 @@ public class TextOverlay extends javax.swing.JPanel {
     private javax.swing.JLabel slicePositionLabel;
     private javax.swing.JLabel studyDateLabel;
     private javax.swing.JLabel studyDescLabel;
+    private javax.swing.JLabel viewSizeLabel;
     private javax.swing.JLabel windowingLabel;
     private javax.swing.JLabel zoomLabel;
     // End of variables declaration//GEN-END:variables

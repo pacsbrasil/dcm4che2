@@ -19,6 +19,7 @@
  *
  * Contributor(s):
  * Babu Hussain A
+ * Devishree V
  * Meer Asgar Hussain B
  * Prakash J
  * Suresh V
@@ -94,7 +95,7 @@ public class ShowImageViewDelegate extends Thread {
         } catch (InterruptedException ex) {
             ex.printStackTrace();
         }
-        ApplicationContext.imgPanel.doZoomIn();
+        ApplicationContext.imgPanel.setScaleFactor(ApplicationContext.imgView.jTabbedPane1.getWidth(), ApplicationContext.imgView.jTabbedPane1.getHeight());
         ApplicationContext.annotationPanel.doZoomIn();
         ApplicationContext.imgPanel.repaint();
         ApplicationContext.imgPanel.invalidate();

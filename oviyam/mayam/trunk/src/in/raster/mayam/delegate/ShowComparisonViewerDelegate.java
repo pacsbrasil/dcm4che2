@@ -19,6 +19,7 @@
  *
  * Contributor(s):
  * Babu Hussain A
+ * Devishree V
  * Meer Asgar Hussain B
  * Prakash J
  * Suresh V
@@ -41,6 +42,7 @@ package in.raster.mayam.delegate;
 import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.form.tab.component.ButtonTabComp;
 import in.raster.mayam.form.Canvas;
+import in.raster.mayam.form.ImagePanel;
 import in.raster.mayam.form.LayeredCanvas;
 import java.awt.Color;
 import java.awt.GridLayout;
@@ -104,6 +106,7 @@ public class ShowComparisonViewerDelegate extends Thread {
         }
          container.setName(patientNameLabel);
         setSelectedImagePanel(container);
+        zoom(container); 
     }
 
     /**
@@ -133,6 +136,15 @@ public class ShowComparisonViewerDelegate extends Thread {
     public void setStudies(String[] studies) {
         this.studies = studies;
     }
+    
+    private void zoom(JPanel container) {
+        for(int i=0;i<container.getComponentCount();i++){
+            ImagePanel imgPanel = ((LayeredCanvas) ((JPanel) container).getComponent(i)).imgpanel;
+            if(imgPanel!=null){
+                imgPanel.setScaleFactor(container.getComponent(i).getWidth(), container.getComponent(i).getHeight());
+            }           
+        }
+    }  
 
    
 }
