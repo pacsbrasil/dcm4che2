@@ -396,8 +396,13 @@ public class PatientMatching implements Serializable{
                 }
             }
         }
-        if (!appendNameSuffix)
-            regex.append("?.*");
+       if (!appendNameSuffix) {
+           if (regex.length() == 0) {
+               regex.append(".*"); 
+           } else {
+               regex.append("?.*");
+           }
+        }
         return Pattern.compile(regex.toString());
     }
 

@@ -625,6 +625,50 @@ public class PatientMatchingTest extends TestCase {
 				pm.matches(existingPatientName, null, null, incomingPatientPatterns.iterator(),
 						null, null));
 	}
+
+	public void test_matcher_shouldMatch_whenExistingHasNamesAndIncomingNamesAreNull() {
+		String familyName = null;
+		String givenName = null;
+		String middleName = null;
+		String prefix = null;
+		String suffix = null;
+		String birthdate = "19730920";
+
+		String existingPatientName = "Smith^John";
+
+		String s = "pid,issuer,ignore(\" |-|\\.|,|'|JR|SR\"),familyname,givenname(1)";
+		PatientMatching pm = new PatientMatching(s);
+
+		List<Pattern> incomingPatientPatterns = pm.compilePNPatterns(
+				familyName, givenName, middleName, prefix, suffix);
+
+		assertTrue("Matching pattern to " + existingPatientName + " not found in " +
+				patternsListToString(incomingPatientPatterns), 
+				pm.matches(existingPatientName, birthdate, null, incomingPatientPatterns.iterator(),
+						birthdate, null));
+	}
+	
+	public void test_matcher_shouldNotMatch_whenIncomingHasNamesAndExistingNamesAreNull() {
+		String familyName = "Smith";
+		String givenName = "John";
+		String middleName = null;
+		String prefix = null;
+		String suffix = null;
+		String birthdate = "19730920";
+
+		String existingPatientName = null;
+
+		String s = "pid,issuer,ignore(\" |-|\\.|,|'|JR|SR\"),familyname,givenname(1)";
+		PatientMatching pm = new PatientMatching(s);
+
+		List<Pattern> incomingPatientPatterns = pm.compilePNPatterns(
+				familyName, givenName, middleName, prefix, suffix);
+
+		assertFalse("No matches should be found because names do not match" +
+				patternsListToString(incomingPatientPatterns), 
+				pm.matches(existingPatientName, birthdate, null, incomingPatientPatterns.iterator(),
+						birthdate, null));
+	}
 	
 	public void test_matcher_shouldMatch_whenIncomingHasDateThatMatchesExisting() {
 		String familyName = "Smith";
