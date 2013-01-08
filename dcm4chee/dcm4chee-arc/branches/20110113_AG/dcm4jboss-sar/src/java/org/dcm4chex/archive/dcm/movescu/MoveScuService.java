@@ -247,6 +247,7 @@ public class MoveScuService extends AbstractScuService implements
         putUI(ds, Tags.StudyInstanceUID, order.getStudyIuids());
         putUI(ds, Tags.SeriesInstanceUID, order.getSeriesIuids());
         putUI(ds, Tags.SOPInstanceUID, order.getSopIuids());
+        modifyMoveRq(cmd, ds, order);
         log.debug("Move Identifier:\n");
         log.debug(ds);
         Dimse dimseRsp = aa.invoke(af.newDimse(PCID_MOVE, cmd, ds)).get();
@@ -267,6 +268,9 @@ public class MoveScuService extends AbstractScuService implements
             throw new DcmServiceException(status, cmdRsp
                     .getString(Tags.ErrorComment));
         }
+    }
+
+    protected void modifyMoveRq(Command cmd, Dataset ds, MoveOrder order ) {
     }
 
     private static void putLO(Dataset ds, int tag, String s) {
