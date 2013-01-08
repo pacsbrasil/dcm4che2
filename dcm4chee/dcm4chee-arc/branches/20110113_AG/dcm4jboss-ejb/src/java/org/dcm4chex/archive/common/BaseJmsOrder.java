@@ -63,6 +63,7 @@ public abstract class BaseJmsOrder implements Serializable {
     private static final long serialVersionUID = -2427617218391383019L;
     protected static long counter = 0;
     private String id;
+    private transient String originalIdString;
     private int failureCount = 0;
     private Throwable throwable = null;  // Remember last exception happened
     private String origQueueName = null; // The original queue
@@ -105,7 +106,10 @@ public abstract class BaseJmsOrder implements Serializable {
     
     public String toIdString()
     {
-        return getClass().getName() + "@" + id + "@" + Integer.toHexString(hashCode());
+    	if ( originalIdString == null ) {
+    		originalIdString = getClass().getName() + "@" + id + "@" + failureCount;
+    	}
+    	return originalIdString;
     }
 
     protected String getOrderDetails() { return ""; };
