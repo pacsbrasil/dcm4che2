@@ -487,7 +487,7 @@ public class MoveTask implements Runnable {
         return status;
     }
 
-    private void notifyMoveSCU(Command moveRspCmd, Dataset moveRspData) {
+    protected void notifyMoveSCU(Command moveRspCmd, Dataset moveRspData) {
         if (!moveAssocClosed) {
             try {
                 if (!moveRspCmd.isPending())
