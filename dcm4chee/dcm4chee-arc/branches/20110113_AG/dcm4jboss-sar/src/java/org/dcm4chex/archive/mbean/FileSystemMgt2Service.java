@@ -586,8 +586,9 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
         while ((next = tmp.getNext()) != null &&
                 next != storageFileSystem.getDirectoryPath()) {
             tmp = fsMgt.getFileSystemOfGroup(getFileSystemGroupID(), next);
-            if (tmp.getStatus() == FileSystemStatus.RW
-                    && checkFreeDiskSpace(tmp)) {
+            if (tmp.getStatus() == FileSystemStatus.RW && 
+            		tmp.getAvailability() == Availability.toInt(getDefAvailability()) &&
+                    checkFreeDiskSpace(tmp)) {
                 storageFileSystem = fsMgt.updateFileSystemStatus(
                         tmp.getPk(), FileSystemStatus.DEF_RW);
                 log.info("Switch storage file system from " + fsDTO + " to "
