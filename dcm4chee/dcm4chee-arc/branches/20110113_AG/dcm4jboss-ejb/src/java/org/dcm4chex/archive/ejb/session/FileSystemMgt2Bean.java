@@ -272,16 +272,21 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
         Collection c = fileSystemHome.findByGroupIdAndStatus(groupId,
                 FileSystemStatus.DEF_RW);
         if (!c.isEmpty()) {
-            return (FileSystemLocal) c.iterator().next();
+            return (FileSystemLocal)c.iterator().next();
         }
         c = fileSystemHome.findByGroupIdAndStatus(groupId, FileSystemStatus.RW);
-        if (c.isEmpty()) {
-            return null;
+        
+        Iterator fsItr = c.iterator();
+        while (fsItr.hasNext()) {
+        	FileSystemLocal fs = (FileSystemLocal)fsItr.next();
+        	if (fs.getAvailability() != Availability.OFFLINE && 
+        			fs.getAvailability() != Availability.UNAVAILABLE) {
+        		log.info("Update status of " + fs.asString() + " to RW+");
+        		fs.setStatus(FileSystemStatus.DEF_RW);
+        		return fs;
+        	}
         }
-        FileSystemLocal fs = (FileSystemLocal) c.iterator().next();
-        log.info("Update status of " + fs.asString() + " to RW+");
-        fs.setStatus(FileSystemStatus.DEF_RW);
-        return fs;
+        return null;
     }
 
     /**
@@ -307,6 +312,10 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
             throws FinderException {
         if (status != fs.getStatus()) {
             if (status == FileSystemStatus.DEF_RW) {
+            	int availability = fs.getAvailability(); 
+            	if (availability == Availability.UNAVAILABLE || availability == Availability.OFFLINE)
+            		throw new IllegalStateException("The file system is " + Availability.toString(availability) + ", and cannot be selected as the active volume");
+            		
                 // set status of previous default RW file system(s) to RW
                 Collection c = fileSystemHome.findByGroupIdAndStatus(
                         fs.getGroupID(), FileSystemStatus.DEF_RW);
