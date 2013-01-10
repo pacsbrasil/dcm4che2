@@ -1211,6 +1211,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 							 bos.copyFrom(in, len);
 							 parser.parseHeader();
 						 }
+						 len = parser.getReadLength();
 					 } else {
 						 int read = compressCmd.compress(decParam.byteOrder,
 								 parser.getInputStream(), bos, null);
