@@ -89,7 +89,7 @@ public class XSLTUtils {
     public static void xslt(Dataset ds, TransformerHandler th, Dataset out)
             throws IOException {
         th.setResult(new SAXResult(out.getSAXHandler2(null)));
-        ds.writeDataset2(th, null, null, 64, null);
+        ds.writeDataset2(th, null, null, 10240, null);
     }
 
     public static void xslt(Dataset ds, Templates tpl, Dataset out)
@@ -121,7 +121,7 @@ public class XSLTUtils {
         TagDictionary dict = DictionaryFactory.getInstance().getDefaultTagDictionary();
         try {
             th.setResult(new StreamResult(out));
-            ds.writeDataset2(th, dict, null, 64, null);		
+            ds.writeDataset2(th, dict, null, 10240, null);		
         } finally {
             out.close();
         }

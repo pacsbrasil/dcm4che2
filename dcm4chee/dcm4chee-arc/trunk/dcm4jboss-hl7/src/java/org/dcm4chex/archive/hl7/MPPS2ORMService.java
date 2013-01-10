@@ -357,7 +357,7 @@ public class MPPS2ORMService extends ServiceMBeanSupport implements
             XMLWriter xmlWriter = new HL7XMLWriter(
             		new OutputStreamWriter(out, ISO_8859_1));
             th.setResult(new SAXResult(xmlWriter.getContentHandler()));
-            mpps.writeDataset2(th, null, null, 64, null);
+            mpps.writeDataset2(th, null, null, 10240, null);
             log.info(new String(out.toByteArray()));
             return out.toByteArray();
         } catch (Exception e) {
@@ -383,7 +383,7 @@ public class MPPS2ORMService extends ServiceMBeanSupport implements
         FileOutputStream out = new FileOutputStream(logFile);
         try {
             th.setResult(new StreamResult(out));
-            mpps.writeDataset2(th, dict, null, 64, null);
+            mpps.writeDataset2(th, dict, null, 10240, null);
         } finally {
             out.close();
         }
