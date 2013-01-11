@@ -652,6 +652,37 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 perfMon.setProperty(activeAssoc, rq,
                         PerfPropertyEnum.DICOM_FILE, file);
                 md5sum = storeToFile(parser, ds, file, compressCmd, getByteBuffer(assoc));
+				 
+                String creatorId = ds.getPrivateCreatorID();
+                ds.setPrivateCreatorID(PrivateTags.CreatorID);
+                boolean containsPostPixeldata = ds.contains(PrivateTags.InstanceContainsPostPixelData);
+                ds.setPrivateCreatorID(creatorId);					
+
+                if (containsPostPixeldata) {
+                	log.info("Instance[uid=" + iuid
+                			+ "] has post pixel data. Rewriting file to include indicator flag");
+					 
+                	FileInputStream fis = new FileInputStream(file);
+                	BufferedInputStream bis = new BufferedInputStream(fis);
+                	Dataset fileDs = objFact.newDataset();
+                	
+                	DcmParser fileParser = DcmParserFactory.getInstance().newDcmParser(bis); 
+                	fileParser.setMaxValueLength(service.getMaxValueLength());
+                	fileParser.setDcmHandler(fileDs.getDcmHandler());
+                	fileParser.parseDcmFile(null, -1);
+                	putPrivatePostPixelIndicator(fileDs);	
+
+                	File postPixelDataFile = makeFile(baseDir, fileDs, callingAET);
+                	md5sum = storeToFile(fileParser, fileDs, postPixelDataFile, compressCmd, getByteBuffer(assoc));					 					 
+                	
+                	bis.close();
+                	deleteFailedStorage(file);					 
+                	file = postPixelDataFile;
+                	filePath = file.getPath().substring(
+                			baseDir.getPath().length() + 1).replace(
+                					File.separatorChar, '/');
+                }
+				 
                 perfMon.stop(activeAssoc, rq,
                         PerfCounterEnum.C_STORE_SCP_OBJ_STORE);
             }
@@ -1164,6 +1195,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                             bos.copyFrom(in, len);
                             parser.parseHeader();
                         }
+                        len = parser.getReadLength();
                     } else {
                         int read = compressCmd.compress(decParam.byteOrder,
                                 parser.getInputStream(), bos, null);
@@ -1177,7 +1209,13 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     bos.copyFrom(in, len);
                 }
                 parser.parseDataset(decParam, -1);
-                ds.subSet(Tags.PixelData, -1).writeDataset(bos, encParam);
+
+				Dataset subSet = ds.subSet(Tags.PixelData + 1, -1);
+				if (!subSet.isEmpty()) {
+					putPrivatePostPixelIndicator(ds);
+				}
+
+				subSet.writeDataset(bos, encParam);
             }
             bos.flush();
             if (service.isSyncFileBeforeCStoreRSP()) {
@@ -1206,6 +1244,13 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         }
         return md != null ? md.digest() : null;
     }
+
+	protected void putPrivatePostPixelIndicator(Dataset ds) {
+		String creatorId = ds.getPrivateCreatorID();
+		ds.setPrivateCreatorID(PrivateTags.CreatorID);
+		ds.putIS(PrivateTags.InstanceContainsPostPixelData, 1);
+		ds.setPrivateCreatorID(creatorId);
+	}
 
     private Executor syncFileExecutor() {
         Executor result = syncFileExecutor;
