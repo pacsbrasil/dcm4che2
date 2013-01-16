@@ -79,8 +79,8 @@ class EnhancedMFBuilder {
     private final Logger log;
     private final Dataset filter;
     private final Dataset fgFilters;
-    private final Dataset dataset;
-    private final Dataset sharedFGs;
+    private Dataset dataset;
+    private Dataset sharedFGs;
     private final int frameTypeTag;
     private final boolean noPixelData;
     private final boolean deflate;
@@ -105,8 +105,6 @@ class EnhancedMFBuilder {
         this.deflate = service.isDeflate();
         this.filter = filter;
         this.fgFilters = filter.getItem(Tags.SharedFunctionalGroupsSeq);
-        this.dataset = DcmObjectFactory.getInstance().newDataset();
-        this.sharedFGs = dataset.putSQ(Tags.SharedFunctionalGroupsSeq).addNewItem();
         this.frameTypeTag = frameTypeTag;
         this.pixelDataOffsets = new long[numFrames];
         this.pixelDataLengths = new int[numFrames];
@@ -198,7 +196,9 @@ class EnhancedMFBuilder {
     }
 
     private void init(Dataset source) {
+        dataset = DcmObjectFactory.getInstance().newDataset();
         dataset.putAll(source.subSet(filter));
+        sharedFGs = dataset.putSQ(Tags.SharedFunctionalGroupsSeq).addNewItem();
         for (Iterator it = fgFilters.iterator(); it.hasNext();) {
             DcmElement el = (DcmElement) it.next();
             Dataset fgFilter = el.getItem();
