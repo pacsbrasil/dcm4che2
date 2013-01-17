@@ -522,7 +522,7 @@
     <name>ScheduleStudiesForDeletionInterval</name>
     <type>java.lang.String</type>
     <descriptors>
-      <value value="NEVER" />
+      <value value="15m" />
     </descriptors>
   </attribute>
    <attribute access="read-only"
