@@ -13,8 +13,7 @@ public class JndiHelper {
 	 * @return an object via JNDI
 	 * @throws NamingException
 	 */
-	@SuppressWarnings("unchecked")
-	protected Object jndiLookup(String jndiName) throws NamingException {
+	public Object jndiLookup(String jndiName) throws NamingException {
 		Context jndiCtx = null;
 		try {
 			jndiCtx = new InitialContext();
@@ -39,7 +38,7 @@ public class JndiHelper {
 	 * @return an object via JNDI
 	 * @throws NamingException
 	 */
-	private Object jndiLookup(Context jndiCtx, String jndiName)
+	public Object jndiLookup(Context jndiCtx, String jndiName)
 			throws NamingException {
 		return jndiCtx.lookup(jndiName);
 	}

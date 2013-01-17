@@ -90,7 +90,7 @@ public class DeleteStudyService extends ServiceMBeanSupport
 
     private boolean deleteSeriesBySeries;
 
-    private final JndiHelper jndiHelper;
+    protected final JndiHelper jndiHelper;
     
     private final FileDeleter fileDeleter;
     
@@ -99,7 +99,7 @@ public class DeleteStudyService extends ServiceMBeanSupport
     	fileDeleter = new FileDeleter(log);
 	}
 
-	DeleteStudyService(JndiHelper jndiHelper, FileDeleter fileDeleter) {
+	protected DeleteStudyService(JndiHelper jndiHelper, FileDeleter fileDeleter) {
 		this.jndiHelper = jndiHelper;
 		this.fileDeleter = fileDeleter;
 	}
@@ -278,11 +278,8 @@ public class DeleteStudyService extends ServiceMBeanSupport
 		fileDeleter.deleteFiles(fsMgt, fsMgt.deleteStudy(order,
 				deleteStudyFromDB, deletePatientWithoutObjects));
         
-        try {
-            fsMgt.removeStudyOnFSRecord(order);
-        } catch (Exception x) {
-            log.warn("Remove StudyOnFS record failed for "+order, x);
-        }
+        performPostDeleteCleanup(order, fsMgt);
+        
         if (createIANonStudyDelete) {
             try {
                 try {
@@ -302,6 +299,19 @@ public class DeleteStudyService extends ServiceMBeanSupport
         }
     }
 
+	protected boolean performPostDeleteCleanup(DeleteStudyOrder order,
+			FileSystemMgt2Local fsMgt) {
+		boolean cleanupPerformed = false;
+		
+		try {
+			cleanupPerformed = fsMgt.removeStudyOnFSRecord(order);
+        } catch (Exception x) {
+        	log.warn("Remove StudyOnFS record failed for "+order, x);
+        }
+		
+		return cleanupPerformed;
+	}
+	
     private void updateRetrieveAET(Dataset ian, String retrieveAET) {
         DcmElement refSerSeq = ian.get(Tags.RefSeriesSeq);
         for (int i = 0, n = refSerSeq.countItems(); i < n; i++) {
@@ -336,11 +346,7 @@ public class DeleteStudyService extends ServiceMBeanSupport
             internalDeleteSeries(order, seriesPk, fsMgt);
         }
 
-        try {
-            fsMgt.removeStudyOnFSRecord(order);
-        } catch (Exception x) {
-            log.warn("Remove StudyOnFS record failed for "+order, x);
-        }
+        performPostDeleteCleanup(order, fsMgt);
     }
     
 	@SuppressWarnings("unchecked")
