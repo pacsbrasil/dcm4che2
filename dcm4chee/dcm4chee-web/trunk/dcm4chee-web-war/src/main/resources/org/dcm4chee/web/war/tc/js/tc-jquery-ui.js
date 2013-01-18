@@ -1,5 +1,12 @@
 
-
+function styleButtons(parent) {
+	if (parent) {
+		parent.find(".button").button();
+	}
+	else {
+		$(".button").button();
+	}
+}
 
 function styleTextFields(parent) {
 	if (parent) {

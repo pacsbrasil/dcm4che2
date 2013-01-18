@@ -7,6 +7,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.Tag;
 import org.dcm4chee.archive.entity.Series;
 import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.web.dao.tc.TCQueryLocal;
@@ -22,7 +23,9 @@ public class TCReferencedSeries implements TCImageViewSeries {
     
     private TCReferencedStudy study;
     private String suid;
+    private String seriesDescription;
     private List<TCReferencedInstance> instances;
+    private List<TCReferencedInstance> docs;
     private List<TCReferencedInstance> notImages;
     private Comparator<TCReferencedInstance> instanceComparator;
     private DicomObject dataset;
@@ -31,8 +34,14 @@ public class TCReferencedSeries implements TCImageViewSeries {
     
     public TCReferencedSeries(String suid, TCReferencedStudy study)
     {
+    	this(suid, study, null);
+    }
+    
+    public TCReferencedSeries(String suid, TCReferencedStudy study, String seriesDescription)
+    {
         this.suid = suid;
         this.study = study;
+        this.seriesDescription = seriesDescription;
         this.dbQueryDone = false;
         this.resortInstances = false;
         this.instances = new ArrayList<TCReferencedInstance>();
@@ -51,6 +60,15 @@ public class TCReferencedSeries implements TCImageViewSeries {
         return study;
     }
     
+    public String getSeriesDescription() {
+    	if (seriesDescription==null) {
+    		if (!dbQueryDone) {
+    			seriesDescription = getSeriesValue(Tag.SeriesDescription);
+    		}
+    	}
+    	return seriesDescription;
+    }
+    
     public int getInstanceCount()
     {
         return instances.size();
@@ -59,7 +77,13 @@ public class TCReferencedSeries implements TCImageViewSeries {
     @Override
     public int getImageCount()
     {
-        return instances.size()-(notImages!=null?notImages.size():0);
+        return instances.size() -
+        		getNoneImagesCount() -
+        		getDocumentCount();
+    }
+    
+    public int getDocumentCount() {
+    	return docs!=null ? docs.size() : 0;
     }
     
     @Override
@@ -95,7 +119,8 @@ public class TCReferencedSeries implements TCImageViewSeries {
 	@Override
     public List<TCReferencedImage> getImages()
     {
-        if (notImages==null)
+        if (getNoneImagesCount()==0 &&
+        	getDocumentCount()==0)
         {
             return (List)getInstances();
         }
@@ -105,6 +130,14 @@ public class TCReferencedSeries implements TCImageViewSeries {
             images.removeAll(notImages);
             return (List)images;
         }
+    }
+
+    public List<TCReferencedInstance> getDocuments()
+    {
+		if (docs!=null) {
+			return docs;
+		}
+		return Collections.emptyList();
     }
     
     public List<TCReferencedInstance> getInstances()
@@ -138,6 +171,15 @@ public class TCReferencedSeries implements TCImageViewSeries {
                     notImages.add(instance);
                 }
             }
+            
+            if (instance.isDocument()) {
+            	if (docs==null) {
+            		docs = new ArrayList<TCReferencedInstance>(5);
+            	}
+            	if (!docs.contains(instance)) {
+            		docs.add(instance);
+            	}
+            }
         }
     }
     
@@ -154,7 +196,19 @@ public class TCReferencedSeries implements TCImageViewSeries {
     				notImages = null;
     			}
     		}
+    		if (docs!=null)
+    		{
+    			docs.remove(instance);
+    			if (docs.isEmpty())
+    			{
+    				docs = null;
+    			}
+    		}
     	}
+    }
+    
+    private int getNoneImagesCount() {
+    	return notImages!=null ? notImages.size() : 0;
     }
     
     private static class InstanceComparator implements Serializable, Comparator<TCReferencedInstance> 

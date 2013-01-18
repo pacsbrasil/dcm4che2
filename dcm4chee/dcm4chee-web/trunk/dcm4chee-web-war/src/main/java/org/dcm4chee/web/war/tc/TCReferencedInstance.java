@@ -47,7 +47,12 @@ public class TCReferencedInstance implements Serializable {
     }
     
     public boolean isImage() {
-    	return isImage(cuid);
+    	return isImage(cuid) && 
+    			!isDocument();
+    }
+    
+    public boolean isDocument() {
+    	return TCDocumentObject.isDocument(this);
     }
 
     public int getInstanceNumber()
@@ -59,7 +64,7 @@ public class TCReferencedInstance implements Serializable {
         return WADODelegate.IMAGE == WADODelegate.getInstance()
                 .getRenderType(cuid);
     }
-    
+        
     @Override
     public boolean equals(Object o)
     {

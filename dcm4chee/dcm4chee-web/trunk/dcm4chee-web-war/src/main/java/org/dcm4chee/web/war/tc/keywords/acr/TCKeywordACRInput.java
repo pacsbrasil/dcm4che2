@@ -123,7 +123,7 @@ public class TCKeywordACRInput extends AbstractTCKeywordInput {
             }
         });
         
-        Button chooserBtn = new Button("chooser-button", new Model<String>("..."));
+        WebMarkupContainer chooserBtn = new WebMarkupContainer("chooser-button", new Model<String>("..."));
         chooserBtn.add(new Image("chooser-button-img", ImageManager.IMAGE_TC_ARROW_DOWN)
             .setOutputMarkupId(true));
 

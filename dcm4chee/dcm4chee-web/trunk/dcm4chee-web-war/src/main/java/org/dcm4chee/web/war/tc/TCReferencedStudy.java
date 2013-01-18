@@ -78,4 +78,7 @@ public class TCReferencedStudy implements TCImageViewStudy {
             this.series.add(series);
         }
     }
+    public void removeSeries(TCReferencedSeries series) {
+    	this.series.remove(series);
+    }
 }

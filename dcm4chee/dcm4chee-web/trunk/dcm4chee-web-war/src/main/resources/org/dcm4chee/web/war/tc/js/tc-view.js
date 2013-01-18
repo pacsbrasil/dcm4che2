@@ -19,6 +19,7 @@ function updateTCViewDialog() {
 }
 
 function updateTCViewDialogToUseQueryUI() {
+	styleButtons($("#tc-view"));
 	styleComboBoxes($("#tc-view"));
 	styleTextFields($("#tc-view"));
 	styleTextAreas($("#tc-view"));

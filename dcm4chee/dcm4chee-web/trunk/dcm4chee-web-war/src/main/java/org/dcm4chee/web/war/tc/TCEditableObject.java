@@ -2,19 +2,24 @@ package org.dcm4chee.web.war.tc;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.UID;
+import org.dcm4che2.data.VR;
 import org.dcm4che2.io.DicomInputStream;
 import org.dcm4che2.util.DateUtils;
 import org.dcm4che2.util.UIDUtils;
 import org.dcm4chee.archive.entity.Code;
+import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.web.common.util.FileUtils;
 import org.dcm4chee.web.dao.tc.ITextOrCode;
 import org.dcm4chee.web.dao.tc.TCDicomCode;
@@ -24,7 +29,9 @@ import org.dcm4chee.web.dao.tc.TCQueryFilterValue.Category;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue.Level;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue.PatientSex;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue.YesNo;
+import org.dcm4chee.web.dao.tc.TCQueryLocal;
 import org.dcm4chee.web.war.folder.delegate.TarRetrieveDelegate;
+import org.dcm4chee.web.war.tc.TCDocumentObject.MimeType;
 import org.dcm4chee.web.war.tc.keywords.TCKeywordCatalogueProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +44,10 @@ public class TCEditableObject extends TCObject {
 
     private DicomObject ds;
     private boolean modified;
+    
+    private Map<TCReferencedInstance, TCDocumentObject> docsAdded;
+    private List<TCReferencedInstance> docsRemoved;
+    
     
     private TCEditableObject(String id, DicomObject ds)
     {
@@ -295,6 +306,53 @@ public class TCEditableObject extends TCObject {
         }
     }
     
+    @Override
+    public TCDocumentObject getReferencedDocumentObject(TCReferencedInstance ref) {
+		if (docsAdded!=null && docsAdded.containsKey(ref)) {
+			return docsAdded.get(ref);
+		}
+    	return super.getReferencedDocumentObject(ref);
+    }
+
+    public TCDocumentObject addReferencedDocument(MimeType mimeType, String filename, InputStream in, String description) throws Exception {
+    	TCDocumentObject doc = TCDocumentObject.create(this, mimeType, filename, in, description);
+    	TCReferencedInstance instance = doc.getAsReferencedInstance();
+    	
+    	if (docsAdded==null) {
+    		docsAdded = new HashMap<TCReferencedInstance, TCDocumentObject>(3);
+    	}
+    	
+    	docsAdded.put(instance, doc);
+
+    	addReferencedInstance(instance);
+    	
+    	modified = true;
+    	
+    	return doc;
+    }
+    
+    public void removeReferencedDocument(TCDocumentObject doc) {
+    	removeReferencedDocument(doc.getAsReferencedInstance());
+    }
+    
+    public void removeReferencedDocument(TCReferencedInstance ref) {
+   		removeReferencedInstance(ref);
+   		
+    	if (docsAdded!=null && docsAdded.containsKey(ref)) {
+    		docsAdded.remove(ref);
+			if (docsAdded.isEmpty()) {
+				docsAdded = null;
+			}
+    	}
+    	else {
+    		if (docsRemoved==null) {
+    			docsRemoved = new ArrayList<TCReferencedInstance>(3);
+    		}
+    		docsRemoved.add(ref);
+    		modified = true;
+    	}
+    }
+    
     public void setValue(TCQueryFilterKey key, Object value)
     {
         try
@@ -349,12 +407,167 @@ public class TCEditableObject extends TCObject {
         }
     }
     
-    public DicomObject toDataset()
+    public boolean save() throws Exception {
+    	if (modified) {
+	        TCStoreDelegate storeDelegate = TCStoreDelegate.getInstance();
+	
+	        //save new added (yet unsaved) referenced documents
+	        if (docsAdded!=null) {
+	        	for (TCDocumentObject doc : docsAdded.values()) {
+	        		DicomObject o = doc.toDataset();
+	        		if (!storeDelegate.storeImmediately(
+	        				o)) {
+	        			throw new Exception("Saving teaching-file case failed: New added referenced document can't be saved!");
+	        		}
+	        	}
+	        }
+	        
+	        //delete removed referenced documents
+	        if (docsRemoved!=null) {
+	        	for (TCReferencedInstance doc : docsRemoved) {
+	        		if (!storeDelegate.storeImmediately(createRejectionNoteDataset(
+		            		doc.getStudyUID(),
+		            		doc.getSeriesUID(),
+		            		doc.getInstanceUID(),
+		            		doc.getClassUID()))) {
+	        			throw new Exception("Saving teaching-file case failed: Removed referenced document can't be deleted!");
+	        		}
+	        	}
+	        }
+	        
+	        //store new SR
+	        DicomObject dataset = toDataset();
+	        if (storeDelegate.storeImmediately(dataset))
+	        {
+	            //delete old SR
+	            storeDelegate.store(createRejectionNoteDataset(
+	            		getStudyInstanceUID(),
+	            		getSeriesInstanceUID(),
+	            		getInstanceUID(),
+	            		getClassUID()));
+	        }
+
+	        init(Long.toString(((TCQueryLocal) JNDIUtils.lookup(
+	        		TCQueryLocal.JNDI_NAME)).findInstanceByUID(
+	        				getInstanceUID()).getPk()), dataset);
+	        
+	        modified = false;
+	        
+	        return true;
+    	}
+    	
+    	return false;
+    }
+    
+    protected void init(String id, DicomObject o) {
+    	super.init(id, o);
+    	
+    	this.ds = o;
+    }
+    
+    @Override
+    protected void clear() {
+    	super.clear();
+    	
+    	docsRemoved = null;
+    	docsAdded = null;
+    	ds = null;
+    	modified = false;
+    }
+    
+    private DicomObject toDataset()
     {
         BasicDicomObject ds = new BasicDicomObject();
-
+        
         //keep all non-TF relevant dicom tags
         this.ds.copyTo(ds);
+        
+        // Documents have been added or removed.
+        // Thus, we just can't copy the original dataset.
+        // Instead we need to update the sequence
+        // of image/document references accordingly.
+        if ( (docsRemoved!=null && docsRemoved.size()>0) ||
+        	  (docsAdded!=null && docsAdded.size()>0) ) {
+        	// get sequence
+        	DicomElement refs = ds.get(Tag.CurrentRequestedProcedureEvidenceSequence);
+
+        	DicomObject seriesItem = null;
+        	
+        	// add new document references
+        	if (docsAdded!=null && !docsAdded.isEmpty()) {
+	        	if (refs==null) {
+	        		refs = ds.putSequence(Tag.CurrentRequestedProcedureEvidenceSequence);
+	        	}
+	        	
+	        	for (TCReferencedInstance doc : docsAdded.keySet()) {
+	        		String suid = doc.getSeriesUID();
+	        		
+	        		if (seriesItem==null || !suid.equals(
+	        				seriesItem.getString(Tag.SeriesInstanceUID))) {
+	        			seriesItem = findSeriesItem(refs, doc.getStudyUID(), suid, true);
+	        		}
+	        		
+	        		DicomObject ref = new BasicDicomObject();
+	        		ref.putString(Tag.ReferencedSOPInstanceUID, VR.UI, doc.getInstanceUID());
+	        		ref.putString(Tag.ReferencedSOPClassUID, VR.UI, doc.getClassUID());
+	        		
+	        		DicomElement seq = seriesItem.get(Tag.ReferencedSOPSequence);
+	        		seq.addDicomObject(ref);
+	        	}
+        	}
+        	
+        	// remove document references
+        	if (refs!=null && refs.countItems()>0 &&
+        			docsRemoved!=null && !docsRemoved.isEmpty()) {
+        		for (TCReferencedInstance doc : docsRemoved) {
+	        		String suid = doc.getSeriesUID();
+	        		String stuid = doc.getStudyUID();
+	        		
+	        		if (seriesItem==null || !suid.equals(
+	        				seriesItem.getString(Tag.SeriesInstanceUID))) {
+	        			seriesItem = findSeriesItem(refs, stuid, suid, false);
+	        		}
+	        		
+	        		if (seriesItem!=null) {
+	        			// remove referenced SOP instance from SOP sequence
+	        			DicomElement seq = seriesItem.get(Tag.ReferencedSOPSequence);
+	        			if (seq!=null) {
+	        				int r = -1;
+	        				for (int i=0; i<seq.countItems(); i++) {
+	        					DicomObject o = seq.getDicomObject(i);
+	        					if (o.getString(Tag.ReferencedSOPInstanceUID).equals(
+	        							doc.getInstanceUID())) {
+	        						r = i;
+	        						break;
+	        					}
+	        				}
+	        				if (r>=0) {
+	        					seq.removeDicomObject(r);
+	        				}
+	        			}
+	        			
+	        			if (seq==null || seq.countItems()<=0) {
+	        				DicomObject studyItem = findStudyItem(refs, stuid);
+	        				if (studyItem!=null) {
+	        					// remove referenced series from series sequence 
+		        				DicomElement refSeries = studyItem.get(Tag.ReferencedSeriesSequence);
+		        				if (refSeries!=null) {
+		        					refSeries.removeDicomObject(seriesItem);
+		        					seriesItem = null;
+		        				}
+		        				
+		        				// remove study from study sequence
+		        				if (refSeries==null || refSeries.countItems()<=0) {
+		        					refs.removeDicomObject(studyItem);
+		        				}
+	        				}
+	        			}
+	        		}
+        		}
+        	}
+        }
+
+        // recompile content
         ds.remove(Tag.ContentSequence); //remove old content
         DicomElement content = ds.putSequence(Tag.ContentSequence); //add new content
         
@@ -594,47 +807,6 @@ public class TCEditableObject extends TCObject {
         
         return ds;
     }
-    
-    public DicomObject toRejectionNoteDataset()
-    {   
-        String stuid = ds.getString(Tag.StudyInstanceUID);
-        String suid = ds.getString(Tag.SeriesInstanceUID);
-        String iuid = ds.getString(Tag.SOPInstanceUID);
-        String cuid = ds.getString(Tag.SOPClassUID);
-        
-        DicomObject title = new BasicDicomObject();
-        title.putString(Tag.CodingSchemeDesignator, null, "DCM");
-        title.putString(Tag.CodeValue, null, "113001");
-        title.putString(Tag.CodeMeaning, null, "Rejected For Quality Reasons");
-        
-        DicomObject refSOP = new BasicDicomObject();
-        refSOP.putString(Tag.ReferencedSOPClassUID, null, cuid);
-        refSOP.putString(Tag.ReferencedSOPInstanceUID, null, iuid);
-        
-        DicomObject refSeries = new BasicDicomObject();
-        refSeries.putString(Tag.SeriesInstanceUID, null, suid);
-        refSeries.putSequence(Tag.ReferencedSOPSequence).addDicomObject(refSOP);
-        
-        DicomObject refStudy = new BasicDicomObject();
-        refStudy.putString(Tag.StudyInstanceUID, null, stuid);
-        refStudy.putSequence(Tag.ReferencedSeriesSequence).addDicomObject(refSeries);
-        
-        BasicDicomObject ko = new BasicDicomObject();
-        ko.putString(Tag.SOPClassUID, null, UID.KeyObjectSelectionDocumentStorage);
-        ko.putString(Tag.SOPInstanceUID, null, UIDUtils.createUID());
-        ko.putString(Tag.SeriesInstanceUID, null, UIDUtils.createUID());
-        ko.putString(Tag.StudyInstanceUID, null, stuid);
-        ko.putString(Tag.PatientID, null, ds.getString(Tag.PatientID));
-        ko.putString(Tag.IssuerOfPatientID, null, ds.getString(Tag.IssuerOfPatientID));
-        ko.putString(Tag.PatientName, null, ds.getString(Tag.PatientName));
-        ko.putString(Tag.Modality, null, "KO");
-        ko.putString(Tag.ContentDate, null, DateUtils.formatDA(new Date()));
-        ko.putString(Tag.ContentTime, null, DateUtils.formatTM(new Date()));
-        ko.putSequence(Tag.ConceptNameCodeSequence).addDicomObject(title);
-        ko.putSequence(Tag.CurrentRequestedProcedureEvidenceSequence).addDicomObject(refStudy);
-        
-        return ko;
-    }
 
     private DicomObject createTextContent(TCQueryFilterKey key, String text)
     {
@@ -685,5 +857,103 @@ public class TCEditableObject extends TCObject {
             }
         }
         return null;
+    }
+    
+    private DicomObject findStudyItem(DicomElement evidenceSeq, String stuid) {
+    	int refCount = evidenceSeq != null ? evidenceSeq.countItems() : -1;
+        if (refCount > 0) {
+            for (int i = 0; i < refCount; i++) {
+                DicomObject studyRef = evidenceSeq.getDicomObject(i);
+                String stuid_ = studyRef != null ? studyRef
+                        .getString(Tag.StudyInstanceUID) : null;
+
+                if (stuid_!=null && stuid_.equals(stuid)) {
+                	return studyRef;
+                }
+            }
+        }
+        return null;
+    }
+    
+    private DicomObject findSeriesItem(DicomElement evidenceSeq, String stuid, String suid, boolean create) {
+        DicomObject studyItem = findStudyItem(evidenceSeq, stuid);
+        if (studyItem!=null) {
+        	DicomElement seriesSeq = studyItem.get(Tag.ReferencedSeriesSequence);
+        	int seriesCount = seriesSeq != null ? seriesSeq
+        			.countItems() : -1;
+        	if (seriesCount > 0) {
+        		for (int j = 0; j < seriesCount; j++) {
+        			DicomObject seriesRef = seriesSeq.getDicomObject(j);
+        			String suid_ = seriesRef != null ? seriesRef.getString(
+        							Tag.SeriesInstanceUID) : null;
+        			if (suid_!=null && suid_.equals(suid)) {
+        				return seriesRef;
+        			}
+        		}
+        	}
+        }
+        
+        if (create) {
+        	if (studyItem==null) {
+				studyItem = new BasicDicomObject();
+				studyItem.putString(Tag.StudyInstanceUID, VR.UI, stuid);
+				studyItem.putSequence(Tag.ReferencedSeriesSequence);
+				evidenceSeq.addDicomObject(studyItem);
+        	}
+        	
+			DicomObject seriesItem = new BasicDicomObject();
+			seriesItem.putString(Tag.SeriesInstanceUID, VR.UI, suid);
+			seriesItem.putSequence(Tag.ReferencedSOPSequence);
+			
+			DicomElement refSeries = studyItem.get(Tag.ReferencedSeriesSequence);
+			refSeries.addDicomObject(seriesItem);
+			
+			return seriesItem;
+        }
+
+        return null;
+    }
+    
+    private DicomObject createRejectionNoteDataset(String stuid, String suid, String iuid, String cuid)
+    {   
+        DicomObject title = new BasicDicomObject();
+        title.putString(Tag.CodingSchemeDesignator, null, "DCM");
+        title.putString(Tag.CodeValue, null, "113001");
+        title.putString(Tag.CodeMeaning, null, "Rejected For Quality Reasons");
+        
+        DicomObject refSOP = new BasicDicomObject();
+        refSOP.putString(Tag.ReferencedSOPClassUID, null, cuid);
+        refSOP.putString(Tag.ReferencedSOPInstanceUID, null, iuid);
+        
+        DicomObject refSeries = new BasicDicomObject();
+        refSeries.putString(Tag.SeriesInstanceUID, null, suid);
+        refSeries.putSequence(Tag.ReferencedSOPSequence).addDicomObject(refSOP);
+        
+        DicomObject refStudy = new BasicDicomObject();
+        refStudy.putString(Tag.StudyInstanceUID, null, stuid);
+        refStudy.putSequence(Tag.ReferencedSeriesSequence).addDicomObject(refSeries);
+        
+        BasicDicomObject ko = new BasicDicomObject();
+        if (getPatientId()!=null) {
+        	ko.putString(Tag.PatientID, VR.LO, getPatientId());
+        }
+        if (getPatientName()!=null) {
+        	ko.putString(Tag.PatientName, VR.PN, getPatientName());
+        }
+        if (getPatientIdIssuer()!=null) {
+        	ko.putString(Tag.IssuerOfPatientID, VR.LO, getPatientIdIssuer());
+        }
+        
+        ko.putString(Tag.SOPClassUID, null, UID.KeyObjectSelectionDocumentStorage);
+        ko.putString(Tag.SOPInstanceUID, null, UIDUtils.createUID());
+        ko.putString(Tag.SeriesInstanceUID, null, UIDUtils.createUID());
+        ko.putString(Tag.StudyInstanceUID, null, stuid);
+        ko.putString(Tag.Modality, null, "KO");
+        ko.putString(Tag.ContentDate, null, DateUtils.formatDA(new Date()));
+        ko.putString(Tag.ContentTime, null, DateUtils.formatTM(new Date()));
+        ko.putSequence(Tag.ConceptNameCodeSequence).addDicomObject(title);
+        ko.putSequence(Tag.CurrentRequestedProcedureEvidenceSequence).addDicomObject(refStudy);
+        
+        return ko;
     }
 }

@@ -354,6 +354,24 @@ public class TCDetailsPanel extends Panel {
             			TCQueryFilterKey.BibliographicReference);
             }
         });
+        
+        tabs.add(new AbstractDetailsTab(new ResourceModel(
+                "tc.details.tab.documents.title.text")) {
+            @Override
+            public Panel getPanel(String id) {
+                Panel tab = new TCDetailsDocumentsTab(id);
+                tab.setDefaultModel(tabModel);
+                return tab;
+            }
+
+            @Override
+            public boolean isDataAvailable() {
+                TCObject tc = getTCObject();
+                List<TCReferencedInstance> docRefs = tc!=null ? 
+                		tc.getReferencedDocuments() : null;
+                return docRefs!=null && !docRefs.isEmpty();
+            }
+        });
 
         nodetailsContainer = new WebMarkupContainer("no-details-panel");
         nodetailsContainer.setOutputMarkupId(true);

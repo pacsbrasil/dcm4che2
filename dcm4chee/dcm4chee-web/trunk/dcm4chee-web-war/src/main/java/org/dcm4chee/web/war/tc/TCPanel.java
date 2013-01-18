@@ -48,14 +48,13 @@ import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow.WindowClosedCallback;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
-import org.dcm4che2.data.DicomObject;
-import org.dcm4che2.data.Tag;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.ajax.MaskingAjaxCallBehavior;
@@ -116,7 +115,11 @@ public class TCPanel extends Panel {
         
         final ModalWindow viewDialog = new ModalWindow("tc-view-dialog") {
             private static final long serialVersionUID = 1L;
-
+            @Override
+        	protected boolean makeContentVisible()
+        	{
+       			return isShown();
+         	}
             @Override
             public void show(AjaxRequestTarget target)
             {
@@ -125,15 +128,18 @@ public class TCPanel extends Panel {
                     Component content = getContent();
                     
                     content.setVisible(true);
+                    
                     target.addComponent(this);
                     target.appendJavascript(getWindowOpenJavascript().replace(
                             "Wicket.Window.create", "createTCViewDialog"));
+                    
                     target.appendJavascript("updateTCViewDialog();");
                     
                     if (content instanceof TCViewPanel)
                     {
                         //disable tabs
                         TCViewPanel viewPanel = (TCViewPanel) content;
+                        
                         if (!viewPanel.isEditable())
                         {
                             target.appendJavascript(viewPanel.getDisableTabsJavascript());
@@ -201,20 +207,14 @@ public class TCPanel extends Panel {
 				    {
 				        try
 				        {
-				            TCStoreDelegate storeDelegate = TCStoreDelegate.getInstance();
-
 				            //store new SR
 				            TCEditableObject tcObject = model.getObject();
-				            DicomObject dataset = tcObject.toDataset();
-				            if (storeDelegate.storeImmediately(dataset))
-				            {
-				                //delete old SR
-				                storeDelegate.store(tcObject.toRejectionNoteDataset());
-
-				                //trigger new search and select new SR
-				                listModel.addToFilter(tc);
-				                searchPanel.redoSearch(target, dataset.getString(Tag.SOPInstanceUID));
+				            if (tcObject.save()) {
+					            //trigger new search and select new SR
+					            listModel.addToFilter(tc);
 				            }
+				            
+				            searchPanel.redoSearch(target, tcObject.getInstanceUID());
 				            
 				            TCAuditLog.logTFEdited(tcObject);
 				        }
@@ -313,10 +313,10 @@ public class TCPanel extends Panel {
                             @Override
                             public ResourceReference getObject() {
                                 return trainingModeModel.getObject()==Boolean.TRUE ? 
-                                		ImageManager.IMAGE_TC_BUTTON_GREEN
-                                        : ImageManager.IMAGE_TC_BUTTON_RED;
+                                		ImageManager.IMAGE_TC_BUTTON_ON
+                                        : ImageManager.IMAGE_TC_BUTTON_OFF;
                             }
-            }).add(new ImageSizeBehaviour("vertical-align:middle")))
+            }).add(new ImageSizeBehaviour(20,20,"vertical-align:middle")))
             .add(new Label("trainingmode-link-text", new AbstractReadOnlyModel<String>() {
 	        	public String getObject() {
 	        		if (trainingModeModel.getObject()==Boolean.TRUE) {
@@ -333,7 +333,7 @@ public class TCPanel extends Panel {
 
         add(listPanel);
         add(detailsPanel);
-        add(viewDialog);
+        add(new Form<Void>("tc-view-dialog-outer-form").add(viewDialog));
         
         add((popupManager=new TCPopupManager()).getGlobalHideOnOutsideClickHandler());
     }

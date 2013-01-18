@@ -55,7 +55,6 @@ import org.apache.wicket.extensions.ajax.markup.html.autocomplete.AutoCompleteTe
 import org.apache.wicket.extensions.markup.html.tree.DefaultAbstractTree.LinkType;
 import org.apache.wicket.extensions.markup.html.tree.Tree;
 import org.apache.wicket.markup.html.WebMarkupContainer;
-import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.Model;
@@ -130,7 +129,7 @@ public class TCKeywordTreeInput extends AbstractTCKeywordInput {
         });
         
         final KeywordTreePopup popup = new KeywordTreePopup();
-        final Button chooserBtn = new Button("chooser-button", new Model<String>("..."));
+        final WebMarkupContainer chooserBtn = new WebMarkupContainer("chooser-button", new Model<String>("..."));
         chooserBtn.add(new Image("chooser-button-img", ImageManager.IMAGE_TC_ARROW_DOWN)
         .setOutputMarkupId(true));
 

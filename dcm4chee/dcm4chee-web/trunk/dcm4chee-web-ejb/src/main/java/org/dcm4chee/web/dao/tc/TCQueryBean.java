@@ -248,18 +248,7 @@ public class TCQueryBean implements TCQueryLocal {
 
         if (instances != null) {
             for (Instance instance : instances) {
-                // touch dicom tree
-                instance.getSeries().getSeriesInstanceUID();
-                instance.getSeries().getStudy().getStudyInstanceUID();
-                instance.getSeries().getStudy().getPatient().getPatientID();
-
-                List<File> files = instance.getFiles();
-                if (files != null) {
-                    for (File file : files) {
-                        file.getFilePath();
-                        file.getFileSystem().getDirectoryPath();
-                    }
-                }
+                join(instance);
             }
 
             log.info(instances.size() + " matching teaching-files found!");
@@ -284,7 +273,11 @@ public class TCQueryBean implements TCQueryLocal {
         
         Query q = em.createQuery("FROM Instance i LEFT JOIN FETCH i.series s LEFT JOIN FETCH s.study WHERE i.sopInstanceUID = :iuid");
         q.setParameter("iuid", iuid);
-        return (Instance) q.getSingleResult();
+        Instance instance = (Instance) q.getSingleResult();
+        if (instance!=null) {
+        	join(instance);
+        }
+        return instance;
     }
     
     @SuppressWarnings({ "unchecked" })
@@ -402,5 +395,22 @@ public class TCQueryBean implements TCQueryLocal {
     	}
     	
     	return Collections.emptyMap();
+    }
+    
+    private Instance join(Instance instance) {
+        // touch dicom tree
+        instance.getSeries().getSeriesInstanceUID();
+        instance.getSeries().getStudy().getStudyInstanceUID();
+        instance.getSeries().getStudy().getPatient().getPatientID();
+
+        List<File> files = instance.getFiles();
+        if (files != null) {
+            for (File file : files) {
+                file.getFilePath();
+                file.getFileSystem().getDirectoryPath();
+            }
+        }
+        
+        return instance;
     }
 }

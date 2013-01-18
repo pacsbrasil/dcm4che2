@@ -197,18 +197,42 @@ public class ImageManager {
         new ResourceReference(ImageManager.class, "tc/cancel.png");
     public static final ResourceReference IMAGE_TC_CANCEL_MONO =
         new ResourceReference(ImageManager.class, "tc/cancel-mono.png");
+    public static final ResourceReference IMAGE_TC_EYE =
+            new ResourceReference(ImageManager.class, "tc/eye.png");
+    public static final ResourceReference IMAGE_TC_EYE_MONO =
+            new ResourceReference(ImageManager.class, "tc/eye-mono.png");
     public static final ResourceReference IMAGE_TC_ARROW_DOWN =
         new ResourceReference(ImageManager.class, "tc/arrow-down.png");
     public static final ResourceReference IMAGE_TC_LIGHT_BULB =
     	new ResourceReference(ImageManager.class, "tc/light-bulb.png");
-    public static final ResourceReference IMAGE_TC_BUTTON_GREEN =
-        	new ResourceReference(ImageManager.class, "tc/button-green.png");
-    public static final ResourceReference IMAGE_TC_BUTTON_RED =
-        	new ResourceReference(ImageManager.class, "tc/button-red.png");
+    public static final ResourceReference IMAGE_TC_BUTTON_ON =
+        	new ResourceReference(ImageManager.class, "tc/button-on.png");
+    public static final ResourceReference IMAGE_TC_BUTTON_OFF =
+        	new ResourceReference(ImageManager.class, "tc/button-off.png");
     public static final ResourceReference IMAGE_TC_ARROW_PREV =
         	new ResourceReference(ImageManager.class, "tc/arrow-prev.png");
     public static final ResourceReference IMAGE_TC_ARROW_NEXT =
         	new ResourceReference(ImageManager.class, "tc/arrow-next.png");
     public static final ResourceReference IMAGE_TC_ARROW_NEXT_RANDOM =
         	new ResourceReference(ImageManager.class, "tc/arrow-next-random.png");
+    public static final ResourceReference IMAGE_TC_EXCEL =
+        	new ResourceReference(ImageManager.class, "tc/excel.png");
+    public static final ResourceReference IMAGE_TC_IMAGE =
+    		new ResourceReference(ImageManager.class, "tc/image.png");
+    public static final ResourceReference IMAGE_TC_PDF =
+    		new ResourceReference(ImageManager.class, "tc/pdf.png");
+    public static final ResourceReference IMAGE_TC_ZIP =
+    		new ResourceReference(ImageManager.class, "tc/zip.png");
+    public static final ResourceReference IMAGE_TC_POWERPOINT =
+    		new ResourceReference(ImageManager.class, "tc/powerpoint.png");
+    public static final ResourceReference IMAGE_TC_TEXT =
+    		new ResourceReference(ImageManager.class, "tc/text.png");
+    public static final ResourceReference IMAGE_TC_WORD =
+    		new ResourceReference(ImageManager.class, "tc/word.png");
+    public static final ResourceReference IMAGE_TC_DISK =
+            new ResourceReference(ImageManager.class, "tc/disk.png");
+    public static final ResourceReference IMAGE_TC_DISK_MONO =
+            new ResourceReference(ImageManager.class, "tc/disk-mono.png");
+    public static final ResourceReference IMAGE_TC_INFO =
+            new ResourceReference(ImageManager.class, "tc/info.png");
 }

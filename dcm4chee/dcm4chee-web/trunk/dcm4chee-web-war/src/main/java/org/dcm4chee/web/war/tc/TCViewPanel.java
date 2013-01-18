@@ -221,6 +221,9 @@ public class TCViewPanel extends Panel
         final Label biblioTitleLabel = new Label("tc.view.bibliography.tab.title");
         biblioTitleLabel.setOutputMarkupId(true);
         
+        final Label documentsTitleLabel = new Label("tc.view.documents.tab.title");
+        documentsTitleLabel.setOutputMarkupId(true);
+        
         final boolean showImagesTab = WebCfgDelegate.getInstance().isTCShowImagesInDialogEnabled();
         final TCViewOverviewTab overviewTab = new TCViewOverviewTab("tc-view-overview", getModel(), isEditable(), infoVisibilityModel);
         final TCViewDiagnosisTab diagnosisTab = new TCViewDiagnosisTab("tc-view-diagnosis", getModel(), isEditable(), infoVisibilityModel);
@@ -322,6 +325,26 @@ public class TCViewPanel extends Panel
             }
         });
         
+        final TCViewDocumentsTab documentsTab = new TCViewDocumentsTab("tc-view-documents", getModel(), 
+        		isEditable(), infoVisibilityModel) {
+        	@Override
+            protected void tabTitleChanged(AjaxRequestTarget target)
+            {
+                if (target!=null)
+                {
+                    target.addComponent(documentsTitleLabel);
+                }
+            }
+        };
+        
+        documentsTitleLabel.setDefaultModel(new AbstractReadOnlyModel<String>() {
+            @Override
+            public String getObject()
+            {
+                return documentsTab.getTabTitle();
+            }
+        });
+        
         tabActivationBehavior = new AbstractDefaultAjaxBehavior() {
         	public void respond(AjaxRequestTarget target) {
         		String newTabId = RequestCycle.get().getRequest().getParameter("newTabId");
@@ -403,6 +426,7 @@ public class TCViewPanel extends Panel
         }));
         
         content.add(biblioTitleLabel);
+        content.add(documentsTitleLabel);
         
         content.add((new WebMarkupContainer("tc.view.images.tab.item") {
 			private static final long serialVersionUID = 1L;
@@ -429,6 +453,7 @@ public class TCViewPanel extends Panel
         tabsToIndices.put(discussionTab, 5);
         tabsToIndices.put(organSystemTab, 6);
         tabsToIndices.put(biblioTab, 7);
+        tabsToIndices.put(documentsTab, 8);
         
         if (imagesTab instanceof TCViewImagesTab)
         {
@@ -443,6 +468,7 @@ public class TCViewPanel extends Panel
         content.add(discussionTab);
         content.add(organSystemTab);
         content.add(biblioTab);
+        content.add(documentsTab);
         content.add(imagesTab);
         
         content.add(tabActivationBehavior);

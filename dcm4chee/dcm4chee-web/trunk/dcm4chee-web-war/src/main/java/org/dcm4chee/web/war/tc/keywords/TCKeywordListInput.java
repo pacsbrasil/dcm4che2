@@ -50,7 +50,7 @@ import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.extensions.ajax.markup.html.autocomplete.AutoCompleteSettings;
 import org.apache.wicket.extensions.ajax.markup.html.autocomplete.AutoCompleteTextField;
-import org.apache.wicket.markup.html.form.Button;
+import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.form.ListChoice;
 import org.apache.wicket.markup.html.form.ListMultipleChoice;
 import org.apache.wicket.markup.html.image.Image;
@@ -144,7 +144,7 @@ public class TCKeywordListInput extends AbstractTCKeywordInput {
             }
         });
 
-        final Button chooserBtn = new Button("chooser-button", new Model<String>("..."));
+        final WebMarkupContainer chooserBtn = new WebMarkupContainer("chooser-button", new Model<String>("..."));
         chooserBtn.add(new Image("chooser-button-img", ImageManager.IMAGE_TC_ARROW_DOWN)
         .setOutputMarkupId(true));
         

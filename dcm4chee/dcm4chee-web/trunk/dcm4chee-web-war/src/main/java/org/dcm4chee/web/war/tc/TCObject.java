@@ -6,6 +6,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -47,6 +49,8 @@ public class TCObject implements Serializable {
     private final static Logger log = LoggerFactory.getLogger(TCObject.class);
     
     private String id;
+    
+    private String cuid;
     
     private String iuid;
     
@@ -108,8 +112,10 @@ public class TCObject implements Serializable {
     
     private List<TCReferencedInstance> instanceRefs;
     
-    private List<TCReferencedImage> imageRefs;
+    private List<TCReferencedInstance> docRefs;
     
+    private List<TCReferencedImage> imageRefs;
+        
     protected TCObject(String id, DicomObject object) {
     	this.id = id;
         parse(object);
@@ -131,10 +137,15 @@ public class TCObject implements Serializable {
             }
         }
     }
-    
+        
     public String getId() 
     {
     	return id;
+    }
+    
+    public String getClassUID()
+    {
+    	return cuid;
     }
     
     public String getInstanceUID()
@@ -262,7 +273,7 @@ public class TCObject implements Serializable {
     public String getTitle() {
         return title;
     }
-
+    
     public List<TCReferencedStudy> getReferencedStudies() {
         if (studyRefs != null) {
             return Collections.unmodifiableList(studyRefs);
@@ -320,6 +331,81 @@ public class TCObject implements Serializable {
         }
         
         return imageRefs;
+    }
+    
+    public List<TCReferencedInstance> getReferencedDocuments()
+    {
+        if (docRefs==null)
+        {
+            docRefs = new ArrayList<TCReferencedInstance>();
+            
+            List<TCReferencedStudy> studies = getReferencedStudies();
+
+            for (TCReferencedStudy study : studies)
+            {
+                for (TCReferencedSeries series : study.getSeries())
+                {
+                    for (TCReferencedInstance doc : series.getDocuments())
+                    {
+                    	if (!docRefs.contains(doc))
+                        {
+                            docRefs.add(doc);
+                        }
+                    }
+                }
+            }
+        }
+        
+        return docRefs;
+    }
+    
+    public TCDocumentObject getReferencedDocumentObject(TCReferencedInstance ref) {
+    	if (ref.isDocument()) {
+    		try {
+    			return TCDocumentObject.create(ref);
+    		}
+    		catch (Exception e) {
+    			log.error("Unable to create/parse referenced document!", e); //$NON-NLS-1$
+    		}
+    	}
+    	return null;
+    }
+    
+    public List<TCDocumentObject> getReferencedDocumentObjects() {
+    	List<TCReferencedInstance> refs = getReferencedDocuments();
+    	if (refs==null || refs.isEmpty()) {
+    		return Collections.emptyList();
+    	}
+    	else {
+    		List<TCDocumentObject> docs = new ArrayList<TCDocumentObject>(refs.size());
+    		for (TCReferencedInstance ref : refs) {
+    			TCDocumentObject doc = getReferencedDocumentObject(ref);
+    			if (doc!=null) {
+    				docs.add(doc);
+    			}
+    		}
+    		if (docs.size()>1) {
+            	Collections.sort(docs, new Comparator<TCDocumentObject>() {
+            		public int compare(TCDocumentObject doc1, TCDocumentObject doc2) {
+            			Date date1 = doc1.getDocumentAddedDate();
+            			Date date2 = doc2.getDocumentAddedDate();
+            			if (date1!=null && date2!=null) {
+            				return date1.compareTo(date2);
+            			}
+            			else if (date1!=null) {
+            				return -1;
+            			}
+            			else if (date2!=null) {
+            				return 1;
+            			}
+            			else {
+            				return -1;
+            			}
+            		}
+            	});
+    		}
+    		return Collections.unmodifiableList(docs);
+    	}
     }
     
     public Object getValue(TCQueryFilterKey key) {
@@ -431,8 +517,100 @@ public class TCObject implements Serializable {
 
         return null;
     }
+    
+    protected final void addReferencedInstance(TCReferencedInstance instance) {
+    	TCReferencedSeries series = instance.getSeries();
+    	TCReferencedStudy study = series.getStudy();
+
+		series.addInstance(instance);
+		study.addSeries(series);
+		
+    	if (studyRefs==null) {
+    		studyRefs = new ArrayList<TCReferencedStudy>();
+    	}
+    	if (!studyRefs.contains(study)) {
+    		studyRefs.add(study);
+    	}
+
+    	List<TCReferencedInstance> instanceRefs = getReferencedInstances();
+    	if (instanceRefs==null) {
+    		this.instanceRefs = instanceRefs = new ArrayList<TCReferencedInstance>();
+    		this.instanceRefs.add(instance);
+    	}
+    	else if (!instanceRefs.contains(instance))
+    	{
+    		instanceRefs.add(instance);
+    	}
+    	
+    	if (instance.isImage() && 
+    			instance instanceof TCReferencedImage) 
+    	{
+    		List<TCReferencedImage> imageRefs = getReferencedImages();
+    		if (imageRefs==null) {
+    			this.imageRefs = imageRefs = new ArrayList<TCReferencedImage>();
+    			this.imageRefs.add((TCReferencedImage)instance);
+    		}
+    		else if (!imageRefs.contains(instance)) {
+    			imageRefs.add((TCReferencedImage) instance);
+    		}
+    	}
+    	
+    	if (instance.isDocument()) {
+	    	List<TCReferencedInstance> docRefs = getReferencedDocuments();
+	    	if (docRefs==null) {
+	    		this.docRefs = docRefs = new ArrayList<TCReferencedInstance>();
+	    		this.docRefs.add(instance);
+	    	}
+	    	else if (!docRefs.contains(instance))
+	    	{
+	    		docRefs.add(instance);
+	    	}
+    	}
+    }
+    
+    protected final void removeReferencedInstance(TCReferencedInstance instance) {
+    	TCReferencedSeries series = instance.getSeries();
+    	TCReferencedStudy study = series.getStudy();
+    	
+    	series.removeInstance(instance);
+    	if (series.getInstanceCount()<=0) {
+    		study.removeSeries(series);
+    	}
+    	if (study.getSeriesCount()<=0) {
+    		studyRefs.remove(study);
+    		if (studyRefs.isEmpty()) {
+    			studyRefs = null;
+    		}
+    	}
+
+    	List<TCReferencedInstance> refs = getReferencedInstances();
+    	if (refs.contains(instance))
+    	{
+    		refs.remove(instance);
+    	}
+    	
+    	List<TCReferencedImage> imageRefs = getReferencedImages();
+    	if (imageRefs.contains(instance))
+    	{
+    		imageRefs.remove(instance);
+    	}
+    	
+    	List<TCReferencedInstance> docRefs = getReferencedDocuments();
+    	if (docRefs.contains(instance))
+    	{
+    		docRefs.remove(instance);
+    	}
+    }
+    
+    protected void init(String id, DicomObject o) {
+    	clear();
+    	parse(o);
+    	
+    	this.id = id;
+    }
 
     private void parse(DicomObject o) {
+    	cuid = o.getString(Tag.SOPClassUID);
         iuid = o.getString(Tag.SOPInstanceUID);
         suid = o.getString(Tag.SeriesInstanceUID);
         stuid = o.getString(Tag.StudyInstanceUID);
@@ -714,6 +892,43 @@ public class TCObject implements Serializable {
                 }
             }
         }
+    }
+    
+    protected void clear() {
+    	id=null;
+    	cuid=null;
+        iuid=null;
+        suid=null;
+        stuid=null;
+        patId=null;
+        patIdIssuer=null;
+        patName=null;
+        abstr=null;
+        acquisitionModalities=null;
+        anatomy=null;
+        authorAffiliation=null;
+        authorContact=null;
+        authorName=null;
+        category=null;
+        diagnosis=null;
+        diagnosisConfirmed=null;
+        diffDiagnosis=null;
+        discussion=null;
+        finding=null;
+        history=null;
+        keywords=null;
+        level=null;
+        organSystem=null;
+        pathology=null;
+        patientAge=null;
+        patientSex=null;
+        patientSpecies=null;
+        bibliographicReferences=null;
+        title=null;
+        studyRefs=null;
+        instanceRefs=null;
+        docRefs=null;
+        imageRefs=null;
     }
 
     private String getTextValue(DicomObject object) {
