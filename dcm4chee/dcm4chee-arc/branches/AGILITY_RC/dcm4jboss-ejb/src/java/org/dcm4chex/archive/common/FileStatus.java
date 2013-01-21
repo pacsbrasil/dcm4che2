@@ -40,7 +40,7 @@ public class FileStatus {
     public static final int ARCHIVED = 2;
     public static final int COMPRESSING = 3;
     
-    private static final int OFFSET = -QUERY_HSM_FAILED;
+    private static final int OFFSET = -UNCOMPRESSABLE;
 
     public static final String toString(int value) {
         return ENUM[OFFSET + value];
