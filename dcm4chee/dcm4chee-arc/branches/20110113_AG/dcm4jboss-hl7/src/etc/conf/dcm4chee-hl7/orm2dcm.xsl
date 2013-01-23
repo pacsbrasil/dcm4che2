@@ -75,6 +75,12 @@
             <xsl:with-param name="vr" select="'SH'"/>
             <xsl:with-param name="val" select="string(field[18]/text())"/>
         </xsl:call-template>
+        <!-- Study Description -->
+        <xsl:call-template name="attr">
+            <xsl:with-param name="tag" select="'00081030'"/>
+            <xsl:with-param name="vr" select="'LO'"/>
+            <xsl:with-param name="val" select="field[4]/component[1]"/>
+        </xsl:call-template>
         <!-- Medical Alerts -->
         <xsl:call-template name="attr">
             <xsl:with-param name="tag" select="'00102000'"/>
