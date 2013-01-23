@@ -231,11 +231,11 @@ public class TCDocumentsView extends Panel
         		}
         	}
         };
-        final long maxUploadSize = Bytes.megabytes(10).bytes();
+        final long maxUploadSize = Bytes.megabytes(25).bytes();
         final TextArea<String> uploadDescription = new TextArea<String>("file-upload-description-text", new Model<String>());
         final Form<Void> uploadForm = new Form<Void>("file-upload-form");
 		uploadForm.setMultiPart(true);
-		uploadForm.setMaxSize(Bytes.megabytes(10)); // seems that this doesn't work because of a bug in WICKET 1.4
+		uploadForm.setMaxSize(Bytes.megabytes(25)); // seems that this doesn't work because of a bug in WICKET 1.4
 		uploadForm.add(new Label("file-upload-label", 
 				TCUtilities.getLocalizedString(
 						"tc.documents.upload.text")));
