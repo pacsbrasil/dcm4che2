@@ -138,13 +138,9 @@ public class NetworkConnection {
 
     private AtomicInteger associationCount = new AtomicInteger();
 
-    private InetAddress addr;
-
 
     private InetAddress addr() throws UnknownHostException {
-        if (addr == null && hostname != null)
-            addr = InetAddress.getByName(hostname);
-        return addr;
+        return hostname != null ? InetAddress.getByName(hostname) : null;
     }
 
 
@@ -206,8 +202,6 @@ public class NetworkConnection {
      *                A String containing the host name.
      */
     public void setHostname(String hostname) {
-        if (hostname == null || !hostname.equals(this.hostname))
-            addr = null;
         this.hostname = hostname;
     }
 
