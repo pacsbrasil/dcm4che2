@@ -2191,6 +2191,7 @@
 <element tag="00520038" keyword="NumberOfPaddedAlines" vr="US" vm="1">Number of Padded A‑lines</element>
 <element tag="00520039" keyword="InterpolationType" vr="CS" vm="1">Interpolation Type</element>
 <element tag="0052003A" keyword="RefractiveIndexApplied" vr="CS" vm="1">Refractive Index Applied</element>
+<element tag="00540010" keyword="EnergyWindowVector" vr="US" vm="1-n">Energy Window Vector</element>
 <element tag="00540011" keyword="NumberOfEnergyWindows" vr="US" vm="1">Number of Energy Windows</element>
 <element tag="00540012" keyword="EnergyWindowInformationSequence" vr="SQ" vm="1">Energy Window Information Sequence</element>
 <element tag="00540013" keyword="EnergyWindowRangeSequence" vr="SQ" vm="1">Energy Window Range Sequence</element>
