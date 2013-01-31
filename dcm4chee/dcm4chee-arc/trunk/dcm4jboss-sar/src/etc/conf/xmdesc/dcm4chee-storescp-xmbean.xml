@@ -786,6 +786,8 @@ Note: A default delay (without '&lt;AE Title&gt;:') must be configured!
            XRayAngiographicBiPlaneImageStorageRetired
            VLImageStorageRetired
            VLMultiframeImageStorageRetired
+           PrivateGE3DModelStorage
+           PrivateGEPETRawDataStorage
            "/>
       </descriptors>
    </attribute>
@@ -1030,6 +1032,10 @@ Note: A default delay (without '&lt;AE Title&gt;:') must be configured!
            AgfaAttributePresentationState
            SiemensCSANonImageStorage
            Dcm4cheEncapsulatedDocumentStorage
+           PrivatePhillips3DPresentationStateStorage
+           PrivatePhillipsMRSpectrumStorage
+           PrivatePhillipsMRSeriesDataStorage
+           PrivatePhillipsMRExamcardDataStorage
            "/>
       </descriptors>
    </attribute>
