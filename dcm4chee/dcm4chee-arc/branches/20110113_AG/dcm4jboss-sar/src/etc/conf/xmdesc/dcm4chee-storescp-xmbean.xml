@@ -715,6 +715,8 @@ Notifications for one Series.]]>
            XRayAngiographicBiPlaneImageStorageRetired
            VLImageStorageRetired
            VLMultiframeImageStorageRetired
+           PrivateGE3DModelStorage
+           PrivateGEPETRawDataStorage
            "/>
       </descriptors>
    </attribute>
@@ -953,6 +955,10 @@ Notifications for one Series.]]>
            AgfaAttributePresentationState
            SiemensCSANonImageStorage
            Dcm4cheEncapsulatedDocumentStorage
+           PrivatePhillips3DPresentationStateStorage
+           PrivatePhillipsMRSpectrumStorage
+           PrivatePhillipsMRSeriesDataStorage
+           PrivatePhillipsMRExamcardDataStorage
            "/>
       </descriptors>
    </attribute>
