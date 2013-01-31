@@ -3,7 +3,7 @@ BUILD INSTRUCTIONS FOR DCM4CHEE WEB3:
 
 Beside JDK 5 or JDK 6 - which is also needed for running DCM4CHEE
 you also have to download and install Maven 2.2.1 from
-http://maven.apache.org/download.html for building dcm4chee-web-3.0.0.
+http://maven.apache.org/download.html for building dcm4chee-web-3.0.3.
 
 If you are behind a http proxy, you have to configure Maven, to use it for
 http downloads (s.  http://maven.apache.org/guides/mini/guide-proxies.html ).
