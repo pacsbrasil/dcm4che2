@@ -16,69 +16,69 @@ to download and install:
 (only needed to build test suite for dcm4jboss-ejb - not need to build
 application)
 
-dcm4chee-2.17.1 archive also relies on
+dcm4chee-2.17.3 archive also relies on
 
-- dcm4che-1.4.31 : DICOM Library
+- dcm4che-1.4.33 : DICOM Library
 
 which binary and source distribution package is also available at
 http://sourceforge.net/projects/dcm4che. The binary package is sufficient to
 build dcm4chee archive. If you download the source package, you have to build
-all components of dcm4che-1.4.31 (ant release) before building dcm4chee-2.17.1.
+all components of dcm4che-1.4.33 (ant release) before building dcm4chee-2.17.3.
 
-dcm4chee-2.17.1 archive also make use of
+dcm4chee-2.17.3 archive also make use of
 
 - dcm4che-audit-logger : JMX Service for emitting DICOM Supp95 Audit Trail
   Messages, and
 - dcm4che-audit-login : JAAS login module emitting User Authentication message
 
-which sources are not included by dcm4chee-2.17.1-src.zip, but provided in a
-separate ZIP archive: dcm4chee-audit-2.17.1-src.zip at
+which sources are not included by dcm4chee-2.17.3-src.zip, but provided in a
+separate ZIP archive: dcm4chee-audit-2.17.3-src.zip at
 http://sourceforge.net/projects/dcm4che. Follow the build instructions include
 in dcm4chee-audit, to build and install these artifacts in your local Maven
 Repository (default: ~/.m2/repository) for usage by following build task for 
-dcm4chee-2.17.1 archive.
+dcm4chee-2.17.3 archive.
 
-dcm4chee-2.17.1 archive also make use of
+dcm4chee-2.17.3 archive also make use of
 
 - dcm4chee-web : WEB based administration tool 
 
-which sources are not included by dcm4chee-2.17.1-src.zip, but provided in a
-separate ZIP archive: dcm4chee-web-3.0.1-src.zip at
+which sources are not included by dcm4chee-2.17.3-src.zip, but provided in a
+separate ZIP archive: dcm4chee-web-3.0.3-src.zip at
 http://sourceforge.net/projects/dcm4che. Follow the build instructions include
 in dcm4chee-web, to build and install these artifacts for your appropriate database
 in your local Maven Repository (default: ~/.m2/repository) for usage by following 
-build task for dcm4chee-2.17.1 archive.
+build task for dcm4chee-2.17.3 archive.
 
-dcm4chee-2.17.1 archive also make use of
+dcm4chee-2.17.3 archive also make use of
 
 - dcm4chee-docstore : Generic Document Storage (used by RID - Retrieve Information for Display) 
 
-which sources are not included by dcm4chee-2.17.1-src.zip, but provided in a
+which sources are not included by dcm4chee-2.17.3-src.zip, but provided in a
 separate ZIP archive: dcm4chee-docstore-1.0.2-src.zip at
 http://sourceforge.net/projects/dcm4che. Follow the build instructions include
 in dcm4chee-docstore, to build and install these artifacts in your local Maven
 Repository (default: ~/.m2/repository) for usage by following build task for 
-dcm4chee-2.17.1 archive.
+dcm4chee-2.17.3 archive.
 
-dcm4chee-2.17.1 archive has compile dependency to
+dcm4chee-2.17.3 archive has compile dependency to
 
 - dcm4chee-xds-infoset : XDS Infoset classes (XDS Query for Consumer and Document Lifecycle)
 
-which sources are not included by dcm4chee-2.17.1-src.zip, but provided in a
+which sources are not included by dcm4chee-2.17.3-src.zip, but provided in a
 separate ZIP archive: dcm4chee-xds-infoset-1.0.2-src.zip at
 http://sourceforge.net/projects/dcm4che. Follow the build instructions include
 in dcm4chee-xds-infoset, to build and install these artifacts in your local Maven
 Repository (default: ~/.m2/repository) for usage by following build task for 
-dcm4chee-2.17.1 archive.
+dcm4chee-2.17.3 archive.
 
 Create an environment variable pointing to the Ant home directory (ANT_HOME)
 and add the $ANT_HOME/bin directory to your PATH.
 
 The build scripts (dcm4jboss-all/dcm4jboss-xxx/build.xml) assumes following
-locations of dcm4che-1.4.31, XDoclet, JBoss, Apache FOP, Jakarta Cactus and
+locations of dcm4che-1.4.33, XDoclet, JBoss, Apache FOP, Jakarta Cactus and
 your local Maven2 Repository:
 
-dcm4che14.home=${user.home}/dcm4che14/build/dcm4che-1.4.31
+dcm4che14.home=${user.home}/dcm4che14/build/dcm4che-1.4.33
 xdoclet.home=${user.home}/xdoclet-1.2.3
 jboss.home=${user.home}/jboss-4.2.3.GA
 fop.home=${user.home}/fop-0.95

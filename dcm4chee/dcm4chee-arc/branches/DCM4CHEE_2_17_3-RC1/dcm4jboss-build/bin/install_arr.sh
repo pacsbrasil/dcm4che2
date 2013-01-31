@@ -6,7 +6,7 @@
 DIRNAME=`dirname $0`
 DCM4CHEE_HOME="$DIRNAME"/..
 DCM4CHEE_SERV="$DCM4CHEE_HOME"/server/default
-VERS=3.0.11
+VERS=3.0.12
 
 if [ x$1 = x ]; then
   echo "Usage: $0 <path-to-dcm4chee-arr-installation-directory>"

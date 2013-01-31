@@ -9,7 +9,7 @@ if "%OS%" == "Windows_NT" set DIRNAME=%~dp0%
 
 set DCM4CHEE_HOME=%DIRNAME%..
 set DCM4CHEE_SERV=%DCM4CHEE_HOME%\server\default
-set VERS=3.0.11
+set VERS=3.0.12
 
 if exist "%DCM4CHEE_SERV%" goto found_dcm4chee
 echo Could not locate %DCM4CHEE_SERV%. Please check that you are in the
