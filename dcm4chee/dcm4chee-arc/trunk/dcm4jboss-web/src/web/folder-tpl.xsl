@@ -48,6 +48,17 @@
 							</input>
 							<xsl:text>&latestStudiesFirst;</xsl:text>
 						</div>
+						<div
+							title="&IncludeLongitudinalResults;">
+							<input type="checkbox"
+								name="includeLongitudinal" value="true">
+								<xsl:if
+									test="includeLongitudinal = 'true'">
+									<xsl:attribute name="checked" />
+								</xsl:if>
+							</input>
+							<xsl:text>&includeLongitudinal;</xsl:text>
+						</div>
 					</td>
 					<td class="folder_header" align="center">
 						<xsl:choose>

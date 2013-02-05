@@ -20,6 +20,8 @@
 <!ENTITY woStudies "w/o studies">
 <!ENTITY ListStudiesOfOnePatientBeginningWithTheMostRecentStudy "List studies of one patient beginning with the most recent study">
 <!ENTITY latestStudiesFirst "latest studies first">
+<!ENTITY IncludeLongitudinalResults "Include longitudinal patient records in the results (requires Patient ID format: id^^^issuer)">
+<!ENTITY includeLongitudinal "include longitudinal">
 <!ENTITY NoMatchingStudiesFound "No matching studies found!">
 <!ENTITY NoQueryPerformed "No Query performed!">
 <!ENTITY DisplayingStudies "Displaying studies">
