@@ -136,6 +136,7 @@ public class FolderSubmitCtrl extends FolderCtrl {
             if ( "true".equals( rq.getParameter("form")) ) {
                 folderForm.setShowWithoutStudies( "true".equals( rq.getParameter("showWithoutStudies")));
                 folderForm.setLatestStudiesFirst("true".equals( rq.getParameter("latestStudiesFirst")));
+                folderForm.setIncludeLongitudinal("true".equals( rq.getParameter("includeLongitudinal")));
                 folderForm.setFilterAET( "true".equals( rq.getParameter("filterAET")));
                 if ( allowedMethods.contains("folder.query_has_issuer") ) {
                     folderForm.setHideHasIssuerOfPID( "true".equals( rq.getParameter("hideHasIssuerOfPID")));
@@ -217,13 +218,15 @@ public class FolderSubmitCtrl extends FolderCtrl {
         Subject subject = isStudyPermissionCheckDisabled() ? null : getSubject();
         if (newQuery) {
             folderForm.setTotal( new QueryStudiesCmd(filter.toDataset(), 
-                    !folderForm.isShowWithoutStudies(), folderForm.isNoMatchForNoValue(), folderForm.getQueryHasIssuerOfPID(), subject).count() );
+                    !folderForm.isShowWithoutStudies(), folderForm.isNoMatchForNoValue(), 
+                    folderForm.getQueryHasIssuerOfPID(), subject, folderForm.isIncludeLongitudinal()).count() );
             queryAETList(folderForm);
         }
         List studyList = new QueryStudiesCmd(filter.toDataset(), 
                 !folderForm.isShowWithoutStudies(), 
                 folderForm.isNoMatchForNoValue(), folderForm.getQueryHasIssuerOfPID(),
-                subject).list(folderForm.getOffset(), folderForm.getLimit(), folderForm.isLatestStudiesFirst() );
+                subject, folderForm.isIncludeLongitudinal()).list(
+                		folderForm.getOffset(), folderForm.getLimit(), folderForm.isLatestStudiesFirst() );
         if (subject != null && studyList.size() > 0) {
             folderForm.setGrantedStudyActions(queryGrantedStudyActions(studyList,subject));
         }

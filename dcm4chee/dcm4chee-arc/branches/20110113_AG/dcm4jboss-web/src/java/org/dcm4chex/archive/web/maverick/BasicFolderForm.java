@@ -81,6 +81,8 @@ public abstract class BasicFolderForm extends BasicFormPagingModel {
 
     private boolean latestStudiesFirst;
     
+    private boolean includeLongitudinal;
+    
     private boolean hideHasIssuerOfPID;
     private boolean hideHasNoIssuerOfPID;
 
@@ -181,6 +183,14 @@ public abstract class BasicFolderForm extends BasicFormPagingModel {
 
     public final void setLatestStudiesFirst(boolean latestStudiesFirst) {
         this.latestStudiesFirst = latestStudiesFirst;
+    }
+    
+    public final boolean isIncludeLongitudinal() {
+    	return includeLongitudinal;
+    }
+    
+    public final void setIncludeLongitudinal(boolean includeLongitudinal) {
+    	this.includeLongitudinal = includeLongitudinal;
     }
     
     public final Boolean getQueryHasIssuerOfPID() {

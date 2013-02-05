@@ -55,7 +55,11 @@ import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.common.SecurityUtils;
 import org.dcm4chex.archive.ejb.conf.AttributeFilter;
+import org.dcm4chex.archive.ejb.interfaces.PIXQuery;
+import org.dcm4chex.archive.ejb.interfaces.PIXQueryHome;
+import org.dcm4chex.archive.ejb.jdbc.Match.Node;
 import org.dcm4chex.archive.util.Convert;
+import org.dcm4chex.archive.util.EJBHomeFactory;
 
 /**
  * 
@@ -112,10 +116,11 @@ public class QueryStudiesCmd extends BaseReadCmd {
      *                                  <dd>TRUE...only objects of patients with issuer</dd>
      *                                  <dd>FALSE..only objects of patients without issuer</dd></dl>
      * @param subject                   Security subject to apply study permissions for current user. If <code>null</code> studyPermission check is disabled!
+     * @param includeLongitudinal       include longitudinal results if the patient id is submitted in the form id^^^issuer
      * 
      * @throws SQLException
      */
-    public QueryStudiesCmd(Dataset keys, boolean hideMissingStudies, boolean noMatchForNoValue, Boolean queryHasIssuerOfPID, Subject subject)
+    public QueryStudiesCmd(Dataset keys, boolean hideMissingStudies, boolean noMatchForNoValue, Boolean queryHasIssuerOfPID, Subject subject, boolean includeLongitudinal)
     throws SQLException {
         super(JdbcProperties.getInstance().getDataSource(),
                 transactionIsolationLevel);
@@ -129,15 +134,35 @@ public class QueryStudiesCmd extends BaseReadCmd {
                 keys.containsValue(Tags.RequestAttributesSeq)));
         sqlBuilder.setRelations(getRelations());
         sqlBuilder.addLiteralMatch(null, "Patient.merge_fk", false, "IS NULL");
-        sqlBuilder.addWildCardMatch(null, "Patient.patientId",
-                type2,
-                patAttrFilter.getStrings(keys, Tags.PatientID));
+
+        String patientID = patAttrFilter.getString(keys, Tags.PatientID);
         String issuer = patAttrFilter.getString(keys, Tags.IssuerOfPatientID);
-        if ( issuer != null ) {
-            sqlBuilder.addSingleValueMatch(null, "Patient.issuerOfPatientId", type2, issuer);
-        } else if ( queryHasIssuerOfPID != null ) {
-            sqlBuilder.addNULLValueMatch(null,"Patient.issuerOfPatientId", queryHasIssuerOfPID.booleanValue() );
+        List<String[]> otherPIDs = null;
+        if ( includeLongitudinal ) {
+            try {
+            	if ( issuer != null ) {
+            		otherPIDs = pixQuery().queryCorrespondingPIDs(patientID, issuer, null);
+            	}
+    		}
+            catch (Exception e) {
+    			log.error("Failed to query for linked Patient IDs for " + patientID + "^^^" + issuer +
+    					", longitudinal results will not be returned", e); // log for investigation, but continue
+    		}
         }
+        if ( otherPIDs != null ) {
+			otherPIDs.add(new String[]{patientID, issuer});
+			addListOfPatIdMatch(otherPIDs, type2);	
+		}
+        else {
+        	sqlBuilder.addWildCardMatch(null, "Patient.patientId", type2, patientID);
+        	if ( issuer != null ) {
+                sqlBuilder.addSingleValueMatch(null, "Patient.issuerOfPatientId", type2, issuer);
+            }
+        	else if ( queryHasIssuerOfPID != null ) {
+                sqlBuilder.addNULLValueMatch(null,"Patient.issuerOfPatientId", queryHasIssuerOfPID.booleanValue() );
+            }
+        }
+        
         sqlBuilder.addPNMatch(new String[] {
                 "Patient.patientName",
                 "Patient.patientIdeographicName",
@@ -296,5 +321,50 @@ public class QueryStudiesCmd extends BaseReadCmd {
         } finally {
             close();
         }
+    }
+    
+    protected PIXQuery pixQuery() throws Exception {
+        return ((PIXQueryHome) EJBHomeFactory.getFactory().lookup(
+                PIXQueryHome.class, PIXQueryHome.JNDI_NAME)).create();
+    }
+    
+    private void addListOfPatIdMatch(List<String[]> otherPIDs, boolean type2) {
+    	if ( otherPIDs == null ) {
+    		return;
+    	}
+    	Node n = sqlBuilder.addNodeMatch("OR", false);
+        for (String[] otherPID : otherPIDs) {
+            StringBuilder sb = new StringBuilder();
+            String pid = otherPID[0];
+            String issuer = otherPID[1];
+            if ( !checkMatchValue(pid, "PatientID of item", sb) || !checkMatchValue(issuer, "Issuer of item", sb))  {
+                log.warn("Skipping pid '" + pid + "' and issuer '" + issuer + "' in other patient id sequence because: " + sb);
+            }
+            else {            
+                addIdAndIssuerPair(n, pid, issuer, type2);
+            }
+        }
+    }
+
+    private void addIdAndIssuerPair(Node n, String patId, String issuer, boolean type2) {
+        Node n1 = new Match.Node("AND", false);
+        n1.addMatch(new Match.SingleValue(null, "Patient.patientId", type2,
+                patId));
+        n1.addMatch(new Match.SingleValue(null, "Patient.issuerOfPatientId",
+                type2, issuer));
+        n.addMatch(n1);
+    }
+
+    protected static boolean checkMatchValue(String value, String chkItem,
+            StringBuilder sb) {
+        if (value == null) {
+            sb.append("Missing attribute ").append(chkItem);
+        } else if (value.indexOf('*') != -1 || value.indexOf('?') != -1) {
+            sb.append("Wildcard ('*','?') not allowed in ").append(chkItem)
+                    .append(" ('").append(value).append("')");
+        } else {
+            return true;
+        }
+        return false;
     }
 }
