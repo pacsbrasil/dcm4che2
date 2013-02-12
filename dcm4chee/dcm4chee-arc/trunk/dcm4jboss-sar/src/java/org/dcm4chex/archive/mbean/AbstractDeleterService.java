@@ -43,6 +43,8 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.StringTokenizer;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.management.Attribute;
 import javax.management.Notification;
@@ -87,10 +89,11 @@ public abstract class AbstractDeleterService extends ServiceMBeanSupport {
 
     protected final SchedulerDelegate scheduler = new SchedulerDelegate(this);
 
+    private Lock scheduleStudiesForDeletionLock;
     private String timerIDScheduleStudiesForDeletion;
 
     private long scheduleStudiesForDeletionInterval;
-    private boolean isRunningScheduleStudiesForDeletion;
+    private volatile boolean isRunningScheduleStudiesForDeletion;
 
     private DeleterThresholds deleterThresholds;
 
@@ -115,6 +118,15 @@ public abstract class AbstractDeleterService extends ServiceMBeanSupport {
     private int scheduleStudiesForDeletionBatchSize;
 
     private Integer scheduleStudiesForDeletionListenerID;
+
+
+    public AbstractDeleterService() {
+    	this(new ReentrantLock());
+	}
+
+	AbstractDeleterService(Lock scheduleStudiesForDeletionLock) {
+		this.scheduleStudiesForDeletionLock = scheduleStudiesForDeletionLock;
+	}
 
     public ObjectName getFindScuServiceName() {
         return findScu.getFindScuServiceName();
@@ -391,7 +403,7 @@ public abstract class AbstractDeleterService extends ServiceMBeanSupport {
         return scheduleStudiesForDeletionBatchSize;
     }
 
-    protected static FileSystemMgt2 fileSystemMgt() throws Exception {
+    protected FileSystemMgt2 fileSystemMgt() throws Exception {
         FileSystemMgt2Home home = (FileSystemMgt2Home) EJBHomeFactory
                 .getFactory().lookup(FileSystemMgt2Home.class,
                         FileSystemMgt2Home.JNDI_NAME);
@@ -402,19 +414,29 @@ public abstract class AbstractDeleterService extends ServiceMBeanSupport {
         if (maxNotAccessedFor == 0 && deleterThresholds == null) {
             return 0;
         }
-        synchronized(this) {
-            if (isRunningScheduleStudiesForDeletion) {
+        
+		if (scheduleStudiesForDeletionLock.tryLock()) {
+			try {
+				isRunningScheduleStudiesForDeletion = true;
+				return doScheduleStudiesForDeletion();
+			} finally {
+				scheduleStudiesForDeletionLock.unlock();
+				isRunningScheduleStudiesForDeletion = false;
+			}
+		} else {
                 log.info("ScheduleStudiesForDeletion is already running!");
                 return -1;
             }
-            isRunningScheduleStudiesForDeletion = true;
         } 
+
+	protected int doScheduleStudiesForDeletion() throws Exception {
         String fsGroup = getFileSystemGroupIDForDeleter();
-        try {
             FileSystemMgt2 fsMgt = fileSystemMgt();
             FileSystemDTO[] fsDTOs = fsMgt.getFileSystemsOfGroup(fsGroup);
             if (fsDTOs.length == 0) {
-                log.info("No Filesystem configured in file system group "+fsGroup+"! Ignore check for deletion of studies!");
+			log.info("No Filesystem configured in file system group "
+					+ fsGroup
+					+ "! Ignore check for deletion of studies!");
                 return 0;
             }
             log.info("Check file system group " + fsGroup
@@ -427,22 +449,24 @@ public abstract class AbstractDeleterService extends ServiceMBeanSupport {
             }
             if (deleterThresholds != null) {
                 long threshold = getCurrentDeleterThreshold(fsMgt, fsDTOs);
-                long usable = calcUsableDiskSpace(fsDTOs, getMinFreeDiskSpaceBytes());
+			long usable = calcUsableDiskSpace(fsDTOs,
+					getMinFreeDiskSpaceBytes());
                 long sizeToDel = threshold - usable;
                 if (sizeToDel > 0) {
-                    log.info("Try to free " + sizeToDel + " of disk space on file system group " + fsGroup);
+				log.info("Try to free " + sizeToDel
+						+ " of disk space on file system group "
+						+ fsGroup);
                     countStudies += scheduleStudiesForDeletion(fsMgt,
                             System.currentTimeMillis() - minNotAccessedFor,
                             sizeToDel);
                 }
             }
             if (countStudies > 0) {
-                log.info("Scheduled " + countStudies + " studies for deletion on file system group " + fsGroup);
+			log.info("Scheduled " + countStudies
+					+ " studies for deletion on file system group "
+					+ fsGroup);
             }
             return countStudies;
-        } finally {
-            isRunningScheduleStudiesForDeletion = false;
-        }
     }
 
     private int scheduleStudiesForDeletion(FileSystemMgt2 fsMgt,
