@@ -610,7 +610,7 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
         return switchFileSystem(fileSystemMgt(), storageFileSystem);
     }
 
-    private synchronized boolean switchFileSystem(FileSystemMgt2 fsMgt,
+    private boolean switchFileSystem(FileSystemMgt2 fsMgt,
             FileSystemDTO fsDTO) throws Exception {
 		synchronized (switchFileSystemMonitor) {
         if (storageFileSystem == null || fsDTO == null) {
