@@ -43,6 +43,8 @@ import java.io.File;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.Calendar;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.ejb.FinderException;
 import javax.ejb.ObjectNotFoundException;
@@ -79,12 +81,12 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
     private final DeleteStudyDelegate deleteStudy =
             new DeleteStudyDelegate(this);
 
-
+    private Lock deleteOrphanedPrivateFilesLock;
     private String timerIDDeleteOrphanedPrivateFiles;
 
 
     private long deleteOrphanedPrivateFilesInterval;
-    private boolean isRunningDeleteOrphanedPrivateFiles;
+    private volatile boolean isRunningDeleteOrphanedPrivateFiles;
 
     private String defRetrieveAET;
 
@@ -130,14 +132,21 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
 
     private final FileDeleter fileDeleter;
     
+    private byte[] switchFileSystemMonitor = new byte[0];
+    
     public FileSystemMgt2Service() {
     	this.jndiHelper = new JndiHelper();
     	this.fileDeleter = new FileDeleter(log);
+    	this.deleteOrphanedPrivateFilesLock = new ReentrantLock();
 	}
 
-	FileSystemMgt2Service(JndiHelper jndiHelper, FileDeleter fileDeleter) {
+	protected FileSystemMgt2Service(JndiHelper jndiHelper,
+			FileDeleter fileDeleter, Lock schedulesStudiesForDeletionLock,
+			Lock deleteOrphanedPrivateFilesLock) {
+		super(schedulesStudiesForDeletionLock);
 		this.jndiHelper = jndiHelper;
 		this.fileDeleter = fileDeleter;
+		this.deleteOrphanedPrivateFilesLock = deleteOrphanedPrivateFilesLock;
 	}
     
     public String getMinFreeDiskSpace() {
@@ -573,32 +582,29 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
         return dto != null ? FileUtils.toFile(dto.getDirectoryPath()) : null;
     }
 
-    private synchronized boolean switchFileSystem(FileSystemMgt2 fsMgt,
+    private boolean switchFileSystem(FileSystemMgt2 fsMgt,
             FileSystemDTO fsDTO) throws Exception {
-        if (storageFileSystem.getPk() != fsDTO.getPk()) {
-            log.info("Storage file system has already been switched from "
-                    + fsDTO + " to " + storageFileSystem
-                    + " by another thread.");
-            return true; 
-        }
-        FileSystemDTO tmp = storageFileSystem;
-        String next;
-        while ((next = tmp.getNext()) != null &&
-                next != storageFileSystem.getDirectoryPath()) {
-            tmp = fsMgt.getFileSystemOfGroup(getFileSystemGroupID(), next);
-            if (tmp.getStatus() == FileSystemStatus.RW && 
-            		tmp.getAvailability() == Availability.toInt(getDefAvailability()) &&
-                    checkFreeDiskSpace(tmp)) {
-                storageFileSystem = fsMgt.updateFileSystemStatus(
-                        tmp.getPk(), FileSystemStatus.DEF_RW);
-                log.info("Switch storage file system from " + fsDTO + " to "
-                        + storageFileSystem);
-                sendJMXNotification(new StorageFileSystemSwitched(
-                        fsDTO, storageFileSystem));
-                return true;
+		    synchronized (switchFileSystemMonitor) {
+            FileSystemDTO tmp = storageFileSystem;
+            String next;
+            while ((next = tmp.getNext()) != null &&
+                    next != storageFileSystem.getDirectoryPath()) {
+                tmp = fsMgt.getFileSystemOfGroup(getFileSystemGroupID(), next);
+                if (tmp.getStatus() == FileSystemStatus.RW && 
+            		    tmp.getAvailability() == Availability.toInt(getDefAvailability()) &&
+                        checkFreeDiskSpace(tmp)) {
+                    storageFileSystem = fsMgt.updateFileSystemStatus(
+                            tmp.getPk(), FileSystemStatus.DEF_RW);
+                    log.info("Switch storage file system from " + fsDTO + " to "
+                            + storageFileSystem);
+                    sendJMXNotification(new StorageFileSystemSwitched(
+                            fsDTO, storageFileSystem));
+                    return true;
+                }
             }
+
+            return false;
         }
-        return false;
     }
 
     void sendJMXNotification(Object o) {
@@ -757,20 +763,17 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
     }
 
     public int deleteOrphanedPrivateFiles() throws Exception {
-        synchronized(this) {
-            if (isRunningDeleteOrphanedPrivateFiles) {
-                log.info("DeleteOrphanedPrivateFiles is already running!");
-                return -1;
-            }
-            isRunningDeleteOrphanedPrivateFiles = true;
-        }  
-        
+		if (deleteOrphanedPrivateFilesLock.tryLock()) {
         try {
+				isRunningDeleteOrphanedPrivateFiles = true;
             return internalDeleteOrphanedPrivateFiles();
         } finally {
-        	synchronized(this) {
+				deleteOrphanedPrivateFilesLock.unlock();
 	            isRunningDeleteOrphanedPrivateFiles = false;
         	}
+		} else {
+			log.info("DeleteOrphanedPrivateFiles is already running!");
+			return -1;
         }
     }
 
