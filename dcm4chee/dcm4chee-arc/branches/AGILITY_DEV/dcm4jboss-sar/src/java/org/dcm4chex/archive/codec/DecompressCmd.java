@@ -53,6 +53,7 @@ import java.nio.ByteOrder;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.imageio.ImageReadParam;
 import javax.imageio.ImageReader;
@@ -72,6 +73,8 @@ import org.dcm4che.util.BufferedOutputStream;
 import org.dcm4cheri.image.ImageReaderFactory;
 import org.dcm4cheri.image.ItemParser;
 import org.dcm4cheri.imageio.plugins.PatchJpegLSImageInputStream;
+
+import EDU.oswego.cs.dl.util.concurrent.FIFOSemaphore;
 
 import com.sun.media.imageio.stream.SegmentedImageInputStream;
 
@@ -95,57 +98,77 @@ public class DecompressCmd extends CodecCmd {
 
     private int[] simpleFrameList;
 
-    public static byte[] decompressFile(File inFile, File outFile,
-            String outTS, int planarConfiguration, int pxdataVR,
-            byte[] buffer) throws Exception {
+    private static int maxConcurrentDecompress = 1;
+    private static FIFOSemaphore decompressSemaphore = new FIFOSemaphore(maxConcurrentDecompress);
+    private static AtomicInteger nrOfConcurrentDecompress = new AtomicInteger();
+
+    public static void setMaxConcurrentDecompression(int maxConcurrentDecompress) {
+        decompressSemaphore = new FIFOSemaphore(maxConcurrentDecompress);
+        DecompressCmd.maxConcurrentDecompress = maxConcurrentDecompress;
+    }
+
+    public static int getMaxConcurrentDecompression() {
+        return DecompressCmd.maxConcurrentDecompress;
+    }
+
+    public static byte[] decompressFile(File inFile, File outFile, String outTS, int planarConfiguration, int pxdataVR, byte[] buffer)
+            throws Exception {
         log.info("M-READ file:" + inFile);
         FileImageInputStream fiis = new FileImageInputStream(inFile);
+
+        log.debug("M-WRITE file:" + outFile);
+        MessageDigest md = MessageDigest.getInstance("MD5");
+        DigestOutputStream dos = new DigestOutputStream(new FileOutputStream(outFile), md);
+        BufferedOutputStream bos = new BufferedOutputStream(dos, buffer);
+
         try {
-            DcmParser parser = DcmParserFactory.getInstance()
-                    .newDcmParser(fiis);
-            DcmObjectFactory dof = DcmObjectFactory.getInstance();
-            Dataset ds = dof.newDataset();
-            parser.setDcmHandler(ds.getDcmHandler());
-            parser.parseDcmFile(FileFormat.DICOM_FILE, Tags.PixelData);
-            log.info("M-WRITE file:" + outFile);
-            MessageDigest md = MessageDigest.getInstance("MD5");
-            DigestOutputStream dos = new DigestOutputStream(
-                    new FileOutputStream(outFile), md);
-            BufferedOutputStream bos = new BufferedOutputStream(dos, buffer);
-            try {
-                DcmEncodeParam encParam = DcmEncodeParam.valueOf(outTS);
-                String inTS = getTransferSyntax(ds);
-                adjustPhotometricInterpretation(ds, inTS);
-                if (planarConfiguration >= 0 && ds.contains(Tags.PlanarConfiguration))
-                    ds.putUS(Tags.PlanarConfiguration, planarConfiguration);
-                DecompressCmd cmd = new DecompressCmd(ds, inTS, parser);
-                int len = cmd.getPixelDataLength();
-                FileMetaInfo fmi = dof.newFileMetaInfo(ds, outTS);
-                ds.setFileMetaInfo(fmi);
-                ds.writeFile(bos, encParam);
-                ds.writeHeader(bos, encParam, Tags.PixelData, pxdataVR,
-                        (len + 1) & ~1);
-                try {
-                    cmd.decompress(encParam.byteOrder, bos);
-                } catch (IOException e) {
-                    throw e;
-                } catch (Throwable e) {
-                    throw new RuntimeException("Decompression failed:", e);
-                }
-                if ((len & 1) != 0)
-                    bos.write(0);
-                parser.parseDataset(parser.getDcmDecodeParam(), -1);
-                ds.subSet(Tags.PixelData, -1).writeDataset(bos, encParam);
-            } finally {
-                bos.close();
-            }
-            return md.digest();
+            decompressStream(fiis, bos, outTS, planarConfiguration, pxdataVR, buffer);
         } finally {
             try {
+                bos.close();
+            } catch (Exception ignore) {
+            }
+            try {
                 fiis.close();
-            } catch (IOException ignore) {
+            } catch (Exception ignore) {
             }
         }
+        return md.digest();
+    }
+
+    public static void decompressStream(FileImageInputStream inStream, OutputStream outStream, String outputTsuid, int planarConfiguration,
+            int pxdataVR, byte[] buffer) throws IOException {
+
+        DcmParser parser = DcmParserFactory.getInstance().newDcmParser(inStream);
+        DcmObjectFactory dof = DcmObjectFactory.getInstance();
+        Dataset ds = dof.newDataset();
+        parser.setDcmHandler(ds.getDcmHandler());
+        parser.parseDcmFile(FileFormat.DICOM_FILE, Tags.PixelData);
+
+        DcmEncodeParam encParam = DcmEncodeParam.valueOf(outputTsuid);
+        String inTS = getTransferSyntax(ds);
+        adjustPhotometricInterpretation(ds, inTS);
+        if (planarConfiguration >= 0 && ds.contains(Tags.PlanarConfiguration))
+            ds.putUS(Tags.PlanarConfiguration, planarConfiguration);
+        DecompressCmd cmd = new DecompressCmd(ds, inTS, parser);
+        int len = cmd.getPixelDataLength();
+        FileMetaInfo fmi = dof.newFileMetaInfo(ds, outputTsuid);
+        ds.setFileMetaInfo(fmi);
+        ds.writeFile(outStream, encParam);
+        ds.writeHeader(outStream, encParam, Tags.PixelData, pxdataVR, (len + 1) & ~1);
+        try {
+            cmd.decompress(encParam.byteOrder, outStream);
+        } catch (IOException e) {
+            throw e;
+        } catch (Throwable e) {
+            throw new RuntimeException("Decompression failed:", e);
+        }
+        if ((len & 1) != 0) {
+            outStream.write(0);
+        }
+        parser.parseDataset(parser.getDcmDecodeParam(), -1);
+        ds.subSet(Tags.PixelData, -1).writeDataset(outStream, encParam);
+
     }
 
     public static String getTransferSyntax(Dataset ds) {
@@ -181,13 +204,15 @@ public class DecompressCmd extends CodecCmd {
         ImageReader reader = null;
         BufferedImage bi = null;
         boolean patchJpegLS = false;
-        boolean codecSemaphoreAquired = false;
+        boolean semaphoreAquired = false;
         try {
-            log.debug("acquire codec semaphore");
-            codecSemaphore.acquire();
-            codecSemaphoreAquired = true;
-            log.info("start decompression of image: " + rows + "x" + columns
-                    + "x" + frames + " (concurrency:" + (++nrOfConcurrentCodec)+")");
+            semaphoreAquired = acquireSemaphore();
+            if (log.isDebugEnabled()) {
+                log.debug("codec semaphore acquired after " + (System.currentTimeMillis() - t1) + "ms!");
+                log.debug("start decompression of image: " + rows + "x" + columns + "x" + frames + " (current codec tasks: compress&decompress:"
+                    + nrOfConcurrentCodec.get() + " decompress:" + nrOfConcurrentDecompress.get() + ")");
+            }
+
             t1 = System.currentTimeMillis();
             ImageReaderFactory f = ImageReaderFactory.getInstance();
             reader = f.getReaderForTransferSyntax(tsuid);
@@ -195,18 +220,18 @@ public class DecompressCmd extends CodecCmd {
                 String patchJAIJpegLS = f.patchJAIJpegLS();
                 if (patchJAIJpegLS != null)
                     patchJpegLS = patchJAIJpegLS.length() == 0
-                            || patchJAIJpegLS.equals(implClassUID);
+                    || patchJAIJpegLS.equals(implClassUID);
             }
             bi = getBufferedImage();
             for (int i = 0, n = getNumberOfFrames(); i < n; ++i) {
-                int frame = simpleFrameList != null ? (simpleFrameList[i]-1) : i;
+                int frame = simpleFrameList != null ? (simpleFrameList[i] - 1) : i;
                 log.debug("start decompression of frame #" + (frame + 1));
                 SegmentedImageInputStream siis =
                         new SegmentedImageInputStream(iis, itemParser);
                 itemParser.seekFrame(siis, frame);
                 reader.setInput(patchJpegLS 
                         ? new PatchJpegLSImageInputStream(siis)
-                        : (ImageInputStream) siis);
+                : (ImageInputStream) siis);
                 ImageReadParam param = reader.getDefaultReadParam();
                 param.setDestination(bi);
                 bi = reader.read(0, param);
@@ -214,8 +239,7 @@ public class DecompressCmd extends CodecCmd {
                 // J2KImageReaderCodecLib.setInput()
                 if (reader.getClass().getName().startsWith(J2KIMAGE_READER)) {
                     reader.dispose();
-                    reader = i < n - 1 ? f
-                            .getReaderForTransferSyntax(tsuid) : null;
+                    reader = i < n - 1 ? f.getReaderForTransferSyntax(tsuid) : null;
                 } else {
                     reader.reset();
                 }
@@ -227,14 +251,53 @@ public class DecompressCmd extends CodecCmd {
                 reader.dispose();
             if (bi != null)
                 biPool.returnBufferedImage(bi);
-            if (codecSemaphoreAquired) {
-                log.debug("release codec semaphore");
-                codecSemaphore.release();
-                nrOfConcurrentCodec--;
+
+            long t2 = System.currentTimeMillis();
+            finished();
+            log.info("finished decompression in " + (t2 - t1) + "ms." + " (remaining codec tasks: compress&decompress:" + nrOfConcurrentCodec
+                    + " decompress:" + nrOfConcurrentDecompress + ")");
+
+            if (semaphoreAquired) {
+                releaseSemaphore();
             }
         }
-        long t2 = System.currentTimeMillis();
-        log.info("finished decompression in " + (t2 - t1) + "ms." + " (remaining concurrency:"+nrOfConcurrentCodec+")");
+    }
+
+    public static boolean acquireSemaphore() throws InterruptedException {
+        log.debug("acquire codec semaphore");
+        boolean success = false;
+        codecSemaphore.acquire();
+        try {
+            decompressSemaphore.acquire();
+            success = true;
+            nrOfConcurrentDecompress.incrementAndGet();
+        } finally {
+            if (!success) {
+                codecSemaphore.release();
+            } else {
+                nrOfConcurrentCodec.incrementAndGet();
+            }
+        }
+        return success;
+    }
+
+    public static void finished() {
+        log.debug("finished: decrement nrOfConcurrentCodec and nrOfConcurrentDecompress");
+        nrOfConcurrentCodec.decrementAndGet();
+        nrOfConcurrentDecompress.decrementAndGet();
+    }
+
+    public static void releaseSemaphore() {
+        decompressSemaphore.release();
+        codecSemaphore.release();
+    }
+
+    public static int getNrOfConcurrentCodec() {
+        return nrOfConcurrentCodec.get();
+    }
+
+    public static int getNrOfConcurrentDecompress() {
+        return nrOfConcurrentDecompress.get();
     }
 
     private void write(WritableRaster raster, OutputStream out,
@@ -247,7 +310,7 @@ public class DecompressCmd extends CodecCmd {
         final int w = raster.getWidth();
         final int numBands = sm.getNumBands();
         final int numBanks = buffer.getNumBanks();
-        final int l = w * numBands  / numBanks;
+        final int l = w * numBands / numBanks;
         for (int b = 0; b < numBanks; b++) {
             switch (buffer.getDataType()) {
             case DataBuffer.TYPE_BYTE:
@@ -290,11 +353,11 @@ public class DecompressCmd extends CodecCmd {
         int[] bandOffsets = sm.getBandOffsets();
         int[] bankIndices = sm.getBankIndices();
         if (!(Arrays.equals(OFF_0, bandOffsets)
-                        && Arrays.equals(OFF_0, bankIndices))
+                && Arrays.equals(OFF_0, bankIndices))
                 && !(Arrays.equals(OFF_0_0_0, bandOffsets)
                         && Arrays.equals(OFF_0_1_2, bankIndices))
-                && !(Arrays.equals(OFF_0_0_0, bankIndices)
-                        && Arrays.equals(OFF_0_1_2, bandOffsets)))
+                        && !(Arrays.equals(OFF_0_0_0, bankIndices)
+                                && Arrays.equals(OFF_0_1_2, bandOffsets)))
             throw new RuntimeException(sm.getClass().getName()
                     + " with bandOffsets=" + Arrays.asList(bandOffsets)
                     + " with bankIndices=" + Arrays.asList(bankIndices)

@@ -41,6 +41,7 @@ package org.dcm4chex.archive.codec;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
@@ -76,7 +77,7 @@ public abstract class CodecCmd {
     static final String JPEG_LS = "JPEG-LS";
 
     static int maxConcurrentCodec = 1;
-    static int nrOfConcurrentCodec = 0;
+    static AtomicInteger nrOfConcurrentCodec = new AtomicInteger();
 
     static Semaphore codecSemaphore = new FIFOSemaphore(maxConcurrentCodec);
 
@@ -132,10 +133,10 @@ public abstract class CodecCmd {
             break;
         case 16:
             this.dataType = (pixelRepresentation != 0 
-                    && (UIDs.JPEG2000Lossless.equals(tsuid)
-                            || UIDs.JPEG2000Lossy.equals(tsuid)))
-                                    ? DataBuffer.TYPE_SHORT
-                                    : DataBuffer.TYPE_USHORT;
+            && (UIDs.JPEG2000Lossless.equals(tsuid)
+                    || UIDs.JPEG2000Lossy.equals(tsuid)))
+                    ? DataBuffer.TYPE_SHORT
+                            : DataBuffer.TYPE_USHORT;
             break;
         default:
             throw new IllegalArgumentException("bits allocated:"

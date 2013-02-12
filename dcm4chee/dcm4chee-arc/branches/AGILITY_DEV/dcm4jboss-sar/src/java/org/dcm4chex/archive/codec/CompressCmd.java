@@ -56,6 +56,7 @@ import java.io.OutputStream;
 import java.nio.ByteOrder;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageWriteParam;
@@ -80,6 +81,9 @@ import org.dcm4cheri.image.ImageWriterFactory;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
 
+import EDU.oswego.cs.dl.util.concurrent.FIFOSemaphore;
+import EDU.oswego.cs.dl.util.concurrent.Semaphore;
+
 import com.sun.media.imageio.plugins.jpeg2000.J2KImageWriteParam;
 
 /**
@@ -90,14 +94,17 @@ import com.sun.media.imageio.plugins.jpeg2000.J2KImageWriteParam;
  */
 public abstract class CompressCmd extends CodecCmd {
 
+    private static int maxConcurrentCompress = 1;
+    private static Semaphore compressSemaphore = new FIFOSemaphore(maxConcurrentCompress);
+    private static AtomicInteger nrOfConcurrentCompress = new AtomicInteger();
     private static final byte[] ITEM_TAG = { (byte) 0xfe, (byte) 0xff,
-            (byte) 0x00, (byte) 0xe0 };
+        (byte) 0x00, (byte) 0xe0 };
     private static final String[] DERIVED_PRIMARY = { "DERIVED", "PRIMARY" };
     private static final Dataset LOSSY_COMPRESSION =
             newCodeItem("113040", "DCM", "Lossy Compression");
     private static final Dataset UNCOMPRESSED_PREDECESSOR =
             newCodeItem("121320", "DCM", "Uncompressed predecessor");
-    
+
     private static Dataset newCodeItem(String value, String schemeDesignator,
             String meaning) {
         Dataset item = DcmObjectFactory.getInstance().newDataset();
@@ -141,6 +148,7 @@ public abstract class CompressCmd extends CodecCmd {
         }
 
         protected void initWriteParam(ImageWriteParam param) {
+            param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
             param.setCompressionType(JPEG_LOSSLESS);
         }
     };
@@ -159,6 +167,7 @@ public abstract class CompressCmd extends CodecCmd {
         }
 
         protected void initWriteParam(ImageWriteParam param) {
+            param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
             param.setCompressionType(JPEG_LS);
         }
     }
@@ -183,8 +192,8 @@ public abstract class CompressCmd extends CodecCmd {
                     && !photometricInterpretation.equals("MONOCHROME1"))
                 throw new CompressionFailedException(
                         "JPEG Lossy compression of "
-                        + photometricInterpretation
-                        + " images not supported");
+                                + photometricInterpretation
+                                + " images not supported");
             if (hasOverlayDataInPixelData(ds))
                 throw new CompressionFailedException(
                         "JPEG Lossy compression of images with overlay data" +
@@ -262,10 +271,11 @@ public abstract class CompressCmd extends CodecCmd {
             sourceImage.putUI(Tags.RefSOPInstanceUID,
                     ds.getString(Tags.SOPInstanceUID));
             sourceImage.putSQ(Tags.PurposeOfReferenceCodeSeq)
-                    .addItem(UNCOMPRESSED_PREDECESSOR);
+            .addItem(UNCOMPRESSED_PREDECESSOR);
         }
 
         protected void initWriteParam(ImageWriteParam param) {
+            param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
             param.setCompressionType("JPEG");
             param.setCompressionQuality(quality);
         }
@@ -275,13 +285,22 @@ public abstract class CompressCmd extends CodecCmd {
         }
     };
 
+    public static void setMaxConcurrentCompression(int maxConcurrentCompress) {
+        compressSemaphore = new FIFOSemaphore(maxConcurrentCompress);
+        CompressCmd.maxConcurrentCompress = maxConcurrentCompress;
+    }
+
+    public static int getMaxConcurrentCompression() {
+        return CompressCmd.maxConcurrentCompress;
+    }
+
     private int bitmask() {
         return 0xffff >>> (bitsAllocated - bitsUsed());
     }
 
     public static byte[] compressFile(File inFile, File outFile, String tsuid,
             int[] planarConfiguration, int[] pxdataVR, byte[] buffer)
-            throws Exception {
+                    throws Exception {
         log.info("M-READ file:" + inFile);
         InputStream in = new BufferedInputStream(new FileInputStream(inFile));
         try {
@@ -348,12 +367,12 @@ public abstract class CompressCmd extends CodecCmd {
             if (fileInfo != null) {
                 DatasetUtils.fromByteArray(fileInfo.patAttrs,
                         DatasetUtils.fromByteArray(fileInfo.studyAttrs,
-                        DatasetUtils.fromByteArray(fileInfo.seriesAttrs,
-                        DatasetUtils.fromByteArray(fileInfo.instAttrs, ds))));
+                                DatasetUtils.fromByteArray(fileInfo.seriesAttrs,
+                                        DatasetUtils.fromByteArray(fileInfo.instAttrs, ds))));
             }
             CompressCmd compressCmd = createJPEGLossyCompressCmd(ds, quality,
-                        derivationDescription, estimatedCompressionRatio,
-                        iuid, suid);
+                    derivationDescription, estimatedCompressionRatio,
+                    iuid, suid);
             compressCmd.coerceDataset(ds);
             String tsuid = compressCmd.getTransferSyntaxUID();
             FileMetaInfo fmi = DcmObjectFactory.getInstance()
@@ -415,12 +434,12 @@ public abstract class CompressCmd extends CodecCmd {
             String iuid, String suid) throws CompressionFailedException {
         return new JpegLossy(ds,
                 ds.getInt(Tags.BitsAllocated, 8) > 8
-                    ? UIDs.JPEGExtended 
-                    : UIDs.JPEGBaseline,
-                quality, derivationDescription, ratio, iuid, suid);
+                ? UIDs.JPEGExtended 
+                        : UIDs.JPEGBaseline,
+                        quality, derivationDescription, ratio, iuid, suid);
     }
 
-    
+
     protected CompressCmd(Dataset ds, String tsuid) {
         super(ds, tsuid);
     }
@@ -431,17 +450,30 @@ public abstract class CompressCmd extends CodecCmd {
 
     public int compress(ByteOrder byteOrder, InputStream in, OutputStream out,
             float[] compressionRatio) throws Exception {
-        long t1;
+        long t1 = System.currentTimeMillis();
         ImageWriter w = null;
         BufferedImage bi = null;
         boolean codecSemaphoreAquired = false;
+        boolean compressSemaphoreAquired = false;
         long end = 0;
+        int pixelDataLength;
         try {
-            log.debug("acquire codec semaphore");
+            if (log.isDebugEnabled()) {
+                log.debug("acquire codec semaphore:");
+                log.debug("#####codecSemaphore.permits():"+codecSemaphore.permits());
+                log.debug("#####compressSemaphore.permits():"+compressSemaphore.permits());
+            }
             codecSemaphore.acquire();
             codecSemaphoreAquired = true;
-            log.info("start compression of image: " + rows + "x" + columns
-                    + "x" + frames + " (concurrency:" + (++nrOfConcurrentCodec)+")");
+            compressSemaphore.acquire();
+            compressSemaphoreAquired = true;
+            if (log.isDebugEnabled()) {
+                log.debug("codec semaphore acquired after "+(System.currentTimeMillis() - t1)+"ms!");
+                log.debug("start compression of image: " + rows + "x" + columns
+                        + "x" + frames + " (current codec tasks: compress&decompress:" + (nrOfConcurrentCodec.incrementAndGet())+
+                        " compress:"+(nrOfConcurrentCompress.incrementAndGet())+")");
+            }
+
             t1 = System.currentTimeMillis();
             ImageOutputStream ios = new MemoryCacheImageOutputStream(out);
             ios.setByteOrder(ByteOrder.LITTLE_ENDIAN);
@@ -489,19 +521,29 @@ public abstract class CompressCmd extends CodecCmd {
                 w.dispose();
             if (bi != null)
                 biPool.returnBufferedImage(bi);
+
+            pixelDataLength = frameLength * frames;
+            if (log.isInfoEnabled()) {
+                long t2 = System.currentTimeMillis();
+                log.info("finished compression " + ((float) pixelDataLength / end)
+                        + " : 1 in " + (t2 - t1) + "ms." + " (remaining codec tasks: compress&decompress:"+nrOfConcurrentCodec+
+                        " compress:"+nrOfConcurrentCompress+")");
+            }
+
+            if (compressSemaphoreAquired) {
+                compressSemaphore.release();
+                nrOfConcurrentCompress.decrementAndGet();
+            }
             if (codecSemaphoreAquired) {
                 log.debug("release codec semaphore");
                 codecSemaphore.release();
-                nrOfConcurrentCodec--;
+                nrOfConcurrentCodec.decrementAndGet();
             }
         }
-        long t2 = System.currentTimeMillis();
-        int pixelDataLength = frameLength * frames;
-        log.info("finished compression " + ((float) pixelDataLength / end)
-                + " : 1 in " + (t2 - t1) + "ms." + " (remaining concurrency:"+nrOfConcurrentCodec+")");
+
         if (compressionRatio != null && compressionRatio.length > 0)
             compressionRatio[0] =
-                (float) pixelDataLength * bitsUsed() / bitsAllocated / end;
+            (float) pixelDataLength * bitsUsed() / bitsAllocated / end;
         return pixelDataLength;
     }
 
