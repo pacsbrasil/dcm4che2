@@ -200,7 +200,7 @@ public class DecompressCmd extends CodecCmd {
 
     public void decompress(ByteOrder byteOrder, OutputStream out)
             throws Exception {
-        long t1;
+        long t1 = System.currentTimeMillis();
         ImageReader reader = null;
         BufferedImage bi = null;
         boolean patchJpegLS = false;
@@ -400,6 +400,7 @@ public class DecompressCmd extends CodecCmd {
         this.simpleFrameList = simpleFrameList;
     }
 
+    @Override
     public int getPixelDataLength() {
         return getNumberOfFrames() * frameLength;
     }
