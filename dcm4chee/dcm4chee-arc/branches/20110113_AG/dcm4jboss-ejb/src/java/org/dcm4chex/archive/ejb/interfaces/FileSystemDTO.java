@@ -88,67 +88,67 @@ public class FileSystemDTO implements Serializable {
         return toString(new StringBuffer()).toString();
     }
 
-    public final long getPk() {
+    public long getPk() {
         return pk;
     }
 
-    public final void setPk(long pk) {
+    public void setPk(long pk) {
         this.pk = pk;
     }
 
-    public final String getDirectoryPath() {
+    public String getDirectoryPath() {
         return directoryPath;
     }
 
-    public final void setDirectoryPath(String directoryPath) {
+    public void setDirectoryPath(String directoryPath) {
         this.directoryPath = directoryPath;
     }
 
-    public final String getGroupID() {
+    public String getGroupID() {
         return groupID;
     }
 
-    public final void setGroupID(String groupID) {
+    public void setGroupID(String groupID) {
         this.groupID = groupID;
     }
 
-    public final String getRetrieveAET() {
+    public String getRetrieveAET() {
         return retrieveAET;
     }
 
-    public final void setRetrieveAET(String retrieveAET) {
+    public void setRetrieveAET(String retrieveAET) {
         this.retrieveAET = retrieveAET;
     }
 
-    public final int getAvailability() {
+    public int getAvailability() {
         return availability;
     }
 
-    public final void setAvailability(int availability) {
+    public void setAvailability(int availability) {
         this.availability = availability;
     }
 
-    public final int getStatus() {
+    public int getStatus() {
         return status;
     }
 
-    public final void setStatus(int status) {
+    public void setStatus(int status) {
         this.status = status;
     }
 
-    public final String getUserInfo() {
+    public String getUserInfo() {
         return userInfo;
     }
 
-    public final void setUserInfo(String userInfo) {
+    public void setUserInfo(String userInfo) {
         this.userInfo = userInfo;
     }
 
-    public final String getNext() {
+    public String getNext() {
         return next;
     }
 
-    public final void setNext(String next) {
+    public void setNext(String next) {
         this.next = next;
     }
 
