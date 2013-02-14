@@ -457,9 +457,9 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         perfMon.start(activeAssoc, rq, PerfCounterEnum.C_STORE_SCP_OBJ_IN);
         perfMon.setProperty(activeAssoc, rq, PerfPropertyEnum.REQ_DIMSE, rq);
 
-		 DcmDecodeParam decParam = DcmDecodeParam.valueOf(rq.getTransferSyntaxUID());
-		 Dataset ds = objFact.newDataset();
-		 DcmParser parser = DcmParserFactory.getInstance().newDcmParser(in);
+        DcmDecodeParam decParam = DcmDecodeParam.valueOf(rq.getTransferSyntaxUID());
+        Dataset ds = objFact.newDataset();
+        DcmParser parser = DcmParserFactory.getInstance().newDcmParser(in);
         parser.setMaxValueLength(service.getMaxValueLength());
         parser.setDcmHandler(ds.getDcmHandler());
         parser.parseDataset(decParam, Tags.PixelData);
@@ -793,12 +793,11 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     fileParser.parseDcmFile(null, -1);
                     putPrivatePostPixelIndicator(fileDs);	
 
-                    File postPixelDataFile = makeFile(baseDir, fileDs, callingAET);
-                    md5sum = storeToFile(fileParser, fileDs, postPixelDataFile, compressCmd, getByteBuffer(assoc));					 					 
-
                     bis.close();
-                    deleteFailedStorage(file);					 
-                    file = postPixelDataFile;
+                    deleteFailedStorage(file);
+                    file = makeFile(baseDir, fileDs, callingAET);
+                    md5sum = storeToFile(fileParser, fileDs, file, compressCmd, getByteBuffer(assoc));					 					 
+
                 }
 
                 return md5sum;
