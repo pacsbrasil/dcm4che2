@@ -277,6 +277,7 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
 
     @Override
 	protected void stopService() throws Exception {
+    	super.stopService();
         scheduler.stopScheduler(timerIDDeleteOrphanedPrivateFiles,
                 deleteOrphanedPrivateFilesListenerID,
                 deleteOrphanedPrivateFilesListener);
