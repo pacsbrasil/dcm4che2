@@ -180,7 +180,15 @@ public abstract class CodeBean implements EntityBean {
         if (item == null) return null;
 
         final String value = item.getString(Tags.CodeValue);
+    	if (isValueEmpty(value)) {
+            log.warn("Missing Code Value - ignore item");
+            return null;
+    	}
         final String designator = item.getString(Tags.CodingSchemeDesignator);
+    	if (isValueEmpty(designator)) {
+            log.warn("Missing Code Designator - ignore item");
+            return null;
+    	}
         final String version = item.getString(Tags.CodingSchemeVersion);
         final String meaning = item.getString(Tags.CodeMeaning);
         Collection c = codeHome.findByValueAndDesignator(value, designator);
@@ -198,33 +206,48 @@ public abstract class CodeBean implements EntityBean {
     	if (sq == null || sq.isEmpty()) return;
         Dataset item = sq.getItem(0);
         if (item.isEmpty()) return;
-        c.add(CodeBean.valueOf(codeHome, item));
+        CodeLocal codeItem = CodeBean.valueOf(codeHome, item);
+        if (codeItem != null) {
+            c.add(codeItem);
+        }
     	for (int i = 1, n = sq.countItems(); i < n; i++) {
-    		c.add(CodeBean.valueOf(codeHome, sq.getItem(i)));
+            codeItem = CodeBean.valueOf(codeHome, sq.getItem(i));
+            if (codeItem != null) {
+            	c.add(codeItem);
+            }
     	}
     }
     
+    /** 
+     * Check all codes in a sequence and return true if the sequence is null/empty or 
+     * there is at least one existing valid code, otherwise return false
+     * @param prompt - description of sequence, used in log message
+     * @param sq - sequence containing code items
+     * @return true if no codes exist or at least one code is valid, false otherwise
+     */
     public static boolean checkCodes(String prompt, DcmElement sq) {
-        if (sq == null || sq.isEmpty())
+        if (sq == null || sq.isEmpty() || sq.countItems() == 0) {
             return true;
+        }
+        int validCount = sq.countItems();
         for (int i = 0, n = sq.countItems(); i < n; i++) {
             Dataset item = sq.getItem(i);
-            if (!item.containsValue(Tags.CodeValue)) {
+            if (isValueEmpty(item.getString(Tags.CodeValue))) {
                 log.warn("Missing Code Value (0008,0100) in " + prompt
-                        + " - ignore all items");
-                return false;
-            }
-            if (!item.containsValue(Tags.CodingSchemeDesignator)) {
-                log.warn("Missing Coding Scheme Designator (0008,0102) in "
-                        + prompt + " - ignore all items");
-                return false;
-            }
-            if (!item.containsValue(Tags.CodeMeaning)) {
-                log.warn("Missing Code Meaning (0008,0104) in " + prompt
-                        + " - ignore all items");
-                return false;
+                        + " - ignore item.");
+                validCount--;
+            } else if (isValueEmpty(item.getString(Tags.CodingSchemeDesignator))) {
+                log.warn("Missing value for Coding Scheme Designator (0008,0102) in "
+                        + prompt + " - ignore item");
+                validCount--;
+            } else if (isValueEmpty(item.getString(Tags.CodeMeaning))) {
+                log.warn("Missing Code Meaning (0008,0104) in " + prompt);
             }
         }
-        return true;
+        return (validCount > 0);
+    }
+    
+    private static boolean isValueEmpty(String str) {
+    	return ((str == null) || (str.trim().length() == 0));
     }
 }
