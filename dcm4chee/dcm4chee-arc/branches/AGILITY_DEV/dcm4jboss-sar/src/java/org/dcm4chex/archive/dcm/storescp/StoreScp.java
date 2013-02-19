@@ -768,39 +768,43 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 ? compressCmd.getTransferSyntaxUID()
                         : rq.getTransferSyntaxUID();
 
-                ds.setFileMetaInfo(objFact.newFileMetaInfo(ds, tsuid));
+        ds.setFileMetaInfo(objFact.newFileMetaInfo(ds, tsuid));
 
-                perfMon.start(activeAssoc, rq, PerfCounterEnum.C_STORE_SCP_OBJ_STORE);
-                perfMon.setProperty(activeAssoc, rq, PerfPropertyEnum.DICOM_FILE, file);
+        perfMon.start(activeAssoc, rq, PerfCounterEnum.C_STORE_SCP_OBJ_STORE);
+        perfMon.setProperty(activeAssoc, rq, PerfPropertyEnum.DICOM_FILE, file);
 
-                byte[] md5sum = storeToFile(parser, ds, file, compressCmd, getByteBuffer(assoc));
+        byte[] md5sum = storeToFile(parser, ds, file, compressCmd, getByteBuffer(assoc));
 
-                String creatorId = ds.getPrivateCreatorID();
-                ds.setPrivateCreatorID(PrivateTags.CreatorID);
-                boolean containsPostPixeldata = ds.contains(PrivateTags.InstanceContainsPostPixelData);
-                ds.setPrivateCreatorID(creatorId);					
+        String creatorId = ds.getPrivateCreatorID();
+        ds.setPrivateCreatorID(PrivateTags.CreatorID);
+        boolean containsPostPixeldata = ds.contains(PrivateTags.InstanceContainsPostPixelData);
+        ds.setPrivateCreatorID(creatorId);					
 
-                if (containsPostPixeldata) {
-                    log.info("Instance[uid=" + iuid + "] has post pixel data. Rewriting file to include indicator flag");
+        if (containsPostPixeldata) {
+            log.info("Instance[uid=" + iuid + "] has post pixel data. Rewriting file to include indicator flag");
 
-                    FileInputStream fis = new FileInputStream(file);
-                    BufferedInputStream bis = new BufferedInputStream(fis);
-                    Dataset fileDs = objFact.newDataset();
+            FileInputStream fis = new FileInputStream(file);
+            BufferedInputStream bis = new BufferedInputStream(fis);
+            Dataset fileDs = objFact.newDataset();
 
-                    DcmParser fileParser = DcmParserFactory.getInstance().newDcmParser(bis); 
-                    fileParser.setMaxValueLength(service.getMaxValueLength());
-                    fileParser.setDcmHandler(fileDs.getDcmHandler());
-                    fileParser.parseDcmFile(null, -1);
-                    putPrivatePostPixelIndicator(fileDs);	
+            DcmParser fileParser = DcmParserFactory.getInstance().newDcmParser(bis); 
+            fileParser.setMaxValueLength(service.getMaxValueLength());
+            fileParser.setDcmHandler(fileDs.getDcmHandler());
+            fileParser.parseDcmFile(null, -1);
+            putPrivatePostPixelIndicator(fileDs);	
 
-                    bis.close();
-                    deleteFailedStorage(file);
-                    file = makeFile(baseDir, fileDs, callingAET);
-                    md5sum = storeToFile(fileParser, fileDs, file, compressCmd, getByteBuffer(assoc));					 					 
+            try {
+                bis.close();
+            } catch (IOException e) {
+                log.warn("Exception closing stream when preparing to write post pixel data", e);
+            }
+            // Don't delete or recreate the file for the second write. By default storeToFile will open the file for writing
+            // configured for overwrite instead of append.
+            md5sum = storeToFile(fileParser, fileDs, file, compressCmd, getByteBuffer(assoc));					 					 
 
-                }
+        }
 
-                return md5sum;
+        return md5sum;
     }
 
     protected SeriesStored handleSeriesStored(Association assoc, Storage store, Dataset ds) throws FinderException,
