@@ -1109,4 +1109,8 @@ public class StoreScpService extends AbstractScpService {
     	msg.validate();
     	Logger.getLogger("auditlog").info(msg);
     }
+
+    protected String getOriginalCallingAET(Dataset ds, String callingAET) throws DcmServiceException {
+		return callingAET;
+	}
 }

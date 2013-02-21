@@ -505,11 +505,12 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             Command rqCmd = rq.getCommand();
             Association assoc = activeAssoc.getAssociation();
             String callingAET = assoc.getCallingAET();
+            String originalCallingAET = service.getOriginalCallingAET(ds, callingAET);
             String calledAET = assoc.getCalledAET();
-            String iuid = checkSOPInstanceUID(rqCmd, ds, callingAET);
+            String iuid = checkSOPInstanceUID(rqCmd, ds, originalCallingAET);
             checkAppendPermission(assoc, ds);
-            if (!checkOnlyWellKnownInstances(assoc, iuid, callingAET)) {
-                log.info("StoreSCP only accepts well known instances from AE "+callingAET+
+            if (!checkOnlyWellKnownInstances(assoc, iuid, originalCallingAET)) {
+                log.info("StoreSCP only accepts well known instances from AE "+ originalCallingAET+
                         " ! Ignored Instance:"+iuid);
                 return;
             }
@@ -550,7 +551,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     STORE_XSL, ds, assoc);
             if ( coerceBeforeWrite ) {
                 ds.setPrivateCreatorID(PrivateTags.CreatorID);
-                ds.putAE(PrivateTags.CallingAET, callingAET);
+                ds.putAE(PrivateTags.CallingAET, originalCallingAET);
                 ds.putAE(PrivateTags.CalledAET, calledAET);
                 ds.setPrivateCreatorID(null);
                 if (coerced != null) {
@@ -631,12 +632,12 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                             .getAffectedSOPInstanceUID(), tsuid));
                 }
             } else {
-                String fsgrpid = service.selectFileSystemGroup(callingAET, calledAET, ds);
+                String fsgrpid = service.selectFileSystemGroup(originalCallingAET, calledAET, ds);
                 fsDTO = service.selectStorageFileSystem(fsgrpid);
                 retrieveAET = fsDTO.getRetrieveAET();
                 availability = Availability.toString(fsDTO.getAvailability());
                 File baseDir = FileUtils.toFile(fsDTO.getDirectoryPath());
-                file = makeFile(baseDir, ds, callingAET);
+                file = makeFile(baseDir, ds, originalCallingAET);
                 filePath = file.getPath().substring(
                         baseDir.getPath().length() + 1).replace(
                         File.separatorChar, '/');
@@ -671,7 +672,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             ds.putAE(Tags.RetrieveAET, retrieveAET);
             if ( ! coerceBeforeWrite ) {
                 ds.setPrivateCreatorID(PrivateTags.CreatorID);
-                ds.putAE(PrivateTags.CallingAET, callingAET);
+                ds.putAE(PrivateTags.CallingAET, originalCallingAET);
                 ds.putAE(PrivateTags.CalledAET, calledAET);
                 ds.setPrivateCreatorID(null);
                 if (coerced != null) {
@@ -679,7 +680,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 }
                 service.postCoercionProcessing(ds);
             }
-            checkPatientIdAndName(ds, callingAET);
+            checkPatientIdAndName(ds, originalCallingAET);
             Storage store = getStorage(assoc);
             SeriesStored seriesStored = handleSeriesStored(assoc, store, ds);
             boolean newSeries = seriesStored == null;
@@ -692,15 +693,17 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     coerced = merge(coerced, mergeMatchingMWLItem(assoc, ds,
                             seriuid, mwlFilter));
                 }
-                if (!callingAET.equals(calledAET)) {
+                if (!originalCallingAET.equals(calledAET)) {
                     service.ignorePatientIDForUnscheduled(ds,
-                            Tags.RequestAttributesSeq, callingAET);
-                    service.supplementIssuerOfPatientID(ds, assoc, 
-                            callingAET, false);
-                    service.supplementIssuerOfAccessionNumber(ds, assoc,
-                            callingAET, false);
-                    service.supplementInstitutionalData(ds, assoc, callingAET);
-                    service.generatePatientID(ds, ds, calledAET);
+                            Tags.RequestAttributesSeq, originalCallingAET);
+                     service.ignorePatientIDForUnscheduled(ds,
+                             Tags.RequestAttributesSeq, originalCallingAET);
+                     service.supplementIssuerOfPatientID(ds, assoc, 
+                             originalCallingAET, false);
+                     service.supplementIssuerOfAccessionNumber(ds, assoc,
+                             originalCallingAET, false);
+                    service.supplementInstitutionalData(ds, assoc, originalCallingAET);
+                    service.generatePatientID(ds, ds, originalCallingAET);
                 }
                 newStudy = !store.studyExists(ds.getString(Tags.StudyInstanceUID));
             }
@@ -722,7 +725,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                         fileLength, md5sum, 0, newSeries, clearExternalRetrieveAET);
             }
             if(newSeries) {
-               seriesStored = initSeriesStored(ds, callingAET, retrieveAET);
+               seriesStored = initSeriesStored(ds, originalCallingAET, retrieveAET);
                assoc.putProperty(SERIES_STORED, seriesStored);
                if (newStudy) {
                    service.sendNewStudyNotification(ds);
