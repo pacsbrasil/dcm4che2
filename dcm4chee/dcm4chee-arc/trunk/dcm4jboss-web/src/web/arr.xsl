@@ -11,7 +11,7 @@
 
 <table border="0" width="100%" height="100%">
 <tr><td>
-	<iframe src="../dcm4chee-arr" width="100%" height="100%">
+	<iframe src="../dcm4chee-arr/main.seam" width="100%" height="100%">
 		IFrame is not support!
 	</iframe>
 </td></tr>
