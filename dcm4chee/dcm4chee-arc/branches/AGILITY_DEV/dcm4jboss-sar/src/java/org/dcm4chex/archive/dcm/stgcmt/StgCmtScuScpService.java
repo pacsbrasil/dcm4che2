@@ -516,11 +516,10 @@ public class StgCmtScuScpService extends AbstractScpService implements
     }
 
     private void process(StgCmtOrder order) throws Exception {
-        AEManager aeMgr = aeMgr();
         String aet = order.getCalledAET();
         String callingAET = getCallingAET(order);
-        AEDTO callingAE = aeMgr.findByAET(callingAET);
-        AEDTO remoteAE = aeMgr.findByAET(aet);
+        AEDTO callingAE = getAEDTO(callingAET);
+        AEDTO remoteAE = getAEDTO(aet);
         Dataset ds = order.isScpRole() ? commit(order) : order.getActionInfo();
         AssociationFactory af = AssociationFactory.getInstance();
         Association a = af.newRequestor(tlsConfig.createSocket(callingAE, remoteAE));
@@ -577,6 +576,12 @@ public class StgCmtScuScpService extends AbstractScpService implements
                         e);
             }
         }
+    }
+
+    protected AEDTO getAEDTO(String callingAET) throws Exception {
+        AEManager aeMgr = aeMgr();
+        AEDTO callingAE = aeMgr.findByAET(callingAET);
+        return callingAE;
     }
 
 	// allow the calling AET to be overridden in subclasses
