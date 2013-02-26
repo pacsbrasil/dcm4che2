@@ -85,6 +85,11 @@ public class ItemParser implements StreamSegmentMapper {
                     UID.JPEGLosslessHierarchical29Retired, UID.JPEGLossless,
                     UID.JPEGLSLossless, UID.JPEGLSLossyNearLossless,
                     UID.JPEG2000LosslessOnly, UID.JPEG2000 }));
+    
+    private static final HashSet<String> VIDEO_TS = new HashSet<String>(
+        Arrays.asList(new String[] { UID.MPEG2, UID.MPEG2MainProfileHighLevel,
+        		UID.MPEG4AVCH264BDCompatibleHighProfileLevel41, 
+        		UID.MPEG4AVCH264HighProfileLevel41 }));
 
     public static final class Item {
 
@@ -142,7 +147,7 @@ public class ItemParser implements StreamSegmentMapper {
         this.dis = dis;
         this.iis = iis;
         // Handle video type data - eventually there should be another way to compute this
-        if( UID.MPEG2.equals(tsuid) ) numberOfFrames = 1;
+        if( VIDEO_TS.contains(tsuid) ) numberOfFrames = 1;
         this.numberOfFrames = numberOfFrames; 
         this.firstItemOfFrame = new ArrayList<Item>(numberOfFrames);
         this.rle = UID.RLELossless.equals(tsuid);
