@@ -101,6 +101,7 @@ import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.PIDWithIssuer;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.dcm.AbstractScpService;
+import org.dcm4chex.archive.dcm.qrscp.FileRetrieveFailedException;
 import org.dcm4chex.archive.ejb.conf.AttributeFilter;
 import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
@@ -1448,7 +1449,13 @@ public class QueryRetrieveScpService extends AbstractScpService {
         Association assoc = activeAssoc.getAssociation();
         String dest = assoc.isRequestor() ? assoc.getCalledAET() 
                 : assoc.getCallingAET();
-        File f = getFile(info);
+        
+        File f;
+        try {
+        	f = getFile(info);
+        } catch (Exception e) {
+        	throw new FileRetrieveFailedException("failed to retrieve file from local storage", e);
+        }
         PresContext presCtx = selectAcceptedPresContext(assoc, info);
         if (presCtx == null)
             throw new NoPresContextException(

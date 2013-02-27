@@ -68,6 +68,7 @@ import org.dcm4che.net.Dimse;
 import org.dcm4che.net.DimseListener;
 import org.dcm4che.net.PDU;
 import org.dcm4chex.archive.common.Availability;
+import org.dcm4chex.archive.dcm.qrscp.FileRetrieveFailedException;
 import org.dcm4chex.archive.common.PIDWithIssuer;
 import org.dcm4chex.archive.ejb.interfaces.AEDTO;
 import org.dcm4chex.archive.ejb.jdbc.FileInfo;
@@ -111,6 +112,10 @@ public class MoveTask implements Runnable {
     private final Set<String> remainingIUIDs;
 
     private final Set<String> failedIUIDs;
+
+    private final Set<String> failedOnlineRetrieveIUIDs;
+    
+    private final Set<String> failedNearlineRetrieveIUIDs;
 
     private final Map<PIDWithIssuer, Set<PIDWithIssuer>> pixQueryResults;
 
@@ -191,6 +196,8 @@ public class MoveTask implements Runnable {
         this.retrieveInfo = new RetrieveInfo(service, fileInfo);
         this.remainingIUIDs = retrieveInfo.getAvailableIUIDs();
         this.failedIUIDs = retrieveInfo.getNotAvailableIUIDs();
+        this.failedOnlineRetrieveIUIDs = new HashSet<String>();
+        this.failedNearlineRetrieveIUIDs = new HashSet<String>();
         moveAssoc.addCancelListener(msgID, cancelListener);
         this.pixQueryResults = service.isAdjustPatientIDOnRetrieval()
                 ? new HashMap<PIDWithIssuer, Set<PIDWithIssuer>>()
@@ -378,6 +385,69 @@ public class MoveTask implements Runnable {
                 new HashSet<StudyInstanceUIDAndDirPath>();
         Association a = storeAssoc.getAssociation();
         Collection<List<FileInfo>> localFiles = retrieveInfo.getLocalFiles();
+
+        makeCStoreRQs(localFiles, storeAssoc, studyInfos, failedOnlineRetrieveIUIDs);
+        
+        // Failover to nearline retrieve in a single batch for all instances that failed during online retrievals 
+        if (!failedOnlineRetrieveIUIDs.isEmpty()) {
+        	Collection<List<FileInfo>> nearlineFilesToRetrieve = new ArrayList<List<FileInfo>>();
+        	for (Iterator<String> iter = failedOnlineRetrieveIUIDs.iterator(); iter.hasNext();) {
+        		String iuid = iter.next();
+        		List<FileInfo> nearlineFiles = retrieveInfo.getNearlineFiles(iuid);
+        		if (nearlineFiles.isEmpty()) {
+        			if (log.isDebugEnabled()) {
+        				log.debug("instance failed online retrieval has no nearline location to fail over to, iuid " + iuid);
+        			}
+        			failedIUIDs.add(iuid);
+                    remainingIUIDs.remove(iuid);
+                    --remaining;
+        		} else {
+        			if (log.isDebugEnabled()) {
+        				log.debug("retrieve failing over from online to nearline storage, iuid " + iuid);
+        			}
+        			nearlineFilesToRetrieve.add(nearlineFiles);
+        		}
+        	}
+        	if (!nearlineFilesToRetrieve.isEmpty()) {
+        		try {
+        			service.prefetchTars(nearlineFilesToRetrieve);
+        			makeCStoreRQs(nearlineFilesToRetrieve, storeAssoc, studyInfos, failedNearlineRetrieveIUIDs);
+        		} catch (Exception e) {
+                    log.error(e.getMessage(), e);
+                }
+        	}
+        }
+        
+        if (a.getState() == Association.ASSOCIATION_ESTABLISHED) {
+            try {
+            	perfMon.assocRelStart(a, Command.C_STORE_RQ);
+            	
+                storeAssoc.release(true);
+                
+                perfMon.assocRelEnd(a, Command.C_STORE_RQ);
+                
+                // workaround to ensure that last STORE-RSP is processed before
+                // finally MOVE-RSP is sent
+                Thread.sleep(10);
+            } catch (Exception e) {
+                log.error("Exception during release:", e);
+            }
+        } else {
+            try {
+                a.abort(AssociationFactory.getInstance().newAAbort(
+                        AAbort.SERVICE_PROVIDER, AAbort.REASON_NOT_SPECIFIED));
+            } catch (IOException ignore) {
+            }
+        }
+        if (!successfulTransferred.isEmpty()) {
+            service.logInstancesSent(moveAssoc.getAssociation(), a, successfulTransferred);
+            service.onInstancesRetrieved(moveCalledAET, moveDest, stgCmtActionInfo);
+        }
+        service.updateStudyAccessTime(studyInfos);
+    }
+
+    private void makeCStoreRQs(Collection<List<FileInfo>> localFiles, ActiveAssociation storeAssoc, 
+    		Set<StudyInstanceUIDAndDirPath> studyInfos, Set<String> failedStorageRetrieveIUIDs) {
         for (List<FileInfo> list : localFiles) {
             final FileInfo fileInfo = list.get(0);
             final String iuid = fileInfo.sopIUID;
@@ -411,6 +481,19 @@ public class MoveTask implements Runnable {
                 rq = service.makeCStoreRQ(storeAssoc, fileInfo, aeData, 
                         priority, moveOriginatorAET, msgID, perfMon,
                         pixQueryResults);
+            } catch (FileRetrieveFailedException frfe) {
+            	// failed during online/nearline retrieve
+            	log.error(frfe.getMessage(), frfe);
+            	
+            	if (fileInfo.availability == Availability.NEARLINE) {
+            		failedIUIDs.add(iuid);
+                    remainingIUIDs.remove(iuid);
+                    --remaining;
+            	} else {
+            		// failed online retrieve, add to list for fail over to nearline later
+            		failedStorageRetrieveIUIDs.add(iuid);
+            	}
+            	continue;
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
                 failedIUIDs.add(iuid);
@@ -418,6 +501,7 @@ public class MoveTask implements Runnable {
                 --remaining;
                 continue;
             }
+            
             try {
                 perfMon.start(storeAssoc, rq, PerfCounterEnum.C_STORE_SCU_OBJ_OUT );
                 perfMon.setProperty(storeAssoc, rq, PerfPropertyEnum.REQ_DIMSE, rq);
@@ -436,33 +520,7 @@ public class MoveTask implements Runnable {
             if (canceled || a.getState() != Association.ASSOCIATION_ESTABLISHED) {
                 break;
             }
-        }
-        if (a.getState() == Association.ASSOCIATION_ESTABLISHED) {
-            try {
-            	perfMon.assocRelStart(a, Command.C_STORE_RQ);
-            	
-                storeAssoc.release(true);
-                
-                perfMon.assocRelEnd(a, Command.C_STORE_RQ);
-                
-                // workaround to ensure that last STORE-RSP is processed before
-                // finally MOVE-RSP is sent
-                Thread.sleep(10);
-            } catch (Exception e) {
-                log.error("Exception during release:", e);
-            }
-        } else {
-            try {
-                a.abort(AssociationFactory.getInstance().newAAbort(
-                        AAbort.SERVICE_PROVIDER, AAbort.REASON_NOT_SPECIFIED));
-            } catch (IOException ignore) {
-            }
-        }
-        if (!successfulTransferred.isEmpty()) {
-            service.logInstancesSent(moveAssoc.getAssociation(), a, successfulTransferred);
-            service.onInstancesRetrieved(moveCalledAET, moveDest, stgCmtActionInfo);
-        }
-        service.updateStudyAccessTime(studyInfos);
+        }   
     }
 
     private void updateStgCmtActionInfo(FileInfo fileInfo) {
