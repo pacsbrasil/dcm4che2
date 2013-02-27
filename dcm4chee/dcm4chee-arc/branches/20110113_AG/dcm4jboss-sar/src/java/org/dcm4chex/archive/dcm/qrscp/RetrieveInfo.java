@@ -302,6 +302,22 @@ public class RetrieveInfo {
     public Collection<List<FileInfo>> getLocalFiles() {
         return localFilesByIuid.values();
     }
+    
+    public List<FileInfo> getLocalFiles(String iuid) {
+    	List<FileInfo> list = localFilesByIuid.get(iuid);
+    	return list == null ? new ArrayList<FileInfo>() : list;
+    }
+    
+    public List<FileInfo> getNearlineFiles(String iuid) {
+    	List<FileInfo> nearlineFiles = new ArrayList<FileInfo>();
+    	for (Iterator<FileInfo> iter = getLocalFiles(iuid).iterator(); iter.hasNext();) {
+    		FileInfo fi = iter.next();
+    		if (fi.availability==Availability.NEARLINE) {
+    			nearlineFiles.add(fi);
+    		}		
+    	}
+    	return nearlineFiles;
+    }
 
     public final Set<String> removeLocalIUIDs() {
         Set<String> iuids = localFilesByIuid.keySet();
