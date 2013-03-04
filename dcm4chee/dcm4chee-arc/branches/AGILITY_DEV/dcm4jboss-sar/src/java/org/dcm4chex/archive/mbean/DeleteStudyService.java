@@ -251,7 +251,7 @@ public class DeleteStudyService extends ServiceMBeanSupport
         }
     }
 
-    private void deleteStudy(DeleteStudyOrder order) throws Exception {
+    protected void deleteStudy(DeleteStudyOrder order) throws Exception {
         FileSystemMgt2 fsMgt = fileSystemMgt();
         Dataset ian = null;
         // prepare IAN if study may be deleted from DB by fsMgt.deleteStudy()
@@ -313,7 +313,7 @@ public class DeleteStudyService extends ServiceMBeanSupport
         }
     }
 
-    private void deleteSeries(DeleteStudyOrder order) throws Exception {
+    protected void deleteSeries(DeleteStudyOrder order) throws Exception {
         FileSystemMgt2 fsMgt = fileSystemMgt();
         Collection<Long> seriesPks = fsMgt.getSeriesPks(order);
         FileSystemDTO fsDto = fsMgt.getFileSystem(order.getFsPk()); 
