@@ -185,6 +185,13 @@ public abstract class MPPSManagerBean implements SessionBean {
                 return patHome.create(ds.subSet(PATIENT_ATTRS_INC));
             }
         } catch (Exception e) {
+            String msg = "Error %s during findOrCreatePatient for (iuid=%s, StudyIUid=%s, PatientID=%s, IssuerOfPatientID=%s)";
+            log.info(String.format(msg, 
+                    e.getMessage(),
+                    ds.getString(Tags.SOPInstanceUID), 
+                    ds.getString(Tags.StudyInstanceUID), 
+                    ds.getString(Tags.PatientID), 
+                    ds.getString(Tags.IssuerOfPatientID)), e);
             throw new DcmServiceException(Status.ProcessingFailure, e);
         }
     }
