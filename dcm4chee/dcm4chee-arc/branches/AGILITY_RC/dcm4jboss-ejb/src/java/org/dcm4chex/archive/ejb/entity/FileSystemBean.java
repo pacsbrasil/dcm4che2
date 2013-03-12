@@ -254,7 +254,7 @@ public abstract class FileSystemBean implements EntityBean {
         sb.append(", ").append(FileSystemStatus.toString(getStatus()));
         sb.append(", userinfo=").append(getUserInfo());
         FileSystemLocal next = getNextFileSystem();
-        if (next != null && !next.isIdentical(ctx.getEJBLocalObject()))
+        if (next != null)
             sb.append(", next=").append(next.getDirectoryPath());
         sb.append("]");
         return sb.toString();

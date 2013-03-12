@@ -48,7 +48,6 @@ import java.util.Set;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
-import javax.ejb.EJBHome;
 import javax.ejb.EntityBean;
 import javax.ejb.EntityContext;
 import javax.ejb.FinderException;
@@ -63,7 +62,6 @@ import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.DcmServiceException;
-import org.dcm4che.util.SystemUtils;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.DatasetUtils;
@@ -76,11 +74,9 @@ import org.dcm4chex.archive.ejb.interfaces.MediaDTO;
 import org.dcm4chex.archive.ejb.interfaces.MediaLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
-import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.dcm4chex.archive.util.AETs;
 import org.dcm4chex.archive.util.Convert;
-import org.dcm4chex.archive.util.EJBHomeFactory;
 
 /**
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger</a>
@@ -90,7 +86,6 @@ import org.dcm4chex.archive.util.EJBHomeFactory;
  *           view-type="local"
  *           local-jndi-name="ejb/Study" 
  *           primkey-field="pk"
- *           reentrant="true"
  * @jboss.container-configuration name="Instance Per Transaction CMP 2.x EntityBean"
  * @ejb.persistence table-name="study"
  * @ejb.transaction type="Required"
@@ -169,12 +164,10 @@ public abstract class StudyBean implements EntityBean {
     private static final Class[] STRING_PARAM = new Class[] { String.class };
     
     private CodeLocalHome codeHome;
-    private EntityContext ejbctx;
 
     private IssuerLocalHome issuerHome;
 
     public void setEntityContext(EntityContext ctx) {
-    	ejbctx = ctx;
         Context jndiCtx = null;
         try {
             jndiCtx = new InitialContext();
@@ -328,33 +321,7 @@ public abstract class StudyBean implements EntityBean {
      */
     public abstract String getStudyCustomAttribute3();
     public abstract void setStudyCustomAttribute3(String value);
-    
-    /**
-     * Study Version
-     *
-     * @ejb.interface-method
-     * @ejb.persistence column-name="version"
-     */
-    public abstract int getVersion();
 
-    /**
-     * @ejb.interface-method
-     */
-    public abstract void setVersion(int version);    
-    
-    /**
-     * Study Version
-     *
-     * @ejb.interface-method
-     * @ejb.persistence column-name="num_delta_instances"
-     */
-    public abstract int getNumDeltaInstances();
-
-    /**
-     * @ejb.interface-method
-     */
-    public abstract void setNumDeltaInstances(int numDeltaInstances);   
-    
     /**
      * Study Status
      *
@@ -790,47 +757,16 @@ public abstract class StudyBean implements EntityBean {
      */
     public boolean updateNumberOfStudyRelatedInstances() {
         int numI;
-        boolean updateFlag = false;
         try {
             numI = ejbSelectNumberOfStudyRelatedInstances(getPk());
         } catch (FinderException e) {
             throw new EJBException(e);
         }
-        if (getNumberOfStudyRelatedInstances() != numI) {
-         	setNumberOfStudyRelatedInstances(numI);
-         	updateFlag = true;
-         }        
-         
-         // If number of instance is changed, then calls the onUpdateNumInstance()
-         // handler of the specified session bean referenced by the given JNDI name
-         // configured at onUpdateNotifier.
-         String jndiName = null;
-         String notifierClassName = null;
-         try {        	
-             jndiName = SystemUtils.getSystemProperty("onUpdateNotifierJNDIName", null);
-             notifierClassName = SystemUtils.getSystemProperty("onUpdateNotifierHome", null); 
-             if (jndiName != null && notifierClassName != null) {
-                 Class clazz = Class.forName(notifierClassName);
-                 EJBHome home = EJBHomeFactory
-                         .getFactory().lookup(clazz, jndiName);
-                 Method createMethod = home.getClass().getMethod("create", (Class[])null);
-                 Object theSessionBean = createMethod.invoke(home, new Object[0]);
-                 Method onUpdateNumInstanceMethod = 
-                     theSessionBean.getClass().getMethod("onUpdateStudyNumInstance",
-                             new Class[] {StudyLocal.class});
-                 onUpdateNumInstanceMethod.invoke(theSessionBean,
-                         (StudyLocal) ejbctx.getEJBLocalObject());
-             }
-             else if (jndiName != null) {
-                 log.warn("onUpdateNotifierJNDIName is speicified but onUpdateNotifierHome is not. No notification is triggered.");
-             }
-             else if (notifierClassName != null) {
-                 log.warn("onUpdateNotifierHome is speicified but onUpdateNotifierJNDIName is not. No notification is triggered.");
-             }
-         } catch (Exception e) {
-             log.error("Failed to notify onUpdateNumInstance to Session Bean " + jndiName, e);
+        if (getNumberOfStudyRelatedInstances() == numI) {
+            return false;
         }
-         return updateFlag;
+        setNumberOfStudyRelatedInstances(numI);
+        return true;
     }
 
     /**
