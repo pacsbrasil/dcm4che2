@@ -39,6 +39,13 @@
 
 package org.dcm4chex.archive.ejb.entity;
 
+import java.lang.reflect.InvocationTargetException;
+import javax.ejb.EJBHome;
+import javax.ejb.EJBLocalHome;
+import org.dcm4che.util.SystemUtils;
+import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.dcm4che.dict.UIDs;
+
 import java.lang.reflect.Method;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -87,7 +94,7 @@ import org.dcm4chex.archive.util.Convert;
  * @version $Revision$ $Date$
  *
  * @ejb.bean name="Series" type="CMP" view-type="local" primkey-field="pk"
- *           local-jndi-name="ejb/Series"
+ *           local-jndi-name="ejb/Series"  reentrant="true"
  * @jboss.container-configuration name="Instance Per Transaction CMP 2.x EntityBean"
  * @ejb.transaction type="Required"
  * @ejb.persistence table-name="series"
@@ -880,6 +887,37 @@ public abstract class SeriesBean implements EntityBean {
             return false;
         }
         setNumberOfSeriesRelatedInstances(numI);
+        
+        // If number of instance is changed, then calls the onUpdateNumInstance()
+        // handler of the specified session bean referenced by the given JNDI name
+        // configured at onUpdateNotifier.
+        String jndiName = null;
+        String notifierClassName = null;
+        try {
+            jndiName = SystemUtils.getSystemProperty("onUpdateNotifierJNDIName", null);
+            notifierClassName = SystemUtils.getSystemProperty("onUpdateNotifierHome", null); 
+            if (jndiName != null && notifierClassName != null) {
+                Class clazz = Class.forName(notifierClassName);
+                EJBHome home = EJBHomeFactory
+                        .getFactory().lookup(clazz, jndiName);
+                Method createMethod = home.getClass().getMethod("create", (Class[])null);
+                Object theSessionBean = createMethod.invoke(home, new Object[0]);
+                Method onUpdateNumInstanceMethod = 
+                    theSessionBean.getClass().getMethod("onUpdateNumInstance",
+                            new Class[] {SeriesLocal.class});
+                onUpdateNumInstanceMethod.invoke(theSessionBean,
+                        (SeriesLocal) ejbctx.getEJBLocalObject());
+            }
+            else if (jndiName != null) {
+            	log.warn("onUpdateNotifierJNDIName is speicified but onUpdateNotifierHome is not. No notification is triggered.");
+            }
+            else if (notifierClassName != null) {
+            	log.warn("onUpdateNotifierHome is speicified but onUpdateNotifierJNDIName is not. No notification is triggered.");
+            }
+        } catch (Exception e) {
+            log.error("Failed to notify onUpdateNumInstance to Session Bean " + jndiName, e);
+        }
+         
         return true;
     }
 
@@ -1051,11 +1089,24 @@ public abstract class SeriesBean implements EntityBean {
     public void coerceAttributes(Dataset ds, Dataset coercedElements)
     throws DcmServiceException {
         AttributeFilter filter = AttributeFilter.getSeriesAttributeFilter();
+        coerceAttributes(ds, coercedElements, filter);
+    }
+
+    /**
+     * @throws DcmServiceException 
+     * @ejb.interface-method
+     */
+    public void coerceAttributes(Dataset ds, Dataset coercedElements, String filterCuid) throws DcmServiceException {
+        AttributeFilter filter = AttributeFilter.getInstanceAttributeFilter(filterCuid);
+        coerceAttributes(ds, coercedElements, filter);
+    }
+
+    private void coerceAttributes(Dataset ds, Dataset coercedElements, AttributeFilter filter) throws DcmServiceException {
         if (filter.isOverwrite()) {
             Dataset attrs;
             if (filter.isMerge()) {
                 attrs = getAttributes(false);
-                AttrUtils.updateAttributes(attrs, filter.filter(ds), null, log);
+                AttrUtils.updateAttributes(attrs, filter.filter(ds), coercedElements, log);
             } else {
                 attrs = filter.filter(ds);
             }

@@ -224,23 +224,33 @@ public abstract class StudyMgtBean implements SessionBean {
             throws DcmServiceException {
         try {
             PatientLocal patient = getStudy(iuid).getPatient();
-            Dataset origModAttrs = (modAttrs == null)?null: DcmObjectFactory.getInstance().newDataset(); 	
-            if(patient.updateAttributes(ds, origModAttrs)) {
+            Dataset origModAttrs = (modAttrs == null)?null: DcmObjectFactory.getInstance().newDataset(); 
+                        
+            DcmElement el = modAttrs.putSQ(Tags.OriginalAttributesSeq);
+            Dataset item = el.addNewItem();
+                        
+            if(patient.updateAttributes(ds, origModAttrs)) {                
+            	item.putAll(origModAttrs);                
                 AttrUtils.fetchModifiedAttributes(ds, origModAttrs, modAttrs, AttributeFilter.getPatientAttributeFilter());
             }   
         } catch (Exception e) {
             throw new EJBException(e);
         }
     }
-     
+    
     /**
      * @ejb.interface-method
      */
     public void updateStudyOnly(String iuid, Dataset ds, Dataset modAttrs) throws DcmServiceException {
         try {
             StudyLocal study = getStudy(iuid);
-            Dataset origModAttrs = (modAttrs== null)?null:DcmObjectFactory.getInstance().newDataset(); 	
+            Dataset origModAttrs = (modAttrs== null)?null:DcmObjectFactory.getInstance().newDataset();
+            
+            DcmElement el = modAttrs.putSQ(Tags.OriginalAttributesSeq);
+            Dataset item = el.addNewItem();
+            
             if(study.updateAttributes(ds, origModAttrs) ) {
+                item.putAll(origModAttrs);
                 AttrUtils.fetchModifiedAttributes(ds, origModAttrs, modAttrs, AttributeFilter.getStudyAttributeFilter());
             }
         }

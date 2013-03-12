@@ -56,6 +56,7 @@ import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.PatientMatching;
@@ -300,12 +301,15 @@ public abstract class PatientUpdateBean implements SessionBean {
 
     private PatientLocal findAndUpdatePatient(Dataset ds, Dataset modified,
             PatientMatching matching) throws FinderException {
-    	Dataset origModAttrs=null;
-    	if( modified != null ) {
-    	   origModAttrs = DcmObjectFactory.getInstance().newDataset(); 	
-        }
-        PatientLocal pat = patHome.selectPatient(ds, matching, false);
+    	
+    	Dataset origModAttrs = DcmObjectFactory.getInstance().newDataset();
+    	
+        DcmElement el = ds.putSQ(Tags.OriginalAttributesSeq);
+        Dataset item = el.addNewItem();
+        
+    	PatientLocal pat = patHome.selectPatient(ds, matching, false);
         if( pat.updateAttributes(ds, origModAttrs) ) {
+        	item.putAll(origModAttrs);
             AttrUtils.fetchModifiedAttributes(ds, origModAttrs, modified);
         }
         return pat;

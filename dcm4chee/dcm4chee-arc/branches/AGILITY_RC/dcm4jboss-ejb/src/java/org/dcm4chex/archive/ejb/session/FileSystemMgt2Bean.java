@@ -289,6 +289,7 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
 
     /**
      * @ejb.interface-method
+     * @ejb.transaction type="RequiresNew"
      */
     public FileSystemDTO updateFileSystemStatus(String groupID, String dirPath,
             int status) throws FinderException {

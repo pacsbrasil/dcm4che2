@@ -39,6 +39,7 @@
 
 package org.dcm4chex.archive.ejb.session;
 
+import java.lang.reflect.Method;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Collection;
@@ -55,6 +56,9 @@ import javax.ejb.ObjectNotFoundException;
 import javax.ejb.RemoveException;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
+import javax.management.MBeanServer;
+import javax.management.MBeanServerConnection;
+import javax.management.ObjectName;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -67,6 +71,7 @@ import org.dcm4che.data.FileMetaInfo;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.DcmServiceException;
+import org.dcm4che.util.SystemUtils;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.PatientMatching;
@@ -84,7 +89,6 @@ import org.dcm4chex.archive.ejb.interfaces.SeriesLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocalHome;
-import org.dcm4chex.archive.exceptions.NonUniquePatientException;
 import org.dcm4chex.archive.exceptions.NonUniquePatientIDException;
 
 /**
@@ -133,12 +137,14 @@ public abstract class StorageBean implements SessionBean {
     private static final int MAX_PK_CACHE_ENTRIES = 100;
     private static Map seriesPkCache = Collections.synchronizedMap(
      new LinkedHashMap() {
-        protected boolean removeEldestEntry(Map.Entry eldest) {
+        @Override
+		protected boolean removeEldestEntry(Map.Entry eldest) {
            return size() > MAX_PK_CACHE_ENTRIES;
         }
     });
 
-    public void setSessionContext(SessionContext ctx) {
+    @Override
+	public void setSessionContext(SessionContext ctx) {
         sessionCtx = ctx;
         Context jndiCtx = null;
         try {
@@ -225,10 +231,14 @@ public abstract class StorageBean implements SessionBean {
             }
             instance.setInstanceStatus(RECEIVED);
             instance.getSeries().setSeriesStatus(RECEIVED);
+            
+            StudyLocal studylocal = instance.getSeries().getStudy();
+            studylocal.setVersion(studylocal.getVersion() + 1);
+            
             log.info("inserted records for instance[uid=" + iuid + "]");
             return coercedElements;
         } catch (Exception e) {
-            log.warn("inserting records for instance[uid=" + iuid
+        	log.warn("inserting records for instance[uid=" + iuid
                     + "] failed: " + e.getMessage());
             if (canRollback) sessionCtx.setRollbackOnly(); 
             if (e instanceof NonUniquePatientIDException) {
@@ -394,6 +404,15 @@ public abstract class StorageBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
+    public void updateDerivedSeriesFields(String seriuid)
+    throws FinderException {
+       SeriesLocal series = findBySeriesIuid(seriuid);
+       UpdateDerivedFieldsUtils.updateDerivedFieldsOf(series);
+    }
+    
+    /**
+     * @ejb.interface-method
+     */
     public void storeFile(java.lang.String iuid, java.lang.String tsuid,
             java.lang.String dirpath, java.lang.String fileid,
             int size, byte[] md5, int status)
@@ -426,7 +445,7 @@ public abstract class StorageBean implements SessionBean {
         coerceSeriesIdentity(series, ds, coercedElements);
         return series;
     }
-
+    
     private StudyLocal getStudy(PatientMatching matching, Dataset ds,
             Dataset coercedElements) throws Exception {
         final String uid = ds.getString(Tags.StudyInstanceUID);
@@ -435,8 +454,22 @@ public abstract class StorageBean implements SessionBean {
             study = studyHome.findByStudyIuid(uid);
         } catch (ObjectNotFoundException onfe) {
             try {
-                return studyHome.create(ds,
-                        getPatient(matching, ds, coercedElements));
+        		Context jndiCtx = new InitialContext();
+        	   	Object service = jndiCtx.lookup("VolumeLicenseCheckerLocal");
+        	   	
+    			Method createMethod = service.getClass().getMethod("isLicenseValid", (Class[]) null);
+    			boolean results = false;
+    			try {
+    			    results = (Boolean) createMethod.invoke(service,  new Object[0]);
+    			} catch (Exception e) {
+    			    throw new EJBException("Could not store study " + uid + " because a Storage volume license utility threw the following error:", e);
+    			}
+    			if (results) {
+    			    log.debug("Successfuly checked out a unit for the Storage Volume license for study " + uid);
+    			    return studyHome.create(ds, getPatient(matching, ds, coercedElements));
+    			} else {
+    			    throw new EJBException("Could not store study " + uid + " because a Storage volume license could not be checked out.");
+    			}
             } catch (CreateException e1) {
                 // check if Study record was inserted by concurrent thread
                 try {
@@ -452,35 +485,15 @@ public abstract class StorageBean implements SessionBean {
 
     private PatientLocal getPatient(PatientMatching matching, Dataset ds,
             Dataset coercedElements) throws Exception {
-        PatientLocal pat;
+        PatientLocal pat=null;
         try {
             pat = patHome.selectPatient(ds, matching, true);
         } catch (ObjectNotFoundException onfe) {
-            try {
-                pat = patHome.create(ds);
-                // Check if patient record was also inserted by concurrent thread
-                try {
-                    return patHome.selectPatient(ds, matching, true);
-                } catch (NonUniquePatientException nupe) {
-                    pat.remove();
-                    pat = patHome.selectPatient(ds, matching, true);
-                } catch (ObjectNotFoundException onfe2) {
-                    // Just inserted Patient not found because of missing value
-                    // of attribute configured as required for Patient Matching
-                    return pat;
-                }
-             } catch (CreateException ce) {
-                // Check if patient record was inserted by concurrent thread
-                // with unique index on (pat_id, pat_id_issuer)
-                 try {
-                     pat = patHome.selectPatient(ds, matching, true);
-                 } catch (ObjectNotFoundException onfe2) {
-                     throw ce;
-                 }
-            }
-        } catch (NonUniquePatientException nupe) {
-            return patHome.create(ds);
-        }
+            String pid = ds.getString(Tags.PatientID);
+            String issuer = ds.getString(Tags.IssuerOfPatientID);
+            throw new ObjectNotFoundException("Fail to get Patient Entity. [PatientID=" +pid +" IssuerOfPatientID=" + issuer + "]");
+        } 
+        
         coercePatientIdentity(pat, ds, coercedElements);
         return pat;
     }
