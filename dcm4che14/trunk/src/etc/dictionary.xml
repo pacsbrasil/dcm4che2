@@ -1172,6 +1172,7 @@
   <element tag="(0028,1202)" name="Green Palette Color Lookup Table Data" vr="OW" vm="1" key="GreenPaletteColorLUTData" />
   <element tag="(0028,1203)" name="Blue Palette Color Lookup Table Data" vr="OW" vm="1" key="BluePaletteColorLUTData" />
   <element tag="(0028,1204)" name="Alpha Palette Color Lookup Table Data" vr="OW" vm="1" key="AlphaPaletteColorLUTData" />
+  <element tag="(0028,1214)" name="Large Palette Color Lookup Table UID" vr="UI" vm="1" key="LargePaletteColorLUTUID" retired="true" />
   <element tag="(0028,1221)" name="Segmented Red Palette Color Lookup Table Data" vr="OW" vm="1" key="SegmentedRedPaletteColorLUTData" />
   <element tag="(0028,1222)" name="Segmented Green Palette Color Lookup Table Data" vr="OW" vm="1" key="SegmentedGreenPaletteColorLUTData" />
   <element tag="(0028,1223)" name="Segmented Blue Palette Color Lookup Table Data" vr="OW" vm="1" key="SegmentedBluePaletteColorLUTData" />
@@ -2318,6 +2319,7 @@
   <element tag="(300A,000E)" name="Prescription Description" vr="ST" vm="1" key="PrescriptionDescription" />
   <element tag="(300A,0010)" name="Dose Reference Sequence" vr="SQ" vm="1" key="DoseReferenceSeq" />
   <element tag="(300A,0012)" name="Dose Reference Number" vr="IS" vm="1" key="DoseReferenceNumber" />
+  <element tag="(300A,0013)" name="Dose Reference UID" vr="UI" vm="1" key="DoseReferenceUID" />
   <element tag="(300A,0014)" name="Dose Reference Structure Type" vr="CS" vm="1" key="DoseReferenceStructureType" />
   <element tag="(300A,0015)" name="Nominal Beam Energy Unit" vr="CS" vm="1" key="NominalBeamEnergyUnit" />
   <element tag="(300A,0016)" name="Dose Reference Description" vr="LO" vm="1" key="DoseReferenceDescription" />
@@ -2678,6 +2680,8 @@
   <element tag="(7FE0,0010)" name="Pixel Data" vr="OW,OB" vm="1" key="PixelData" />
 
   <element tag="(FFFC,FFFC)" name="Data Set Trailing Padding" vr="OB" vm="1" key="DataSetTrailingPadding" />
+
+  <element tag="(FFFA,FFFA)" name="Digital Signatures Sequence" vr="SQ" vm="1" key="DigitalSignaturesSeq" />
 
   <element tag="(FFFE,E000)" name="Item" vr="NONE" vm="1" key="Item" />
   <element tag="(FFFE,E00D)" name="Item Delimitation Item" vr="NONE" vm="1" key="ItemDelimitationItem" />
