@@ -43,9 +43,9 @@ import java.io.*;
 import java.util.*;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
+import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageInputStream;
-import com.sun.image.codec.jpeg.JPEGCodec;
-import com.sun.image.codec.jpeg.JPEGImageEncoder;
+import javax.imageio.stream.ImageOutputStream;
 
 /**
  *
@@ -53,16 +53,19 @@ import com.sun.image.codec.jpeg.JPEGImageEncoder;
  */
 public class Dcm2Jpg {
    
+   private final ImageReader dicomReader =
+         (ImageReader) ImageIO.getImageReadersByFormatName("DICOM").next();
+   private final ImageWriter jpegWriter =
+         (ImageWriter) ImageIO.getImageWritersByFormatName("JPEG").next();
+
    public void convert(File src, File dest, byte[] lut) throws IOException {
-      Iterator iter = ImageIO.getImageReadersByFormatName("DICOM");
-      ImageReader reader = (ImageReader)iter.next();
-      DcmImageReadParam param = (DcmImageReadParam) reader.getDefaultReadParam();
+      DcmImageReadParam param = (DcmImageReadParam) dicomReader.getDefaultReadParam();
       param.setPValToDDL(lut);
       ImageInputStream iis = ImageIO.createImageInputStream(src);
       BufferedImage bi;
       try {
-         reader.setInput(iis, false);
-         bi = reader.read(0, param);
+          dicomReader.setInput(iis, false);
+         bi = dicomReader.read(0, param);
          if (bi == null) {
             System.out.println("\nError: " + src + " - couldn't read!");
             return;
@@ -70,10 +73,11 @@ public class Dcm2Jpg {
       } finally {
          try { iis.close(); } catch (IOException ignore) {}
       }
-      OutputStream out = new BufferedOutputStream(new FileOutputStream(dest));
+      dest.delete();
+      ImageOutputStream out = ImageIO.createImageOutputStream(dest);
       try {
-         JPEGImageEncoder enc = JPEGCodec.createJPEGEncoder(out);
-         enc.encode(bi);
+          jpegWriter.setOutput(out);
+          jpegWriter.write(bi);
       }
       finally {
          out.close();
