@@ -9,7 +9,7 @@
    <property file="../build.properties" />
 
    <property name="name" value="dcm4che"/>
-   <property name="version" value="1.4.33"/>
+   <property name="version" value="1.4.34"/>
 
    <property name="javac.debug" value="on"/>
    <property name="javac.deprecation" value="off"/>
@@ -129,6 +129,7 @@
          optimize="${javac.optimize}"
          source="${javac.source}"
          target="${javac.target}"
+         includeantruntime="false"
       >
          <src path="${build.generate.dir}"/>
          <src path="${src.java.dir}"/>
