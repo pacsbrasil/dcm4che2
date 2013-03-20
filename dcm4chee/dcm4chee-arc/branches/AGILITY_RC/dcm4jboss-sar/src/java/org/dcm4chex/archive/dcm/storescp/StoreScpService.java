@@ -1008,7 +1008,7 @@ public class StoreScpService extends AbstractScpService {
         return defFileSystemGroupID;
     }
 
-    boolean isFileSystemGroupLocalAccessable(String fsgrpid) {
+    public boolean isFileSystemGroupLocalAccessable(String fsgrpid) {
         return fsmgt.isFileSystemGroupLocalAccessable(fsgrpid);
     }
 
