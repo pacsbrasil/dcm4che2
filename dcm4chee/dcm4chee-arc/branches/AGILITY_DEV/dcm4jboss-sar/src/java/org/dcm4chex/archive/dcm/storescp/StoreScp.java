@@ -179,9 +179,9 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     private int maxCountUpdateDatabaseRetries = 0;
 
-    private boolean storeDuplicateIfDiffMD5 = true;
+    protected boolean storeDuplicateIfDiffMD5 = true;
 
-    private boolean storeDuplicateIfDiffHost = true;
+    protected boolean storeDuplicateIfDiffHost = true;
 
     private long updateDatabaseRetryInterval = 0L;
 
@@ -1078,7 +1078,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         return false;
     }
 
-    private boolean ignoreDuplicate(List duplicates, byte[] md5sum) {
+    protected boolean ignoreDuplicate(List duplicates, byte[] md5sum) {
         for (int i = 0, n = duplicates.size(); i < n; ++i) {
             FileDTO dto = (FileDTO) duplicates.get(i);
             if (storeDuplicateIfDiffMD5
