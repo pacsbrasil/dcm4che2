@@ -410,6 +410,7 @@ public class DicomImageReader extends ImageReader {
         this.reader = f.getReaderForTransferSyntax(tsuid);
         this.itemParser = new ItemParser(dis, iis, frames, tsuid);
         this.siis = new SegmentedImageInputStream(iis, itemParser);
+        this.itemParser.seekFrame(siis, imageIndex);
     }
 
     private void initRawImageReader() {
