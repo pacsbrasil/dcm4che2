@@ -517,7 +517,7 @@ public class MoveTask implements Runnable {
             if (fileInfo.availability == Availability.ONLINE) {
                 studyInfos.add(new StudyInstanceUIDAndDirPath(fileInfo));
             }
-            if (canceled || a.getState() != Association.ASSOCIATION_ESTABLISHED) {
+            if (canceled || storeAssoc.getAssociation().getState() != Association.ASSOCIATION_ESTABLISHED) {
                 break;
             }
         }   
