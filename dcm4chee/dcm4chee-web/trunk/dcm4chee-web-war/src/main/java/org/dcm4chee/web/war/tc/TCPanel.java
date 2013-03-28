@@ -366,7 +366,7 @@ public class TCPanel extends Panel {
         if (target!=null)
         {
             dlg.setTitle(title==null?"":title);
-            dlg.setInitialWidth(900);
+            dlg.setInitialWidth(940);
             dlg.setInitialHeight(780);
             dlg.setResizable(true);
             dlg.show(target);
