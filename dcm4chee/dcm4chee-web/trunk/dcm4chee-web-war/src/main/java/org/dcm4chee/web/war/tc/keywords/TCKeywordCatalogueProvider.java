@@ -459,10 +459,11 @@ public class TCKeywordCatalogueProvider {
         }
 
         @Override
-        public TCKeywordInput createInput(final String id,
-        		TCQueryFilterKey filterKey, boolean usedForSearch,
-                TCKeyword...selectedKeywords) {
-            return new TCKeywordListInput(id, filterKey, usedForSearch, 
+        public TCKeywordInput createInput(final String id, TCQueryFilterKey filterKey, 
+        		boolean usedForSearch, boolean exclusive,
+                TCKeyword...selectedKeywords) 
+        {
+            return new TCKeywordListInput(id, filterKey, usedForSearch, exclusive,
             		selectedKeywords!=null?Arrays.asList(selectedKeywords):null, getKeywords());
         }
 
@@ -553,9 +554,9 @@ public class TCKeywordCatalogueProvider {
 
         @Override
         public TCKeywordInput createInput(final String id,
-        		TCQueryFilterKey filterKey, boolean usedForSearch,
+        		TCQueryFilterKey filterKey, boolean usedForSearch, boolean exclusive,
                 TCKeyword...selectedKeywords) {
-            return new TCKeywordTreeInput(id, filterKey, usedForSearch,
+            return new TCKeywordTreeInput(id, filterKey, usedForSearch, exclusive,
             		selectedKeywords!=null?Arrays.asList(selectedKeywords):null, getRoot());
         }
 

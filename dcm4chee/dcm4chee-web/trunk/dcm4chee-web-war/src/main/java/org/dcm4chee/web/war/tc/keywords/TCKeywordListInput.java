@@ -48,8 +48,10 @@ import java.util.Map;
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
+import org.apache.wicket.behavior.AttributeAppender;
 import org.apache.wicket.extensions.ajax.markup.html.autocomplete.AutoCompleteSettings;
 import org.apache.wicket.extensions.ajax.markup.html.autocomplete.AutoCompleteTextField;
+import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.form.ListChoice;
 import org.apache.wicket.markup.html.form.ListMultipleChoice;
@@ -76,15 +78,19 @@ public class TCKeywordListInput extends AbstractTCKeywordInput {
 	private Map<String, TCKeyword> keywordMap;
     private AutoCompleteTextField<String> text;
 
-    public TCKeywordListInput(final String id, TCQueryFilterKey filterKey, boolean usedForSearch, TCKeyword selectedKeyword,
-            final List<TCKeyword> keywords) {
-    	this(id, filterKey, usedForSearch, selectedKeyword!=null ?
+    public TCKeywordListInput(final String id, TCQueryFilterKey filterKey, 
+    		boolean usedForSearch, boolean exclusive,
+    		TCKeyword selectedKeyword, final List<TCKeyword> keywords)
+    {
+    	this(id, filterKey, usedForSearch, exclusive, selectedKeyword!=null ?
     			Collections.singletonList(selectedKeyword):null, keywords);
     }
     
-    public TCKeywordListInput(final String id, TCQueryFilterKey filterKey, boolean usedForSearch, List<TCKeyword> selectedKeywords,
-            final List<TCKeyword> keywords) {
-        super(id, filterKey, usedForSearch);
+    public TCKeywordListInput(final String id, TCQueryFilterKey filterKey, 
+    		boolean usedForSearch, final boolean exclusive, 
+    		List<TCKeyword> selectedKeywords, final List<TCKeyword> keywords) 
+    {
+        super(id, filterKey, usedForSearch, exclusive);
         
 		if (keywords!=null && !keywords.isEmpty())
 		{
@@ -130,9 +136,27 @@ public class TCKeywordListInput extends AbstractTCKeywordInput {
                 }
                 return match.iterator();
             }
+            @Override
+            protected void onComponentTag(ComponentTag tag)
+            {
+            	super.onComponentTag(tag);
+            	if (exclusive)
+            	{
+            		tag.put("readonly","readonly");
+            	}
+            	else
+            	{
+               		tag.put("onmouseover", "$(this).addClass('ui-input-hover')");
+                	tag.put("onmouseout", "$(this).removeClass('ui-input-hover')");
+               		tag.put("onfocus", "$(this).addClass('ui-input-focus')");
+                	tag.put("onblur", "$(this).removeClass('ui-input-focus')");
+            	}
+            }
         };
         
         text.setOutputMarkupId(true);
+        text.add(new AttributeAppender("class",true,new Model<String>(
+        		exclusive?"ui-input-readonly":"ui-input")," "));
         text.add(new AutoSelectInputTextBehaviour());
         text.add(new AjaxFormComponentUpdatingBehavior("onchange") {
 			private static final long serialVersionUID = 1L;
@@ -144,9 +168,15 @@ public class TCKeywordListInput extends AbstractTCKeywordInput {
             }
         });
 
-        final WebMarkupContainer chooserBtn = new WebMarkupContainer("chooser-button", new Model<String>("..."));
-        chooserBtn.add(new Image("chooser-button-img", ImageManager.IMAGE_TC_ARROW_DOWN)
-        .setOutputMarkupId(true));
+        final WebMarkupContainer chooserBtn = new WebMarkupContainer("chooser-button", new Model<String>("...")) {
+        	@Override
+        	protected void onComponentTag(ComponentTag tag)
+        	{
+        		super.onComponentTag(tag);
+        		tag.put("onmouseover", "$(this).addClass('ui-state-hover')");
+        		tag.put("onmouseout", "$(this).removeClass('ui-state-hover')");
+        	}
+        };
         
         final KeywordListPopup popup = new KeywordListPopup(chooserBtn, keywords);
 
@@ -201,12 +231,6 @@ public class TCKeywordListInput extends AbstractTCKeywordInput {
     public boolean isExclusive()
     {
         return text.isEnabled();
-    }
-    
-    @Override
-    public void setExclusive(boolean exclusive)
-    {
-        text.setEnabled(!exclusive);
     }
     
     public List<TCKeyword> getKeywordsAsList() {
@@ -272,7 +296,7 @@ public class TCKeywordListInput extends AbstractTCKeywordInput {
 
 		public KeywordListPopup(Component trigger, final List<TCKeyword> availableKeywords)
         {
-        	super("list-keyword-popup", true, true, true, true);
+        	super("list-keyword-popup", true, false, true, true);
         	
         	this.listCreator = new IListCreator() {
 				private static final long serialVersionUID = 8173577296342482236L;

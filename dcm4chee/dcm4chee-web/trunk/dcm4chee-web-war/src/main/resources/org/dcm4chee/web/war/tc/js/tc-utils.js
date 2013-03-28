@@ -44,6 +44,24 @@ function selectTC(elementId, cssClassSelected, cssClassEvenUnselected, cssClassO
 	});
 }
 
+function setDisabledTCDetailsTabs(indices)
+{
+	$('.details-tabs').tabs('option','disabled',false);
+	$('.details-tabs').tabs('option','disabled',indices);
+}
+
+function setHiddenTCDetailsTabs(indices)
+{
+	$('.details-tabs .ui-tabs-nav li').each(function(i) {
+		if ($.inArray(i,indices)>=0) {
+			$(this).css('display','none');
+		}
+		else {
+			$(this).css('display','');
+		}
+	});
+}
+
 function setPopupResizeable(popupId)
 {
 	$("[id='"+popupId+"']").resizable();

@@ -43,7 +43,6 @@ import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.basic.MultiLineLabel;
-import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
@@ -53,14 +52,16 @@ import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
  * @version $Revision$ $Date$
  * @since May 27, 2011
  */
-public class TCDetailsAuthorTab extends Panel {
+@SuppressWarnings("serial")
+public class TCDetailsAuthorTab extends TCDetailsTab {
 
-    private static final long serialVersionUID = 1L;
-
-    @SuppressWarnings("serial")
+    private IModel<Boolean> trainingModeModel;
+    
 	public TCDetailsAuthorTab(final String id, final IModel<Boolean> trainingModeModel) {
         super(id);
 
+        this.trainingModeModel = trainingModeModel;
+        
         add(new WebMarkupContainer("author-name-row") {
             @Override
             public boolean isVisible() {
@@ -116,6 +117,29 @@ public class TCDetailsAuthorTab extends Panel {
 	            }
 	        }))
 	    );
+    }
+    
+    @Override
+    public boolean enabled() {
+        TCObject tc = getTCObject();
+
+        if (tc != null) {
+            return tc.getAuthorName() != null
+                    || tc.getAuthorAffiliation() != null
+                    || tc.getAuthorContact() != null;
+        }
+
+        return false;
+    }
+    
+    @Override
+    public boolean visible() {
+    	return TCUtilities.isKeyAvailable(trainingModeModel, 
+    			TCQueryFilterKey.AuthorName) ||
+    		  TCUtilities.isKeyAvailable(trainingModeModel,
+    				  TCQueryFilterKey.AuthorAffiliation) ||
+    		  TCUtilities.isKeyAvailable(trainingModeModel,
+    				  TCQueryFilterKey.AuthorContact);
     }
 
     private TCObject getTCObject() {

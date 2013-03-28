@@ -91,7 +91,7 @@ public abstract class TCKeywordCatalogue {
     }
 
     public abstract TCKeywordInput createInput(final String componentId,
-    		TCQueryFilterKey filterKey, boolean usedForSearch,
+    		TCQueryFilterKey filterKey, boolean usedForSearch, boolean exclusive,
             TCKeyword...selectedKeywords);
 
     public abstract TCKeyword findKeyword(String value);

@@ -37,7 +37,8 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.web.war.tc;
 
-import org.apache.wicket.markup.html.panel.Panel;
+import java.util.List;
+
 import org.apache.wicket.model.AbstractReadOnlyModel;
 
 /**
@@ -46,15 +47,24 @@ import org.apache.wicket.model.AbstractReadOnlyModel;
  * @since Jan 07, 2013
  */
 @SuppressWarnings("serial")
-public class TCDetailsDocumentsTab extends Panel {
+public class TCDetailsDocumentsTab extends TCDetailsTab {
 
     public TCDetailsDocumentsTab(final String id) {
         super(id);
+         
         add(new TCDocumentsView("tc-details-documents", new AbstractReadOnlyModel<TCObject>() {
         	public TCObject getObject() {
         		return getTCObject();
         	}
         }, false));
+    }
+    
+    @Override
+    public boolean enabled() {
+        TCObject tc = getTCObject();
+        List<TCReferencedInstance> docRefs = tc!=null ? 
+        		tc.getReferencedDocuments() : null;
+        return docRefs!=null && !docRefs.isEmpty();
     }
 
     private TCObject getTCObject() {

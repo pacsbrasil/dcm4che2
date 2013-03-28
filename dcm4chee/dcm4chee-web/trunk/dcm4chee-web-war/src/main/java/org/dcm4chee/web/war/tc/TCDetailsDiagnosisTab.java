@@ -39,7 +39,7 @@ package org.dcm4chee.web.war.tc;
 
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.basic.MultiLineLabel;
-import org.apache.wicket.markup.html.panel.Panel;
+import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue.YesNo;
@@ -49,12 +49,15 @@ import org.dcm4chee.web.dao.tc.TCQueryFilterValue.YesNo;
  * @version $Revision$ $Date$
  * @since May 27, 2011
  */
-public class TCDetailsDiagnosisTab extends Panel {
+@SuppressWarnings("serial")
+public class TCDetailsDiagnosisTab extends TCDetailsTab {
 
-    private static final long serialVersionUID = 1L;
+    private IModel<Boolean> trainingModeModel;
 
-    public TCDetailsDiagnosisTab(final String id) {
+    public TCDetailsDiagnosisTab(final String id, IModel<Boolean> trainingModeModel) {
         super(id);
+        
+        this.trainingModeModel = trainingModeModel;
 
         add(new MultiLineLabel("details-diagnosis", new Model<String>() {
 
@@ -90,8 +93,11 @@ public class TCDetailsDiagnosisTab extends Panel {
             }
         }));
     }
+    
+    @Override
+    public boolean enabled() {
+        TCObject tc = getTCObject();
 
-    public static boolean hasDataToShow(TCObject tc) {
         if (tc != null) {
             return tc.getDiagnosis() != null
                     || tc.getDiagnosisConfirmed() != null;
@@ -99,7 +105,13 @@ public class TCDetailsDiagnosisTab extends Panel {
 
         return false;
     }
-
+    
+    @Override
+    public boolean isVisible() {
+    	return TCUtilities.isKeyAvailable(trainingModeModel, 
+    			TCQueryFilterKey.Diagnosis);
+    }
+    
     private TCObject getTCObject() {
         return (TCObject) getDefaultModelObject();
     }

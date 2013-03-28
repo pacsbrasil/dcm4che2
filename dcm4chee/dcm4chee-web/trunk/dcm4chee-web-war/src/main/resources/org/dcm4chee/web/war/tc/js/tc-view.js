@@ -19,12 +19,7 @@ function updateTCViewDialog() {
 }
 
 function updateTCViewDialogToUseQueryUI() {
-	styleButtons($("#tc-view"));
-	styleComboBoxes($("#tc-view"));
-	styleTextFields($("#tc-view"));
-	styleTextAreas($("#tc-view"));
-	styleYearSpinners($("#tc-view"));
-	styleMonthSpinners($("#tc-view"));
+	style($("#tc-view"));
 	
 	$('#tc-view-content').tabs({
 		show: function(event, ui) {

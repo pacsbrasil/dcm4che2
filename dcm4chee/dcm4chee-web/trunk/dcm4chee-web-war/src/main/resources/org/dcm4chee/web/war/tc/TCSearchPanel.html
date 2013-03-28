@@ -5,7 +5,7 @@
 </head>
 <body>
     <wicket:panel>
-        <div class="search-header-area ui-state-active">
+        <div class="search-area-header ui-widget-header">
             <wicket:message key="tc.search.header.text"/>
             <span class="search-toggle-area">
 	            <a wicket:id="searchToggle" class="search-toggle">
@@ -16,8 +16,8 @@
         <form wicket:id="searchForm" class="search-form">
 			<div class="keyword-area">
 				<wicket:message key="tc.keyword.text" />
-				<div wicket:id="keywordInput" style="display: inline-block" />
-				<button wicket:id="doSearchBtn" type="submit">
+				<div wicket:id="keywordInput" style="display: inline-block; vertical-align:middle" />
+				<button wicket:id="doSearchBtn" type="submit" class="button" style="height:28px">
 					<img wicket:id="doSearchImg" alt="Search" /> <span
 						wicket:id="doSearchText" />
 				</button>
@@ -84,7 +84,7 @@
 	                               <wicket:message key="tc.modality.text" />
 	                            </td>
 	                            <td style="text-align:left">
-	                               <select wicket:id="modalityChoice" />
+	                               <select wicket:id="modalityChoice" class="ui-combobox"/>
 	                            </td>
 	                        </tr>
 	                        <tr>
@@ -92,7 +92,7 @@
 	                               <wicket:message key="tc.patient.sex.text" />
 	                            </td>
 	                            <td style="text-align:left">
-	                               <select wicket:id="patientSexChoice" />
+	                               <select wicket:id="patientSexChoice" class="ui-combobox"/>
 	                            </td>
 	                        </tr>
 	                        <tr>
@@ -100,7 +100,7 @@
 	                               <wicket:message key="tc.category.text" />
 	                            </td>
 	                            <td style="text-align:left">
-	                               <select wicket:id="categoryChoice" />
+	                               <select wicket:id="categoryChoice" class="ui-combobox"/>
 	                            </td>
 	                        </tr>
 	                        <tr>
@@ -108,7 +108,7 @@
 	                               <wicket:message key="tc.level.text" />
 	                            </td>
 	                            <td  style="text-align:left">
-	                               <select wicket:id="levelChoice" />
+	                               <select wicket:id="levelChoice" class="ui-combobox"/>
 	                            </td>
 	                        </tr>
 	                        <tr>
@@ -116,7 +116,7 @@
 	                               <wicket:message key="tc.diagnosis.confirmed.text" />
 	                            </td>
 	                            <td style="text-align:left">
-	                               <select wicket:id="diagnosisConfirmedChoice" />
+	                               <select wicket:id="diagnosisConfirmedChoice" class="ui-combobox"/>
 	                            </td>
 	                        </tr>
 	                    </table>
@@ -126,7 +126,8 @@
 	                <div class="text-table-area">
                         <div class="free-text-area"> 
                             <wicket:message key="tc.search.freetext.text"/> 
-                            <input wicket:id="textText" type="text" class="free-text"/> 
+                            <input wicket:id="textText" type="text" class="ui-textfield" 
+                            	style="margin-left:5px; margin-bottom:1.2em; text-align:left; width:18em"/> 
                         </div>
                         <table class="text-table">
                             <wicket:container wicket:id="optionGroup">
@@ -176,7 +177,7 @@
                     </td>
                     <td>
                     <div class="reset-search-area">
-                        <button wicket:id="resetSearchBtn" type="button">
+                        <button wicket:id="resetSearchBtn" type="button" class="button">
                             <img wicket:id="resetSearchImg" alt="Search"/>
                             <span wicket:id="resetSearchText"/>
                         </button>

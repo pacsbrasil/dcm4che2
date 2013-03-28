@@ -52,17 +52,16 @@ import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
+import org.apache.wicket.behavior.AttributeAppender;
 import org.apache.wicket.extensions.markup.html.tree.DefaultAbstractTree.LinkType;
 import org.apache.wicket.extensions.markup.html.tree.Tree;
+import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.WebMarkupContainer;
-import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.TextField;
-import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.panel.Fragment;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.util.ListModel;
-import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 import org.dcm4chee.web.war.common.AutoSelectInputTextBehaviour;
 import org.dcm4chee.web.war.tc.TCPopupManager.AbstractTCPopup;
@@ -85,14 +84,19 @@ public class TCKeywordACRInput extends AbstractTCKeywordInput {
     private TextField<String> text;
 
     public TCKeywordACRInput(final String id, TCQueryFilterKey filterKey, 
-    		boolean usedForSearch, TCKeyword selectedKeyword) {
-    	this(id, filterKey, usedForSearch, selectedKeyword!=null ?
+    		boolean usedForSearch, boolean exclusive,
+    		TCKeyword selectedKeyword) 
+    {
+    	this(id, filterKey, usedForSearch, exclusive, selectedKeyword!=null ?
     			Collections.singletonList(selectedKeyword) : null);
     }
     
-    public TCKeywordACRInput(final String id, TCQueryFilterKey filterKey, 
-    		boolean usedForSearch, List<TCKeyword> selectedKeywords) {
-        super(id, filterKey, usedForSearch);
+    @SuppressWarnings("serial")
+	public TCKeywordACRInput(final String id, TCQueryFilterKey filterKey, 
+    		boolean usedForSearch, final boolean exclusive,
+    		List<TCKeyword> selectedKeywords) 
+    {
+        super(id, filterKey, usedForSearch, exclusive);
 
         setDefaultModel(new ListModel<TCKeyword>(selectedKeywords) {
 			private static final long serialVersionUID = 1L;
@@ -110,8 +114,26 @@ public class TCKeywordACRInput extends AbstractTCKeywordInput {
         
         final ACRChooser chooser = new ACRChooser("keyword-acr");
         final MultipleKeywordsTextModel textModel = new MultipleKeywordsTextModel(selectedKeywords);
-        text = new TextField<String>("text", textModel);
+        text = new TextField<String>("text", textModel) {
+        	@Override
+        	protected void onComponentTag(ComponentTag tag)
+        	{
+        		super.onComponentTag(tag);       		
+        		if (exclusive) {
+        			tag.put("readonly","readonly");
+        		}
+            	else
+            	{
+               		tag.put("onmouseover", "$(this).addClass('ui-input-hover')");
+                	tag.put("onmouseout", "$(this).removeClass('ui-input-hover')");
+               		tag.put("onfocus", "$(this).addClass('ui-input-focus')");
+                	tag.put("onblur", "$(this).removeClass('ui-input-focus')");
+            	}
+        	}
+        };
         text.setOutputMarkupId(true);
+        text.add(new AttributeAppender("class",true,new Model<String>(
+        		exclusive?"ui-input-readonly":"ui-input")," "));
         text.add(new AutoSelectInputTextBehaviour());
         text.add(new AjaxFormComponentUpdatingBehavior("onchange") {
 			private static final long serialVersionUID = 1L;
@@ -123,9 +145,15 @@ public class TCKeywordACRInput extends AbstractTCKeywordInput {
             }
         });
         
-        WebMarkupContainer chooserBtn = new WebMarkupContainer("chooser-button", new Model<String>("..."));
-        chooserBtn.add(new Image("chooser-button-img", ImageManager.IMAGE_TC_ARROW_DOWN)
-            .setOutputMarkupId(true));
+        WebMarkupContainer chooserBtn = new WebMarkupContainer("chooser-button", new Model<String>("...")) {
+        	@Override
+        	protected void onComponentTag(ComponentTag tag)
+        	{
+        		super.onComponentTag(tag);
+        		tag.put("onmouseover", "$(this).addClass('ui-state-hover')");
+        		tag.put("onmouseout", "$(this).removeClass('ui-state-hover')");
+        	}
+        };
 
         ACRPopup popup = new ACRPopup(chooser);
         popup.installPopupTrigger(chooserBtn, new TCPopupPosition(
@@ -184,12 +212,6 @@ public class TCKeywordACRInput extends AbstractTCKeywordInput {
     public boolean isExclusive()
     {
         return text.isEnabled();
-    }
-    
-    @Override
-    public void setExclusive(boolean exclusive)
-    {
-        text.setEnabled(!exclusive);
     }
     
     public List<TCKeyword> getKeywordsAsList() {

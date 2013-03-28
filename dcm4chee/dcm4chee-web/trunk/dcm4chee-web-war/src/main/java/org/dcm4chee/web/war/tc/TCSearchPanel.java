@@ -47,7 +47,6 @@ import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.IAjaxCallDecorator;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
-import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxButton;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.DropDownChoice;
@@ -68,6 +67,7 @@ import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue;
 import org.dcm4chee.web.war.common.AutoSelectInputTextBehaviour;
 import org.dcm4chee.web.war.tc.TCUtilities.NullDropDownItem;
+import org.dcm4chee.web.war.tc.widgets.TCMaskingAjaxDecorator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -95,7 +95,7 @@ public abstract class TCSearchPanel extends Panel {
         super(id, new Model<TCQueryFilter>(new TCQueryFilter()));
 
         setOutputMarkupId(true);
-
+        
         final TCInput keywordInput = TCUtilities.createInput(
                 "keywordInput", TCQueryFilterKey.Keyword, getFilterValue(TCQueryFilterKey.Keyword), true);
         final TCInput anatomyInput = TCUtilities.createInput(
@@ -154,11 +154,13 @@ public abstract class TCSearchPanel extends Panel {
         optionGroup.add(new Radio<Option>("patientSpeciesOption",
                 new Model<Option>(Option.PatientSpecies)));
 
-        final IndicatingAjaxButton searchBtn = new IndicatingAjaxButton(
+        final AjaxButton searchBtn = new AjaxButton(
                 "doSearchBtn") {
 
             private static final long serialVersionUID = 1L;
 
+            private IAjaxCallDecorator decorator;
+            
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 try {
@@ -228,14 +230,14 @@ public abstract class TCSearchPanel extends Panel {
                             target.addComponent(c);
                         }
                     }
-                    
-                    target.appendJavascript("updateKeywordChooserButtons();");
                 } catch (Throwable t) {
                     log.error("Searching for teaching-files failed!", t);
                 }
-
-                if (target != null) {
-                    target.addComponent(form);
+                
+                if (target!=null)
+                {
+                	target.addComponent(form);
+                	target.appendJavascript("initUI($('#" + TCSearchPanel.this.getMarkupId(true) + "'));");
                 }
             }
 
@@ -246,12 +248,11 @@ public abstract class TCSearchPanel extends Panel {
 
             @Override
             protected IAjaxCallDecorator getAjaxCallDecorator() {
-                try {
-                    return TCPanel.getMaskingBehaviour().getAjaxCallDecorator();
-                } catch (Exception e) {
-                    log.error("Failed to get IAjaxCallDecorator: ", e);
-                }
-                return null;
+            	if (decorator==null)
+            	{
+            		decorator = new TCMaskingAjaxDecorator(false, true);
+            	}
+            	return decorator;
             }
         };
 
@@ -264,7 +265,7 @@ public abstract class TCSearchPanel extends Panel {
                 new AttributeModifier("style", true, new Model<String>(
                         "vertical-align: middle;"))).setOutputMarkupId(true));
 
-        AjaxButton resetBtn = new IndicatingAjaxButton("resetSearchBtn") {
+        AjaxButton resetBtn = new AjaxButton("resetSearchBtn") {
 
             private static final long serialVersionUID = 1L;
 
@@ -289,7 +290,7 @@ public abstract class TCSearchPanel extends Panel {
                 optionGroup.setModelObject(null);
 
                 target.addComponent(form);
-                target.appendJavascript("updateKeywordChooserButtons();");
+                target.appendJavascript("initUI($('#" + TCSearchPanel.this.getMarkupId(true) + "'));");
             }
 
             @Override
@@ -306,8 +307,9 @@ public abstract class TCSearchPanel extends Panel {
 
         final WebMarkupContainer wmc = new WebMarkupContainer("advancedOptions");
         wmc.setOutputMarkupPlaceholderTag(true);
+        wmc.setOutputMarkupId(true);
         wmc.setVisible(false);
-
+        
         wmc.add(anatomyInput.getComponent());
         wmc.add(pathologyInput.getComponent());
         wmc.add(findingInput.getComponent());
@@ -337,7 +339,7 @@ public abstract class TCSearchPanel extends Panel {
                 
                 if (showAdvancedOptions)
                 {
-                    target.appendJavascript("updateKeywordChooserButtons();");
+                    target.appendJavascript("initUI($('#" + wmc.getMarkupId(true) + "'));");
                 }
             }
         }.add(new Label("advancedOptionsToggleText",
@@ -382,6 +384,11 @@ public abstract class TCSearchPanel extends Panel {
                 form.setVisible(showSearch);
 
                 target.addComponent(TCSearchPanel.this);
+                
+                if (showSearch)
+                {
+                	target.appendJavascript("initUI($('#" + TCSearchPanel.this.getMarkupId(true) + "'));");
+                }
             }
         }.add((new Image("searchToggleImg",
                 new AbstractReadOnlyModel<ResourceReference>() {

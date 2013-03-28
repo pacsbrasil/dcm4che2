@@ -38,7 +38,7 @@
 package org.dcm4chee.web.war.tc;
 
 import org.apache.wicket.markup.html.basic.MultiLineLabel;
-import org.apache.wicket.markup.html.panel.Panel;
+import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 
@@ -47,13 +47,16 @@ import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
  * @version $Revision$ $Date$
  * @since May 27, 2011
  */
-public abstract class TCDetailsDefaultTab extends Panel {
+@SuppressWarnings("serial")
+public abstract class TCDetailsDefaultTab extends TCDetailsTab {
 
-    private static final long serialVersionUID = 1L;
-
-    public TCDetailsDefaultTab(final String id) {
+    private IModel<Boolean> trainingModeModel;
+    
+    public TCDetailsDefaultTab(final String id, IModel<Boolean> trainingModeModel) {
         super(id);
 
+        this.trainingModeModel = trainingModeModel;
+        
         add(new MultiLineLabel("details-text", new Model<String>() {
 
             private static final long serialVersionUID = 1L;
@@ -65,6 +68,17 @@ public abstract class TCDetailsDefaultTab extends Panel {
         }));
     }
 
+    @Override
+    public boolean enabled() {
+        TCObject tc = getTCObject();
+        return tc != null && tc.getValue(getKey())!= null;
+    }
+    
+    @Override
+    public boolean visible() {
+    	return TCUtilities.isKeyAvailable(trainingModeModel, getKey());
+    }
+    
     protected abstract TCQueryFilterKey getKey();
 
     private TCObject getTCObject() {

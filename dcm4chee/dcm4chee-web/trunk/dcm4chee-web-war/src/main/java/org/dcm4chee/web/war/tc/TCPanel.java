@@ -44,9 +44,12 @@ import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.behavior.AttributeAppender;
+import org.apache.wicket.behavior.HeaderContributor;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow.WindowClosedCallback;
 import org.apache.wicket.markup.html.CSSPackageResource;
+import org.apache.wicket.markup.html.IHeaderContributor;
+import org.apache.wicket.markup.html.IHeaderResponse;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.image.Image;
@@ -110,6 +113,18 @@ public class TCPanel extends Panel {
         if (TCPanel.BASE_CSS != null) {
             add(CSSPackageResource.getHeaderContribution(TCPanel.BASE_CSS));
         }
+        
+        setOutputMarkupId(true);
+        
+        add(new AttributeAppender("class",true,new Model<String>("ui-page")," "));
+        
+        add(new HeaderContributor(new IHeaderContributor()
+		{
+			public void renderHead(IHeaderResponse response)
+			{
+				response.renderOnDomReadyJavascript("initUI($('#" + getMarkupId(true) + "'));");
+			}
+		}));
 
         trainingModeModel = new Model<Boolean>(false);
         
@@ -170,19 +185,22 @@ public class TCPanel extends Panel {
             private static final long serialVersionUID = 1L;
 
             @Override
-            protected Component[] selectionChanged(TCModel tc) {
+            protected void selectionChanged(TCModel tc, AjaxRequestTarget target) {
                 try {
                     if (tc == null) {
                         detailsPanel.clearTCObject(false);
                     } else {
-                        detailsPanel.setTCObject(TCObject.create(tc));
+                        detailsPanel.setTCObject(TCObject.create(tc), target);
                     }
                 } catch (Exception e) {
                     log.error("Parsing TC object failed!", e);
                     detailsPanel.clearTCObject(true);
                 }
 
-                return new Component[] {detailsPanel};
+                if (target!=null)
+                {
+                	target.addComponent(detailsPanel);
+                }
             }
             
             @Override
@@ -279,7 +297,7 @@ public class TCPanel extends Panel {
                 TCModel tc = iuid!=null ? listModel.findByIUID(iuid):null;
                 if (tc!=null)
                 {
-                    listPanel.selectTC(tc);
+                    listPanel.selectTC(tc, null);
                 }
                 
                 if (toUpdate != null && target != null) {
@@ -288,7 +306,7 @@ public class TCPanel extends Panel {
                     }
                 }
             }
-        }));
+        }).setOutputMarkupId(true));
         
         add(new AjaxLink<Object>("trainingmode-link") {
 	        	@Override

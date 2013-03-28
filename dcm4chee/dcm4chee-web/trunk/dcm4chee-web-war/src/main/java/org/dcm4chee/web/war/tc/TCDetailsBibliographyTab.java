@@ -43,21 +43,25 @@ import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.MultiLineLabel;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
-import org.apache.wicket.markup.html.panel.Panel;
+import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
+import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 
 /**
  * @author Bernhard Ableitinger <bernhard.ableitinger@agfa.com>
  * @version $Revision$ $Date$
  * @since May 27, 2011
  */
-public class TCDetailsBibliographyTab extends Panel {
+@SuppressWarnings("serial")
+public class TCDetailsBibliographyTab extends TCDetailsTab {
 
-    private static final long serialVersionUID = 1L;
+    private IModel<Boolean> trainingModeModel;
 
-    public TCDetailsBibliographyTab(final String id) {
+    public TCDetailsBibliographyTab(final String id, IModel<Boolean> trainingModeModel) {
         super(id);
 
+        this.trainingModeModel = trainingModeModel;
+        
         ListView<String> list = new ListView<String>("bibliography-list",
                 new Model<ArrayList<String>>() {
 
@@ -96,6 +100,20 @@ public class TCDetailsBibliographyTab extends Panel {
         };
 
         add(list);
+    }
+    
+    @Override
+    public boolean enabled() {
+        TCObject tc = getTCObject();
+
+        return tc != null && tc.getBibliographicReferences() != null
+                && !tc.getBibliographicReferences().isEmpty();
+    }
+    
+    @Override
+    public boolean visible() {
+    	return TCUtilities.isKeyAvailable(trainingModeModel, 
+    			TCQueryFilterKey.BibliographicReference);
     }
 
     private TCObject getTCObject() {

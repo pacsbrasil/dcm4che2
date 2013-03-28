@@ -33,49 +33,48 @@ div.wicket-mask-cursor {
 
 
 /******************************************************  
- * additional styles for jqueryui-based widgets
+ * additional styles for jquery-ui based widgets
  * attention: ordering of css rules matters!
  *****************************************************/
 
-.ui-text, .ui-widget-content .ui-text {
-	background: #E6E6E6;
+.ui-page
+{
+	background: #FFFFFF !important;
 }
 
-.ui-text-readonly, .ui-widget-content .ui-text-readonly {
+.ui-content
+{
+	background: #F0F0F0;
+}
+
+.ui-input, .ui-widget-content .ui-input 
+{
+	background: #FFFFFF;
+}
+
+.ui-input-hover, .ui-widget-content .ui-input-hover 
+{
+	border: 1px solid #808080;
+}
+
+.ui-input-readonly, .ui-widget-content .ui-input-readonly
+{
 	border: 1px solid transparent;
 	background: #E6E6E6;
 	color: #808080;
 }
 
-.ui-text-hover, .ui-widget-content .ui-text-hover {
-	background: #E6E6E6;
-}
-
-.ui-combobox-input, .ui-widget-content .ui-combobox-input {
-	background: #E6E6E6;
-}
-
-.ui-combobox-input-readonly, .ui-widget-content .ui-combobox-input-readonly {
-	border: 1px solid #C0C0C0;
-	border-right: none;
-	background: #E6E6E6;
-	color: #808080;
-}
-
-.ui-combobox-input-hover, .ui-widget-content .ui-combobox-input-hover {
-	background: #E6E6E6;
-	border: 1px solid #808080;
-}
-
-.ui-spinner {
-	vertical-align: baseline;
+.ui-input-focus, .ui-widget-content .ui-input-focus
+{
+	border: 1px solid #cb9952;
 }
 
 
 /******************************************************  
  * style of common elements 
  *****************************************************/
- 
+
+
 #trainingmode-link {
 	text-decoration: none;
 }
@@ -167,12 +166,7 @@ div.diagnosis-warning  {
 /******************************************************  
  * style of SEARCH elements 
  *****************************************************/
- 
-div.search-header-area
-{
-    color: white;
-    font-weight: bold;
-}
+
     
 div.advanced-options-toggle-area 
 {
@@ -192,7 +186,6 @@ div.advanced-options-area div.choice-table-area
 
 div.content-area
 {
-    background-color: #FFF;
     border-top: 2px solid #A9A9A9;
 }
 
@@ -210,16 +203,6 @@ table.tc-content-table tr th
 table.tc-content-table tr td
 {
     border-bottom: 1px solid lightgray;
-}
-
-table.tc-content-table tr th a 
-{ 
-    color: white; 
-}
-
-table.tc-content-table tr th a:hover 
-{
-    color: white; 
 }
 
 table.tc-content-table tr th.wicket_orderNone
@@ -300,15 +283,6 @@ table.tc-content-table-header td.numberOfMatchingInstances
  * style of DETAIL elements 
  *****************************************************/
 
-div.details-area
-{
-    background-color: #DCDCDC;
-}
-
-div.details-area div.details-area-header
-{
-    color: white;
-}
 
 div.details-area-header
 {
@@ -330,15 +304,6 @@ hr.details-separator
 div.details-tabs div.tab-row a:hover 
 {
     color: black;
-}
-
-div.details-tabs div.tab-panel
-{
-    border-top: 1px solid #ccc;
-    border-left: 1px solid #ccc;
-    border-right: 1px solid #ccc;
-    border-bottom: 2px solid #ccc;
-    background-color: #F5F5F5;
 }
 
 div.details-tabs div.tab-row a:link, div.details-tabs div.tab-row a:visited 
@@ -407,9 +372,14 @@ div.details-tabs div.tab-row li.selected a:link, div.details-tabs div.tab-row a:
     background-color: black !important;
 }
 
+.tc-view-images-tab-container-parent #details-images-nav-container
+{
+    background-color: darkgray !important;
+}
+
 .tc-view-images-thumbnail-indicator
 {
-	background: url("theme/images/load-indicator-small.gif") no-repeat scroll center center transparent
+	background: url("theme/images/load-indicator-small.gif") no-repeat scroll center center transparent;
 }
 
 .tc-view-images-thumbnail-hover

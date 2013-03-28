@@ -43,7 +43,6 @@ import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.basic.MultiLineLabel;
-import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
@@ -54,7 +53,7 @@ import org.dcm4chee.web.war.tc.keywords.TCKeywordCatalogueProvider;
  * @version $Revision$ $Date$
  * @since May 27, 2011
  */
-public class TCDetailsInfoTab extends Panel {
+public class TCDetailsInfoTab extends TCDetailsTab {
 
     private static final long serialVersionUID = 1L;
 

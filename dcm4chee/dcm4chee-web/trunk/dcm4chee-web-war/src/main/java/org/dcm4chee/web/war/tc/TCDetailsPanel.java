@@ -37,33 +37,39 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.web.war.tc;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Logger;
 
-import org.apache.wicket.AttributeModifier;
+import org.apache.wicket.RequestCycle;
+import org.apache.wicket.ajax.AbstractDefaultAjaxBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
-import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
-import org.apache.wicket.extensions.ajax.markup.html.tabs.AjaxTabbedPanel;
-import org.apache.wicket.extensions.markup.html.tabs.AbstractTab;
-import org.apache.wicket.extensions.markup.html.tabs.ITab;
+import org.apache.wicket.behavior.HeaderContributor;
+import org.apache.wicket.markup.html.IHeaderContributor;
+import org.apache.wicket.markup.html.IHeaderResponse;
 import org.apache.wicket.markup.html.WebMarkupContainer;
+import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.panel.Panel;
-import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.resource.loader.PackageStringResourceLoader;
 import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
-import org.dcm4chee.web.war.tc.keywords.TCKeywordCatalogueProvider;
 
 /**
  * @author Bernhard Ableitinger <bernhard.ableitinger@agfa.com>
  * @version $Revision$ $Date$
  * @since May 27, 2011
  */
+@SuppressWarnings("serial")
 public class TCDetailsPanel extends Panel {
 
-    private static final long serialVersionUID = 1L;
+	private AbstractDefaultAjaxBehavior tabActivationBehavior;
+	
+    private Map<TCDetailsTab, Integer> tabsToIndices =
+            new HashMap<TCDetailsTab, Integer>();
+    
+    private int activeTabIndex = 0;
 
     private WebMarkupContainer errordetailsContainer;
 
@@ -71,236 +77,41 @@ public class TCDetailsPanel extends Panel {
 
     private WebMarkupContainer detailsContainer;
 
-    @SuppressWarnings("serial")
 	public TCDetailsPanel(final String id, final IModel<Boolean> trainingModeModel) {
         super(id, new Model<TCObject>());
 
         setOutputMarkupId(true);
 
-        TCKeywordCatalogueProvider catProv = TCKeywordCatalogueProvider.getInstance();
-        
         final Model<TCObject> tabModel = new Model<TCObject>() {
             @Override
             public TCObject getObject() {
                 return (TCObject) TCDetailsPanel.this.getDefaultModelObject();
             }
-        };
-
-        List<ITab> tabs = new ArrayList<ITab>();
-        tabs.add(new AbstractDetailsTab(new ResourceModel(
-                "tc.details.tab.info.title.text")) {
-            @Override
-            public Panel getPanel(String id) {
-                Panel tab = new TCDetailsInfoTab(id, trainingModeModel);
-                tab.setDefaultModel(tabModel);
-                return tab;
-            }
-            @Override
-            public boolean isDataAvailable() {
-                return true;
-            }
-        });
-
-        if (!catProv.hasCatalogue(TCQueryFilterKey.Diagnosis)) {
-            tabs.add(new AbstractDetailsTab(new ResourceModel(
-                    "tc.details.tab.diagnosis.title.text")) {
-                @Override
-                public Panel getPanel(String id) {
-                    Panel tab = new TCDetailsDiagnosisTab(id);
-                    tab.setDefaultModel(tabModel);
-                    return tab;
-                }
-                @Override
-                public boolean isDataAvailable() {
-                    TCObject tc = getTCObject();
-
-                    if (tc != null) {
-                        return tc.getDiagnosis() != null
-                                || tc.getDiagnosisConfirmed() != null;
-                    }
-
-                    return false;
-                }
-                @Override
-                public boolean isVisible() {
-                	return TCUtilities.isKeyAvailable(trainingModeModel, 
-                			TCQueryFilterKey.Diagnosis);
-                }
-            });
-        }
-
-        if (!catProv.hasCatalogue(TCQueryFilterKey.DifferentialDiagnosis)) {
-            tabs.add(new AbstractDetailsTab(new ResourceModel(
-                    "tc.details.tab.differential-diagnosis.title.text")) {
-                @Override
-                public Panel getPanel(String id) {
-                    Panel tab = new TCDetailsDefaultTab(id) {
-                        @Override
-                        public TCQueryFilterKey getKey() {
-                            return TCQueryFilterKey.DifferentialDiagnosis;
-                        }
-                    };
-                    tab.setDefaultModel(tabModel);
-                    return tab;
-                }
-                @Override
-                public boolean isDataAvailable() {
-                    TCObject tc = getTCObject();
-
-                    return tc != null && tc.getDiffDiagnosis() != null;
-                }
-                @Override
-                public boolean isVisible() {
-                	return TCUtilities.isKeyAvailable(trainingModeModel, 
-                			TCQueryFilterKey.DifferentialDiagnosis);
-                }
-            });
-        }
-
-        if (!catProv.hasCatalogue(TCQueryFilterKey.Finding)) {
-            tabs.add(new AbstractDetailsTab(new ResourceModel(
-                    "tc.details.tab.finding.title.text")) {
-                @Override
-                public Panel getPanel(String id) {
-                    Panel tab = new TCDetailsDefaultTab(id) {
-
-                        private static final long serialVersionUID = 1L;
-
-                        @Override
-                        public TCQueryFilterKey getKey() {
-                            return TCQueryFilterKey.Finding;
-                        }
-                    };
-                    tab.setDefaultModel(tabModel);
-                    return tab;
-                }
-                @Override
-                public boolean isDataAvailable() {
-                    TCObject tc = getTCObject();
-
-                    return tc != null && tc.getFinding() != null;
-                }
-                @Override
-                public boolean isVisible() {
-                	return TCUtilities.isKeyAvailable(trainingModeModel, 
-                			TCQueryFilterKey.Finding);
-                }
-            });
-        }
-
-        tabs.add(new AbstractDetailsTab(new ResourceModel(
-                "tc.details.tab.history.title.text")) {
-            @Override
-            public Panel getPanel(String id) {
-                Panel tab = new TCDetailsDefaultTab(id) {
-
-                    private static final long serialVersionUID = 1L;
-
-                    @Override
-                    public TCQueryFilterKey getKey() {
-                        return TCQueryFilterKey.History;
-                    }
-                };
-                tab.setDefaultModel(tabModel);
-                return tab;
-            }
-            @Override
-            public boolean isDataAvailable() {
-                TCObject tc = getTCObject();
-
-                return tc != null && tc.getHistory() != null;
-            }
-            @Override
-            public boolean isVisible() {
-            	return TCUtilities.isKeyAvailable(trainingModeModel, 
-            			TCQueryFilterKey.History);
-            }
-        });
-
-        tabs.add(new AbstractDetailsTab(new ResourceModel(
-                "tc.details.tab.discussion.title.text")) {
-            @Override
-            public Panel getPanel(String id) {
-                Panel tab = new TCDetailsDefaultTab(id) {
-                    @Override
-                    public TCQueryFilterKey getKey() {
-                        return TCQueryFilterKey.Discussion;
-                    }
-                };
-                tab.setDefaultModel(tabModel);
-                return tab;
-            }
-            @Override
-            public boolean isDataAvailable() {
-                TCObject tc = getTCObject();
-
-                return tc != null && tc.getDiscussion() != null;
-            }
-            @Override
-            public boolean isVisible() {
-            	return TCUtilities.isKeyAvailable(trainingModeModel, 
-            			TCQueryFilterKey.Discussion);
-            }
-        });
-
-        tabs.add(new AbstractDetailsTab(new ResourceModel(
-                "tc.details.tab.organsystem.title.text")) {
-            @Override
-            public Panel getPanel(String id) {
-                Panel tab = new TCDetailsDefaultTab(id) {
-                    @Override
-                    public TCQueryFilterKey getKey() {
-                        return TCQueryFilterKey.OrganSystem;
-                    }
-                };
-                tab.setDefaultModel(tabModel);
-                return tab;
-            }
-            @Override
-            public boolean isDataAvailable() {
-                TCObject tc = getTCObject();
-
-                return tc != null && tc.getOrganSystem() != null;
-            }
-            @Override
-            public boolean isVisible() {
-            	return TCUtilities.isKeyAvailable(trainingModeModel, 
-            			TCQueryFilterKey.OrganSystem);
-            }
-        });
-
-        tabs.add(new AbstractDetailsTab(new ResourceModel(
-                "tc.details.tab.author.title.text")) {
-            @Override
-            public Panel getPanel(String id) {
-                Panel tab = new TCDetailsAuthorTab(id, trainingModeModel);
-                tab.setDefaultModel(tabModel);
-                return tab;
-            }
-            @Override
-            public boolean isDataAvailable() {
-                TCObject tc = getTCObject();
-
-                if (tc != null) {
-                    return tc.getAuthorName() != null
-                            || tc.getAuthorAffiliation() != null
-                            || tc.getAuthorContact() != null;
-                }
-
-                return false;
-            }
-            @Override
-            public boolean isVisible() {
-            	return TCUtilities.isKeyAvailable(trainingModeModel, 
-            			TCQueryFilterKey.AuthorName) ||
-            		  TCUtilities.isKeyAvailable(trainingModeModel,
-            				  TCQueryFilterKey.AuthorAffiliation) ||
-            		  TCUtilities.isKeyAvailable(trainingModeModel,
-            				  TCQueryFilterKey.AuthorContact);
-            }
-        });
-
-        tabs.add(new AbstractDetailsTab(new Model<String>() {
+        };        
+        
+        WebMarkupContainer tabsContainer = new WebMarkupContainer("details-tabs");
+        tabsContainer.add(new Label("tc.details.tab.info.title", 
+        		new ResourceModel("tc.details.tab.info.title.text")).setOutputMarkupId(true));
+        tabsContainer.add(new Label("tc.details.tab.diagnosis.title", 
+        		new ResourceModel("tc.details.tab.diagnosis.title.text")).setOutputMarkupId(true));
+        tabsContainer.add(new Label("tc.details.tab.diffDiagnosis.title", 
+        		new ResourceModel("tc.details.tab.differential-diagnosis.title.text")).setOutputMarkupId(true));
+        tabsContainer.add(new Label("tc.details.tab.finding.title", 
+        		new ResourceModel("tc.details.tab.finding.title.text")).setOutputMarkupId(true));
+        tabsContainer.add(new Label("tc.details.tab.history.title", 
+        		new ResourceModel("tc.details.tab.history.title.text")).setOutputMarkupId(true));
+        tabsContainer.add(new Label("tc.details.tab.discussion.title", 
+        		new ResourceModel("tc.details.tab.discussion.title.text")).setOutputMarkupId(true));
+        tabsContainer.add(new Label("tc.details.tab.organsystem.title", 
+        		new ResourceModel("tc.details.tab.organsystem.title.text")).setOutputMarkupId(true));
+        tabsContainer.add(new Label("tc.details.tab.author.title", 
+        		new ResourceModel("tc.details.tab.author.title.text")).setOutputMarkupId(true));
+        tabsContainer.add(new Label("tc.details.tab.bibliography.title", 
+        		new ResourceModel("tc.details.tab.bibliography.title.text")).setOutputMarkupId(true));
+        tabsContainer.add(new Label("tc.details.tab.documents.title", 
+        		new ResourceModel("tc.details.tab.documents.title.text")).setOutputMarkupId(true));
+        tabsContainer.add(new Label("tc.details.tab.images.title", 
+        		new Model<String>() {
             String title = new PackageStringResourceLoader()
                     .loadStringResource(TCDetailsPanel.class,
                             "tc.details.tab.images.title.text", null, null);
@@ -315,63 +126,50 @@ public class TCDetailsPanel extends Panel {
                 sbuf.append(")");
                 return sbuf.toString();
             }
-        }) {
-            @Override
-            public Panel getPanel(String id) {
-                Panel tab = new TCDetailsImagesTab(id);
-                tab.setDefaultModel(tabModel);
-                return tab;
-            }
-
-            @Override
-            public boolean isDataAvailable() {
-                TCObject tc = getTCObject();
-
-                return tc != null && tc.getReferencedImages() != null
-                        && !tc.getReferencedImages().isEmpty();
-            }
-        });
-
-        tabs.add(new AbstractDetailsTab(new ResourceModel(
-                "tc.details.tab.bibliography.title.text")) {
-            @Override
-            public Panel getPanel(String id) {
-                Panel tab = new TCDetailsBibliographyTab(id);
-                tab.setDefaultModel(tabModel);
-                return tab;
-            }
-
-            @Override
-            public boolean isDataAvailable() {
-                TCObject tc = getTCObject();
-
-                return tc != null && tc.getBibliographicReferences() != null
-                        && !tc.getBibliographicReferences().isEmpty();
-            }
-            @Override
-            public boolean isVisible() {
-            	return TCUtilities.isKeyAvailable(trainingModeModel, 
-            			TCQueryFilterKey.BibliographicReference);
-            }
-        });
+        }).setOutputMarkupId(true));
         
-        tabs.add(new AbstractDetailsTab(new ResourceModel(
-                "tc.details.tab.documents.title.text")) {
-            @Override
-            public Panel getPanel(String id) {
-                Panel tab = new TCDetailsDocumentsTab(id);
-                tab.setDefaultModel(tabModel);
-                return tab;
-            }
-
-            @Override
-            public boolean isDataAvailable() {
-                TCObject tc = getTCObject();
-                List<TCReferencedInstance> docRefs = tc!=null ? 
-                		tc.getReferencedDocuments() : null;
-                return docRefs!=null && !docRefs.isEmpty();
-            }
-        });
+        
+        tabsContainer.add(addTab(new TCDetailsInfoTab("details-overview", trainingModeModel)).setDefaultModel(tabModel));
+        tabsContainer.add(addTab(new TCDetailsDiagnosisTab("details-diagnosis", trainingModeModel)).setDefaultModel(tabModel));
+        tabsContainer.add(addTab(new TCDetailsDefaultTab("details-diffDiagnosis", trainingModeModel) {
+	            @Override
+	            public TCQueryFilterKey getKey() {
+	                return TCQueryFilterKey.DifferentialDiagnosis;
+	            }
+	        }).setDefaultModel(tabModel)
+        );
+        tabsContainer.add(addTab(new TCDetailsDefaultTab("details-finding", trainingModeModel) {
+	            @Override
+	            public TCQueryFilterKey getKey() {
+	                return TCQueryFilterKey.Finding;
+	            }
+	        }).setDefaultModel(tabModel)
+        );    
+        tabsContainer.add(addTab(new TCDetailsDefaultTab("details-history", trainingModeModel) {
+		            @Override
+		            public TCQueryFilterKey getKey() {
+		                return TCQueryFilterKey.History;
+		            }
+		        }).setDefaultModel(tabModel)
+		);
+		tabsContainer.add(addTab(new TCDetailsDefaultTab("details-discussion", trainingModeModel) {
+		            @Override
+		            public TCQueryFilterKey getKey() {
+		                return TCQueryFilterKey.Discussion;
+		            }
+		        }).setDefaultModel(tabModel)
+		);
+        tabsContainer.add(addTab(new TCDetailsDefaultTab("details-organSystem", trainingModeModel) {
+	            @Override
+	            public TCQueryFilterKey getKey() {
+	                return TCQueryFilterKey.OrganSystem;
+	            }
+	        }).setDefaultModel(tabModel)
+        );
+        tabsContainer.add(addTab(new TCDetailsAuthorTab("details-author", trainingModeModel)).setDefaultModel(tabModel));
+        tabsContainer.add(addTab(new TCDetailsBibliographyTab("details-bibliography", trainingModeModel)).setDefaultModel(tabModel));
+        tabsContainer.add(addTab(new TCDetailsDocumentsTab("details-documents")).setDefaultModel(tabModel));
+        tabsContainer.add(addTab(new TCDetailsImagesTab("details-images")).setDefaultModel(tabModel));
 
         nodetailsContainer = new WebMarkupContainer("no-details-panel");
         nodetailsContainer.setOutputMarkupId(true);
@@ -381,7 +179,7 @@ public class TCDetailsPanel extends Panel {
 
         detailsContainer = new WebMarkupContainer("details-info-panel");
         detailsContainer.setOutputMarkupId(true);
-        detailsContainer.add(new DetailsTabbedPanel("details-tabs", tabs));
+        detailsContainer.add(tabsContainer);
 
         nodetailsContainer.setVisible(true);
         errordetailsContainer.setVisible(false);
@@ -390,13 +188,43 @@ public class TCDetailsPanel extends Panel {
         add(nodetailsContainer);
         add(errordetailsContainer);
         add(detailsContainer);
+        
+        add(tabActivationBehavior = new AbstractDefaultAjaxBehavior() {
+        	public void respond(AjaxRequestTarget target) {
+        		try
+        		{
+        			String tabIndex = RequestCycle.get().getRequest().getParameter("tabIndex");
+        			if (tabIndex!=null && !tabIndex.isEmpty())
+        			{
+        				activeTabIndex = Integer.valueOf(tabIndex);
+        			}
+        		}
+        		catch (Exception e)
+        		{
+        			e.printStackTrace();
+        		}
+        	}
+        });
+        
+        add(new HeaderContributor(new IHeaderContributor()
+		{
+			public void renderHead(IHeaderResponse response)
+			{
+				StringBuilder js = new StringBuilder();
+		        js.append(getInitUIJavascript());
+		        js.append(getDisableTabsJavascript());
+		        js.append(getHideTabsJavascript());
+		        
+		        response.renderOnDomReadyJavascript(js.toString());
+			}
+		}));
     }
 
-    public void setTCObject(TCObject tc) {
+    public void setTCObject(TCObject tc, AjaxRequestTarget target) {
         nodetailsContainer.setVisible(tc == null);
         errordetailsContainer.setVisible(false);
         detailsContainer.setVisible(tc != null);
-        ((DetailsTabbedPanel) detailsContainer.get(0)).setSelectedTab(0);
+        activeTabIndex = 0;
 
         setDefaultModel(new Model<TCObject>(tc));
     }
@@ -412,60 +240,73 @@ public class TCDetailsPanel extends Panel {
 
         setDefaultModelObject(null);
     }
-
-    private static abstract class AbstractDetailsTab extends AbstractTab {
-
-        private static final long serialVersionUID = 1L;
-
-        public AbstractDetailsTab(IModel<String> titleModel) {
-            super(titleModel);
-        }
-
-        public abstract boolean isDataAvailable();
+    
+    private TCDetailsTab addTab(TCDetailsTab tab)
+    {
+    	tabsToIndices.put(tab, tabsToIndices.size());
+    	return tab;
     }
-
-    private static class DetailsTabbedPanel extends AjaxTabbedPanel {
-
-        private static final long serialVersionUID = 1L;
-
-        public DetailsTabbedPanel(final String id, List<ITab> tabs) {
-            super(id, tabs);
+        
+    private String getInitUIJavascript() {
+    	StringBuilder js = new StringBuilder();
+    	
+    	// make tabs
+    	js.append("$('.details-tabs').tabs({" +
+    			"active:" + activeTabIndex +"," +
+    			"heightStyle:'fill'," +
+    			"activate: function(event, ui) {" +
+    			"   var url = '" + tabActivationBehavior.getCallbackUrl() + "';" +
+    			"   url += (url.indexOf('?')==-1) ? '?tabIndex' : '&tabIndex=';" +
+    			"   url += ui.newTab.index();" +
+    			"   wicketAjaxGet(url, function(){}, function(){});" +
+    			"}" +
+    			"});");
+    	
+    	// move the nav to the bottom
+    	js.append("$('.details-tabs .ui-tabs-nav, .details-tabs .ui-tabs-nav > *')");
+    	js.append(".removeClass('ui-corner-all ui-corner-top')");
+    	js.append(".addClass('ui-corner-bottom');");
+    	js.append("$('.details-tabs .ui-tabs-nav').appendTo('.details-tabs');");
+    	
+    	return js.toString();
+    }    
+    
+    private String getDisableTabsJavascript() {
+    	boolean appendDelimiter=false;
+    	StringBuffer sbuf = new StringBuffer();
+    	sbuf.append("setDisabledTCDetailsTabs([");
+        for (Map.Entry<TCDetailsTab, Integer> me : tabsToIndices.entrySet())
+        {
+            if (!me.getKey().enabled())
+            {
+            	if (appendDelimiter) {
+            		sbuf.append(",");
+            	}
+            	appendDelimiter = true;
+            	sbuf.append(me.getValue());
+            }
         }
-
-        @Override
-        protected WebMarkupContainer newLink(String linkId, final int index) {
-            AjaxFallbackLink<Void> link = new AjaxFallbackLink<Void>(linkId) {
-
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                public void onClick(AjaxRequestTarget target) {
-                    if (((AbstractDetailsTab) getTabs().get(index))
-                            .isDataAvailable()) {
-                        setSelectedTab(index);
-                        if (target != null) {
-                            target.addComponent(DetailsTabbedPanel.this);
-                        }
-                        onAjaxUpdate(target);
-                    }
-                }
-            };
-            link.add(new AttributeModifier("class", true,
-                    new AbstractReadOnlyModel<String>() {
-
-                        private static final long serialVersionUID = 1L;
-
-                        @Override
-                        public String getObject() {
-                            if (((AbstractDetailsTab) getTabs().get(index))
-                                    .isDataAvailable()) {
-                                return "enabled";
-                            } else {
-                                return "disabled";
-                            }
-                        }
-                    }));
-            return link;
-        }
+        sbuf.append("]);");
+        return sbuf.toString();
     }
+    
+    private String getHideTabsJavascript() {
+    	boolean appendDelimiter=false;
+    	StringBuffer sbuf = new StringBuffer();
+    	sbuf.append("setHiddenTCDetailsTabs([");
+        for (Map.Entry<TCDetailsTab, Integer> me : tabsToIndices.entrySet())
+        {
+            if (!me.getKey().visible())
+            {
+            	if (appendDelimiter) {
+            		sbuf.append(",");
+            	}
+            	appendDelimiter = true;
+            	sbuf.append(me.getValue());
+            }
+        }
+        sbuf.append("]);");
+        return sbuf.toString();
+    }
+    
 }

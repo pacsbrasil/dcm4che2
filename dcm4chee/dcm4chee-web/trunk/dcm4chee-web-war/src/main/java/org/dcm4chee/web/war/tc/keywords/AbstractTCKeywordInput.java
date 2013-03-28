@@ -10,9 +10,19 @@ public abstract class AbstractTCKeywordInput extends AbstractTCInput implements 
 {
 	private static final long serialVersionUID = 8282801535686632421L;
 
-	public AbstractTCKeywordInput(final String id, TCQueryFilterKey filterKey, boolean usedForSearch)
+	private boolean exclusive;
+	
+	public AbstractTCKeywordInput(final String id, TCQueryFilterKey filterKey, 
+			boolean usedForSearch, boolean exclusive)
     {
         super(id, filterKey, usedForSearch);
+        this.exclusive = exclusive;
+    }
+	
+    @Override
+    public boolean isExclusive()
+    {
+        return exclusive;
     }
 	
 	@Override

@@ -50,16 +50,16 @@ import javax.swing.tree.TreeNode;
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
+import org.apache.wicket.behavior.AttributeAppender;
 import org.apache.wicket.extensions.ajax.markup.html.autocomplete.AutoCompleteSettings;
 import org.apache.wicket.extensions.ajax.markup.html.autocomplete.AutoCompleteTextField;
 import org.apache.wicket.extensions.markup.html.tree.DefaultAbstractTree.LinkType;
 import org.apache.wicket.extensions.markup.html.tree.Tree;
+import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.WebMarkupContainer;
-import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.util.ListModel;
-import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 import org.dcm4chee.web.war.common.AutoSelectInputTextBehaviour;
 import org.dcm4chee.web.war.tc.TCPopupManager.AbstractTCPopup;
@@ -80,14 +80,18 @@ public class TCKeywordTreeInput extends AbstractTCKeywordInput {
     private AutoCompleteTextField<String> text;
     
     public TCKeywordTreeInput(final String id, TCQueryFilterKey filterKey,
-    		boolean usedForSearch, TCKeyword selectedKeyword, final TCKeywordNode root) {
-    	this(id, filterKey, usedForSearch, selectedKeyword!=null ? 
+    		boolean usedForSearch, boolean exclusive, 
+    		TCKeyword selectedKeyword, final TCKeywordNode root) 
+    {
+    	this(id, filterKey, usedForSearch, exclusive, selectedKeyword!=null ? 
     			Collections.singletonList(selectedKeyword) : null, root);
     }
     
     public TCKeywordTreeInput(final String id, TCQueryFilterKey filterKey, 
-    		boolean usedForSearch, List<TCKeyword> selectedKeywords, final TCKeywordNode root) {
-        super(id, filterKey, usedForSearch);
+    		boolean usedForSearch, final boolean exclusive, 
+    		List<TCKeyword> selectedKeywords, final TCKeywordNode root) 
+    {
+        super(id, filterKey, usedForSearch, exclusive);
 
         setDefaultModel(new ListModel<TCKeyword>(selectedKeywords) {
 			private static final long serialVersionUID = 1L;
@@ -115,8 +119,26 @@ public class TCKeywordTreeInput extends AbstractTCKeywordInput {
                 findMatchingKeywords(root, s, keywords);
                 return keywords.keySet().iterator();
             }
+            @Override
+            protected void onComponentTag(ComponentTag tag)
+            {
+            	super.onComponentTag(tag);
+            	if (exclusive)
+            	{
+            		tag.put("readonly","readonly");
+            	}
+            	else
+            	{
+               		tag.put("onmouseover", "$(this).addClass('ui-input-hover')");
+                	tag.put("onmouseout", "$(this).removeClass('ui-input-hover')");
+               		tag.put("onfocus", "$(this).addClass('ui-input-focus')");
+                	tag.put("onblur", "$(this).removeClass('ui-input-focus')");
+            	}
+            }
         };
         text.setOutputMarkupId(true);
+        text.add(new AttributeAppender("class",true,new Model<String>(
+        		exclusive?"ui-input-readonly":"ui-input")," "));
         text.add(new AutoSelectInputTextBehaviour());
         text.add(new AjaxFormComponentUpdatingBehavior("onchange") {
 			private static final long serialVersionUID = 1L;
@@ -129,9 +151,18 @@ public class TCKeywordTreeInput extends AbstractTCKeywordInput {
         });
         
         final KeywordTreePopup popup = new KeywordTreePopup();
-        final WebMarkupContainer chooserBtn = new WebMarkupContainer("chooser-button", new Model<String>("..."));
-        chooserBtn.add(new Image("chooser-button-img", ImageManager.IMAGE_TC_ARROW_DOWN)
-        .setOutputMarkupId(true));
+        final WebMarkupContainer chooserBtn = new WebMarkupContainer("chooser-button", new Model<String>("...")) {
+        	@Override
+        	protected void onComponentTag(ComponentTag tag)
+        	{
+        		super.onComponentTag(tag);
+        		tag.put("onmouseover", "$(this).addClass('ui-state-hover')");
+        		tag.put("onmouseout", "$(this).removeClass('ui-state-hover')");
+        	}
+        };
+        
+//        chooserBtn.add(new Image("chooser-button-img", ImageManager.IMAGE_TC_ARROW_DOWN)
+//        .setOutputMarkupId(true));
 
         final Tree tree = new Tree("keyword-tree", new DefaultTreeModel(root)) {
             private static final long serialVersionUID = 1L;
@@ -238,18 +269,6 @@ public class TCKeywordTreeInput extends AbstractTCKeywordInput {
         	}
         }
         return null;
-    }
-    
-    @Override
-    public boolean isExclusive()
-    {
-        return text.isEnabled();
-    }
-    
-    @Override
-    public void setExclusive(boolean exclusive)
-    {
-        text.setEnabled(!exclusive);
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -388,7 +407,7 @@ public class TCKeywordTreeInput extends AbstractTCKeywordInput {
 
         public KeywordTreePopup() 
         {
-            super("tree-keyword-popup", true, true, true, true);
+            super("tree-keyword-popup", true, false, true, true);
             this.selectedNodes = new ArrayList<TCKeywordNode>();
         }
 

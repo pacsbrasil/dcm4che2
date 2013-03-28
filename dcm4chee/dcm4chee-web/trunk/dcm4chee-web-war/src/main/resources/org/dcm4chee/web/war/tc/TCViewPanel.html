@@ -5,7 +5,7 @@
 </head>
 <body>
     <wicket:panel>
-		<div id="tc-view" class="tc-view">
+		<div id="tc-view" class="tc-view ui-content">
 		    <div id="tc-view-header">
 		        <div id="tc-view-title" class="tc-view-title">
 		          	<div id="tc-view-title-text" wicket:id="tc-view-title-text"/>
@@ -38,7 +38,7 @@
 					</div>
 				</div>
 			</div>
-			<div id="tc-view-content" wicket:id="tc-view-content" class="tc-view-content">
+			<div id="tc-view-content" wicket:id="tc-view-content" class="tc-view-content ui-content">
 				<ul>
 					<li>
 					   <a href="#tabs-overview"> 
@@ -118,7 +118,7 @@
 				<div id="tabs-documents" style="padding:0px">
 					<div wicket:id="tc-view-documents" class="tc-view-tab-container"/>
 				</div>
-				<div id="tabs-images">
+				<div id="tabs-images" class="tc-view-images-tab-container-parent">
 				    <div wicket:id="tc-view-images" id="tc-view-images-tab-container" class="tc-view-tab-container"/>
 				</div>
 			</div>

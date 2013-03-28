@@ -124,8 +124,10 @@ public class ACRCatalogue extends TCKeywordCatalogue {
 
     @Override
     public TCKeywordACRInput createInput(final String id, TCQueryFilterKey filterKey,
-            boolean usedForSearch, TCKeyword...selectedKeywords) {
-        return new TCKeywordACRInput(id, filterKey, usedForSearch, 
+            boolean usedForSearch, boolean exclusive, 
+            TCKeyword...selectedKeywords) 
+    {
+        return new TCKeywordACRInput(id, filterKey, usedForSearch, exclusive,
         		selectedKeywords!=null?Arrays.asList(selectedKeywords):null);
     }
 

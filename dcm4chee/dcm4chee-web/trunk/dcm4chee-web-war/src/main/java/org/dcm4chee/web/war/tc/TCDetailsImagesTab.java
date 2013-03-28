@@ -44,7 +44,6 @@ import java.util.List;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.navigation.paging.PagingNavigator;
-import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.markup.repeater.Item;
 import org.apache.wicket.markup.repeater.data.GridView;
 import org.apache.wicket.markup.repeater.data.IDataProvider;
@@ -59,7 +58,7 @@ import org.dcm4chee.web.war.folder.delegate.WADODelegate;
  * @version $Revision$ $Date$
  * @since May 27, 2011
  */
-public class TCDetailsImagesTab extends Panel {
+public class TCDetailsImagesTab extends TCDetailsTab {
 
     private static final long serialVersionUID = 1L;
 
@@ -121,9 +120,17 @@ public class TCDetailsImagesTab extends Panel {
         navWmc.add(new PagingNavigator("details-images-nav", view));
         navWmc.setOutputMarkupPlaceholderTag(true);
         navWmc.setOutputMarkupId(true);
-
+        navWmc.setMarkupId("details-images-nav-container");
+        
         add(navWmc);
         add(view);
+    }
+    
+    @Override
+    public boolean enabled() {
+        TCObject tc = getTCObject();
+        return tc != null && tc.getReferencedImages() != null
+                && !tc.getReferencedImages().isEmpty();
     }
 
     private TCObject getTCObject() {

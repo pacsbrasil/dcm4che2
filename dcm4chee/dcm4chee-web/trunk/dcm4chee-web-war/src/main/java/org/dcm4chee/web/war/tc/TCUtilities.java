@@ -197,16 +197,13 @@ public class TCUtilities
                 keyword = new TCKeyword(svalue, null, false);
             }
             
+            boolean exclusive = checkExclusive ? TCKeywordCatalogueProvider.getInstance().
+                        isCatalogueExclusive(key) : false;
+                        
             TCKeywordInput input = keyword==null ?
-            		cat.createInput(componentId, key, usedForSearch) :
-            		cat.createInput(componentId, key, usedForSearch, keyword);
-            
-            if (checkExclusive)
-            {
-                input.setExclusive(TCKeywordCatalogueProvider.getInstance().
-                        isCatalogueExclusive(key));
-            }
-            
+            		cat.createInput(componentId, key, usedForSearch, exclusive) :
+            		cat.createInput(componentId, key, usedForSearch, exclusive, keyword);
+
             return input;
         } 
         else 

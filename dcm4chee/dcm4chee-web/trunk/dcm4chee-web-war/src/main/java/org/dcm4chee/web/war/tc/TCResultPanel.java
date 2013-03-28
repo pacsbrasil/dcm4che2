@@ -37,6 +37,7 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.web.war.tc;
 
+import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -59,13 +60,14 @@ import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxEventBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.IAjaxCallDecorator;
+import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxLink;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
-import org.apache.wicket.extensions.markup.html.repeater.data.sort.OrderByBorder;
 import org.apache.wicket.extensions.markup.html.repeater.util.SortParam;
 import org.apache.wicket.extensions.markup.html.repeater.util.SortableDataProvider;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.CSSPackageResource;
+import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.image.Image;
@@ -488,88 +490,13 @@ public class TCResultPanel extends Panel {
         dataView.setItemsPerPage(WebCfgDelegate.getInstance()
                 .getDefaultFolderPagesize());
         dataView.setOutputMarkupId(true);
+        
+        SortLinkGroup sortGroup = new SortLinkGroup(dataView);
+        add(new SortLink("sortTitle", sortGroup, TCModel.Sorter.Title));
+        add(new SortLink("sortAbstract", sortGroup, TCModel.Sorter.Abstract));
+        add(new SortLink("sortDate", sortGroup, TCModel.Sorter.Date));
+        add(new SortLink("sortAuthor", sortGroup, TCModel.Sorter.Author));        
 
-        OrderByBorder titleBorder = new OrderByBorder("titleColumn", "Title",
-                tclistProvider) {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            protected void onSortChanged() {
-                if (selected == null) {
-                    dataView.setCurrentPage(0);
-                } else {
-                    dataView.setCurrentPage(tclistProvider.getCurrentPageIndex(
-                            selected, dataView.getItemsPerPage()));
-                }
-            }
-        };
-
-        OrderByBorder abstractBorder = new OrderByBorder("abstractColumn",
-                "Abstract", tclistProvider) {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            protected void onSortChanged() {
-                if (selected == null) {
-                    dataView.setCurrentPage(0);
-                } else {
-                    dataView.setCurrentPage(tclistProvider.getCurrentPageIndex(
-                            selected, dataView.getItemsPerPage()));
-                }
-            }
-        };
-
-        OrderByBorder authorBorder = new OrderByBorder("authorColumn",
-                "Author", tclistProvider) {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            protected void onSortChanged() {
-                if (selected == null) {
-                    dataView.setCurrentPage(0);
-                } else {
-                    dataView.setCurrentPage(tclistProvider.getCurrentPageIndex(
-                            selected, dataView.getItemsPerPage()));
-                }
-            }
-        };
-
-        OrderByBorder dateBorder = new OrderByBorder("dateColumn", "Date",
-                tclistProvider) {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            protected void onSortChanged() {
-                if (selected == null) {
-                    dataView.setCurrentPage(0);
-                } else {
-                    dataView.setCurrentPage(tclistProvider.getCurrentPageIndex(
-                            selected, dataView.getItemsPerPage()));
-                }
-            }
-        };
-
-        titleBorder.getBodyContainer().add(
-                new Label("titleTitle", new ResourceModel(
-                        "tc.result.table.header.title.text")));
-        abstractBorder.getBodyContainer().add(
-                new Label("abstractTitle", new ResourceModel(
-                        "tc.result.table.header.abstract.text")));
-        authorBorder.getBodyContainer().add(
-                new Label("authorTitle", new ResourceModel(
-                        "tc.result.table.header.author.text")));
-        dateBorder.getBodyContainer().add(
-                new Label("dateTitle", new ResourceModel(
-                        "tc.result.table.header.date.text")));
-
-        add(titleBorder);
-        add(abstractBorder);
-        add(authorBorder);
-        add(dateBorder);
         add(dataView);
 
         add(new Label("numberOfMatchingInstances", new StringResourceModel(
@@ -596,22 +523,19 @@ public class TCResultPanel extends Panel {
     	return tclistProvider;
     }
     
-    protected Component[] selectionChanged(TCModel tc)
+    protected void selectionChanged(TCModel tc, AjaxRequestTarget target)
     {
-        return null;
     }
     
-    protected Component[] selectTC(TCModel tc)
+    protected void selectTC(TCModel tc, AjaxRequestTarget target)
     {
         if (selected==null || 
             !selected.getSOPInstanceUID().equals(tc.getSOPInstanceUID()))
         {
             selected = tc;
             
-            return selectionChanged(tc);
+            selectionChanged(tc, target);
         }
-        
-        return null;
     }
     
     protected void openTC(TCModel tc, boolean edit, AjaxRequestTarget target)
@@ -643,16 +567,10 @@ public class TCResultPanel extends Panel {
     
     private void selectTC(final Item<TCModel> item, final TCModel tc,
             AjaxRequestTarget target) {
-        Component[] toUpdate = selectTC(tc);
-        
-        if (toUpdate!=null && toUpdate.length>0)
-        {
-            for (Component c : toUpdate)
-            {
-                target.addComponent(c);
-            }
-        }
-        
+    	log.info("Selecting case");
+    	
+        selectTC(tc, target);
+
         target.appendJavascript("selectTC('"+item.getMarkupId()+
                 "','mouse-out-selected','even-mouse-out','odd-mouse-out')");
     }
@@ -870,7 +788,8 @@ public class TCResultPanel extends Panel {
     }
 
     
-    public class SortableTCListProvider extends SortableDataProvider<TCModel> 
+    @SuppressWarnings("serial")
+	public class SortableTCListProvider extends SortableDataProvider<TCModel> 
     	implements ITCCaseProvider {
 
         private TCListModel model;
@@ -882,7 +801,7 @@ public class TCResultPanel extends Panel {
             setSort(TCModel.Sorter.Date.name(), false);
         }
 
-        @SuppressWarnings({ "unchecked" })
+        @SuppressWarnings({ "unchecked", "rawtypes" })
         @Override
         public Iterator<TCModel> iterator(int first, int count) {
             List<TCModel> items = model.getObject();
@@ -1131,5 +1050,113 @@ public class TCResultPanel extends Panel {
                 }
             }
         }
+    }
+    
+    
+    @SuppressWarnings("serial")
+	private class SortLinkGroup implements Serializable
+    {
+    	private List<SortLink> links = new ArrayList<SortLink>(5);
+    	private DataView<TCModel> view;
+    	
+    	public SortLinkGroup(DataView<TCModel> view)
+    	{
+    		this.view = view;
+    	}
+    	
+    	public void addLink(SortLink link)
+    	{
+    		links.add(link);
+    	}
+    	
+    	public void linkClicked(SortLink link, AjaxRequestTarget target)
+    	{		
+            if (selected == null) 
+            {
+                view.setCurrentPage(0);
+            } 
+            else 
+            {
+                view.setCurrentPage(tclistProvider.getCurrentPageIndex(
+                        selected, view.getItemsPerPage()));
+            }
+            
+    		target.addComponent(TCResultPanel.this);
+    	}
+    }
+    
+    
+    @SuppressWarnings("serial")
+	private class SortLink extends AjaxLink<Void>
+    {
+    	private SortLinkGroup group;
+    	private TCModel.Sorter sorter;
+    	private Component asc;
+    	private Component desc;
+    	
+    	public SortLink(final String id, SortLinkGroup group, final TCModel.Sorter sorter)
+    	{
+    		super(id);
+    		this.group = group;
+    		this.sorter = sorter;
+    		add(asc = createIconContainer(id+"Ascending", true, sorter));
+    		add(desc = createIconContainer(id+"Descending", false, sorter));
+    		add(new Label(id+"Text", new ResourceModel(
+                    "tc.result.table.header."+sorter.name().toLowerCase()+".text")).setOutputMarkupId(true));
+    		
+    		setOutputMarkupId(true);
+    		
+    		if (group!=null)
+    		{
+    			group.addLink(this);
+    		}
+    	}
+    	
+    	@Override
+    	public void onClick(AjaxRequestTarget target)
+    	{
+    		SortParam sort = tclistProvider.getSort();
+    		
+    		if (sort.getProperty().equals(sorter.name()))
+    		{
+        		tclistProvider.setSort(sorter.name(), 
+        				!tclistProvider.getSort().isAscending());
+    		}
+    		else
+    		{
+    			tclistProvider.setSort(sorter.name(), true);
+    		}
+    		
+    		target.addComponent(asc);
+    		target.addComponent(desc);
+    		
+    		if (group!=null)
+    		{
+    			group.linkClicked(this, target);
+    		}
+    	}
+    	
+		private Component createIconContainer(final String id, 
+				final boolean ascending, final TCModel.Sorter sorter)
+    	{
+    		return new WebMarkupContainer(id) {
+				@Override
+    	    	protected void onComponentTag(ComponentTag tag)
+    	    	{
+    	    		super.onComponentTag(tag);
+    	    		
+    	    		SortParam sort = tclistProvider.getSort();
+    	    		if (sorter.name().equals(sort.getProperty()) &&
+    	    			ascending==sort.isAscending())
+    	    		{
+    	    			tag.put("class","ui-state-highlight");
+    	    		}
+    	    		else
+    	    		{
+    	    			tag.put("class","ui-state-default");
+    	    		}
+    	    	}
+    		}.setOutputMarkupId(true);
+    	}
     }
 }
