@@ -172,12 +172,18 @@ public class ItemParser implements StreamSegmentMapper {
             if (!items.isEmpty())
                 iis.seek(last().nextItemPos());
             parser.parseHeader();
+            if (parser.hasSeenEOF()) {
+                log.warn("Missing Sequence Delimiter Item (FFFE,E0DD) #0");
+                lastItemSeen = true;
+                return null;
+            }
             if (log.isDebugEnabled())
                 log.debug("Read " + Tags.toString(parser.getReadTag()) + " #"
                         + parser.getReadLength());
             if (parser.getReadTag() == Tags.Item) {
                 Item item = new Item(items.isEmpty() ? 0 : last().nextOffset(),
-                        iis.getStreamPosition(), parser.getReadLength());
+                        iis.getStreamPosition(),
+                        checkEOF(parser.getReadLength()));
                 if (items.isEmpty() || rle) {
                     addFirstItemOfFrame(item);
                 } else if (firstItemOfFrame.size() < numberOfFrames) {
@@ -223,7 +229,24 @@ public class ItemParser implements StreamSegmentMapper {
         return null;
     }
 
-    private void addFirstItemOfFrame(Item item) {
+    private int checkEOF(int length) throws IOException {
+        long remaining = iis.length();
+        if (remaining < 0) {
+            log.debug("Unknown ImageInputStream length - cannot check item length for EOF");
+            return length;
+        }
+
+        remaining -= iis.getStreamPosition();
+        if (length <= remaining)
+            return length;
+
+        log.warn("Detect EOF reading (FFFE,E0DD) #" + length 
+                + " @" + (iis.getStreamPosition() - 8));
+        lastItemSeen = true;
+        return (int) remaining;
+    }
+
+   private void addFirstItemOfFrame(Item item) {
         if (log.isDebugEnabled()) {
             log.debug("Detect item #" + (items.size()+1)
                     + " as first item of frame #"
