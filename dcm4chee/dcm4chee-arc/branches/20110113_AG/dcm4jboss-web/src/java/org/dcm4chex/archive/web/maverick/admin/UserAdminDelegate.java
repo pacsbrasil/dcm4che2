@@ -40,6 +40,7 @@ package org.dcm4chex.archive.web.maverick.admin;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -61,7 +62,7 @@ import org.jboss.mx.util.MBeanServerLocator;
  */
 public class UserAdminDelegate {
 
-    private String securityDomain = "java:/jaas/dcm4chee-web";
+	private List<String> securityDomainList = Arrays.asList("java:/jaas/dcm4chee-web", "java:/jaas/jmx-console");
 
     protected static Logger log = Logger.getLogger(UserAdminDelegate.class);
 
@@ -111,13 +112,16 @@ public class UserAdminDelegate {
     }
 
     private void clearAuthenticationCache() {
-        try {
-            MBeanServerLocator.locate().invoke(new ObjectName("jboss.security:service=JaasSecurityManager"),
-                    "flushAuthenticationCache",
-                    new Object[] { securityDomain },
-                    new String[] { String.class.getName()});
-        } catch (Exception x) {
-            log.error("Cant clear Authentication Cache! Reason:", x);
+        for (String securityDomain:securityDomainList)
+        {
+            try {
+                MBeanServerLocator.locate().invoke(new ObjectName("jboss.security:service=JaasSecurityManager"),
+                        "flushAuthenticationCache",
+                        new Object[] { securityDomain },
+                        new String[] { String.class.getName()});
+            } catch (Exception x) {
+	        log.error("Can't clear Authentication Cache for domain " + securityDomain + "! Reason: ", x);
+	    }
         }
     }
 
