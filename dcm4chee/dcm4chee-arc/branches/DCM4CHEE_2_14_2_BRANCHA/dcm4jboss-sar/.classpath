@@ -13,8 +13,9 @@
 	<classpathentry kind="var" path="JBOSS_HOME/server/default/lib/activation.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/commons-compress-20050911.jar"/>
+	<classpathentry kind="lib" path="lib/dcm4che-audit-2.0.19.jar"/>
 	<classpathentry kind="var" path="JBOSS_HOME/server/default/lib/servlet-api.jar"/>
 	<classpathentry kind="lib" path="lib/saaj-api.jar"/>
-	<classpathentry kind="lib" path="lib/dcm4che-audit-2.0.19.jar"/>
+	<classpathentry kind="var" path="lib/commons-io-1.4.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

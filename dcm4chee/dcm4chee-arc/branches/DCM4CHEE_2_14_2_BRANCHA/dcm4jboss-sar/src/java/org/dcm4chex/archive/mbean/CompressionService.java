@@ -39,6 +39,8 @@
 
 package org.dcm4chex.archive.mbean;
 
+import static java.lang.String.format;
+
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
@@ -80,6 +82,8 @@ import org.jboss.system.ServiceMBeanSupport;
 public class CompressionService extends ServiceMBeanSupport {
 
     private static final String _DCM = ".dcm";
+    private static final String _COMPRESSED = ".comp";
+    private static final String _DECOMPRESSED = ".decomp";
 
     private final SchedulerDelegate scheduler = new SchedulerDelegate(this);
 
@@ -401,9 +405,7 @@ public class CompressionService extends ServiceMBeanSupport {
                 File absTmpDir = FileUtils.resolve(tmpDir);
                 if (absTmpDir.mkdirs())
                     log.info("Create directory for decompressed files");
-                File decFile = new File(absTmpDir, fileDTO.getFilePath()
-                        .replace('/', '-')
-                        + _DCM);
+                File decFile = new File(absTmpDir, getTempDecompressedFilename(fileDTO));
                 byte[] dec_md5 = DecompressCmd.decompressFile(destFile,
                         decFile, fileDTO.getFileTsuid(), pxvalVR[0], buffer);
                 if (!Arrays.equals(dec_md5, fileDTO.getFileMd5())) {
@@ -413,15 +415,21 @@ public class CompressionService extends ServiceMBeanSupport {
                         String errmsg = "Pixel matrix after decompression differs from original file "
                                 + srcFile + "! Keep original uncompressed file.";
                         log.warn(errmsg);
-                        destFile.delete();
                         fsMgt.setFileStatus(fileDTO.getPk(),
                                 FileStatus.VERIFY_COMPRESS_FAILED);
-                        if (keepTempFileIfVerificationFails <= 0L)
-                            decFile.delete();
+                        
+                        if (keepTempFileIfVerificationFails <= 0L) {
+                            FileUtils.delete(destFile, false);
+                            FileUtils.delete(decFile, false);
+                        } else {
+                           saveCompressedFile(destFile, new File(absTmpDir,
+                             getTempCompressedFilename(fileDTO)));
+                        }
+                        
                         throw new CompressionFailedException(errmsg);
                     }
                 }
-                decFile.delete();
+                FileUtils.delete(decFile, false);
             }
             final int baseDirPathLength = baseDir.getPath().length();
             final String destFilePath = destFile.getPath().substring(
@@ -455,6 +463,28 @@ public class CompressionService extends ServiceMBeanSupport {
             throw new CompressionFailedException(errmsg, e);
         }
     }
+
+	private void saveCompressedFile(File srcFile, File dstFile) {
+		try {
+			org.apache.commons.io.FileUtils.moveFile(srcFile, dstFile);
+		} catch (IOException e) {
+			log.warn(
+					format("Error encountered while moving %s to %s.", srcFile,
+							dstFile), e);
+		}
+	}
+
+	private String getTempCompressedFilename(FileDTO fileDTO) {
+		return getTempFilename(fileDTO, _COMPRESSED + _DCM);
+	}
+
+	private String getTempDecompressedFilename(FileDTO fileDTO) {
+		return getTempFilename(fileDTO, _DECOMPRESSED + _DCM);
+	}
+
+	private String getTempFilename(FileDTO fileDTO, String extension) {
+		return fileDTO.getFilePath().replace('/', '-') + extension;
+	}
 
     private boolean isDisabled(int hour) {
         if (disabledEndHour == -1)
