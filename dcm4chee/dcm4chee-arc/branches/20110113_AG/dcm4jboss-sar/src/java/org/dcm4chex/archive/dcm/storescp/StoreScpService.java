@@ -95,8 +95,6 @@ import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.HomeFactoryException;
 
-import com.sun.jmx.snmp.tasks.Task;
-
 /**
  * @author Gunter.Zeilinger@tiani.com
  * @version $Revision$ $Date::            $
