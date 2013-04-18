@@ -288,10 +288,13 @@ public class VOIUtils {
         } else {
             slope = mObj.getFloat(Tag.RescaleSlope, 1.f);
             intercept = mObj.getFloat(Tag.RescaleIntercept, 0.f);
-            if (img.containsValue(Tag.SmallestImagePixelValue)
-                    && img.containsValue(Tag.LargestImagePixelValue)) {
-                minMax = new int[] { img.getInt(Tag.SmallestImagePixelValue),
-                        img.getInt(Tag.LargestImagePixelValue) };
+            int minPixel = img.getInt(Tag.SmallestImagePixelValue);
+            int maxPixel = img.getInt(Tag.LargestImagePixelValue);
+            
+            if(img.containsValue(Tag.SmallestImagePixelValue)
+                    && img.containsValue(Tag.LargestImagePixelValue)
+                    && minPixel != maxPixel ) {
+                minMax = new int[] { minPixel, maxPixel };
             } else if (raster == null || !(raster.getSampleModel() instanceof ComponentSampleModel) ) {
                 log.debug("Using min/max possible values to compute WL range, as we don't have data buffer to use.");
                 int stored = img.getInt(Tag.BitsStored);
