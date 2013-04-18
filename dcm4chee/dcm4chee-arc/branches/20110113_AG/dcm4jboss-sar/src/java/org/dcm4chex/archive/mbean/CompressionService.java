@@ -40,6 +40,8 @@
 package org.dcm4chex.archive.mbean;
 
 import static java.lang.String.format;
+import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -51,6 +53,8 @@ import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 
 import javax.ejb.FinderException;
 import javax.management.Notification;
@@ -88,7 +92,10 @@ public class CompressionService extends ServiceMBeanSupport {
 
     private final SchedulerDelegate scheduler = new SchedulerDelegate(this);
 
-    private long taskInterval = 0L;
+    // ScheduledExecutorService is used to schedule tasks that run independently on each node.
+    private final ScheduledExecutorService scheduledExecutorService = newSingleThreadScheduledExecutor(); 
+
+    private long taskInterval;
 
     private int disabledStartHour;
 
@@ -142,6 +149,19 @@ public class CompressionService extends ServiceMBeanSupport {
             }
         }
     };
+
+    private ScheduledFuture<?> cleanupTempFilesScheduledFuture;
+    private long cleanupTempFilesInterval;
+    private final Runnable cleanupTempFilesRunnable = new Runnable() {
+		@Override
+		public void run() {
+			try {
+				checkForTempFilesToDelete();	
+			} catch (Exception e) {
+            	getLog().warn("Error encountered while cleaning up temporary files.", e);
+            }
+		}
+	};
 
     public String getFileSystemGroupIDs() {
         return StringUtils.toString(fileSystemGroupIDs, ',');
@@ -517,11 +537,24 @@ public class CompressionService extends ServiceMBeanSupport {
     protected void startService() throws Exception {
         listenerID = scheduler.startScheduler(timerIDCheckFilesToCompress,
                 taskInterval, delayedCompressionListener);
+        
+		scheduleCleanupTempFiles(cleanupTempFilesInterval);
+		
+		super.startService();
+    }
+
+	private void scheduleCleanupTempFiles(long cleanupTempFilesInterval) {
+		cleanupTempFilesScheduledFuture = scheduledExecutorService
+				.scheduleAtFixedRate(cleanupTempFilesRunnable, 0,
+						cleanupTempFilesInterval, MILLISECONDS);
     }
 
     protected void stopService() throws Exception {
+    	scheduledExecutorService.shutdownNow();
+    	
         scheduler.stopScheduler(timerIDCheckFilesToCompress, listenerID,
                 delayedCompressionListener);
+        
         super.stopService();
     }
 
@@ -598,4 +631,38 @@ public class CompressionService extends ServiceMBeanSupport {
             String timerIDCheckFilesToCompress) {
         this.timerIDCheckFilesToCompress = timerIDCheckFilesToCompress;
     }
+
+	public String getCleanupTempFilesInterval() {
+		return RetryIntervalls.formatInterval(this.cleanupTempFilesInterval);
+	}
+
+	public void setCleanupTempFilesInterval(String cleanupTempFilesInterval) {
+		long ms = RetryIntervalls.parseInterval(cleanupTempFilesInterval);
+
+		if (ms <= 0) {
+			throw new IllegalArgumentException(
+					format("Cannot parse interval [%s], cleanup interval will remain as %d.",
+							cleanupTempFilesInterval,
+							this.cleanupTempFilesInterval));
+		}
+		
+		if (getState() == STARTED) {
+			if (!isCleanupTempFilesScheduledFutureCancelled()) {
+				throw new IllegalStateException(
+						format("Cannot reschedule cleanup task [%s], cleanup interval will remain as %d.",
+								cleanupTempFilesScheduledFuture.toString(),
+								this.cleanupTempFilesInterval));
+			}
+
+			scheduleCleanupTempFiles(ms);
+		}
+
+		this.cleanupTempFilesInterval = ms;
+	}
+
+	private boolean isCleanupTempFilesScheduledFutureCancelled() {
+		return cleanupTempFilesScheduledFuture.isCancelled()
+				|| cleanupTempFilesScheduledFuture.isDone()
+				|| cleanupTempFilesScheduledFuture.cancel(false);
+	}
 }
