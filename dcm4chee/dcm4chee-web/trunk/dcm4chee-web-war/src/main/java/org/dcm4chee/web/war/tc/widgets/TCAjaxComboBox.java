@@ -69,6 +69,10 @@ public abstract class TCAjaxComboBox<T extends Serializable> extends TCComboBox<
 			try {
 	    		String valueString = RequestCycle.get().getRequest().getParameter("selectedValue");
 	    		T value = convertValue(valueString);
+	    		if (value==null && valueString!=null) {
+	    			String valueString2 = new String(valueString.getBytes("ISO-8859-1"),"UTF-8");
+	    			value = convertValue(valueString2);
+	    		}
 	    		setDefaultModelObject(value);
 	    		valueChanged(value);
 			}
