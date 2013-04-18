@@ -52,7 +52,10 @@ public class TCSpinner<T extends Serializable> extends TextField<T> {
 			protected Integer convertValue(String[] values) throws ConversionException {
 				try {
 					if (values!=null && values.length>0) {
-						return Integer.valueOf(trim(values[0].replaceAll(syears, "")));
+						String years = trim(values[0].replaceAll(syears, ""));
+						if (years!=null && !years.isEmpty()) {
+							return Integer.valueOf(years);
+						}
 					}
 					return null;
 				}
@@ -85,7 +88,10 @@ public class TCSpinner<T extends Serializable> extends TextField<T> {
 			protected Integer convertValue(String[] values) throws ConversionException {
 				try {
 					if (values!=null && values.length>0) {
-						return Integer.valueOf(trim(values[0].replaceAll(smonths, "")));
+						String months = trim(values[0].replaceAll(smonths, ""));
+						if (months!=null&&!months.isEmpty()) {
+							return Integer.valueOf(months);
+						}
 					}
 					return null;
 				}
