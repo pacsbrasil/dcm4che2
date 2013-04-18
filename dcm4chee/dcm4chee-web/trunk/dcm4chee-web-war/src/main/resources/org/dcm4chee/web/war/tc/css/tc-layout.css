@@ -27,7 +27,8 @@
 }
 
 .ui-input, .ui-widget-content .ui-input,
-.ui-input-readonly, .ui-widget-content .ui-input-readonly
+.ui-input-readonly, .ui-widget-content .ui-input-readonly,
+.ui-combobox-input-readonly, .ui-widget-content .ui-combobox-input-readonly
 {
 	margin: 0;
     padding: 0.3em;
@@ -37,6 +38,15 @@
 {
 	vertical-align: baseline;
 }
+
+
+.ui-border-box
+{
+	-moz-box-sizing: border-box; /* FireFox, other Gecko */
+	-webkit-box-sizing: border-box; /* Safari/Chrome, other Webkit */
+	-ms-box-sizing: border-box;
+	box-sizing: border-box; /* Opera/IE8+ */
+} 
 
 
 /******************************************************  
@@ -58,7 +68,6 @@ div.content-area
 #trainingmode-link {
 	float:right;
 	line-height:24px;
-	margin-top: 5px;
 }
 
 div.result-area 
@@ -73,7 +82,6 @@ div.details-area
    clear:right;
    width: 34.75em;
    height: 41.5em;
-   margin-top: 1px;
 }
 
 div.diagnosis-warning  {
@@ -333,12 +341,6 @@ table.tc-content-table tr th
 	padding-right: 10px;
 	text-align: left;
 	width: 20px;
-}
-
-table.tc-content-table td span p
-{
-	margin: 0;
-	overflow: hidden;
 }
 
 table.tc-content-table-header 

@@ -233,5 +233,22 @@
       </parameter>
       <return-type>boolean</return-type>
    </operation>
+   
+   <operation impact="ACTION">
+      <description><![CDATA[ Immediately execute C-STORE of given dataset object to configured calledAETs.
+            ]]> </description>
+      <name>store</name>
+      <parameter>
+        <description>Affected SOP Class UID</description>
+        <name>cuid</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>Dicom dataset</description>
+        <name>dataset</name>
+        <type>org.dcm4che2.data.DicomObject</type>
+      </parameter>
+      <return-type>boolean</return-type>
+   </operation>
 
 </mbean>

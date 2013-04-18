@@ -63,10 +63,13 @@ public class TCDetailsImagesTab extends TCDetailsTab {
     private static final long serialVersionUID = 1L;
 
     private WebMarkupContainer navWmc;
+    private IModel<Boolean> trainingModeModel;
 
-    public TCDetailsImagesTab(final String id) {
+    public TCDetailsImagesTab(final String id, IModel<Boolean> trainingModeModel) {
         super(id);
 
+        this.trainingModeModel = trainingModeModel;
+        
         WadoImage.setDefaultWadoBaseUrl(WADODelegate.getInstance()
                 .getWadoBaseUrl());
 
@@ -131,6 +134,11 @@ public class TCDetailsImagesTab extends TCDetailsTab {
         TCObject tc = getTCObject();
         return tc != null && tc.getReferencedImages() != null
                 && !tc.getReferencedImages().isEmpty();
+    }
+    
+    @Override
+    public boolean visible() {
+    	return TCUtilities.isKeyAvailable(trainingModeModel, "Images");
     }
 
     private TCObject getTCObject() {

@@ -222,7 +222,7 @@ $.widget( "ui.combobox", {
 		}
 
 		if (input.attr("readonly")=="readonly") {
-			input.addClass("ui-state-default ui-input-readonly");
+			input.addClass("ui-state-default ui-combobox-input-readonly");
 		}
 		else {
 			input.addClass("ui-state-default ui-input");

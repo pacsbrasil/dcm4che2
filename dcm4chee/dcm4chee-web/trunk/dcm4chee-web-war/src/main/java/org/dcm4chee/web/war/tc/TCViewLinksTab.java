@@ -37,46 +37,88 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.web.war.tc;
 
+import java.text.MessageFormat;
 import java.util.List;
 
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
+import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
+import org.dcm4chee.web.war.tc.TCUtilities.TCClassAppender;
+import org.dcm4chee.web.war.tc.TCUtilities.TCStyleAppender;
+import org.dcm4chee.web.war.tc.TCViewPanel.AbstractEditableTCViewTab;
 
 /**
  * @author Bernhard Ableitinger <bernhard.ableitinger@agfa.com>
  * @version $Revision$ $Date$
- * @since Jan 07, 2013
+ * @since Mar 31, 2013
  */
 @SuppressWarnings("serial")
-public class TCDetailsDocumentsTab extends TCDetailsTab {
-    private IModel<Boolean> trainingModeModel;
+public abstract class TCViewLinksTab extends AbstractEditableTCViewTab 
+{
+	private AbstractReadOnlyModel<Boolean> infoVisibilityModel;
 	
-    public TCDetailsDocumentsTab(final String id, IModel<Boolean> trainingModeModel) {
-        super(id);
-        
-        this.trainingModeModel = trainingModeModel;
-        
-        add(new TCDocumentsView("tc-details-documents", new AbstractReadOnlyModel<TCObject>() {
-        	public TCObject getObject() {
-        		return getTCObject();
-        	}
-        }, false));
-    }
-    
-    @Override
-    public boolean enabled() {
-        TCObject tc = getTCObject();
-        List<TCReferencedInstance> docRefs = tc!=null ? 
-        		tc.getReferencedDocuments() : null;
-        return docRefs!=null && !docRefs.isEmpty();
-    }
-    
-    @Override
-    public boolean visible() {
-    	return TCUtilities.isKeyAvailable(trainingModeModel, "Documents");
+    public TCViewLinksTab(final String id, IModel<TCEditableObject> model,
+    		AbstractReadOnlyModel<Boolean> infoVisibilityModel) 
+    {
+        this(id, model, false, infoVisibilityModel);
     }
 
-    private TCObject getTCObject() {
-        return (TCObject) getDefaultModelObject();
+	public TCViewLinksTab(final String id, IModel<TCEditableObject> model, 
+    		boolean editing, AbstractReadOnlyModel<Boolean> infoVisibilityModel) {
+        super(id, model, editing);
+        this.infoVisibilityModel = infoVisibilityModel;
+        TCLinksView view = new TCLinksView("tc-view-links-content", model, editing);
+        if (!editing) {
+        	view.add(new TCClassAppender("ui-border-box"));
+        	view.add(new TCStyleAppender("padding:0 20px"));
+        }
+        add(view);
+    }
+	
+    @Override
+    public String getTabTitle()
+    {
+        return MessageFormat.format(getString("tc.view.links.tab.title"),
+                getLinkCount());
+    }
+    
+    @Override
+    public boolean hasContent()
+    {
+        return getLinkCount()>0;
+    }
+    
+    @Override
+    public boolean isTabVisible() {
+    	boolean defaultVisibility = super.isTabVisible();
+    	
+    	if (defaultVisibility) {
+	    	if (infoVisibilityModel!=null) {
+	    		return infoVisibilityModel.getObject() ||
+	    			!WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey("Links");
+	    	}
+    	}
+    	
+    	return defaultVisibility;
+    }
+    
+    @Override
+    protected void saveImpl(){
+    }
+    
+    private int getLinkCount() {
+    	int count = 0;
+    	
+        List<TCLink> links = getTC()!=null ? 
+        		getTC().getLinks() : null;
+        if (links!=null) {
+        	for (TCLink link : links) {
+        		if (link.isPermitted()) {
+        			count++;
+        		}
+        	}
+        }
+        
+        return count;
     }
 }

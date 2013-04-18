@@ -73,18 +73,21 @@ public abstract class TCViewGenericTextTab extends AbstractEditableTCViewTab
         super(id, model, editing);
         this.infoVisibilityModel = infoVisibilityModel;
         
-        this.area = new SelfUpdatingTextArea("tc-view-text", 
-                getStringValue(getKey()))
-        {
-            @Override
-            protected void textUpdated(String text)
-            {
+        this.area = new SelfUpdatingTextArea("tc-view-text", new Model<String>() {
+        	@Override
+        	public String getObject() {
+        		return getStringValue(getKey());
+        	}
+        	@Override
+        	public void setObject(String value) {
                 if (isEditing())
                 {
-                    getTC().setValue(getKey(),text);
+                	super.setObject(value);
+                	
+                    getTC().setValue(getKey(),value!=null?value.toString():null);
                 }
-            }
-        };
+        	}
+        });
         
         this.area.add(super.createTextInputCssClassModifier());
         

@@ -89,12 +89,17 @@ public class StoreScuService extends AbstractScheduledScuService {
     
     public boolean store(DicomObject dataset)
     {
+    	return store(null, dataset);
+    }
+    
+    public boolean store(String cuid, DicomObject dataset)
+    {
         boolean suc = true;
         if (calledAETs != null) {
             for ( String aet : calledAETs) {
                try
                {
-                   if (store(aet, dataset)!=0)
+                   if (store(aet, cuid, dataset)!=0)
                    {
                        suc = false;
                    }
@@ -117,8 +122,11 @@ public class StoreScuService extends AbstractScheduledScuService {
         this.store(order.getDestAET(), order.getDicomObject());
     }
     
-    private int store(String aet, DicomObject dataset) throws IOException, InterruptedException, GeneralSecurityException {
-        String cuid = dataset.getString(Tag.SOPClassUID);
+    private int store(String aet, String cuid, DicomObject dataset) throws IOException, InterruptedException, GeneralSecurityException {
+        if (cuid==null) {
+        	cuid = dataset.getString(Tag.SOPClassUID);
+        }
+
         setTransferCapability(new TransferCapability[]{
                 new TransferCapability(cuid,NATIVE_LE_TS, TransferCapability.SCU)});
         Association assoc = open(aet);

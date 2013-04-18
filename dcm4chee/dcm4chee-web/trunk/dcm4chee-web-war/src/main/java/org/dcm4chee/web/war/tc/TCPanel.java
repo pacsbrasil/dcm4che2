@@ -37,16 +37,12 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.web.war.tc;
 
-import java.lang.reflect.Field;
-
 import org.apache.wicket.Component;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.behavior.AttributeAppender;
 import org.apache.wicket.behavior.HeaderContributor;
-import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
-import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow.WindowClosedCallback;
 import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.IHeaderContributor;
 import org.apache.wicket.markup.html.IHeaderResponse;
@@ -65,7 +61,9 @@ import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.dao.tc.TCQueryFilter;
 import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
+import org.dcm4chee.web.war.tc.TCResultPanel.ITCCaseProvider;
 import org.dcm4chee.web.war.tc.TCResultPanel.TCListModel;
+import org.dcm4chee.web.war.tc.TCViewDialog.ITCViewDialogCloseCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -96,7 +94,8 @@ public class TCPanel extends Panel {
     private IModel<Boolean> trainingModeModel;
     private TCPopupManager popupManager;
     private TCSearchPanel searchPanel;
-    private TCResultPanel listPanel;
+    private TCResultPanel resultPanel;
+    private TCViewDialog viewDialog;
     
     @SuppressWarnings("serial")
 	public TCPanel(final String id) {
@@ -128,59 +127,12 @@ public class TCPanel extends Panel {
 
         trainingModeModel = new Model<Boolean>(false);
         
-        final ModalWindow viewDialog = new ModalWindow("tc-view-dialog") {
-            private static final long serialVersionUID = 1L;
-            @Override
-        	protected boolean makeContentVisible()
-        	{
-       			return isShown();
-         	}
-            @Override
-            public void show(AjaxRequestTarget target)
-            {
-                if (isShown()==false)
-                {
-                    Component content = getContent();
-                    
-                    content.setVisible(true);
-                    
-                    target.addComponent(this);
-                    target.appendJavascript(getWindowOpenJavascript().replace(
-                            "Wicket.Window.create", "createTCViewDialog"));
-                    
-                    target.appendJavascript("updateTCViewDialog();");
-                    
-                    if (content instanceof TCViewPanel)
-                    {
-                        //disable tabs
-                        TCViewPanel viewPanel = (TCViewPanel) content;
-                        
-                        if (!viewPanel.isEditable())
-                        {
-                            target.appendJavascript(viewPanel.getDisableTabsJavascript());
-                        }
-                        
-                        //hide tabs
-                        target.appendJavascript(viewPanel.getHideTabsJavascript());
-                    }
-                    
-                    try
-                    {
-                        Field shown = ModalWindow.class.getDeclaredField("shown");
-                        shown.setAccessible(true);
-                        shown.set(this, true);
-                    }
-                    catch (Exception e)
-                    {
-                        log.warn(null, e);
-                    }
-                }
-            }
-        };
+        viewDialog = new TCViewDialog("tc-view-dialog");
+        
         final TCDetailsPanel detailsPanel = new TCDetailsPanel("details-panel",
         		trainingModeModel);
         final TCListModel listModel = new TCListModel();
-        listPanel = new TCResultPanel("result-panel", listModel, trainingModeModel) {
+        resultPanel = new TCResultPanel("result-panel", listModel, trainingModeModel) {
 
             private static final long serialVersionUID = 1L;
 
@@ -206,74 +158,20 @@ public class TCPanel extends Panel {
             @Override
             protected void openTC(final TCModel tc, final boolean edit, AjaxRequestTarget target)
             {
-                try
-                {
-                    final IModel<TCEditableObject> model = new Model<TCEditableObject>(TCEditableObject.create(tc));
-                    final TCViewPanel viewPanel = !edit ?
-                            new TCViewPanel(viewDialog.getContentId(), model, tc, 
-                            		trainingModeModel, listPanel.getCaseProvider()) :
-                            new TCViewEditablePanel(viewDialog.getContentId(), model, 
-                            		tc, trainingModeModel, listPanel.getCaseProvider()) {
-				private static final long serialVersionUID = 1L;
-
-				@Override
-				protected void onClose(AjaxRequestTarget target, boolean save)
-				{
-				    viewDialog.close(target);
-
-				    if (save)
-				    {
-				        try
-				        {
-				            //store new SR
-				            TCEditableObject tcObject = model.getObject();
-				            if (tcObject.save()) {
+            	viewDialog.open(null, target, tc, trainingModeModel, resultPanel.getCaseProvider(), edit, 
+            		new ITCViewDialogCloseCallback() {
+            			@Override
+            			public void dialogClosed(AjaxRequestTarget target, boolean changesSaved) {
+            				if (changesSaved) {
 					            //trigger new search and select new SR
-					            listModel.addToFilter(tc);
-				            }
-				            
-				            searchPanel.redoSearch(target, tcObject.getInstanceUID());
-				            
-				            TCAuditLog.logTFEdited(tcObject);
-				        }
-				        catch (Exception e)
-				        {
-				            log.error("Saving teaching-file failed!", e);
-				        }
-				    }
-				    else {
-				    	TCAuditLog.logTFViewed(model.getObject());
-				    }
-				}
-                            };
+            					searchPanel.redoSearch(target, viewDialog.getView().getTC().getInstanceUID());
+            				}
+            			}
+            		}
+            	);
 
-                    viewDialog.setContent(viewPanel);
-                    viewDialog.setWindowClosedCallback(new WindowClosedCallback() {
-						private static final long serialVersionUID = 25714973706600845L;
-						@Override
-						public void onClose(AjaxRequestTarget target) {
-							if (!edit)
-							{
-								TCAuditLog.logTFViewed(model.getObject());
-							}
-                    	}
-                    });
-                    openTCDialog(viewDialog, null, target);
-                }
-                catch (Exception e)
-                {
-                    log.error("Showing teaching-file dialog failed!", e);
-                }
             }
         };
-        viewDialog.setCloseButtonCallback(new ModalWindow.CloseButtonCallback() {
-            private static final long serialVersionUID = 1L;
-            
-            public boolean onCloseButtonClicked(AjaxRequestTarget target) {
-                target.addComponent(listPanel);
-                return true;
-            }
-        });
 
         add(macb);
         add((searchPanel=new TCSearchPanel("search-panel") {
@@ -283,10 +181,10 @@ public class TCPanel extends Panel {
             @Override
             public Component[] doSearch(TCQueryFilter filter) {
                 detailsPanel.clearTCObject(false);
-                listPanel.clearSelected();
+                resultPanel.clearSelected();
                 listModel.update(filter);
 
-                return new Component[] { detailsPanel, listPanel };
+                return new Component[] { detailsPanel, resultPanel };
             }
             
             @Override
@@ -297,7 +195,7 @@ public class TCPanel extends Panel {
                 TCModel tc = iuid!=null ? listModel.findByIUID(iuid):null;
                 if (tc!=null)
                 {
-                    listPanel.selectTC(tc, null);
+                    resultPanel.selectTC(tc, null);
                 }
                 
                 if (toUpdate != null && target != null) {
@@ -322,7 +220,7 @@ public class TCPanel extends Panel {
 	        					TCQueryFilterKey.Abstract) ||
 	        			WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey(
 	        					TCQueryFilterKey.AuthorName)) {
-	        			target.addComponent(listPanel);
+	        			target.addComponent(resultPanel);
 	        		}
 	        	}
         	}
@@ -334,7 +232,7 @@ public class TCPanel extends Panel {
                                 		ImageManager.IMAGE_TC_BUTTON_ON
                                         : ImageManager.IMAGE_TC_BUTTON_OFF;
                             }
-            }).add(new ImageSizeBehaviour(20,20,"vertical-align:middle")))
+            }).add(new ImageSizeBehaviour(32,32,"vertical-align:middle")))
             .add(new Label("trainingmode-link-text", new AbstractReadOnlyModel<String>() {
 	        	public String getObject() {
 	        		if (trainingModeModel.getObject()==Boolean.TRUE) {
@@ -349,28 +247,19 @@ public class TCPanel extends Panel {
             .setOutputMarkupId(true).setMarkupId("trainingmode-link")
         );
 
-        add(listPanel);
+        add(resultPanel);
         add(detailsPanel);
         add(new Form<Void>("tc-view-dialog-outer-form").add(viewDialog));
         
         add((popupManager=new TCPopupManager()).getGlobalHideOnOutsideClickHandler());
     }
     
-    public void openTCDialog(ModalWindow dlg, String title, AjaxRequestTarget target)
-    {
-        if (target==null)
-        {
-            target = AjaxRequestTarget.get();
-        }
-        
-        if (target!=null)
-        {
-            dlg.setTitle(title==null?"":title);
-            dlg.setInitialWidth(940);
-            dlg.setInitialHeight(780);
-            dlg.setResizable(true);
-            dlg.show(target);
-        }
+    public TCViewDialog getViewDialog() {
+    	return viewDialog;
+    }
+    
+    public ITCCaseProvider getResultCaseProvider() {
+    	return resultPanel.getCaseProvider();
     }
     
     public TCPopupManager getPopupManager()

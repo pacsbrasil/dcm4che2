@@ -61,6 +61,13 @@ public class TCImageViewThumbnailPanel extends Panel {
         
         if (getSeries()==series)
         {
+        	if (series!=null && series.getImageCount()>0) {
+        		instanceModel.setObject(series.getImages().get(0));
+        	}
+        	else {
+        		instanceModel.setObject(null);
+        	}
+        	
             if (target!=null)
             {
                 target.addComponent(this);

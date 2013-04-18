@@ -8,9 +8,20 @@ import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
 import org.dcm4chee.archive.entity.Code;
 
+@SuppressWarnings("serial")
 public class TCDicomCode implements Serializable {
+	
+	public static final TCDicomCode REF_COMPOSITE_CONTAINER =
+			new TCDicomCode("DCM4CHEE-TC","TF1100","Referenced Composite Container");
+	
+	public static final TCDicomCode REF_COMPOSITE_OBJECT =
+			new TCDicomCode("DCM4CHEE-TC","TF1101","Referenced Composite Object");
 
-    private static final long serialVersionUID = 1L;
+	public static final TCDicomCode REF_COMPOSITE_RELATIONSHIP_TYPE =
+			new TCDicomCode("DCM4CHEE-TC","TF1102","Referenced Composite Relationship Type");
+
+	public static final TCDicomCode REF_COMPOSITE_COMMENT =
+			new TCDicomCode("DCM4CHEE-TC","TF1103","Referenced Composite Comment");
 
     private String value;
 

@@ -40,6 +40,7 @@ package org.dcm4chee.web.war.tc.keywords;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.dcm4chee.web.dao.tc.ITextOrCode;
 import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 import org.dcm4chee.web.war.common.AutoSelectInputTextBehaviour;
@@ -78,7 +79,7 @@ public class TCKeywordTextInput extends AbstractTCInput {
         textField = new SelfUpdatingTextField("text", getDefaultModelObjectAsString()) {
 			private static final long serialVersionUID = 2956374148262098506L;
 			@Override
-            protected void textUpdated(String text)
+            protected void textUpdated(String text, AjaxRequestTarget target)
             {
                 TCKeywordTextInput.this.setDefaultModelObject(text);
             }

@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,10 +15,7 @@ import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.UID;
 import org.dcm4che2.data.VR;
 import org.dcm4che2.io.DicomInputStream;
-import org.dcm4che2.util.DateUtils;
-import org.dcm4che2.util.UIDUtils;
 import org.dcm4chee.archive.entity.Code;
-import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.web.common.util.FileUtils;
 import org.dcm4chee.web.dao.tc.ITextOrCode;
 import org.dcm4chee.web.dao.tc.TCDicomCode;
@@ -29,7 +25,6 @@ import org.dcm4chee.web.dao.tc.TCQueryFilterValue.Category;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue.Level;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue.PatientSex;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue.YesNo;
-import org.dcm4chee.web.dao.tc.TCQueryLocal;
 import org.dcm4chee.web.war.folder.delegate.TarRetrieveDelegate;
 import org.dcm4chee.web.war.tc.TCDocumentObject.MimeType;
 import org.dcm4chee.web.war.tc.keywords.TCKeywordCatalogueProvider;
@@ -56,20 +51,26 @@ public class TCEditableObject extends TCObject {
     }
     
     public static TCEditableObject create(TCModel model) throws IOException {
-        String fsID = model.getFileSystemId();
-        String fileID = model.getFileId();
-
-        DicomInputStream dis = null;
-        try {
-        	dis = new DicomInputStream(fsID.startsWith("tar:") ? 
-        			TarRetrieveDelegate.getInstance().retrieveFileFromTar(fsID, fileID) :
-        				FileUtils.resolve(new File(fsID, fileID)));
-            return new TCEditableObject(model.getId(), dis.readDicomObject());
-        } finally {
-            if (dis != null) {
-                dis.close();
-            }
-        }
+    	DicomObject dataset = model.getDataset();
+    	if (dataset.contains(Tag.ContentSequence)) {
+    		return new TCEditableObject(model.getId(), dataset);
+    	}
+    	else {
+	        String fsID = model.getFileSystemId();
+	        String fileID = model.getFileId();
+	
+	        DicomInputStream dis = null;
+	        try {
+	        	dis = new DicomInputStream(fsID.startsWith("tar:") ? 
+	        			TarRetrieveDelegate.getInstance().retrieveFileFromTar(fsID, fileID) :
+	        				FileUtils.resolve(new File(fsID, fileID)));
+	            return new TCEditableObject(model.getId(), dis.readDicomObject());
+	        } finally {
+	            if (dis != null) {
+	                dis.close();
+	            }
+	        }
+    	}
     }
     
     public boolean isModified()
@@ -306,6 +307,41 @@ public class TCEditableObject extends TCObject {
         }
     }
     
+    public boolean addLink(TCLink link) {
+    	if (links==null || !links.contains(link)) {
+    		TCEditableObject o = link.getLinkedCase();
+    		if (o!=null) {
+    			// first add crosslink
+				o.addLinkImpl(TCLink.createCrossLink(link));
+				
+				//now add link
+				if (addLinkImpl(link)) {
+					return true;
+				}
+    		}
+    	}
+    	return false;
+    }
+        
+    public boolean removeLink(TCLink link) {
+    	if (links!=null && links.contains(link)) {
+    		TCEditableObject o = link.getLinkedCase();
+    		if (o!=null) {
+    			// first remove the crosslink
+    			TCLink crosslink = link.findCrossLink();
+    			if (crosslink!=null) {
+    				o.removeLinkImpl(crosslink);
+    			}
+    			
+    			//now remove the link
+    			if (removeLinkImpl(link)) {
+    				return true;
+    			}
+    		}
+    	}
+    	return false;
+    }
+        
     @Override
     public TCDocumentObject getReferencedDocumentObject(TCReferencedInstance ref) {
 		if (docsAdded!=null && docsAdded.containsKey(ref)) {
@@ -408,15 +444,30 @@ public class TCEditableObject extends TCObject {
     }
     
     public boolean save() throws Exception {
+    	return save(true);
+    }
+    
+    private boolean save(boolean saveLinkedCases) throws Exception {
     	if (modified) {
-	        TCStoreDelegate storeDelegate = TCStoreDelegate.getInstance();
-	
+	        //we may need to update cross linked cases as well
+    		if (saveLinkedCases) {
+	    		if (links!=null) {
+	    			for (TCLink link : links) {
+	    				TCEditableObject linkedCase = link.getLinkedCase();
+	    				if (linkedCase!=null) {
+	    					if (linkedCase.isModified()) {
+	    						linkedCase.save(false);
+	    					}
+	    				}
+	    			}
+	    		}
+    		}
+
 	        //save new added (yet unsaved) referenced documents
 	        if (docsAdded!=null) {
 	        	for (TCDocumentObject doc : docsAdded.values()) {
 	        		DicomObject o = doc.toDataset();
-	        		if (!storeDelegate.storeImmediately(
-	        				o)) {
+	        		if (!TCStoreDelegate.getInstance().storeImmediately(o)) {
 	        			throw new Exception("Saving teaching-file case failed: New added referenced document can't be saved!");
 	        		}
 	        	}
@@ -425,40 +476,27 @@ public class TCEditableObject extends TCObject {
 	        //delete removed referenced documents
 	        if (docsRemoved!=null) {
 	        	for (TCReferencedInstance doc : docsRemoved) {
-	        		if (!storeDelegate.storeImmediately(createRejectionNoteDataset(
+	        		if (!TCStoreDelegate.getInstance().deleteImmediately(
 		            		doc.getStudyUID(),
 		            		doc.getSeriesUID(),
 		            		doc.getInstanceUID(),
-		            		doc.getClassUID()))) {
+		            		doc.getClassUID())) {
 	        			throw new Exception("Saving teaching-file case failed: Removed referenced document can't be deleted!");
 	        		}
 	        	}
 	        }
 	        
-	        //store new SR
-	        DicomObject dataset = toDataset();
-	        if (storeDelegate.storeImmediately(dataset))
-	        {
-	            //delete old SR
-	            storeDelegate.store(createRejectionNoteDataset(
-	            		getStudyInstanceUID(),
-	            		getSeriesInstanceUID(),
-	            		getInstanceUID(),
-	            		getClassUID()));
-	        }
-
-	        init(Long.toString(((TCQueryLocal) JNDIUtils.lookup(
-	        		TCQueryLocal.JNDI_NAME)).findInstanceByUID(
-	        				getInstanceUID()).getPk()), dataset);
-	        
-	        modified = false;
-	        
-	        return true;
+	        //now save this case
+	    	if (TCStoreDelegate.getInstance().modifyImmediately(
+	    			toModificationDataset())) {
+    			modified = false;
+    			return true;
+    		}
     	}
-    	
     	return false;
     }
     
+    @Override
     protected void init(String id, DicomObject o) {
     	super.init(id, o);
     	
@@ -468,19 +506,50 @@ public class TCEditableObject extends TCObject {
     @Override
     protected void clear() {
     	super.clear();
-    	
+
     	docsRemoved = null;
     	docsAdded = null;
     	ds = null;
     	modified = false;
     }
     
-    private DicomObject toDataset()
+    private boolean addLinkImpl(TCLink link) {
+    	if (links==null) {
+    		links = new ArrayList<TCLink>(5);
+    	}
+    	if (!links.contains(link)) {
+    		if (links.add(link)) {
+    			modified = true;
+    			return true;
+    		}
+    	}
+    	return false;
+    }
+    
+    private boolean removeLinkImpl(TCLink link) {
+    	if (links!=null) {
+    		if (links.remove(link)) {
+    			if (links.isEmpty()) {
+    				links = null;
+    			}
+    			modified = true;
+				return true;
+    		}
+    	}
+    	return false;
+    }
+    
+    private DicomObject toModificationDataset()
     {
         BasicDicomObject ds = new BasicDicomObject();
+                
+        ds.putString(Tag.SOPInstanceUID, VR.UI, getInstanceUID());
+        ds.putString(Tag.SOPClassUID, VR.UI, getClassUID());
         
-        //keep all non-TF relevant dicom tags
-        this.ds.copyTo(ds);
+        //proprietary; used to show some useful info in the GUI when doing c-find
+        ds.putString(Tag.ContentLabel, null, getTitle());
+        ds.putString(Tag.ContentDescription, null, getAbstr());
+        ds.putString(Tag.ContentCreatorName, null, getAuthorName());
         
         // Documents have been added or removed.
         // Thus, we just can't copy the original dataset.
@@ -489,7 +558,7 @@ public class TCEditableObject extends TCObject {
         if ( (docsRemoved!=null && docsRemoved.size()>0) ||
         	  (docsAdded!=null && docsAdded.size()>0) ) {
         	// get sequence
-        	DicomElement refs = ds.get(Tag.CurrentRequestedProcedureEvidenceSequence);
+        	DicomElement refs = this.ds.get(Tag.CurrentRequestedProcedureEvidenceSequence);
 
         	DicomObject seriesItem = null;
         	
@@ -568,16 +637,7 @@ public class TCEditableObject extends TCObject {
         }
 
         // recompile content
-        ds.remove(Tag.ContentSequence); //remove old content
         DicomElement content = ds.putSequence(Tag.ContentSequence); //add new content
-        
-        //SOP common module; need to create new iuid?
-        ds.putString(Tag.SOPInstanceUID, null, UIDUtils.createUID());
-
-        //proprietary; used to show some useful info in the GUI when doing c-find
-        ds.putString(Tag.ContentLabel, null, getTitle());
-        ds.putString(Tag.ContentDescription, null, getAbstr());
-        ds.putString(Tag.ContentCreatorName, null, getAuthorName());
         
         //author name
         String authorName = getAuthorName();
@@ -805,6 +865,52 @@ public class TCEditableObject extends TCObject {
             }
         }
         
+        //case links
+        List<TCLink> links = getLinks();
+        if (links!=null) {
+        	for (TCLink link : links) {
+	        	DicomObject container = new BasicDicomObject();
+	        	container.putString(Tag.RelationshipType, null, "CONTAINS");
+	        	container.putString(Tag.ValueType, null, "CONTAINER");
+	        	container.putNestedDicomObject(Tag.ConceptNameCodeSequence, 
+	        			TCDicomCode.REF_COMPOSITE_CONTAINER.toCode().toCodeItem());
+	        	DicomElement content2 = container.putSequence(Tag.ContentSequence);
+	        	
+        		DicomObject refsop = new BasicDicomObject();
+        		refsop.putString(Tag.ReferencedSOPClassUID, null, UID.BasicTextSRStorage);
+        		refsop.putString(Tag.ReferencedSOPInstanceUID, null, link.getLinkedCaseUID());
+
+	            DicomObject composite = new BasicDicomObject();
+	            composite.putString(Tag.RelationshipType, null, "CONTAINS");
+	            composite.putString(Tag.ValueType, null, "COMPOSITE");
+	            composite.putNestedDicomObject(Tag.ReferencedSOPSequence, refsop);
+	            composite.putNestedDicomObject(Tag.ConceptNameCodeSequence,
+	            		TCDicomCode.REF_COMPOSITE_OBJECT.toCode().toCodeItem());
+	            content2.addDicomObject(composite);
+	            
+	            DicomObject reltype = new BasicDicomObject();
+	            reltype.putString(Tag.RelationshipType, null, "HAS CONCEPT MOD");
+	            reltype.putString(Tag.ValueType, null, "TEXT");
+	            reltype.putString(Tag.TextValue, null, link.getLinkRelationship().name());
+	            reltype.putNestedDicomObject(Tag.ConceptNameCodeSequence, 
+	            		TCDicomCode.REF_COMPOSITE_RELATIONSHIP_TYPE.toCode().toCodeItem());
+	            content2.addDicomObject(reltype);
+	            
+	            String commentText = link.getLinkComment();
+	            if (commentText!=null && !commentText.isEmpty()) {
+	            	DicomObject comment = new BasicDicomObject();
+	            	comment.putString(Tag.RelationshipType, null, "CONTAINS");
+	            	comment.putString(Tag.ValueType, null, "TEXT");
+	            	comment.putString(Tag.TextValue, null, commentText);
+	            	comment.putNestedDicomObject(Tag.ConceptNameCodeSequence,
+	            			TCDicomCode.REF_COMPOSITE_COMMENT.toCode().toCodeItem());
+	            	content2.addDicomObject(comment);
+	            }
+	            
+	            content.addDicomObject(container);
+        	}
+        }
+        
         return ds;
     }
 
@@ -914,46 +1020,4 @@ public class TCEditableObject extends TCObject {
         return null;
     }
     
-    private DicomObject createRejectionNoteDataset(String stuid, String suid, String iuid, String cuid)
-    {   
-        DicomObject title = new BasicDicomObject();
-        title.putString(Tag.CodingSchemeDesignator, null, "DCM");
-        title.putString(Tag.CodeValue, null, "113001");
-        title.putString(Tag.CodeMeaning, null, "Rejected For Quality Reasons");
-        
-        DicomObject refSOP = new BasicDicomObject();
-        refSOP.putString(Tag.ReferencedSOPClassUID, null, cuid);
-        refSOP.putString(Tag.ReferencedSOPInstanceUID, null, iuid);
-        
-        DicomObject refSeries = new BasicDicomObject();
-        refSeries.putString(Tag.SeriesInstanceUID, null, suid);
-        refSeries.putSequence(Tag.ReferencedSOPSequence).addDicomObject(refSOP);
-        
-        DicomObject refStudy = new BasicDicomObject();
-        refStudy.putString(Tag.StudyInstanceUID, null, stuid);
-        refStudy.putSequence(Tag.ReferencedSeriesSequence).addDicomObject(refSeries);
-        
-        BasicDicomObject ko = new BasicDicomObject();
-        if (getPatientId()!=null) {
-        	ko.putString(Tag.PatientID, VR.LO, getPatientId());
-        }
-        if (getPatientName()!=null) {
-        	ko.putString(Tag.PatientName, VR.PN, getPatientName());
-        }
-        if (getPatientIdIssuer()!=null) {
-        	ko.putString(Tag.IssuerOfPatientID, VR.LO, getPatientIdIssuer());
-        }
-        
-        ko.putString(Tag.SOPClassUID, null, UID.KeyObjectSelectionDocumentStorage);
-        ko.putString(Tag.SOPInstanceUID, null, UIDUtils.createUID());
-        ko.putString(Tag.SeriesInstanceUID, null, UIDUtils.createUID());
-        ko.putString(Tag.StudyInstanceUID, null, stuid);
-        ko.putString(Tag.Modality, null, "KO");
-        ko.putString(Tag.ContentDate, null, DateUtils.formatDA(new Date()));
-        ko.putString(Tag.ContentTime, null, DateUtils.formatTM(new Date()));
-        ko.putSequence(Tag.ConceptNameCodeSequence).addDicomObject(title);
-        ko.putSequence(Tag.CurrentRequestedProcedureEvidenceSequence).addDicomObject(refStudy);
-        
-        return ko;
-    }
 }

@@ -40,25 +40,29 @@ package org.dcm4chee.web.war.tc;
 import java.text.MessageFormat;
 import java.util.List;
 
+import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.util.ListModel;
+import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
 import org.dcm4chee.web.war.tc.TCViewPanel.AbstractTCViewTab;
 import org.dcm4chee.web.war.tc.imageview.TCImageViewPanel;
-import org.dcm4chee.web.war.tc.imageview.TCImageViewStudy;
 
 /**
  * @author Bernhard Ableitinger <bernhard.ableitinger@agfa.com>
  * @version $Revision$ $Date$
  * @since Nov 30, 2011
  */
+@SuppressWarnings("serial")
 public class TCViewImagesTab extends AbstractTCViewTab 
 {
-    private static final long serialVersionUID = 1L;
-
-    public TCViewImagesTab(final String id, IModel<? extends TCObject> model) {
+    private AbstractReadOnlyModel<Boolean> infoVisibilityModel;
+    
+    public TCViewImagesTab(final String id, IModel<? extends TCObject> model, 
+    		AbstractReadOnlyModel<Boolean> infoVisibilityModel) {
         super(id, model);
+        this.infoVisibilityModel = infoVisibilityModel;
         add(new TCImageViewPanel("tc-view-images-panel", 
-                createImageViewModel(getTC())).setOutputMarkupId(true));
+                new ImagesModel()).setOutputMarkupId(true));
     }
     
     @Override
@@ -71,15 +75,33 @@ public class TCViewImagesTab extends AbstractTCViewTab
     }
     
     @Override
+    public boolean isTabVisible() {
+    	boolean defaultVisibility = super.isTabVisible() && 
+    			WebCfgDelegate.getInstance().isTCShowImagesInDialogEnabled();
+    	
+    	if (defaultVisibility) {
+	    	if (infoVisibilityModel!=null) {
+	    		return infoVisibilityModel.getObject() ||
+	    			!WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey("Images");
+	    	}
+    	}
+    	
+    	return defaultVisibility;
+    }
+    
+    @Override
     public boolean hasContent()
     {
         List<TCReferencedImage> images = getTC().getReferencedImages();
         return images!=null && !images.isEmpty();
     }
-    
-    private ListModel<? extends TCImageViewStudy> createImageViewModel(TCObject tc)
-    {
-        return new ListModel<TCReferencedStudy>(tc.getReferencedStudies());
+
+    @SuppressWarnings("serial")
+	private class ImagesModel extends ListModel<TCReferencedStudy> {
+    	@Override
+    	public List<TCReferencedStudy> getObject() {
+    		return getTC().getReferencedStudies();
+    	}
     }
 
 }

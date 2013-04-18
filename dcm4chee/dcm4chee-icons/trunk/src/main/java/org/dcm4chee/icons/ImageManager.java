@@ -235,4 +235,6 @@ public class ImageManager {
             new ResourceReference(ImageManager.class, "tc/disk-mono.png");
     public static final ResourceReference IMAGE_TC_INFO =
             new ResourceReference(ImageManager.class, "tc/info.png");
+    public static final ResourceReference IMAGE_TC_IMAGE_SQUARE =
+            new ResourceReference(ImageManager.class, "tc/image-square.png");
 }

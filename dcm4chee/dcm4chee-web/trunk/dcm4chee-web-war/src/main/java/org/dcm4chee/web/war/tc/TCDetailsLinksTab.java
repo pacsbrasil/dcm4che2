@@ -45,18 +45,19 @@ import org.apache.wicket.model.IModel;
 /**
  * @author Bernhard Ableitinger <bernhard.ableitinger@agfa.com>
  * @version $Revision$ $Date$
- * @since Jan 07, 2013
+ * @since Mar 31, 2013
  */
 @SuppressWarnings("serial")
-public class TCDetailsDocumentsTab extends TCDetailsTab {
+public class TCDetailsLinksTab extends TCDetailsTab {
+	
     private IModel<Boolean> trainingModeModel;
 	
-    public TCDetailsDocumentsTab(final String id, IModel<Boolean> trainingModeModel) {
+    public TCDetailsLinksTab(final String id, IModel<Boolean> trainingModeModel) {
         super(id);
-        
+         
         this.trainingModeModel = trainingModeModel;
         
-        add(new TCDocumentsView("tc-details-documents", new AbstractReadOnlyModel<TCObject>() {
+        add(new TCLinksView("tc-details-links", new AbstractReadOnlyModel<TCObject>() {
         	public TCObject getObject() {
         		return getTCObject();
         	}
@@ -65,18 +66,31 @@ public class TCDetailsDocumentsTab extends TCDetailsTab {
     
     @Override
     public boolean enabled() {
-        TCObject tc = getTCObject();
-        List<TCReferencedInstance> docRefs = tc!=null ? 
-        		tc.getReferencedDocuments() : null;
-        return docRefs!=null && !docRefs.isEmpty();
+        return getLinkCount()>0;
     }
     
     @Override
     public boolean visible() {
-    	return TCUtilities.isKeyAvailable(trainingModeModel, "Documents");
+    	return TCUtilities.isKeyAvailable(trainingModeModel, "Links");
     }
 
     private TCObject getTCObject() {
         return (TCObject) getDefaultModelObject();
+    }
+    
+    private int getLinkCount() {
+    	int count = 0;
+    	
+        List<TCLink> links = getTCObject()!=null ? 
+        		getTCObject().getLinks() : null;
+        if (links!=null) {
+        	for (TCLink link : links) {
+        		if (link.isPermitted()) {
+        			count++;
+        		}
+        	}
+        }
+        
+        return count;
     }
 }

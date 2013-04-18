@@ -18,14 +18,15 @@ import org.slf4j.LoggerFactory;
  * @version $Revision$ $Date$
  * @since Nov 25, 2011
  */
+@SuppressWarnings("serial")
 public abstract class TCViewEditablePanel extends TCViewPanel
 {
     private static final Logger log = LoggerFactory.getLogger(TCViewEditablePanel.class);
     
-    public TCViewEditablePanel(final String id, IModel<TCEditableObject> model, 
-    		final TCModel tc, final IModel<Boolean> trainingModeModel, ITCCaseProvider caseProvider)
+    public TCViewEditablePanel(final String id, final TCModel tc, 
+    		final IModel<Boolean> trainingModeModel, ITCCaseProvider caseProvider)
     {
-        super(id, model, tc, trainingModeModel, caseProvider);
+        super(id, tc, trainingModeModel, caseProvider);
         
         add(new AjaxLink<Void>("tc-view-ok-btn") {
             @Override

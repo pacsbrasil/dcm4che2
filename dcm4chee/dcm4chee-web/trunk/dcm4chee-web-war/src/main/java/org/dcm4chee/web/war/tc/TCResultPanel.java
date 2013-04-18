@@ -41,7 +41,6 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.text.DateFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -75,7 +74,6 @@ import org.apache.wicket.markup.html.navigation.paging.PagingNavigator;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.markup.repeater.Item;
-import org.apache.wicket.markup.repeater.ReuseIfModelsEqualStrategy;
 import org.apache.wicket.markup.repeater.data.DataView;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
@@ -105,6 +103,7 @@ import org.dcm4chee.web.war.folder.ViewPort;
 import org.dcm4chee.web.war.folder.webviewer.Webviewer;
 import org.dcm4chee.web.war.folder.webviewer.Webviewer.WebviewerLinkClickedCallback;
 import org.dcm4chee.web.war.tc.widgets.TCMultiLineLabel;
+import org.dcm4chee.web.war.tc.widgets.TCMultiLineLabel.AutoClampSettings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -183,7 +182,7 @@ public class TCResultPanel extends Panel {
                 		}
                 		return tc.getTitle();
                 	}
-                }, 80));
+                }, new AutoClampSettings(40)));
                 item.add(new TCMultiLineLabel("abstract", new AbstractReadOnlyModel<String>() {
                 	public String getObject() {
                 		if (!TCUtilities.isKeyAvailable(trainingModeModel, TCQueryFilterKey.Abstract)) {
@@ -191,7 +190,7 @@ public class TCResultPanel extends Panel {
                 		}
                 		return tc.getAbstract();
                 	}
-                }, 80));
+                }, new AutoClampSettings(40)));
                 item.add(new TCMultiLineLabel("author", new AbstractReadOnlyModel<String>() {
                 	public String getObject() {
                 		if (!TCUtilities.isKeyAvailable(trainingModeModel, TCQueryFilterKey.AuthorName)) {
@@ -199,7 +198,7 @@ public class TCResultPanel extends Panel {
                 		}
                 		return tc.getAuthor();
                 	}
-                }, 80));
+                }, new AutoClampSettings(40)));
                 item.add(new Label("date",
                         new Model<Date>(tc.getCreationDate())) {
 
@@ -486,7 +485,7 @@ public class TCResultPanel extends Panel {
                 });
             }
         };
-        dataView.setItemReuseStrategy(new ReuseIfModelsEqualStrategy());
+        //dataView.setItemReuseStrategy(new ReuseIfModelsEqualStrategy());
         dataView.setItemsPerPage(WebCfgDelegate.getInstance()
                 .getDefaultFolderPagesize());
         dataView.setOutputMarkupId(true);
@@ -567,8 +566,6 @@ public class TCResultPanel extends Panel {
     
     private void selectTC(final Item<TCModel> item, final TCModel tc,
             AjaxRequestTarget target) {
-    	log.info("Selecting case");
-    	
         selectTC(tc, target);
 
         target.appendJavascript("selectTC('"+item.getMarkupId()+
@@ -709,11 +706,8 @@ public class TCResultPanel extends Panel {
                 List<String> iuids = new ArrayList<String>(instances.size());
                 for (Instance instance : instances) {
                     iuids.add(instance.getSOPInstanceUID());
-                    if (!GlobalTCFilter.getInstance().isFiltered(instance))
-                    {
-                        TCModel model = new TCModel(instance);
-                        models.add(model);
-                    }
+                    TCModel model = new TCModel(instance);
+                    models.add(model);
                 }
                 return models;
             } else {
@@ -727,18 +721,6 @@ public class TCResultPanel extends Panel {
 
                 setObject(load());
             }
-        }
-        
-        public void addToFilter(TCModel tc)
-        {
-            GlobalTCFilter.getInstance().addByUID(
-                    tc.getSOPInstanceUID(), true);
-        }
-        
-        public void removeFromFilter(TCModel tc)
-        {
-            GlobalTCFilter.getInstance().removeByUID(
-                    tc.getSOPInstanceUID());
         }
         
         public TCModel findByIUID(String iuid)
@@ -896,7 +878,7 @@ public class TCResultPanel extends Panel {
     	@Override
         public TCModel getNextCase(TCModel tc) {
     		int i = getIndexOfCase(tc);
-    		if (i<getCaseCount()-1) {
+    		if (i>=0 && i<getCaseCount()-1) {
     			return getCaseAt(++i);
     		}
     		return null;
@@ -919,140 +901,7 @@ public class TCResultPanel extends Panel {
     	}
     }
     
-    private static class GlobalTCFilter
-    {
-        private static GlobalTCFilter instance;
-        
-        //after a period of 5min. expired instances are no longer filtered out
-        //and are going to be autom. removed from the map
-        private static final long IUID_EXPIRE_PERIOD = 300000;
-        
-        private Map<String, Long> iuidsExpire;
-        private List<String> iuids;
-        
-        private GlobalTCFilter()
-        {
-            iuids = new ArrayList<String>();
-            iuidsExpire = new HashMap<String, Long>(10);
-         }
-        
-        public static synchronized GlobalTCFilter getInstance()
-        {
-            if (instance==null)
-            {
-                instance = new GlobalTCFilter();
-            }
-            return instance;
-        }
-        
-        public Collection<String> getFilteredOutUIDs()
-        {
-            List<String> list = new ArrayList<String>();
-            if (iuids!=null)
-            {
-                list.addAll(iuids);
-            }
-            if (iuidsExpire!=null)
-            {
-                list.addAll(iuidsExpire.keySet());
-            }
-            return list;
-        }
-        
-        public synchronized boolean isFiltered(Instance instance)
-        {
-            //check by instance uid
-            String iuid = instance.getSOPInstanceUID();
-            if (iuidsExpire!=null && iuidsExpire.containsKey(iuid))
-            {
-                Long timestamp = iuidsExpire.get(iuid);
-                if (timestamp+IUID_EXPIRE_PERIOD>System.currentTimeMillis())
-                {
-                    return true;
-                }
-                else
-                {
-                    iuidsExpire.remove(iuid);
-                    if (iuidsExpire.isEmpty())
-                    {
-                        iuidsExpire=null;
-                    }
-                }
-            }
-            if (iuids!=null && iuids.contains(iuid))
-            {
-                return true;
-            }
-            
-            return false;
-        }
-        
-        public synchronized void addByUID(String iuid, boolean expire)
-        {
-            if (expire)
-            {
-                if (iuidsExpire==null)
-                {
-                    iuidsExpire = new HashMap<String, Long>();
-                }
-                
-                iuidsExpire.put(iuid, System.currentTimeMillis());   
-                
-                if (iuids!=null)
-                {
-                    iuids.remove(iuid);
-                    
-                    if (iuids.isEmpty())
-                    {
-                        iuids = null;
-                    }
-                }
-            }
-            else
-            {
-                if (iuids==null)
-                {
-                    iuids = new ArrayList<String>(10);
-                }
-                if (!iuids.contains(iuid))
-                {
-                    iuids.add(iuid);
-                    
-                    if (iuidsExpire!=null)
-                    {
-                        iuidsExpire.remove(iuid);
-                        
-                        if (iuidsExpire.isEmpty())
-                        {
-                            iuidsExpire=null;
-                        }
-                    }
-                }
-            }
-        }
-        
-        public synchronized void removeByUID(String iuid)
-        {
-            if (iuidsExpire!=null)
-            {
-                iuidsExpire.remove(iuid);
-                if (iuidsExpire.isEmpty())
-                {
-                    iuidsExpire = null;
-                }
-            }
-            if (iuids!=null)
-            {
-                iuids.remove(iuid);
-                if (iuids.isEmpty())
-                {
-                    iuids = null;
-                }
-            }
-        }
-    }
-    
-    
+
     @SuppressWarnings("serial")
 	private class SortLinkGroup implements Serializable
     {

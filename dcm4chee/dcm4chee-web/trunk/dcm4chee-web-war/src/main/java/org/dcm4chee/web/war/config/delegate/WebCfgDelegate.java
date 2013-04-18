@@ -359,10 +359,14 @@ public class WebCfgDelegate extends BaseCfgDelegate {
      	}
     	return keys;
     }
-        
+    
     public boolean isTCTrainingModeHiddenKey(TCQueryFilterKey key) {
+		return isTCTrainingModeHiddenKey(key.name());
+	}
+        
+    public boolean isTCTrainingModeHiddenKey(String key) {
     	List<String> list = getStringList("getTCTrainingModeHiddenAttributesList");
-    	return list!=null && list.contains(key.name());
+    	return list!=null && list.contains(key);
     }
     
     public boolean isTCKeywordCatalogueExclusive(String key)

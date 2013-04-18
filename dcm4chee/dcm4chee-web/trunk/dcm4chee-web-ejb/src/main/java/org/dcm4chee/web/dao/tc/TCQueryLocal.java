@@ -62,12 +62,16 @@ public interface TCQueryLocal {
     List<Instance> findMatchingInstances(TCQueryFilter filter,
             List<String> roles, List<String> restrictedSourceAETs, boolean multipleKeywordORConcat);
     
+    List<Instance> findMatchingInstances(String searchString,
+            List<String> roles, List<String> restrictedSourceAETs);
     
     Study findStudyByUID(String stuid);
     
     Series findSeriesByUID(String suid);
     
     Instance findInstanceByUID(String uid);
+    
+    Instance findInstanceByUID(String iuid, List<String> roles);
     
     Map<String, Integer> getInstanceNumbers(String suid);
     

@@ -42,6 +42,7 @@ import java.util.List;
 
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
+import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
 import org.dcm4chee.web.war.tc.TCViewPanel.AbstractEditableTCViewTab;
 
 /**
@@ -52,6 +53,8 @@ import org.dcm4chee.web.war.tc.TCViewPanel.AbstractEditableTCViewTab;
 @SuppressWarnings("serial")
 public abstract class TCViewDocumentsTab extends AbstractEditableTCViewTab 
 {
+	private AbstractReadOnlyModel<Boolean> infoVisibilityModel;
+	
     public TCViewDocumentsTab(final String id, IModel<TCEditableObject> model,
     		AbstractReadOnlyModel<Boolean> infoVisibilityModel) 
     {
@@ -61,6 +64,7 @@ public abstract class TCViewDocumentsTab extends AbstractEditableTCViewTab
 	public TCViewDocumentsTab(final String id, IModel<TCEditableObject> model, 
     		boolean editing, AbstractReadOnlyModel<Boolean> infoVisibilityModel) {
         super(id, model, editing);
+        this.infoVisibilityModel = infoVisibilityModel;
         add(new TCDocumentsView("tc-view-documents-content", model, editing));
     }
 	
@@ -75,6 +79,20 @@ public abstract class TCViewDocumentsTab extends AbstractEditableTCViewTab
     public boolean hasContent()
     {
         return getDocumentsCount()>0;
+    }
+    
+    @Override
+    public boolean isTabVisible() {
+    	boolean defaultVisibility = super.isTabVisible();
+    	
+    	if (defaultVisibility) {
+	    	if (infoVisibilityModel!=null) {
+	    		return infoVisibilityModel.getObject() ||
+	    			!WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey("Documents");
+	    	}
+    	}
+    	
+    	return defaultVisibility;
     }
     
     @Override

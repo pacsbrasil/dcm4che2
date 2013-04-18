@@ -39,7 +39,6 @@ package org.dcm4chee.web.war.tc;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import org.apache.wicket.RequestCycle;
 import org.apache.wicket.ajax.AbstractDefaultAjaxBehavior;
@@ -110,6 +109,8 @@ public class TCDetailsPanel extends Panel {
         		new ResourceModel("tc.details.tab.bibliography.title.text")).setOutputMarkupId(true));
         tabsContainer.add(new Label("tc.details.tab.documents.title", 
         		new ResourceModel("tc.details.tab.documents.title.text")).setOutputMarkupId(true));
+        tabsContainer.add(new Label("tc.details.tab.links.title", 
+        		new ResourceModel("tc.details.tab.links.title.text")).setOutputMarkupId(true));
         tabsContainer.add(new Label("tc.details.tab.images.title", 
         		new Model<String>() {
             String title = new PackageStringResourceLoader()
@@ -168,8 +169,9 @@ public class TCDetailsPanel extends Panel {
         );
         tabsContainer.add(addTab(new TCDetailsAuthorTab("details-author", trainingModeModel)).setDefaultModel(tabModel));
         tabsContainer.add(addTab(new TCDetailsBibliographyTab("details-bibliography", trainingModeModel)).setDefaultModel(tabModel));
-        tabsContainer.add(addTab(new TCDetailsDocumentsTab("details-documents")).setDefaultModel(tabModel));
-        tabsContainer.add(addTab(new TCDetailsImagesTab("details-images")).setDefaultModel(tabModel));
+        tabsContainer.add(addTab(new TCDetailsDocumentsTab("details-documents", trainingModeModel)).setDefaultModel(tabModel));
+        tabsContainer.add(addTab(new TCDetailsLinksTab("details-links", trainingModeModel)).setDefaultModel(tabModel));
+        tabsContainer.add(addTab(new TCDetailsImagesTab("details-images", trainingModeModel)).setDefaultModel(tabModel));
 
         nodetailsContainer = new WebMarkupContainer("no-details-panel");
         nodetailsContainer.setOutputMarkupId(true);

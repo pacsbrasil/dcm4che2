@@ -762,10 +762,11 @@
         List of teaching-file attributes which should be first be unavailable or hidden
         if training-mode is active.<br/>
         <br/>
-        Possible values/attributes are: Titel, Abstract, AcquisitionModality,
+        Possible values/attributes are: Title, Abstract, AcquisitionModality,
         Anatomy, AuthorAffiliation, AuthorContact, AuthorName, Category, Diagnosis,
         DifferentialDiagnosis, Discussion, Finding, History, Level, OrganSystem,
-        Pathology, PatientAge, PatientSex, PatientSpecies, BibliographicReference. 
+        Pathology, PatientAge, PatientSex, PatientSpecies, BibliographicReference,
+        Documents, Links, Images. 
         A value of NONE means, that none of the attributes are hidden/invisible in 
         training-mode.
         ]]>
@@ -774,7 +775,7 @@
       <type>java.lang.String</type>
       <descriptors>
          <value value="
-           Titel;
+           Title;
            Abstract;
            Anatomy;
            Diagnosis;

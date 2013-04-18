@@ -6,13 +6,16 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.List;
 
+import org.apache.wicket.Component;
 import org.apache.wicket.Page;
 import org.apache.wicket.Request;
 import org.apache.wicket.RequestCycle;
 import org.apache.wicket.Session;
 import org.apache.wicket.ajax.AjaxEventBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.IAjaxCallDecorator;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
+import org.apache.wicket.behavior.AttributeAppender;
 import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.ChoiceRenderer;
 import org.apache.wicket.markup.html.form.DropDownChoice;
@@ -20,10 +23,12 @@ import org.apache.wicket.markup.html.form.EnumChoiceRenderer;
 import org.apache.wicket.markup.html.form.TextArea;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.link.PopupSettings;
+import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.resource.loader.PackageStringResourceLoader;
+import org.apache.wicket.util.time.Duration;
 import org.dcm4chee.archive.entity.Code;
 import org.dcm4chee.web.dao.tc.ITextOrCode;
 import org.dcm4chee.web.dao.tc.TCDicomCode;
@@ -52,6 +57,10 @@ public class TCUtilities
     private static PackageStringResourceLoader stringLoader;
     
     public static boolean isKeyAvailable(IModel<Boolean> trainingModeModel, TCQueryFilterKey key) {
+    	return isKeyAvailable(trainingModeModel, key.name());
+    }
+    
+    public static boolean isKeyAvailable(IModel<Boolean> trainingModeModel, String key) {
     	boolean available = true;
     	if (trainingModeModel!=null) {
     		if (trainingModeModel.getObject()) {
@@ -449,6 +458,36 @@ public class TCUtilities
         return choice;
     }
     
+    
+    @SuppressWarnings("serial")
+	public static void setInputPlaceholder(TextField<?> field, final String msgKey)
+    {
+    	field.add(new AttributeAppender("placeholder", true, new AbstractReadOnlyModel<String>() {
+    		@Override
+    		public String getObject() {
+    			return TCUtilities.getLocalizedString(msgKey);
+    		}
+    	}, " "));
+    }
+    
+    
+	public static void setToolTip(Component c, final String msgKey)
+    {
+    	c.add(new TCToolTipAppender(msgKey));
+    }
+    
+    
+    public static TCPanel findMainPanel(Component c) {
+    	while (c!=null) {
+    		if (c instanceof TCPanel) {
+    			return (TCPanel) c;
+    		}
+    		c = c.getParent();
+    	}
+    	return null;
+    }
+    
+    
     public static interface TCChangeListener<T> extends Serializable
     {
         public void valueChanged(T value);
@@ -497,10 +536,11 @@ public class TCUtilities
         protected void selectionChanged(boolean selected) {}
     }
     
-    public static class SelfUpdatingTextField extends TextField<String> 
+    @SuppressWarnings("serial")
+	public static class SelfUpdatingTextField extends TextField<String> 
     {
         private IModel<String> model;
-
+        
         public SelfUpdatingTextField(String id, String text) 
         {
         	this(id, new Model<String>(text));
@@ -510,18 +550,37 @@ public class TCUtilities
             super(id);
             this.model = model!=null ? model : new Model<String>(""); 
             setModel(model);
-            add(new AjaxFormComponentUpdatingBehavior("onchange"){
-                @Override
-                protected void onUpdate(AjaxRequestTarget target) {
-                    textUpdated(SelfUpdatingTextField.this.model.getObject());
-                }
-            });
+            
+            String updateEvent = getUpdateEvent();
+            if (updateEvent!=null) {
+	            AjaxFormComponentUpdatingBehavior updatingBehavior = new AjaxFormComponentUpdatingBehavior(updateEvent){
+	                @Override
+	                protected void onUpdate(AjaxRequestTarget target) {
+	                    textUpdated(SelfUpdatingTextField.this.model.getObject(), target);
+	                }
+	                @Override
+	                protected IAjaxCallDecorator getAjaxCallDecorator() {
+	                	return getUpdateDecorator();
+	                }
+	            };
+	            
+	            Duration delay = getThrottleDelay();
+	            if (delay!=null)
+	            {
+	            	updatingBehavior.setThrottleDelay(delay);
+	            }
+	            
+	            add(updatingBehavior);
+            }
             add(new AutoSelectInputTextBehaviour());
         }
 
         public String getText(){ return model.getObject(); }
         public void setText(String text) { model.setObject(text); }
-        protected void textUpdated(String text) {}
+        protected void textUpdated(String text, AjaxRequestTarget target) {}
+        protected Duration getThrottleDelay() { return null; }
+        protected String getUpdateEvent() { return "onchange"; }
+        protected IAjaxCallDecorator getUpdateDecorator() { return null; }
     }
     
     public static class SelfUpdatingTextArea extends TextArea<String> 
@@ -620,6 +679,30 @@ public class TCUtilities
                 return -1;
             }
         }
+    }
+    
+    @SuppressWarnings("serial")
+    public static class TCToolTipAppender extends AttributeAppender {
+    	public TCToolTipAppender(String msgKey) {
+    		super("title",true,new Model<String>(
+    				TCUtilities.getLocalizedString(msgKey))," ");
+    	}
+    }
+    
+    @SuppressWarnings("serial")
+    public static class TCStyleAppender extends AttributeAppender {
+    	public TCStyleAppender(String style) {
+    		super("style",true,new Model<String>(
+    				style),";");
+    	}
+    }
+    
+    @SuppressWarnings("serial")
+    public static class TCClassAppender extends AttributeAppender {
+    	public TCClassAppender(String clazz) {
+    		super("class",true,new Model<String>(
+    				clazz)," ");
+    	}
     }
     
     public abstract static class AjaxMouseEventBehavior extends AjaxEventBehavior

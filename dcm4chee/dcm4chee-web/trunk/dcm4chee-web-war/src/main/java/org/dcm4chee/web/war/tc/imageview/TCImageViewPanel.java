@@ -3,6 +3,7 @@ package org.dcm4chee.web.war.tc.imageview;
 import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -14,8 +15,9 @@ import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.image.Image;
+import org.apache.wicket.markup.html.list.ListItem;
+import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.markup.html.panel.Panel;
-import org.apache.wicket.markup.repeater.RepeatingView;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.util.ListModel;
@@ -28,6 +30,7 @@ import org.dcm4chee.web.war.tc.TCPopupManager;
 import org.dcm4chee.web.war.tc.TCPopupManager.AbstractTCPopup;
 import org.dcm4chee.web.war.tc.TCPopupManager.TCPopupPosition;
 import org.dcm4chee.web.war.tc.TCPopupManager.TCPopupPosition.PopupAlign;
+import org.dcm4chee.web.war.tc.TCUtilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,6 +39,7 @@ import org.slf4j.LoggerFactory;
  * @version $Revision$ $Date$
  * @since Jan 25, 2012
  */
+@SuppressWarnings("serial")
 public class TCImageViewPanel extends Panel 
 {
     private static final Logger log = LoggerFactory.getLogger(TCImageViewPanel.class);
@@ -54,9 +58,7 @@ public class TCImageViewPanel extends Panel
     
     public TCImageViewPanel(final String id, ListModel<? extends TCImageViewStudy> model)
     {
-        super(id, model);
-
-        final List<SeriesProxy> seriesList = createSeriesProxies(getModelObject());
+        super(id, new SeriesListModel(model));
 
         prev = new AjaxLink<Void>("tc-view-images-prev-btn") {
             @Override
@@ -115,7 +117,7 @@ public class TCImageViewPanel extends Panel
         .setOutputMarkupPlaceholderTag(true);
         
         list = new TCImageViewThumbnailPanel("tc-view-thumbnail-container", 
-                !seriesList.isEmpty()?seriesList.get(0).getSeries():null) {
+                getModel().getSeriesCount()>0 ? getModel().getObject().get(0).getSeries():null) {
             @Override
             protected void imageClicked(TCImageViewImage image, AjaxRequestTarget target)
             {
@@ -123,6 +125,17 @@ public class TCImageViewPanel extends Panel
                 target.appendJavascript(getSetCurrentImageJavascript(currentImage, getCurrentImage()));
                 target.appendJavascript(getUpdatePreviousLinkJavascript(prev, getCurrentImageIndex()));
                 target.appendJavascript(getUpdateNextLinkJavascript(next, getCurrentImageIndex(), getImageCount()));
+            }
+            @Override
+            protected void onBeforeRender() {
+            	if (!getModel().hasSeries(getSeries())) {
+            		list.setSeries(getModel().getSeriesCount()>0 ? getModel().getObject().get(0).getSeries():null, null);
+            	}
+            	super.onBeforeRender();
+            }
+            @Override
+            protected boolean callOnBeforeRenderIfNotVisible() {
+            	return true;
             }
         };
         list.setMarkupId("tc-view-images-thumbnail-container");
@@ -148,7 +161,7 @@ public class TCImageViewPanel extends Panel
         });
         numberLabel.setOutputMarkupId(true);
         
-        final SeriesListPopup seriesPopup = new SeriesListPopup(seriesList, getPopupManager()) {
+        final SeriesListPopup seriesPopup = new SeriesListPopup(getModel(), getPopupManager()) {
             @Override
             protected void seriesClicked(TCImageViewSeries series, AjaxRequestTarget target)
             {
@@ -166,6 +179,10 @@ public class TCImageViewPanel extends Panel
         };
         
         seriesChooser = new AjaxLink<Void>("tc-view-images-series-chooser") {
+        	@Override
+        	public boolean isVisible() {
+        		return TCImageViewPanel.this.getModel().getSeriesCount()>0;
+        	}
             @Override
             public void onClick(AjaxRequestTarget target) 
             {
@@ -187,7 +204,7 @@ public class TCImageViewPanel extends Panel
                 TCImageViewSeries current = list.getSeries();
                 if (current!=null)
                 {
-                    for (SeriesProxy s : seriesList)
+                    for (Series s : TCImageViewPanel.this.getModel().getObject())
                     {
                         if (s.getSeries().equals(current))
                         {
@@ -198,8 +215,6 @@ public class TCImageViewPanel extends Panel
                 return null;
             }
         }));
-        
-        seriesChooser.setVisible(seriesList.size()>1);
 
         prev.add(new AttributeModifier("style",true,
                 new Model<String>("visibility:"+
@@ -217,26 +232,34 @@ public class TCImageViewPanel extends Panel
         add(next);
     }
     
-    @SuppressWarnings("unchecked")
-    public ListModel<? extends TCImageViewStudy> getModel()
+    public SeriesListModel getModel()
     {
-        return(ListModel<? extends TCImageViewStudy>) getDefaultModel();
-    }
-    
-    public List<? extends TCImageViewStudy> getModelObject()
-    {
-        return getModel()!=null?getModel().getObject():null;
+        return (SeriesListModel) super.getDefaultModel();
     }
     
     public void setModel(ListModel<? extends TCImageViewStudy> model)
     {
-        setDefaultModel(model);
+        setDefaultModel(new SeriesListModel(model));
     }
     
     protected TCPopupManager getPopupManager()
     {
         return null;
     }
+    
+	protected void onBeforeRender()
+	{
+		SeriesListModel model = getModel();
+		if (!model.hasSeries(list.getSeries())) {
+			list.setSeries(model.getSeriesCount()>0 ? 
+					model.getObject().get(0).getSeries() : null, null);
+		}
+		super.onBeforeRender();
+	}
+	
+	protected boolean callOnBeforeRenderIfNotVisible() {
+		return true;
+	}
 
     private String getSetCurrentImageJavascript(TCWadoImage currentImage, TCImageViewImage image)
     {
@@ -270,41 +293,19 @@ public class TCImageViewPanel extends Panel
         
         return sbuf.toString();
     }
-            
-    private List<SeriesProxy> createSeriesProxies(List<? extends TCImageViewStudy> studies)
+                
+    public static class Series implements Serializable
     {
-        List<SeriesProxy> list = new ArrayList<SeriesProxy>();
-        
-        if (studies!=null)
-        {
-            for (TCImageViewStudy study : studies)
-            {
-                if (study.getSeriesCount()>0)
-                {
-                    for (TCImageViewSeries series : study.getSeries())
-                    {
-                        if (series.getImageCount()>0)
-                        {
-                            list.add(new SeriesProxy(series));
-                        }
-                    }
-                }
-            }
-        }
-        
-        return list;
-    }
-    
-    public class SeriesProxy implements Serializable
-    {
+    	private int nStudy;
         private TCImageViewSeries series;
         
         private final Pattern pattern = 
             Pattern.compile("\\$\\(.*?\\)", Pattern.DOTALL); //$NON-NLS-1$
         
-        public SeriesProxy(TCImageViewSeries series)
+        public Series(TCImageViewSeries series, int nStudy)
         {
             this.series = series;
+            this.nStudy = nStudy;
         }
         
         public TCImageViewSeries getSeries()
@@ -336,7 +337,7 @@ public class TCImageViewPanel extends Panel
                         else if ("NumberOfStudy".equalsIgnoreCase(tag))
                         {
                             matcher.appendReplacement(sbuffer,
-                                    Integer.toString(getNumberOfStudy()));
+                                    Integer.toString(nStudy));
                         }
                         else if ("NumberOfSeries".equalsIgnoreCase(tag))
                         {
@@ -362,22 +363,12 @@ public class TCImageViewPanel extends Panel
             }
             else
             {
-                int nStudy = getNumberOfStudy();
-                int nSeries = getNumberOfSeries();
-                int nImages = series.getImageCount();
-                
                 sbuffer.replace(0,sbuffer.length(),
-                        MessageFormat.format(getString("tc.view.images.series.text"),
-                        nStudy, nSeries, nImages));  
+                        MessageFormat.format(TCUtilities.getLocalizedString("tc.view.images.series.text"),
+                        		nStudy, getNumberOfSeries(), series.getImageCount()));  
             }
             
             return sbuffer.toString(); 
-        }
-        
-        private int getNumberOfStudy()
-        {
-            List<? extends TCImageViewStudy> studies = getModel().getObject();
-            return studies.indexOf(series.getStudy())+1;
         }
         
         private int getNumberOfSeries()
@@ -394,46 +385,110 @@ public class TCImageViewPanel extends Panel
             }
             if (value==null)
             {
-                value = getString("tc.view.images.series.unknown.text");
+                value = TCUtilities.getLocalizedString("tc.view.images.series.unknown.text");
             }
             return value;
         }
     }
     
-    protected abstract class SeriesListPopup extends AbstractTCPopup 
+	protected abstract class SeriesListPopup extends AbstractTCPopup 
     {
-        public SeriesListPopup(List<SeriesProxy> series, TCPopupManager manager) 
+        public SeriesListPopup(SeriesListModel seriesModel, TCPopupManager manager) 
         {
             super("tc-view-images-series-popup", manager, false, true, true, true);
 
             setMarkupId("tc-view-images-series-popup");
             
-            RepeatingView list = new RepeatingView("tc-view-images-series-item");
-            int i=1;
-            for (final SeriesProxy proxy : series)
-            {
-                AjaxLink<String> link = new AjaxLink<String>("item"+i, new Model<String>(proxy.toString())) {
-                    @Override
-                    public void onClick(AjaxRequestTarget target)
-                    {
-                        seriesClicked(proxy.getSeries(), target);
-                    }
-                };
-                
-                link.add(new Label("tc-view-images-series-item-label", new AbstractReadOnlyModel<String>() {
-                    @Override
-                    public String getObject() {
-                        return proxy.toString();
-                    }
-                }));
-                
-                list.add(link);
-                i++;
-            }
-            
-            add(list);
+            add(new ListView<Series>("tc-view-images-series-list", seriesModel) {
+            	protected void populateItem(ListItem<Series> item) {
+            		final Series series = item.getModelObject();
+                   item.add(new AjaxLink<String>("tc-view-images-series-list-item", new Model<String>(series.toString())) {
+	                        @Override
+	                        public void onClick(AjaxRequestTarget target)
+	                        {
+	                            seriesClicked(series.getSeries(), target);
+	                        }
+	                    }
+	                   .add(new Label("tc-view-images-series-list-item-label", new AbstractReadOnlyModel<String>() {
+	                       @Override
+	                       public String getObject() {
+	                           return series.toString();
+	                       }
+	                   }))
+                   );
+            	}
+            }).setOutputMarkupId(true);
         }
         
         protected abstract void seriesClicked(TCImageViewSeries series, AjaxRequestTarget target);
+    }
+    
+	protected static class SeriesListModel extends ListModel<Series> {
+    	private ListModel<? extends TCImageViewStudy> studiesModel;
+    	private List<? extends TCImageViewStudy> studies;
+
+    	public SeriesListModel(ListModel<? extends TCImageViewStudy> studiesModel) {
+    		this.studiesModel = studiesModel;
+    	}
+    	public List<? extends TCImageViewStudy> getStudies() {
+    		if (studiesModel!=null) {
+    			return studiesModel.getObject();
+    		}
+    		return Collections.emptyList();
+    	}
+    	public boolean hasSeries(TCImageViewSeries series) {
+    		List<Series> list = getObject();
+    		if (series!=null) {
+		    	if (list!=null) {
+		    		for (Series proxy : list) {
+		    			if (series.equals(proxy.getSeries())) {
+		    				return true;
+		    			}
+		    		}
+	    		}
+    		}
+    		return false;
+    	}
+    	public int getSeriesCount() {
+    		return getObject().size();
+    	}
+    	@Override
+    	public void detach() {
+    		super.detach();
+    		studies = null;
+    	}
+    	@Override
+    	public List<Series> getObject() {
+    		List<? extends TCImageViewStudy> curStudies = studiesModel.getObject();
+    		if ((studies!=curStudies) ||
+    			(studies!=null && curStudies!=null && !studies.equals(curStudies))) {
+    			setObject(createSeriesProxies(curStudies));
+    			studies = curStudies;
+    		}
+    		return super.getObject();
+    	}
+        private List<Series> createSeriesProxies(List<? extends TCImageViewStudy> studies)
+        {
+            List<Series> list = new ArrayList<Series>();
+            
+            if (studies!=null)
+            {
+                for (TCImageViewStudy study : studies)
+                {
+                    if (study.getSeriesCount()>0)
+                    {
+                        for (TCImageViewSeries series : study.getSeries())
+                        {
+                            if (series.getImageCount()>0)
+                            {
+                                list.add(new Series(series, studies.indexOf(study)));
+                            }
+                        }
+                    }
+                }
+            }
+            
+            return list;
+        }
     }
 }

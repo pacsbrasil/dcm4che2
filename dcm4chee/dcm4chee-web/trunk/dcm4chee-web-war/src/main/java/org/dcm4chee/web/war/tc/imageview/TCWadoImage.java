@@ -67,8 +67,6 @@ public class TCWadoImage extends WebComponent
             setOutputMarkupId(true);
             this.requestedSize = requestedSize;
             this.renderedSize = renderedSize;
-            this.emptyImage = new LocalizedImageResource(this);
-            this.emptyImage.setResourceReference(ImageManager.IMAGE_TC_IMAGE_PLACEHOLDER);
         }
         
         public TCWadoImage(final String id, IModel<TCImageViewImage> model, TCWadoImageSize size) {
@@ -94,6 +92,19 @@ public class TCWadoImage extends WebComponent
         {
             return renderedSize;
         }
+        
+        protected LocalizedImageResource createEmptyImage() {
+        	LocalizedImageResource emptyImage = new LocalizedImageResource(this);
+        	emptyImage.setResourceReference(ImageManager.IMAGE_TC_IMAGE_PLACEHOLDER);
+        	return emptyImage;
+        }
+        
+        private LocalizedImageResource getEmptyImage() {
+        	if (this.emptyImage==null) {
+        		this.emptyImage = createEmptyImage();
+        	}
+        	return emptyImage;
+        }
 
         /**
          * @see org.apache.wicket.Component#onComponentTag(ComponentTag)
@@ -111,7 +122,10 @@ public class TCWadoImage extends WebComponent
                 }
                 else
                 {
-                    emptyImage.setSrcAttribute(tag);
+                	LocalizedImageResource emptyImage = getEmptyImage();
+                	if (emptyImage!=null) {
+                		emptyImage.setSrcAttribute(tag);
+                	}
                 }
 
                 //set width attribute, if available

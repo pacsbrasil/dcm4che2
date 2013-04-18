@@ -17,6 +17,7 @@ import org.apache.wicket.Component;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.UID;
 import org.dcm4che2.io.DicomInputStream;
 import org.dcm4chee.archive.entity.Code;
 import org.dcm4chee.archive.util.JNDIUtils;
@@ -32,6 +33,7 @@ import org.dcm4chee.web.dao.tc.TCQueryFilterValue.PatientSpecies;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue.YesNo;
 import org.dcm4chee.web.dao.tc.TCQueryLocal;
 import org.dcm4chee.web.war.folder.delegate.TarRetrieveDelegate;
+import org.dcm4chee.web.war.tc.TCLink.TCLinkRelationship;
 import org.dcm4chee.web.war.tc.keywords.TCKeyword;
 import org.dcm4chee.web.war.tc.keywords.TCKeywordCatalogue;
 import org.slf4j.Logger;
@@ -107,6 +109,8 @@ public class TCObject implements Serializable {
     protected List<String> bibliographicReferences;
 
     protected String title;
+    
+    protected List<TCLink> links;
 
     private List<TCReferencedStudy> studyRefs;
     
@@ -122,20 +126,26 @@ public class TCObject implements Serializable {
     }
 
     public static TCObject create(TCModel model) throws IOException {
-        String fsID = model.getFileSystemId();
-        String fileID = model.getFileId();
-
-        DicomInputStream dis = null;
-        try {
-        	dis = new DicomInputStream(fsID.startsWith("tar:") ? 
-        			TarRetrieveDelegate.getInstance().retrieveFileFromTar(fsID, fileID) :
-        				FileUtils.resolve(new File(fsID, fileID)));
-            return new TCObject(model.getId(), dis.readDicomObject());
-        } finally {
-            if (dis != null) {
-                dis.close();
-            }
-        }
+    	DicomObject dataset = model.getDataset();
+    	if (dataset.contains(Tag.ContentSequence)) {
+    		return new TCObject(model.getId(), dataset);
+    	}
+    	else {
+	        String fsID = model.getFileSystemId();
+	        String fileID = model.getFileId();
+	
+	        DicomInputStream dis = null;
+	        try {
+	        	dis = new DicomInputStream(fsID.startsWith("tar:") ? 
+	        			TarRetrieveDelegate.getInstance().retrieveFileFromTar(fsID, fileID) :
+	        				FileUtils.resolve(new File(fsID, fileID)));
+	            return new TCObject(model.getId(), dis.readDicomObject());
+	        } finally {
+	            if (dis != null) {
+	                dis.close();
+	            }
+	        }
+    	}
     }
         
     public String getId() 
@@ -272,6 +282,13 @@ public class TCObject implements Serializable {
 
     public String getTitle() {
         return title;
+    }
+    
+    public List<TCLink> getLinks() {
+    	if (links != null) {
+    		return Collections.unmodifiableList(links);
+    	}
+    	return Collections.emptyList();
     }
     
     public List<TCReferencedStudy> getReferencedStudies() {
@@ -608,6 +625,44 @@ public class TCObject implements Serializable {
     	
     	this.id = id;
     }
+    
+    protected void clear() {
+    	id=null;
+    	cuid=null;
+        iuid=null;
+        suid=null;
+        stuid=null;
+        patId=null;
+        patIdIssuer=null;
+        patName=null;
+        abstr=null;
+        acquisitionModalities=null;
+        anatomy=null;
+        authorAffiliation=null;
+        authorContact=null;
+        authorName=null;
+        category=null;
+        diagnosis=null;
+        diagnosisConfirmed=null;
+        diffDiagnosis=null;
+        discussion=null;
+        finding=null;
+        history=null;
+        keywords=null;
+        level=null;
+        organSystem=null;
+        pathology=null;
+        patientAge=null;
+        patientSex=null;
+        patientSpecies=null;
+        bibliographicReferences=null;
+        title=null;
+        studyRefs=null;
+        instanceRefs=null;
+        docRefs=null;
+        imageRefs=null;
+        links=null;
+    }
 
     private void parse(DicomObject o) {
     	cuid = o.getString(Tag.SOPClassUID);
@@ -618,117 +673,8 @@ public class TCObject implements Serializable {
         patIdIssuer = o.getString(Tag.IssuerOfPatientID);
         patName = o.getString(Tag.PatientName);
         
+        // parse content
         DicomElement content = o != null ? o.get(Tag.ContentSequence) : null;
-        DicomElement ref = o != null ? o
-                .get(Tag.CurrentRequestedProcedureEvidenceSequence) : null;
-
-        int refCount = ref != null ? ref.countItems() : -1;
-        if (refCount > 0) {
-            for (int i = 0; i < refCount; i++) {
-                DicomObject studyRef = ref.getDicomObject(i);
-                String stuid = studyRef != null ? studyRef
-                        .getString(Tag.StudyInstanceUID) : null;
-
-                if (stuid != null) {
-                    TCReferencedStudy study = new TCReferencedStudy(stuid);
-                    
-                    DicomElement seriesSeq = studyRef
-                            .get(Tag.ReferencedSeriesSequence);
-                    int seriesCount = seriesSeq != null ? seriesSeq
-                            .countItems() : -1;
-                    int instanceCount = 0;
-                    
-                    if (seriesCount > 0) {
-                        for (int j = 0; j < seriesCount; j++) {
-                            DicomObject seriesRef = seriesSeq.getDicomObject(j);
-                            String suid = seriesRef != null ? seriesRef
-                                    .getString(Tag.SeriesInstanceUID) : null;
-
-                            if (suid != null) {
-                                TCReferencedSeries series = new TCReferencedSeries(suid, study);
-                                
-                                DicomElement instanceSeq = seriesRef
-                                        .get(Tag.ReferencedSOPSequence);
-                                instanceCount = instanceSeq != null ? instanceSeq
-                                        .countItems() : -1;
-                                
-                                if (instanceCount > 0) {
-                                    TCQueryLocal ejb = (TCQueryLocal) JNDIUtils
-                                            .lookup(TCQueryLocal.JNDI_NAME);
-                                    
-                                    study.addSeries(series);
-
-                                    Map<String, TCReferencedImage> images = null;
-                                    Map<String, Integer> instanceNumbers = ejb.getInstanceNumbers(suid);
-                                    
-                                    for (int k = 0; k < instanceCount; k++) {
-                                        DicomObject instanceRef = instanceSeq
-                                                .getDicomObject(k);
-                                        String iuid = instanceRef
-                                                .getString(Tag.ReferencedSOPInstanceUID);
-                                        String cuid = instanceRef
-                                                .getString(Tag.ReferencedSOPClassUID);
-                                        Integer instanceNumber = instanceNumbers.get(iuid);
-                                        
-                                        if (TCReferencedInstance.isImage(cuid))
-                                        {
-                                        	TCReferencedImage image = new TCReferencedImage(series, iuid, cuid,
-                                        			instanceNumber!=null?instanceNumber:-1);
-                                        	series.addInstance(image);
-                                        	
-                                        	if (images==null)
-                                        	{
-                                        		images = new HashMap<String, TCReferencedImage>();
-                                        	}
-                                        	
-                                        	images.put(iuid, image);
-                                        }
-                                        else
-                                        {
-                                        	series.addInstance(
-                                                new TCReferencedInstance(series, iuid, cuid, 
-                                                		instanceNumber!=null?instanceNumber:-1));
-                                        }
-                                    }
-                                    
-                                    if (images!=null && !images.isEmpty())
-                                    {
-                                        Map<String, Integer> frames = ejb.findMultiframeInstances(
-                                        		stuid, suid, images.keySet().toArray(new String[0]));
-                                        
-                                        if (frames!=null && !frames.isEmpty())
-                                        {
-                                        	for (Map.Entry<String, Integer> me : frames.entrySet())
-                                        	{
-                                        		TCReferencedImage image = images.get(me.getKey());
-                                        		series.removeInstance(image);
-                                        		
-                                        		for (int n=1; n<=me.getValue(); n++)
-                                        		{
-                                        			series.addInstance(new TCReferencedImage(
-                                        					series, image.getInstanceUID(), image.getClassUID(), 
-                                        					image.getInstanceNumber(), n));
-                                        		}
-                                        	}
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    
-                    if (instanceCount>0)
-                    {
-                        if (studyRefs==null)
-                        {
-                            studyRefs = new ArrayList<TCReferencedStudy>();
-                        }
-                        studyRefs.add(study);
-                    }
-                }
-            }
-        }
-
         if (content != null) {
             int count = content.countItems();
             for (int i = 0; i < count; i++) {
@@ -740,7 +686,51 @@ public class TCObject implements Serializable {
                         TCDicomCode conceptName = new TCDicomCode(
                                 item.getNestedDicomObject(Tag.ConceptNameCodeSequence));
 
-                        if ("TEXT".equalsIgnoreCase(valueType)) {
+                        if ("CONTAINER".equalsIgnoreCase(valueType) &&
+                        		TCDicomCode.REF_COMPOSITE_CONTAINER.equals(conceptName))
+                        {
+                        	String cuid=null, iuid=null, reltype=null, comment=null;
+                            DicomElement content2 = item.get(Tag.ContentSequence);
+                            if (content2 != null) {
+                                int count2 = content2.countItems();
+                                for (int j = 0; j < count2; j++) {
+                                	DicomObject item2 = content2.getDicomObject(j);
+                                	if (item2!=null) {
+                                		String valueType2 = item2.getString(Tag.ValueType);
+                                        TCDicomCode conceptName2 = new TCDicomCode(
+                                                item2.getNestedDicomObject(Tag.ConceptNameCodeSequence));
+                                        if ("COMPOSITE".equalsIgnoreCase(valueType2) &&
+                                        		TCDicomCode.REF_COMPOSITE_OBJECT.equals(conceptName2)) {
+                                        	DicomObject refsop = item2.getNestedDicomObject(Tag.ReferencedSOPSequence);
+                                        	if (refsop!=null) {
+                                        		iuid = refsop.getString(Tag.ReferencedSOPInstanceUID);
+                                        		cuid = refsop.getString(Tag.ReferencedSOPClassUID);
+                                        	}
+                                        }
+                                        else if ("TEXT".equalsIgnoreCase(valueType2)) {
+                                        	if (TCDicomCode.REF_COMPOSITE_RELATIONSHIP_TYPE.equals(conceptName2)) {
+                                        		reltype = item2.getString(Tag.TextValue);
+                                        	}
+                                        	else if (TCDicomCode.REF_COMPOSITE_COMMENT.equals(conceptName2)) {
+                                        		comment = item2.getString(Tag.TextValue);
+                                        	}
+                                        }
+                                	}
+                                }
+                            }
+                            if (cuid!=null && iuid!=null) {
+                            	// crosslink
+                            	if (UID.BasicTextSRStorage.equals(cuid)) {
+                            		if (links==null) {
+                            			links = new ArrayList<TCLink>(5);
+                            		}
+                            		links.add( new TCLink(this.iuid, iuid, reltype!=null ?
+                            				TCLinkRelationship.valueOf(reltype) : 
+                            					TCLinkRelationship.RELATES_TO, comment));
+                            	}
+                            }
+                        }
+                        else if ("TEXT".equalsIgnoreCase(valueType)) {
                             if (conceptName.equals(TCQueryFilterKey.Abstract
                                     .getCode())) {
                                 abstr = getTextValue(item);
@@ -892,45 +882,118 @@ public class TCObject implements Serializable {
                 }
             }
         }
+        
+        // parse references
+        DicomElement ref = o != null ? o
+                .get(Tag.CurrentRequestedProcedureEvidenceSequence) : null;
+        int refCount = ref != null ? ref.countItems() : -1;
+        if (refCount > 0) {
+            for (int i = 0; i < refCount; i++) {
+                DicomObject studyRef = ref.getDicomObject(i);
+                String stuid = studyRef != null ? studyRef
+                        .getString(Tag.StudyInstanceUID) : null;
+
+                if (stuid != null) {
+                    TCReferencedStudy study = new TCReferencedStudy(stuid);
+                    
+                    DicomElement seriesSeq = studyRef
+                            .get(Tag.ReferencedSeriesSequence);
+                    int seriesCount = seriesSeq != null ? seriesSeq
+                            .countItems() : -1;
+                    int instanceCount = 0;
+                    
+                    if (seriesCount > 0) {
+                        for (int j = 0; j < seriesCount; j++) {
+                            DicomObject seriesRef = seriesSeq.getDicomObject(j);
+                            String suid = seriesRef != null ? seriesRef
+                                    .getString(Tag.SeriesInstanceUID) : null;
+
+                            if (suid != null) {
+                                TCReferencedSeries series = new TCReferencedSeries(suid, study);
+                                
+                                DicomElement instanceSeq = seriesRef
+                                        .get(Tag.ReferencedSOPSequence);
+                                instanceCount = instanceSeq != null ? instanceSeq
+                                        .countItems() : -1;
+                                
+                                if (instanceCount > 0) {
+                                    TCQueryLocal ejb = (TCQueryLocal) JNDIUtils
+                                            .lookup(TCQueryLocal.JNDI_NAME);
+                                    
+                                    study.addSeries(series);
+
+                                    Map<String, TCReferencedImage> images = null;
+                                    Map<String, Integer> instanceNumbers = ejb.getInstanceNumbers(suid);
+                                    
+                                    for (int k = 0; k < instanceCount; k++) {
+                                        DicomObject instanceRef = instanceSeq
+                                                .getDicomObject(k);
+                                        String iuid = instanceRef
+                                                .getString(Tag.ReferencedSOPInstanceUID);
+                                        String cuid = instanceRef
+                                                .getString(Tag.ReferencedSOPClassUID);
+                                        Integer instanceNumber = instanceNumbers.get(iuid);
+                                        
+                                        if (TCReferencedInstance.isImage(cuid))
+                                        {
+                                        	TCReferencedImage image = new TCReferencedImage(series, iuid, cuid,
+                                        			instanceNumber!=null?instanceNumber:-1);
+                                        	series.addInstance(image);
+                                        	
+                                        	if (images==null)
+                                        	{
+                                        		images = new HashMap<String, TCReferencedImage>();
+                                        	}
+                                        	
+                                        	images.put(iuid, image);
+                                        }
+                                        else
+                                        {
+                                        	series.addInstance(
+                                                new TCReferencedInstance(series, iuid, cuid, 
+                                                		instanceNumber!=null?instanceNumber:-1));
+                                        }
+                                    }
+                                    
+                                    if (images!=null && !images.isEmpty())
+                                    {
+                                        Map<String, Integer> frames = ejb.findMultiframeInstances(
+                                        		stuid, suid, images.keySet().toArray(new String[0]));
+                                        
+                                        if (frames!=null && !frames.isEmpty())
+                                        {
+                                        	for (Map.Entry<String, Integer> me : frames.entrySet())
+                                        	{
+                                        		TCReferencedImage image = images.get(me.getKey());
+                                        		series.removeInstance(image);
+                                        		
+                                        		for (int n=1; n<=me.getValue(); n++)
+                                        		{
+                                        			series.addInstance(new TCReferencedImage(
+                                        					series, image.getInstanceUID(), image.getClassUID(), 
+                                        					image.getInstanceNumber(), n));
+                                        		}
+                                        	}
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    if (instanceCount>0)
+                    {
+                        if (studyRefs==null)
+                        {
+                            studyRefs = new ArrayList<TCReferencedStudy>();
+                        }
+                        studyRefs.add(study);
+                    }
+                }
+            }
+        }
     }
     
-    protected void clear() {
-    	id=null;
-    	cuid=null;
-        iuid=null;
-        suid=null;
-        stuid=null;
-        patId=null;
-        patIdIssuer=null;
-        patName=null;
-        abstr=null;
-        acquisitionModalities=null;
-        anatomy=null;
-        authorAffiliation=null;
-        authorContact=null;
-        authorName=null;
-        category=null;
-        diagnosis=null;
-        diagnosisConfirmed=null;
-        diffDiagnosis=null;
-        discussion=null;
-        finding=null;
-        history=null;
-        keywords=null;
-        level=null;
-        organSystem=null;
-        pathology=null;
-        patientAge=null;
-        patientSex=null;
-        patientSpecies=null;
-        bibliographicReferences=null;
-        title=null;
-        studyRefs=null;
-        instanceRefs=null;
-        docRefs=null;
-        imageRefs=null;
-    }
-
     private String getTextValue(DicomObject object) {
         return object != null ? object.getString(Tag.TextValue) : null;
     }
@@ -940,7 +1003,7 @@ public class TCObject implements Serializable {
             new TCDicomCode(object.getNestedDicomObject(Tag.ConceptCodeSequence)) : null;
     }
     
-    public Code toCode(TCDicomCode c) {
+    private Code toCode(TCDicomCode c) {
         return c == null ? null : c.toCode();
     }
 
