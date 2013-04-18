@@ -162,8 +162,10 @@ public class TCLinksView extends Panel
 	                		@Override
 	                		protected void onComponentTag(ComponentTag tag) {
 	                			super.onComponentTag(tag);
-	                			tag.put("onmouseout", "$(this).siblings('img').hide();");
-	                			tag.put("onmouseover", "$(this).siblings('img').show();");
+	                			if (!editing) {
+	                				tag.put("onmouseout", "$(this).siblings('img').hide();");
+	                				tag.put("onmouseover", "$(this).siblings('img').show();");
+	                			}
 	                		}
 	                	})
 	                	.add(new Image("link-follow-image", ImageManager.IMAGE_TC_EYE_MONO)
