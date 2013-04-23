@@ -444,6 +444,7 @@ public class FindScp extends DcmServiceBase implements AssociationListener {
                     coerceTpl = service.getCoercionTemplates(callingAET, 
                             RESULT_XSL);
                 }
+                service.preCoercionProcessing(data, Command.C_FIND_RSP, assoc.getAssociation());
                 Dataset coerce = service.getCoercionAttributesFor(
                         a, RESULT_XSL, data, coerceTpl);
                 if (coerce != null) {
