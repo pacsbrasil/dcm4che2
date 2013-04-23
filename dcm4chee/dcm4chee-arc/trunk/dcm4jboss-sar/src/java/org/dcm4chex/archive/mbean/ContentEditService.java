@@ -758,8 +758,7 @@ public class ContentEditService extends ServiceMBeanSupport {
         lookupPrivateManager().deletePrivatePatient(patPk);
     }
 
-    public void deleteStudy(long studyPk) throws RemoteException,
-    HomeFactoryException, CreateException, FinderException {
+    public void deleteStudy(long studyPk) throws Exception {
         if (log.isDebugEnabled())
             log.debug("delete Study from trash. pk:" + studyPk);
         lookupPrivateManager().deletePrivateStudy(studyPk);
@@ -867,7 +866,7 @@ public class ContentEditService extends ServiceMBeanSupport {
         this.sendSeriesUpdatedNotifications(dsStdyMgt, "Move instances");
     }
 
-    private ContentEdit lookupContentEdit() throws HomeFactoryException,
+    protected ContentEdit lookupContentEdit() throws HomeFactoryException,
     RemoteException, CreateException {
         if (contentEdit != null)
             return contentEdit;
@@ -877,7 +876,7 @@ public class ContentEditService extends ServiceMBeanSupport {
         return contentEdit;
     }
 
-    private ContentManager lookupContentManager() throws HomeFactoryException,
+    protected ContentManager lookupContentManager() throws HomeFactoryException,
     RemoteException, CreateException {
         if (contentMgr != null)
             return contentMgr;
