@@ -149,6 +149,15 @@ public abstract class StudyMgtBean implements SessionBean {
         studyHome.create(ds, findOrCreatePatient(ds, matching));
     }
 
+    private PatientLocal findPatient(Dataset ds,
+            PatientMatching matching) throws FinderException, CreateException {
+        try {
+            return patHome.selectPatient(ds, matching, true);
+        } catch (ObjectNotFoundException onfe) {
+            return null;
+        }
+    }
+    
     private PatientLocal findOrCreatePatient(Dataset ds,
             PatientMatching matching) throws FinderException, CreateException {
         try {
@@ -220,27 +229,58 @@ public abstract class StudyMgtBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public void updatePatientOnly(String iuid, Dataset ds, Dataset modAttrs)
+    public void updatePatientOnly(String iuid, Dataset ds, Dataset modAttrs, PatientMatching matching)
             throws DcmServiceException {
         try {
             PatientLocal patient = getStudy(iuid).getPatient();
-            Dataset origModAttrs = (modAttrs == null)?null: DcmObjectFactory.getInstance().newDataset(); 	
-            if(patient.updateAttributes(ds, origModAttrs)) {
-                AttrUtils.fetchModifiedAttributes(ds, origModAttrs, modAttrs, AttributeFilter.getPatientAttributeFilter());
-            }   
+            Dataset origModAttrs = (modAttrs == null) ? null : DcmObjectFactory.getInstance().newDataset();
+            
+        	// Existing patient with same PID and ISSUER
+        	PatientLocal lookForExisting = findOrCreatePatient(ds, matching);
+        	if (lookForExisting != null && lookForExisting.getPk() != patient.getPk()) {
+        		// Move Studies to new patient
+        		StudyLocal study = getStudy(iuid);
+        		study.setPatient(lookForExisting);
+
+        		Dataset oldDs = patient.getAttributes(false);
+        		Dataset newDs = lookForExisting.getAttributes(false);
+        		
+        		AttrUtils.updateAttributes(oldDs, newDs, origModAttrs, log);
+
+        		DcmElement el = modAttrs.putSQ(Tags.OriginalAttributesSeq);
+                Dataset item = el.addNewItem();
+                item.putAll(origModAttrs);                
+        		AttrUtils.fetchModifiedAttributes(ds, origModAttrs, modAttrs, AttributeFilter.getPatientAttributeFilter());
+
+        	} else {
+                DcmElement el = modAttrs.putSQ(Tags.OriginalAttributesSeq);
+                Dataset item = el.addNewItem();
+                            
+                if(patient.updateAttributes(ds, origModAttrs)) {                
+                	item.putAll(origModAttrs);                
+                    AttrUtils.fetchModifiedAttributes(ds, origModAttrs, modAttrs, AttributeFilter.getPatientAttributeFilter());
+                }        		
+        	}
+                        
+   
         } catch (Exception e) {
             throw new EJBException(e);
         }
     }
-     
+    
     /**
      * @ejb.interface-method
      */
     public void updateStudyOnly(String iuid, Dataset ds, Dataset modAttrs) throws DcmServiceException {
         try {
             StudyLocal study = getStudy(iuid);
-            Dataset origModAttrs = (modAttrs== null)?null:DcmObjectFactory.getInstance().newDataset(); 	
+            Dataset origModAttrs = (modAttrs== null)?null:DcmObjectFactory.getInstance().newDataset();
+            
+            DcmElement el = modAttrs.putSQ(Tags.OriginalAttributesSeq);
+            Dataset item = el.addNewItem();
+            
             if(study.updateAttributes(ds, origModAttrs) ) {
+                item.putAll(origModAttrs);
                 AttrUtils.fetchModifiedAttributes(ds, origModAttrs, modAttrs, AttributeFilter.getStudyAttributeFilter());
             }
         }
