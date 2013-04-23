@@ -654,8 +654,16 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
                                 + ", value length [" + (rLen&0xffffffffL)
                                 + "] exceeds maximal supported length ["
                                 + maxValLen + "]");
-                    readValue();
-                    lread += rLen;
+                    
+                    if (rVR == VRs.NONE &&
+                    		(rTag == Tags.Item || rTag == Tags.ItemDelimitationItem || rTag == Tags.SeqDelimitationItem))
+                    {
+                    	log.warn("Received extra item tag, item delimitation tag or sequence delimitation tag. Ignoring.");
+                    }
+                    else {
+                    	readValue();
+                        lread += rLen;	
+                    }
                 }
                 if (handler != null && unBuf == null)
                     handler.endElement();
