@@ -1894,6 +1894,13 @@ public class QueryRetrieveScpService extends AbstractScpService {
         // Extension Point for customized QueryRetrieveScpService
     }
 
+    void preCoercionProcessing(Dataset ds, int command, Association assoc) throws Exception {
+        doPreCoercionProcessing(ds,command,assoc);
+    }
+    protected void doPreCoercionProcessing(Dataset ds, int command, Association assoc) throws Exception {
+        // Extension Point for customized QueryRetrieveScpService
+    }
+    
 	public int getRetrieveRspStatusForNoMatchingInstanceToRetrieve() {
 		return retrieveRspStatusForNoMatchingInstanceToRetrieve;
 	}
