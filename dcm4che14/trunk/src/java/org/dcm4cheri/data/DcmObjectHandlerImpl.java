@@ -38,12 +38,14 @@
 
 package org.dcm4cheri.data;
 
+import org.apache.log4j.Logger;
 import org.dcm4che.data.Command;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObject;
 import org.dcm4che.data.FileMetaInfo;
+import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.VRs;
 
 import java.io.IOException;
@@ -57,6 +59,8 @@ import java.util.LinkedList;
  * @version 1.0.0
  */
 class DcmObjectHandlerImpl implements org.dcm4che.data.DcmHandler {
+
+    private static final Logger log = Logger.getLogger(DcmObjectHandlerImpl.class);
 
     private final DcmObject result;
     private ByteOrder byteOrder = ByteOrder.LITTLE_ENDIAN;
@@ -143,9 +147,13 @@ class DcmObjectHandlerImpl implements org.dcm4che.data.DcmHandler {
     }
     
     public void value(byte[] data, int start, int length) throws IOException {
-        curDcmObject.putXX(tag, vr,
-                ByteBuffer.wrap(data, start, length).order(byteOrder))
-                .setStreamPosition(pos);
+        if (vr != VRs.NONE)
+            curDcmObject.putXX(tag, vr,
+                    ByteBuffer.wrap(data, start, length).order(byteOrder))
+                    .setStreamPosition(pos);
+        else
+            log.warn("Ignore unexpected attribute " + Tags.toString(tag) 
+                + " #" + length + " at stream position " + pos);
     }
     
 

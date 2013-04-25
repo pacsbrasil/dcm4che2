@@ -361,18 +361,19 @@ public class DcmRcv extends DcmServiceBase
             if (parser.getReadTag() != Tags.PixelData) {
                 return;
             }
+            long pos = parser.getStreamPosition();
             int len = parser.getReadLength();
             ds.writeHeader(out, encParam,
                     parser.getReadTag(),
                     parser.getReadVR(),
                     len);
             if (len == -1) {
-                parser.parseHeader();
+                pos += parser.parseHeader();
                 while (parser.getReadTag() == Tags.Item) {
-                    len = parser.getReadLength();
+                    pos += len = parser.getReadLength();
                     ds.writeHeader(out, encParam, Tags.Item, VRs.NONE, len);
                     out.copyFrom(in, len);
-                    parser.parseHeader();
+                    pos += parser.parseHeader();
                 }
                 ds.writeHeader(
                         out,
@@ -382,7 +383,9 @@ public class DcmRcv extends DcmServiceBase
                         0);                
             } else {
                 out.copyFrom(in, len);
+                pos += len;
             }
+            parser.setStreamPosition(pos);
             parser.parseDataset(decParam, -1);
             ds.subSet(Tags.PixelData, -1).writeDataset(out, encParam);
         } finally {
