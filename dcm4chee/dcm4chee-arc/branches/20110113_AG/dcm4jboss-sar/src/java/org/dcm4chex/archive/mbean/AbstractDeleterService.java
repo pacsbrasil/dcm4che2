@@ -425,9 +425,9 @@ public abstract class AbstractDeleterService extends ServiceMBeanSupport {
             }
             log.info("Check file system group " + fsGroup
                     + " for deletion of studies");
-            int countStudies = 0;
+            long[] countResult = new long[]{0,0};
             if (maxNotAccessedFor > 0) {
-                countStudies = scheduleStudiesForDeletion(fsMgt,
+                countResult = scheduleStudiesForDeletion(fsMgt,
                         System.currentTimeMillis() - maxNotAccessedFor,
                         Long.MAX_VALUE);
             }
@@ -440,22 +440,27 @@ public abstract class AbstractDeleterService extends ServiceMBeanSupport {
 				log.info("Try to free " + sizeToDel
 						+ " of disk space on file system group "
 						+ fsGroup);
-                    countStudies += scheduleStudiesForDeletion(fsMgt,
+				    long[] tmpResult = scheduleStudiesForDeletion(fsMgt,
                             System.currentTimeMillis() - minNotAccessedFor,
                             sizeToDel);
+                countResult[0] += tmpResult[0];
+                countResult[1] += tmpResult[1];
                 }
             }
-            if (countStudies > 0) {
-			log.info("Scheduled " + countStudies
-					+ " studies for deletion on file system group "
-					+ fsGroup);
+            
+            if (countResult[1] > 0) {
+                if ( log.isInfoEnabled() ) {
+                    log.info("Scheduled " + countResult[1] + " studies / " + FileUtils.formatSize(countResult[0])
+                             + " for deletion on file system group " + fsGroup);
+                }
             }
-            return countStudies;
+            return (int)countResult[1];
     }
 
-    private int scheduleStudiesForDeletion(FileSystemMgt2 fsMgt,
+    private long[] scheduleStudiesForDeletion(FileSystemMgt2 fsMgt,
             long notAccessedAfter, long sizeToDel0) throws Exception {
         int countStudies = 0;
+        long totalSizeDeleted = 0;
         long minAccessTime = 0;
         long sizeToDel = sizeToDel0;
         do {
@@ -480,6 +485,7 @@ public abstract class AbstractDeleterService extends ServiceMBeanSupport {
             if (result[0] != 0) {
                 sizeToDel -= result[0];
                 countStudies += result[1];
+                totalSizeDeleted += result[0];
             }
             if (deleteOrdersAndAccessTime.deleteStudyOrders.size() == 0 && 
                     minAccessTime == deleteOrdersAndAccessTime.maxAccessTime) {
@@ -493,7 +499,7 @@ public abstract class AbstractDeleterService extends ServiceMBeanSupport {
             log.warn("No study found for clean up filesystem group "+getFileSystemGroupIDForDeleter()+"! Please check your configuration!");
             log.warn(showDeleterCriteria());
         }
-        return countStudies;
+        return new long[]{totalSizeDeleted,countStudies};
     }
 
     private long[] markAndScheduleDeleteOrders(Collection<DeleteStudyOrder> orders, long maxSize) throws Exception {
