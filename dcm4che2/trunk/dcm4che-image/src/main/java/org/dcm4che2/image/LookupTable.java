@@ -1452,6 +1452,9 @@ public abstract class LookupTable {
         }
         if(maxPad-offset+1<0 ) return;
         if( minPad-offset > array.length() ) return;
+        // Make sure overlapping ranges only affect the part actually in the lut.
+        if( minPad-offset < 0 ) minPad = offset;
+        if( maxPad-offset+1 >= array.length() ) maxPad = array.length()+offset-2;
         
         array.fillRange(minPad-offset, maxPad-offset+1, padValue);
     }
