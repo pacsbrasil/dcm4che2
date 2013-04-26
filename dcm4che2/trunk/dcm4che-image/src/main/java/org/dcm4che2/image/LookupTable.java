@@ -801,7 +801,8 @@ public abstract class LookupTable {
         
         GenericNumericArray dataArray = GenericNumericArray.create(data);
         Integer[] minMaxPixelPadding = getMinMaxPixelPadding(pixelPaddingValue, pixelPaddingRange);
-        applyPixelPadding(dataArray, 0, minMaxPixelPadding[0], minMaxPixelPadding[1], off);
+        int padVal = inverse ? ((1 << 16) -1) : 0;
+        applyPixelPadding(dataArray, padVal, minMaxPixelPadding[0], minMaxPixelPadding[1], off);
         
         return new ShortLookupTable(inBits, signed, off, vlut.outBits, 
                 (short[]) dataArray.getArray());
@@ -1455,6 +1456,8 @@ public abstract class LookupTable {
         // Make sure overlapping ranges only affect the part actually in the lut.
         if( minPad-offset < 0 ) minPad = offset;
         if( maxPad-offset+1 >= array.length() ) maxPad = array.length()+offset-2;
+        
+        log.debug("applyPixelPadding padValue="+padValue+" minPad="+minPad+" maxPad="+maxPad+" offset="+offset+" array.length="+array.length());
         
         array.fillRange(minPad-offset, maxPad-offset+1, padValue);
     }
