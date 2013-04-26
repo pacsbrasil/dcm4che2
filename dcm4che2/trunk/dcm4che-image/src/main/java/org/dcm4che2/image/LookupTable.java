@@ -760,14 +760,15 @@ public abstract class LookupTable {
             int outBits, float slope, float intercept, DicomObject voiLut,
             boolean inverse, short[] pval2out, Integer pixelPaddingValue,
             Integer pixelPaddingRange) {
+        boolean padInvert = (pval2out!=null && pval2out[0] < pval2out[pval2out.length-1]);
         return createLut(inBits, signed, slope, intercept, voiLut,
-                pixelPaddingValue, pixelPaddingRange, inverse).scale(outBits, inverse,
+                pixelPaddingValue, pixelPaddingRange, inverse, padInvert).scale(outBits, inverse,
                 pval2out);
     }
 
     private static LookupTable createLut(int inBits, boolean signed,
             float slope, float intercept, DicomObject voiLut,
-            Integer pixelPaddingValue, Integer pixelPaddingRange, boolean inverse) {
+            Integer pixelPaddingValue, Integer pixelPaddingRange, boolean inverse, boolean padInvert) {
         log.debug("Creating slope/intercept LUT with V-LUT " + slope + "/" + intercept);
         if (slope == 1) {
             LookupTable lut = createLut(inBits, signed, voiLut,
@@ -801,7 +802,7 @@ public abstract class LookupTable {
         
         GenericNumericArray dataArray = GenericNumericArray.create(data);
         Integer[] minMaxPixelPadding = getMinMaxPixelPadding(pixelPaddingValue, pixelPaddingRange);
-        int padVal = inverse ? ((1 << 16) -1) : 0;
+        int padVal = (inverse ^ padInvert) ? ((1 << 16) -1) : 0;
         applyPixelPadding(dataArray, padVal, minMaxPixelPadding[0], minMaxPixelPadding[1], off);
         
         return new ShortLookupTable(inBits, signed, off, vlut.outBits, 
@@ -993,8 +994,9 @@ public abstract class LookupTable {
             int outBits, float slope, float intercept, DicomObject voiLut,
             DicomObject pLut, boolean inverse, short[] pval2out,
             Integer pixelPaddingValue, Integer pixelPaddingRange) {
+        boolean padInvert = (pval2out!=null && pval2out[0] < pval2out[pval2out.length-1]);
         LookupTable vlut = createLut(inBits, signed, slope, intercept, voiLut,
-                pixelPaddingValue, pixelPaddingRange, inverse);
+                pixelPaddingValue, pixelPaddingRange, inverse, padInvert);
         LookupTable plut = createLut(0, false, pLut, null, null, inverse);
         return vlut.combine(plut, outBits, inverse, pval2out);
     }
