@@ -267,6 +267,9 @@ public class ShortLookupTable extends LookupTable {
             if (inverse) {
                 tmp = outMax - tmp;
             }
+            if( tmp<0 ) {
+                tmp=0;
+            }
             if (pval2out != null) {
                 tmp = (pval2out[tmp] & 0xffff) >>> pval2outShift;
             }
