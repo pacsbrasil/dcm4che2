@@ -11,6 +11,7 @@ import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.form.IChoiceRenderer;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
+import org.dcm4chee.web.war.tc.TCUtilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,10 +61,25 @@ public abstract class TCAjaxComboBox<T extends Serializable> extends TCComboBox<
     	tag.put(CALLBACK_URL_KEY, selectionChangedBehavior.getCallbackUrl());
     	tag.put(INITIAL_VALUE_KEY, getDefaultModelObjectAsString());
     }
+    
+    @Override
+    public void validate() {
+    	/* don't include AJAX based component in default form processing */
+    }
+    
+    @Override
+    public void updateModel() {
+    	/* don't include AJAX based component in default form processing */
+    }
 	
 	protected abstract T convertValue(String value) throws Exception;
 	
+	protected boolean shallCommitValue(T oldValue, T newValue, AjaxRequestTarget target) {
+		 return !TCUtilities.equals(oldValue, newValue);
+	}
+	
     private class SelectionChangedBehavior extends AbstractDefaultAjaxBehavior {
+		@SuppressWarnings("unchecked")
 		@Override
     	public void respond(AjaxRequestTarget target) {
 			try {
@@ -73,8 +89,11 @@ public abstract class TCAjaxComboBox<T extends Serializable> extends TCComboBox<
 	    			String valueString2 = new String(valueString.getBytes("ISO-8859-1"),"UTF-8");
 	    			value = convertValue(valueString2);
 	    		}
-	    		setDefaultModelObject(value);
-	    		valueChanged(value);
+
+	    		if (shallCommitValue((T)getDefaultModelObject(), value, target)) {
+	    			setDefaultModelObject(value);
+		    		valueChanged(value);
+	    		}
 			}
 			catch (Exception e) {
 				log.error("Unable to update model: Value conversion failed!", e);

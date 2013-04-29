@@ -39,6 +39,7 @@ package org.dcm4chee.web.dao.tc;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -138,6 +139,30 @@ public class TCQueryFilter implements Serializable {
                 TCQueryFilterKey.DiagnosisConfirmed,
                 diagnosisConfirmed != null ? TCQueryFilterValue
                         .create(diagnosisConfirmed) : null);
+    }
+    
+    public Date getCreationDateFrom() {
+    	Object[] dates = getValues(TCQueryFilterKey.CreationDate);
+    	if (dates!=null && dates.length>0) {
+    		return (Date) dates[0];
+    	}
+    	return null;
+    }
+    
+    public Date getCreationDateUntil() {
+    	Object[] dates = getValues(TCQueryFilterKey.CreationDate);
+    	if (dates!=null && dates.length>1) {
+    		return (Date) dates[1];
+    	}
+    	return null;
+    }
+    
+    public void setCreationDate(Date fromDate, Date untilDate) {
+    	TCQueryFilterValue<Date> value = null;
+    	if (fromDate!=null || untilDate!=null) {
+    		value = TCQueryFilterValue.create(fromDate, untilDate);
+    	}
+    	putValue(TCQueryFilterKey.CreationDate, value);
     }
 
     public String getDiscussion() {

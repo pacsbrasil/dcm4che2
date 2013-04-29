@@ -40,6 +40,8 @@ package org.dcm4chee.web.dao.tc;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
@@ -321,6 +323,63 @@ public abstract class TCQueryFilterValue<T> implements Serializable {
 
                 return new QueryParam[] { searchStringParam,
                         conceptNameValueParam, conceptNameDesignatorParam };
+            }
+        };
+    }
+    
+    public static TCQueryFilterValue<Date> create(Date from) {
+    	return create(from, null);
+    }
+    
+    @SuppressWarnings("serial")
+	public static TCQueryFilterValue<Date> create(Date from, Date until) {
+    	if (from==null) {
+    		from = new Date(0);
+    	}
+    	if (until==null) {
+    		until = new Date();
+    	}
+    	
+        return new TCQueryFilterValue<Date>(from, until) {
+            @Override
+            public QueryParam[] appendSQLWhereConstraint(TCQueryFilterKey key,
+                    StringBuilder sb, boolean multipleValueORConcat) {
+
+            	Date from = getValues()[0];
+            	Date until = getValues()[1];
+            	
+            	if (from.after(until)) {
+            		Date tmp = from;
+            		from = until;
+            		until = tmp;
+            	}
+            	
+            	Calendar calFrom = Calendar.getInstance();
+            	calFrom.setTime(from);
+                calFrom.set(Calendar.HOUR_OF_DAY, 0);
+                calFrom.set(Calendar.MINUTE, 0);
+                calFrom.set(Calendar.SECOND, 0);
+                calFrom.set(Calendar.MILLISECOND, 0);
+                
+            	Calendar calUntil = Calendar.getInstance();
+            	calUntil.setTime(until);
+                calUntil.set(Calendar.HOUR_OF_DAY, 23);
+                calUntil.set(Calendar.MINUTE, 59);
+                calUntil.set(Calendar.SECOND, 59);
+                calUntil.set(Calendar.MILLISECOND, 999);
+
+                QueryParam fromParam = new QueryParam(
+                		"fromDate", calFrom.getTime());
+                QueryParam untilParam = new QueryParam(
+                		"untilDate", calUntil.getTime());
+                
+                if (key.getDicomTag()==Tag.ContentDate) {
+                	sb.append("(instance.contentDateTime BETWEEN :").append(fromParam.getKey())
+                	.append(" AND :").append(untilParam.getKey()).append(")");
+                	return new QueryParam[] { fromParam, untilParam };
+                }
+            	
+            	return new QueryParam[0];
             }
         };
     }

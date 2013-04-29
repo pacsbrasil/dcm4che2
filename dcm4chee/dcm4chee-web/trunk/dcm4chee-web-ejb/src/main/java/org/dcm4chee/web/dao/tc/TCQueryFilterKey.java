@@ -66,12 +66,18 @@ public enum TCQueryFilterKey {
             "Patient Age"), PatientSex("AGFAIMPAXEE", "TF102",
             "Patient Sex"), PatientSpecies("AGFAIMPAXEE", "TF103",
             "Patient Species"), BibliographicReference("AGFAIMPAXEE", "TF005",
-            "Bibliographic Reference"), Title("AGFAIMPAXEE", "TF001", "Title");
+            "Bibliographic Reference"), Title("AGFAIMPAXEE", "TF001", "Title"),
+            CreationDate(Tag.ContentDate);
 
     private Code code;
-
+    private int dicomTag;
     private boolean supportsCodeValue;
 
+    private TCQueryFilterKey(int dicomTag) {
+        this.dicomTag = dicomTag;
+        this.supportsCodeValue = false;
+    }
+    
     private TCQueryFilterKey(String designator, String value, String meaning) {
         this(designator, value, meaning, false);
     }
@@ -80,6 +86,10 @@ public enum TCQueryFilterKey {
             boolean supportsCodeValue) {
         this.code = createCode(designator, value, meaning);
         this.supportsCodeValue = supportsCodeValue;
+    }
+    
+    public int getDicomTag() {
+    	return dicomTag;
     }
 
     public Code getCode() {

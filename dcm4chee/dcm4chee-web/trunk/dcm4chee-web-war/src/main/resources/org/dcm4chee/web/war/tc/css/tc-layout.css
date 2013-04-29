@@ -34,6 +34,14 @@
     padding: 0.3em;
 }
 
+.search-form .ui-input, .search-form .ui-widget-content .ui-input,
+.search-form .ui-input-readonly, .search-form .ui-widget-content .ui-input-readonly,
+.search-form .ui-combobox-input-readonly, .search-form .ui-widget-content .ui-combobox-input-readonly
+.search-form .ui-button-text-only, .search-form .ui-button-text
+{
+    padding: 0.1em 0.3em;
+}
+
 .ui-spinner 
 {
 	vertical-align: baseline;
@@ -277,7 +285,7 @@ div.advanced-options-toggle-area
 {
 	margin-left: 0.5em;
 	margin-right: 0.5em;
-	padding-bottom: 1em;
+	padding-bottom: 0.5em;
 	border-top: 1px solid transparent;
 }
 

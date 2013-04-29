@@ -37,7 +37,14 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.web.war.tc;
 
+import java.io.Serializable;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
@@ -47,14 +54,19 @@ import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.IAjaxCallDecorator;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
+import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
+import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
+import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow.WindowClosedCallback;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
+import org.apache.wicket.markup.html.form.IChoiceRenderer;
 import org.apache.wicket.markup.html.form.Radio;
 import org.apache.wicket.markup.html.form.RadioGroup;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.image.Image;
+import org.apache.wicket.markup.html.panel.Fragment;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.Model;
@@ -67,6 +79,7 @@ import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue;
 import org.dcm4chee.web.war.common.AutoSelectInputTextBehaviour;
 import org.dcm4chee.web.war.tc.TCUtilities.NullDropDownItem;
+import org.dcm4chee.web.war.tc.widgets.TCAjaxComboBox;
 import org.dcm4chee.web.war.tc.widgets.TCMaskingAjaxDecorator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,6 +92,9 @@ import org.slf4j.LoggerFactory;
 public abstract class TCSearchPanel extends Panel {
 
     private static final long serialVersionUID = 1L;
+    
+	private static final SimpleDateFormat dfDE = new SimpleDateFormat("dd.MM.yyyy");
+	private static final SimpleDateFormat dfDefault = new SimpleDateFormat("MM/dd/yyyy");
 
     private static final Logger log = LoggerFactory
             .getLogger(TCSearchPanel.class);
@@ -91,10 +107,20 @@ public abstract class TCSearchPanel extends Panel {
 
     private boolean showAdvancedOptions = false;
 
-    public TCSearchPanel(final String id) {
+    @SuppressWarnings({ "serial" })
+	public TCSearchPanel(final String id) {
         super(id, new Model<TCQueryFilter>(new TCQueryFilter()));
 
         setOutputMarkupId(true);
+        
+        final DateSpanSearchItem dateSpanItem = new DateSpanSearchItem();
+        final DateSpanDialog dateSpanDialog = new DateSpanDialog(dateSpanItem);
+        final List<IDateSearchItem> dateItems = new ArrayList<IDateSearchItem>();
+        dateItems.addAll(Arrays.asList(NotOlderThanSearchItem.values()));
+        dateItems.add(dateSpanItem);
+        
+        Form<?> dateSpanDialogOuterForm = new Form<Void>("date-input-dialog-outer-form");
+        dateSpanDialogOuterForm.add(dateSpanDialog);
         
         final TCInput keywordInput = TCUtilities.createInput(
                 "keywordInput", TCQueryFilterKey.Keyword, getFilterValue(TCQueryFilterKey.Keyword), true);
@@ -134,7 +160,46 @@ public abstract class TCSearchPanel extends Panel {
                 new Model<TCQueryFilterValue.YesNo>(),
                 Arrays.asList(TCQueryFilterValue.YesNo.values()), true,
                 "tc.yesno", NullDropDownItem.All);
+		final TCAjaxComboBox<IDateSearchItem> dateBox = new TCAjaxComboBox<IDateSearchItem>(
+        		"dateChoice", dateItems, new IChoiceRenderer<IDateSearchItem>() {
+        			public String getIdValue(IDateSearchItem item, int index) {
+        				return item.getId();
+        			}
+        			public String getDisplayValue(IDateSearchItem item) {
+        				return item.getLabel(getSession().getLocale());
+        			}
+        		}) {
+        	@Override
+        	protected IDateSearchItem convertValue(String svalue) {
+        		if (TCUtilities.equals(dateSpanItem.getLabel(getSession().getLocale()),svalue)) {
+        			return dateSpanItem;
+        		}
+        		else {
+        			return NotOlderThanSearchItem.valueForLabel(
+        					svalue, getSession().getLocale());
+        		}
+        	}
+        	@Override
+        	protected boolean shallCommitValue(IDateSearchItem oldValue, IDateSearchItem newValue, AjaxRequestTarget target) {
+        		if (dateSpanItem==newValue) {
+        			final Component c = this;
+        			dateSpanDialog.setWindowClosedCallback(new WindowClosedCallback() {
+        				@Override
+        				public void onClose(AjaxRequestTarget target) {
+        			        target.appendJavascript(getDateBoxInitUIJavascript(
+        			        		c.getMarkupId(true), dateSpanItem, false));
+        				}
+        			});
+        			dateSpanDialog.show(target);
+            		return true;
+        		}
 
+        		return super.shallCommitValue(oldValue, newValue, target);
+        	}
+        };
+        TCUtilities.addOnDomReadyJavascript(dateBox, getDateBoxInitUIJavascript(
+        		dateBox.getMarkupId(), dateSpanItem, true));
+        
         final RadioGroup<Option> optionGroup = new RadioGroup<Option>(
                 "optionGroup", new Model<Option>());
         optionGroup.add(new Radio<Option>("historyOption", new Model<Option>(
@@ -191,6 +256,15 @@ public abstract class TCSearchPanel extends Panel {
 	                    filter.setLevel(levelChoice.getModelObject());
 	                    filter.setDiagnosisConfirmed(diagnosisConfirmedChoice
 	                            .getModelObject());
+	                    
+	                    IDateSearchItem dateItem = dateBox.getModelObject();
+	                    if (dateItem==null) {
+	                    	filter.setCreationDate(null, null);
+	                    }
+	                    else {
+	                    	filter.setCreationDate(dateItem.getFromDate(), 
+	                    			dateItem.getUntilDate());
+	                    }
 	
 	                    Option selectedOption = optionGroup.getModelObject();
 	                    if (selectedOption != null) {
@@ -232,12 +306,6 @@ public abstract class TCSearchPanel extends Panel {
                     }
                 } catch (Throwable t) {
                     log.error("Searching for teaching-files failed!", t);
-                }
-                
-                if (target!=null)
-                {
-                	target.addComponent(form);
-                	target.appendJavascript("initUI($('#" + TCSearchPanel.this.getMarkupId(true) + "'));");
                 }
             }
 
@@ -286,6 +354,7 @@ public abstract class TCSearchPanel extends Panel {
                 patientSexChoice.setModelObject(null);
                 categoryChoice.setModelObject(null);
                 diagnosisConfirmedChoice.setModelObject(null);
+                dateBox.setModelObject(null);
                 textText.setModelObject(null);
                 optionGroup.setModelObject(null);
 
@@ -320,6 +389,7 @@ public abstract class TCSearchPanel extends Panel {
         wmc.add(categoryChoice);
         wmc.add(levelChoice);
         wmc.add(diagnosisConfirmedChoice);
+        wmc.add(dateBox);
         wmc.add(optionGroup);
         wmc.add(textText);
         wmc.add(resetBtn);
@@ -372,6 +442,7 @@ public abstract class TCSearchPanel extends Panel {
 
         form.add(advancedOptionsToggleLink);
 
+        add(dateSpanDialogOuterForm);
         add(form);
 
         add(new AjaxFallbackLink<Object>("searchToggle") {
@@ -424,5 +495,266 @@ public abstract class TCSearchPanel extends Panel {
     {
         TCQueryFilter filter = (TCQueryFilter) getDefaultModelObject();
         return filter != null ? filter.getValue(key) : null;
+    }
+    
+	private String getDateBoxInitUIJavascript(String markupId, DateSpanSearchItem dateSpanItem, boolean initUI) {
+		StringBuilder js = new StringBuilder();
+		if (initUI) {
+			js.append("$('#").append(markupId).append("').combobox();");
+		}
+        js.append("if ($('#").append(markupId).append(" option:selected').text()==='").append(
+        		dateSpanItem.getLabel(getSession().getLocale())).append("') {");
+        js.append("$('#").append(markupId).append("').siblings('span').children('input').val('").append(
+        		dateSpanItem.getFromUntilString(getSession().getLocale())).append("');");
+        js.append("};");
+        return js.toString();
+	}
+    
+    public static interface IDateSearchItem extends Serializable {
+    	String getId();
+    	String getLabel(Locale locale);
+    	Date getFromDate();
+    	Date getUntilDate();
+    }
+    
+    public static enum NotOlderThanSearchItem implements IDateSearchItem {
+    	DAYS7(Calendar.DATE,-7), DAYS14(Calendar.DATE,-14), 
+    	MONTHS1(Calendar.MONTH,-1), MONTHS3(Calendar.MONTH,-3), MONTHS6(Calendar.MONTH,-6),
+    	YEARS1(Calendar.YEAR,-1), YEARS5(Calendar.YEAR,-5), YEARS10(Calendar.YEAR,-10);
+    	private static final transient Date now = new Date();
+    	private transient Calendar cal = Calendar.getInstance();
+    	private int calField;
+    	private int amount;
+    	private NotOlderThanSearchItem(int calField, int amount) {
+    		this.calField = calField;
+    		this.amount = amount;
+    	}
+    	public static NotOlderThanSearchItem valueForLabel(String label, Locale locale) {
+    		for (NotOlderThanSearchItem item : values()) {
+    			if (item.getLabel(locale).equals(label)) {
+    				return item;
+    			}
+    		}
+    		return null;
+    	}
+    	@Override
+    	public String getId() {
+    		return name();
+    	}
+    	@Override
+    	public String getLabel(Locale locale) {
+    		return toString();
+    	}
+    	@Override
+    	public Date getFromDate() {
+    		cal.setTime(now);
+    		cal.add(calField, amount);
+    		return cal.getTime();
+    	}
+    	@Override
+    	public Date getUntilDate() {
+    		return now;
+    	}
+    	@Override
+    	public String toString() {
+    		return TCUtilities.getLocalizedString("tc.search."+name().toLowerCase()+".text");
+    	}
+    }
+    
+    @SuppressWarnings("serial")
+	public static class DateSpanSearchItem implements IDateSearchItem {
+    	public static final String ID = "USER_DEFINED";
+    	private Date now = new Date();
+    	private Date fromDate = now;
+    	private Date untilDate = now;
+    	@Override
+    	public Date getFromDate() {
+    		return fromDate;
+    	}
+    	@Override
+    	public Date getUntilDate() {
+    		return untilDate;
+    	}
+    	@Override
+    	public String getId() {
+    		return ID;
+    	}
+    	@Override
+    	public String getLabel(Locale locale) {
+    		return TCUtilities.getLocalizedString("tc.search.datespan.text");
+    	}
+    	public void setFromDate(Date date) {
+    		fromDate = date==null ? now : date;
+    	}
+    	public void setUntilDate(Date date) {
+    		untilDate = date==null ? now : date;
+    	}
+    	public String getFromString(Locale locale) {
+			String lang = locale.getLanguage();
+			if (Locale.GERMAN.getLanguage().equalsIgnoreCase(lang)) {
+	    		return dfDE.format(fromDate);
+			}
+			else {
+	    		return dfDefault.format(fromDate);
+			}
+    	}
+    	public String getUntilString(Locale locale) {
+			String lang = locale.getLanguage();
+			if (Locale.GERMAN.getLanguage().equalsIgnoreCase(lang)) {
+	    		return dfDE.format(untilDate);
+			}
+			else {
+	    		return dfDefault.format(untilDate);
+			}
+    	}
+    	public String getFromUntilString(Locale locale) {
+			StringBuilder s = new StringBuilder();
+			s.append(getFromString(locale));
+			s.append("-");
+			s.append(getUntilString(locale));
+    		return s.toString();
+    	}
+    	@Override
+    	public String toString() {
+    		return getId();
+    	}
+    }
+    
+    
+    @SuppressWarnings("serial")
+	private class DateSpanDialog extends ModalWindow {
+    	private DateSpanSearchItem item;
+    	private DateSpanContentFragment fragment;
+    	public DateSpanDialog(DateSpanSearchItem item)
+    	{
+    		super("date-input-dialog");
+    		this.item = item;
+    		setTitle(TCUtilities.getLocalizedString(
+    				"tc.search.datespan.dialog.title"));
+    		setInitialHeight(140);
+    		setInitialWidth(350);
+    		setContent(fragment = 
+    				new DateSpanContentFragment(getContentId()));
+    	}
+    	
+    	@Override
+    	public void close(AjaxRequestTarget target) {
+			item.setFromDate(fragment.getFromDate());
+			item.setUntilDate(fragment.getUntilDate());
+			super.close(target);
+    	}
+
+    	private class DateSpanContentFragment extends Fragment
+    	{
+    		private Model<String> fromModel = new Model<String>(
+    				item.getFromString(getSession().getLocale()));
+    		private Model<String> untilModel = new Model<String>(
+    				item.getUntilString(getSession().getLocale()));
+    		
+			public DateSpanContentFragment(final String id)
+    		{
+    			super(id, "date-input-dialog-content", TCSearchPanel.this);
+    			setOutputMarkupId(true);
+    			
+    			final TextField<String> fromField = new TextField<String>(
+    					"date-input-dialog-from-input", fromModel);
+    			final TextField<String> untilField = new TextField<String>(
+    					"date-input-dialog-until-input", untilModel);
+    			fromField.setOutputMarkupId(true);
+    			untilField.setOutputMarkupId(true);
+    			
+    			Form<Void> form = new Form<Void>("date-input-dialog-inner-form");
+    			form.setOutputMarkupId(true);
+    			form.add(new Label("date-input-dialog-from-label", 
+    					TCUtilities.getLocalizedString("tc.search.fromdate.text")));
+    			form.add(fromField);
+    			form.add(new Label("date-input-dialog-until-label", 
+    					TCUtilities.getLocalizedString("tc.search.untildate.text")));
+    			form.add(untilField);
+    			form.add(new AjaxSubmitLink("date-input-dialog-ok-btn") {
+						@Override
+						public void onSubmit(AjaxRequestTarget target, Form<?> form)
+	    				{
+	    					close(target);
+	    				}
+	    			}
+    				.add(new Label("date-input-dialog-ok-btn-text",
+    						TCUtilities.getLocalizedString("tc.dialog.ok.text")))
+    			);
+    			
+    			add(form);
+    			
+    			TCUtilities.addOnDomReadyJavascript(this, 
+    					getInitDatePickerJavascript(fromField.getMarkupId(true)));
+    			TCUtilities.addOnDomReadyJavascript(this, 
+    					getInitDatePickerJavascript(untilField.getMarkupId(true)));
+    			TCUtilities.addInitUIOnDomReadyJavascript(form);
+    		}
+			
+			public Date getFromDate() {
+				return getDateForDatePickerFormat(fromModel.getObject());
+			}
+			
+			public Date getUntilDate() {
+				return getDateForDatePickerFormat(untilModel.getObject());
+			}
+			
+			private Date getDateForDatePickerFormat(String formattedDate) {
+				try {
+					String lang = getSession().getLocale().getLanguage();
+					if (Locale.GERMAN.getLanguage().equalsIgnoreCase(lang)) {
+						return dfDE.parse(formattedDate);
+					}
+					else {
+						return dfDefault.parse(formattedDate);
+					}
+				}
+				catch (Exception e) {
+					log.error(null, e);
+					return new Date();
+				}
+			}
+			
+			private String getDatePickerFormatOfCurrentLocale() {
+				String lang = getSession().getLocale().getLanguage();
+				if (Locale.GERMAN.getLanguage().equalsIgnoreCase(lang)) {
+					return "dd.mm.yy";
+				}
+				else {
+					return "mm/dd/yy";
+				}
+			}
+			
+			private String getDatePickerRegionOfCurrentLocale() {
+				String lang = getSession().getLocale().getLanguage();
+				if (Locale.GERMAN.getLanguage().equalsIgnoreCase(lang)) {
+					return "de";
+				}
+				else {
+					return "";
+				}
+			}
+			
+			private String getInitDatePickerJavascript(String markupId) {
+    			StringBuilder js = new StringBuilder();
+    			js.append("$('#").append(markupId).append("').datepicker(");
+    			js.append("$.datepicker.regional['");
+    			js.append(getDatePickerRegionOfCurrentLocale()).append("']);");
+    			js.append("$('#").append(markupId).append("').datepicker('option', {");
+    			js.append("showOn: 'button',");
+    			js.append("buttonImageOnly: false,");
+    			js.append("showOtherMonths: true,");
+    			js.append("selectOtherMonths: true,");
+    			js.append("showButtonPanel: true,");
+    			js.append("changeMonth: true,");
+    			js.append("changeYear: true,");
+    			js.append("dateFormat: '").append(getDatePickerFormatOfCurrentLocale()).append("',");
+    			js.append("})");
+    			js.append(".next('button').text('').button({icons:{primary : 'ui-icon-calendar'}, text: false}).addClass('ui-combobox-toggle');");
+    			js.append("$('#").append(markupId).append("').select('.hasDatePicker').removeClass('ui-corner-all').addClass('ui-corner-left');");
+    			js.append("$('#").append(markupId).append("').select('.hasDatePicker').siblings('button').removeClass('ui-corner-all').addClass('ui-corner-right');");
+    			return js.toString();
+			}
+    	}
     }
 }

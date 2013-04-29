@@ -182,17 +182,15 @@ $.widget( "ui.combobox", {
 				response( select.children( "option" ).map(function() {
 					var text = $( this ).text();
 					if ( this.value && ( !request.term || matcher.test(text) ) )
-						return {
-						label: text.replace(
-								new RegExp(
-										"(?![^&;]+;)(?!<[^<>]*)(" +
+						return { 
+							label: text.replace(new RegExp("(?![^&;]+;)(?!<[^<>]*)(" +
 												$.ui.autocomplete.escapeRegex(request.term) +
 												")(?![^<>]*>)(?![^&;]+;)", "gi"
 								), "<strong>$1</strong>" ),
-								value: text,
-								option: this
+							value: text,
+							option: this
 					};
-				}) );
+				}));
 			},
 			select: function( event, ui ) {
 				ui.item.option.selected = true;
@@ -200,17 +198,22 @@ $.widget( "ui.combobox", {
 					item: ui.item.option
 				});
 			},
-			change: function( event, ui ) {
+			close: function( event, ui) {
 				if (wicketCallbackURL) {
 					var url = wicketCallbackURL;
 					if (url.indexOf('?')==-1) {
-						url += '?selectedValue=';
+						url += '?';
 					}
 					else {
-						url += '&selectedValue=';
+						url += '&';
 					}
-					wicketAjaxGet(url + input.val(),function(){},function(){});
+
+					url += 'selectedValue=' + $(input).val();
+					
+					wicketAjaxGet(url,function(){},function(){});
 				}
+			},
+			change: function( event, ui ) {
 				//if ( !ui.item )
 				//  return removeIfInvalid( this );
 			}
@@ -431,10 +434,10 @@ $.widget( "ui.monthspinner", $.ui.spinner, {
 
 
 function style(parent) {
-	styleButtons(parent);
-	styleComboBoxes(parent);
 	styleTextFields(parent);
 	styleTextAreas(parent);
+	styleButtons(parent);
+	styleComboBoxes(parent);
 	styleYearSpinners(parent);
 	styleMonthSpinners(parent);
 }
@@ -443,4 +446,9 @@ function style(parent) {
 function initUI(parent) {
 	style(parent);
 };
+
+
+function initUIByMarkupId(markupId) {
+	initUI($('#'+markupId));
+}
 

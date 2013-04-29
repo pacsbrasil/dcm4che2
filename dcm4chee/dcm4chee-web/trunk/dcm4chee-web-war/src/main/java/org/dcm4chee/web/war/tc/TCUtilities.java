@@ -15,7 +15,9 @@ import org.apache.wicket.ajax.AjaxEventBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.IAjaxCallDecorator;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
+import org.apache.wicket.behavior.AbstractBehavior;
 import org.apache.wicket.behavior.AttributeAppender;
+import org.apache.wicket.markup.html.IHeaderResponse;
 import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.ChoiceRenderer;
 import org.apache.wicket.markup.html.form.DropDownChoice;
@@ -475,6 +477,29 @@ public class TCUtilities
     {
     	c.add(new TCToolTipAppender(msgKey));
     }
+	
+	
+	public static void initUI(Component parent, AjaxRequestTarget target) {
+		target.appendJavascript(getInitUIJavascript(parent));
+	}
+	
+	
+	public static void addInitUIOnDomReadyJavascript(Component parent) {
+		addOnDomReadyJavascript(parent, getInitUIJavascript(parent));
+	}
+	
+	
+	@SuppressWarnings("serial")
+	public static void addOnDomReadyJavascript(Component c, final String js) {
+		if (js!=null) {
+			c.add(new AbstractBehavior() {
+				@Override
+				public void renderHead(IHeaderResponse response) {
+					response.renderOnDomReadyJavascript(js);
+				}
+			});
+		}
+	}
     
     
     public static TCPanel findMainPanel(Component c) {
@@ -485,6 +510,20 @@ public class TCUtilities
     		c = c.getParent();
     	}
     	return null;
+    }
+    
+    
+    public static String getInitUIJavascript(Component parent) {
+    	String parentMarkupId = parent!=null && parent.getOutputMarkupId() ? 
+    			parent.getMarkupId(true) : null;
+    	if (parentMarkupId!=null) {
+    		return new StringBuilder().append("initUIByMarkupId('").append(
+    				parentMarkupId).append("');").toString();
+    	}
+    	else {
+    		log.error("Unable to init jquery UI without markup id!");
+    		return null;
+    	}
     }
     
     
