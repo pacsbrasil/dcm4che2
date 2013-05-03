@@ -1210,14 +1210,15 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     bos.copyFrom(in, len);
                 }
                 parser.parseDataset(decParam, -1);
-
-				Dataset subSet = ds.subSet(Tags.PixelData + 1, -1);
-				if (!subSet.isEmpty()) {
-					putPrivatePostPixelIndicator(ds);
-				}
-
-				subSet.writeDataset(bos, encParam);
             }
+
+            Dataset subSet = ds.subSet(Tags.PixelData + 1, -1);
+            if (!subSet.isEmpty()) {
+                putPrivatePostPixelIndicator(ds);
+            }
+
+            subSet.writeDataset(bos, encParam);
+
             bos.flush();
             if (service.isSyncFileBeforeCStoreRSP()) {
                 fos.getFD().sync();

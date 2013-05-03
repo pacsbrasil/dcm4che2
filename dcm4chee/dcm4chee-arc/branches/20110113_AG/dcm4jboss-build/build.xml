@@ -34,7 +34,6 @@
     <ant inheritAll="false" dir="../dcm4jboss-ejb" target="clean"/>
     <ant inheritAll="false" dir="../dcm4jboss-sar" target="clean"/>
     <ant inheritAll="false" dir="../dcm4jboss-hl7" target="clean"/>
-    <ant inheritAll="false" dir="../dcm4jboss-wado" target="clean"/>
     <ant inheritAll="false" dir="../dcm4jboss-rid" target="clean"/>
     <ant inheritAll="false" dir="../dcm4jboss-web" target="clean"/>
   </target>
@@ -42,9 +41,7 @@
     <ant inheritAll="false" dir="../dcm4jboss-ejb" target="jar"/>
     <ant inheritAll="false" dir="../dcm4jboss-sar" target="jar"/>
     <ant inheritAll="false" dir="../dcm4jboss-hl7" target="jar"/>
-    <ant inheritAll="false" dir="../dcm4jboss-wado" target="jar"/>
     <ant inheritAll="false" dir="../dcm4jboss-rid" target="jar"/>
-    <ant inheritAll="false" dir="../dcm4jboss-wado" target="war"/>
     <ant inheritAll="false" dir="../dcm4jboss-rid" target="war"/>
     <ant inheritAll="false" dir="../dcm4jboss-web" target="war">
       <property name="version" value="${version}" />
@@ -215,18 +212,10 @@
         <include name="conf/**"/>
         <include name="deploy/**"/>
       </zipfileset>
-        <zipfileset dir="../dcm4jboss-wado/target" prefix="${dist.db.config}">
-          <include name="lib/*"/>
-          <include name="deploy/*"/>
-        </zipfileset>
         <zipfileset dir="../dcm4jboss-rid/target" prefix="${dist.db.config}">
           <include name="lib/*"/>
           <include name="deploy/*"/>
         </zipfileset>
-        <zipfileset dir="../dcm4jboss-wado/src/etc" prefix="${dist.db.config}">
-           <include name="conf/**"/>
-           <include name="deploy/**"/>
-         </zipfileset>
         <zipfileset dir="../dcm4jboss-rid/src/etc" prefix="${dist.db.config}">
            <include name="conf/**"/>
            <include name="deploy/**"/>
@@ -254,8 +243,6 @@
               value="../dcm4jboss-hl7/src/etc/conf/xmdesc" />
     <property name="dcm4jboss-sar.xmdesc"
               value="../dcm4jboss-sar/src/etc/conf/xmdesc" />
-    <property name="dcm4jboss-wado.xmdesc"
-              value="../dcm4jboss-wado/src/etc/conf/xmdesc" />
     <property name="dcm4jboss-rid.xmdesc"
               value="../dcm4jboss-rid/src/etc/conf/xmdesc" />
     <antcall target="xslt">
@@ -706,12 +693,6 @@
              value="${dcm4jboss-rid.xmdesc}/dcm4chee-rid-xmbean.xml" />
       <param name="out" value="rid-xmbean.xml" />
       <param name="mbean" value="dcm4chee.archive:service=RIDService" />
-    </antcall>
-    <antcall target="xslt">
-      <param name="in"
-             value="${dcm4jboss-wado.xmdesc}/dcm4chee-wado-xmbean.xml" />
-      <param name="out" value="wado-xmbean.xml" />
-      <param name="mbean" value="dcm4chee.archive:service=WADOService" />
     </antcall>
   </target>
 
