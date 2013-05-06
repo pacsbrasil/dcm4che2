@@ -561,7 +561,7 @@ public abstract class AbstractDeleterService extends ServiceMBeanSupport {
         if (externalRetrievable)
             sb.append("\n  ").append(++i).append(") External Retrievable");
         if (copyOnFSGroup != null)
-            sb.append("\n  ").append(++i).append(") Copy on Filesystem Group "+copyOnFSGroup);
+            sb.append("\n  ").append(++i).append(") Copy on Filesystem Group "+StringUtils.toString(copyOnFSGroup,','));
         if (copyArchived)
             sb.append("\n  ").append(++i).append(") Copy must be archived");
         if (copyOnReadOnlyFS)
