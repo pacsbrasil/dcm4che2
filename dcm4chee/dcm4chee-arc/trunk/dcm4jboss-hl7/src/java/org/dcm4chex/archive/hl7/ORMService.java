@@ -84,7 +84,7 @@ public class ORMService extends AbstractHL7Service {
     private TemplatesDelegate aeTemplates = new TemplatesDelegate(this);
     private static final String MWL2STORE_XSL = "mwl-cfindrsp2cstorerq.xsl";
 
-    private static final String[] OP_CODES = { "NW", "XO", "CA", "NOOP",
+    private static final String[] OP_CODES = { "NW", "XO", "XO(SCHEDULED)", "XO(COMPLETED)", "CA", "NOOP",
         "SC(SCHEDULED)", "SC(ARRIVED)", "SC(READY)", "SC(STARTED)",
         "SC(COMPLETED)", "SC(DISCONTINUED)" };
     
@@ -93,12 +93,14 @@ public class ORMService extends AbstractHL7Service {
     private static final int NW = 0;
 
     private static final int XO = 1;
+    private static final int XO_SC = 2;
+    private static final int XO_CM = 3;
 
-    private static final int CA = 2;
+    private static final int CA = 4;
 
-    private static final int NOOP = 3;
+    private static final int NOOP = 5;
     
-    private static final int SC_OFF = 4;
+    private static final int SC_OFF = 6;
 
     private List<String> orderControls;
     
@@ -250,14 +252,23 @@ public class ORMService extends AbstractHL7Service {
                 sps = spsSq.getItem(i);
                 ds.putSQ(Tags.SPSSeq).addItem(sps);
                 adjustAttributes(ds);
+                String status = null;
                 opIdx = op.length == 1 ? 0 : i;
                 switch (op[opIdx]) {
                 case NW:
                 	processNW(ds, mwlManager);
                     break;
                 case XO:
-                	processXO(ds, mwlManager);
-                	break;
+                    processXO(ds, mwlManager);
+                    break;
+                case XO_SC:
+                    processXO(ds, mwlManager);
+                    status = SPSStatus.toString(SPSStatus.SCHEDULED);
+                    break;
+                case XO_CM:
+                    processXO(ds, mwlManager);
+                    status = SPSStatus.toString(SPSStatus.COMPLETED);
+                    break;
                 case CA:
                 	processCA(ds, mwlManager);
                 	break;
@@ -265,9 +276,12 @@ public class ORMService extends AbstractHL7Service {
                     log("NOOP", ds);
                     break;
                 default:
-                    sps.putCS(Tags.SPSStatus, SPSStatus.toString(op[opIdx]-SC_OFF));
-                    updateSPSStatus(ds, mwlManager, createMissingOrderOnStatusChange);
+                    status = SPSStatus.toString(op[opIdx]-SC_OFF);
                     break;
+                }
+                if (status != null) {
+                    sps.putCS(Tags.SPSStatus, status);
+                    updateSPSStatus(ds, mwlManager, createMissingOrderOnStatusChange);
                 }
             }
         } catch (HL7Exception e) {

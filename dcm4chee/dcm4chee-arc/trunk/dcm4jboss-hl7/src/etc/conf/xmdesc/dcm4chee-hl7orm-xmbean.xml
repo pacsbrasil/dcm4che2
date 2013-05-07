@@ -44,6 +44,7 @@
       entry = orderContol [ '(' orderStatus ')' ] ':' operation<br/>
       operation = 'NW' (* create worklist item(s) *)<br/>
           | 'XO' (* update worklist item(s) *)<br/>
+          | 'XO(' ('SCHEDULED' | 'COMPLETED') ')' (* update worklist item(s) and set status *)<br/>
           | 'CA' (* remove worklist item(s) *)<br/>
           | 'SC(' ('SCHEDULED' | 'ARRIVED' | 'READY' | 'STARTED' | 'COMPLETED' | 'DISCONTINUED') ')' (* update status of worklist item(s) *)<br/>
           | 'NOOP' (* no operation *)</p>
@@ -55,6 +56,8 @@
          <value value="
          NW:NW
          XO:XO
+         XO(SC):XO(SCHEDULED)
+		 XO(CM):XO(COMPLETED)
          CA:CA
          OC:CA
          DC:SC(DISCONTINUED)
