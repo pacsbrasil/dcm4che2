@@ -406,6 +406,11 @@ public class HL7ServerService extends ServiceMBeanSupport implements
                 t.setParameter("TextMessage", msg == null ? "Exception:"+hl7ex.getCause() : msg );
             }
             t.transform(new DocumentSource(document), new SAXResult(hl7out));
+            if (log.isDebugEnabled()) {
+                StringWriter out = new StringWriter(200);
+                t.transform(new DocumentSource(document), new StreamResult(out));
+                log.debug("Sent HL7 acknowledge:"+out.toString());
+            }
         } catch (Exception e) {
             log.error("Failed to acknowlege message", e);
         }
