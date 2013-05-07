@@ -1148,8 +1148,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         }
     }
 
-    Storage getStorage(Association assoc) throws RemoteException,
-    CreateException, HomeFactoryException {
+    protected Storage getStorage(Association assoc) throws RemoteException, CreateException, HomeFactoryException {
         Storage store = (Storage) assoc.getProperty(StorageHome.JNDI_NAME);
         if (store == null) {
             store = service.getStorage();
