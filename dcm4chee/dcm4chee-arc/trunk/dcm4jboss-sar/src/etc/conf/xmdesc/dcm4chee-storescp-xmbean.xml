@@ -583,6 +583,19 @@ not matching demographic fields.]]>
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isDontStoreDuplicateIfFromExternalRetrieveAET"
+      setMethod="setDontStoreDuplicateIfFromExternalRetrieveAET">
+      <description><![CDATA[Dont store a duplicate object if the object is sent from external retrieve AET.
+      If enabled, the StoreDuplicatesIfDifferentMD5 and StoreDuplicatesIfDifferentHost has no effect if
+      CallingAET of store request is the external retrieve AET of the existing instance.]]>
+      </description>
+      <name>DontStoreDuplicateIfFromExternalRetrieveAET</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="isStoreDuplicateIfDiffHost"
       setMethod="setStoreDuplicateIfDiffHost">
       <description><![CDATA[Store duplicate objects if the existing files are <b>NOT</b> located 

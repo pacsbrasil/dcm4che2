@@ -57,7 +57,7 @@ public class QueryFilesOfSeriesCmd2 extends BaseReadCmd {
     private static final String SQL = "SELECT f.pk, f.filepath, f.file_md5, "
             + "f.file_status, fs.fs_group_id, fs.dirpath, fs.retrieve_aet, "
             + "fs.availability, fs.user_info, i.sop_cuid, i.sop_iuid, "
-            + "s.num_instances "
+            + "s.num_instances, i.ext_retr_aet "
             + "FROM files f, filesystem fs, instance i, series s "
             + "WHERE f.filesystem_fk = fs.pk AND f.instance_fk = i.pk "
             + "AND i.series_fk = s.pk AND s.series_iuid=?";
@@ -113,6 +113,7 @@ public class QueryFilesOfSeriesCmd2 extends BaseReadCmd {
         dto.setSopClassUID(rs.getString(10));
         dto.setSopInstanceUID(rs.getString(11));
         numberOfSeriesRelatedInstances = rs.getInt(12);
+        dto.setExternalRetrieveAET(rs.getString(13));
         return dto;
     }
 }

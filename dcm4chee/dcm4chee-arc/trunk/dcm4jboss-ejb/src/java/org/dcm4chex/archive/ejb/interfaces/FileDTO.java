@@ -56,6 +56,8 @@ public final class FileDTO implements Serializable, Comparable {
     private long fspk;
 
     private String aet;
+    
+    private String extRetrieveAET;
 
     private String userInfo;
 
@@ -112,6 +114,14 @@ public final class FileDTO implements Serializable, Comparable {
      */
     public final void setRetrieveAET(String aet) {
         this.aet = aet;
+    }
+
+    public final String getExternalRetrieveAET() {
+        return extRetrieveAET;
+    }
+
+    public final void setExternalRetrieveAET(String aet) {
+        this.extRetrieveAET = aet;
     }
 
     public final String getUserInfo() {

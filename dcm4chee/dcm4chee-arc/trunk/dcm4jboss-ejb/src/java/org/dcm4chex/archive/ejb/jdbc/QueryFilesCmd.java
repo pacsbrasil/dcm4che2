@@ -56,12 +56,12 @@ import org.dcm4chex.archive.ejb.interfaces.MD5;
 public final class QueryFilesCmd extends BaseReadCmd {
 
     private static final String QueryFilesByUIDCmd = "SELECT f.pk, f.filepath, f.file_md5, f.file_status, "
-            + "fs.fs_group_id, fs.dirpath, fs.retrieve_aet, fs.availability, fs.user_info, i.sop_cuid, i.sop_iuid "
+            + "fs.fs_group_id, fs.dirpath, fs.retrieve_aet, fs.availability, fs.user_info, i.sop_cuid, i.sop_iuid, i.ext_retr_aet "
             + "FROM files f, filesystem fs, instance i "
             + "WHERE f.filesystem_fk = fs.pk AND f.instance_fk = i.pk AND i.sop_iuid=?";
 
     private static final String QueryLinkedFilesCmd = "SELECT f.pk, f.filepath, f.file_md5, f.file_status, "
-            + "fs.fs_group_id, fs.dirpath, fs.retrieve_aet, fs.availability, fs.user_info, i.sop_cuid, i.sop_iuid "
+            + "fs.fs_group_id, fs.dirpath, fs.retrieve_aet, fs.availability, fs.user_info, i.sop_cuid, i.sop_iuid, i.ext_retr_aet "
             + "FROM files f, filesystem fs, instance i, files f2 "
             + "WHERE f.filesystem_fk = fs.pk AND f.instance_fk = i.pk AND f.instance_fk = f2.instance_fk and f2.pk=?";
 
@@ -94,6 +94,7 @@ public final class QueryFilesCmd extends BaseReadCmd {
         dto.setUserInfo(rs.getString(9));
         dto.setSopClassUID(rs.getString(10));
         dto.setSopInstanceUID(rs.getString(11));
+        dto.setExternalRetrieveAET(rs.getString(12));
         return dto;
     }
 

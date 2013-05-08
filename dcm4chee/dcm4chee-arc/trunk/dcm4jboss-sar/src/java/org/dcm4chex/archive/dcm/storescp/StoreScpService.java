@@ -577,6 +577,14 @@ public class StoreScpService extends AbstractScpService {
         scp.setStoreDuplicateIfDiffMD5(storeDuplicate);
     }
 
+    public boolean isDontStoreDuplicateIfFromExternalRetrieveAET() {
+        return scp.isDontStoreDuplicateIfFromExternalRetrieveAET();
+    }
+
+    public void setDontStoreDuplicateIfFromExternalRetrieveAET(boolean b) {
+        scp.setDontStoreDuplicateIfFromExternalRetrieveAET(b);
+    }
+
     public final String getCompressionRules() {
         return scp.getCompressionRules().toString();
     }

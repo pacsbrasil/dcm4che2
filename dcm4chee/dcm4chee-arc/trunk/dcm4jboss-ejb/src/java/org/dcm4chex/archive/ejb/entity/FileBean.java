@@ -313,6 +313,7 @@ public abstract class FileBean implements EntityBean {
         if (inst != null) {
             retval.setSopInstanceUID(inst.getSopIuid());
             retval.setSopClassUID(inst.getSopCuid());
+            retval.setExternalRetrieveAET(inst.getExternalRetrieveAET());
         }
         return retval;
     }

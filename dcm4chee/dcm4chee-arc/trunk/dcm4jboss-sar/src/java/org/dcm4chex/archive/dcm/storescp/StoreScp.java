@@ -179,6 +179,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     private int maxCountUpdateDatabaseRetries = 0;
 
     private boolean storeDuplicateIfDiffMD5 = true;
+    private boolean dontStoreDuplicateIfFromExternalRetrieveAET = true;
 
     private boolean storeDuplicateIfDiffHost = true;
 
@@ -400,6 +401,15 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     public final void setStoreDuplicateIfDiffMD5(boolean storeDuplicate) {
         this.storeDuplicateIfDiffMD5 = storeDuplicate;
+    }
+
+    public boolean isDontStoreDuplicateIfFromExternalRetrieveAET() {
+        return dontStoreDuplicateIfFromExternalRetrieveAET;
+    }
+
+    public void setDontStoreDuplicateIfFromExternalRetrieveAET(
+            boolean b) {
+        this.dontStoreDuplicateIfFromExternalRetrieveAET = b;
     }
 
     public final CompressionRules getCompressionRules() {
@@ -661,7 +671,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 perfMon.stop(activeAssoc, rq,
                         PerfCounterEnum.C_STORE_SCP_OBJ_STORE);
             }
-            if (md5sum != null && ignoreDuplicate(duplicates, md5sum)) {
+            if (md5sum != null && ignoreDuplicate(duplicates, md5sum, callingAET)) {
                 log.info("Received Instance[uid=" + iuid
                         + "] already exists - ignored");
                 if (!dcm4cheeURIReferenced) {
@@ -1047,11 +1057,12 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         return false;
     }
 
-    private boolean ignoreDuplicate(List duplicates, byte[] md5sum) {
+    private boolean ignoreDuplicate(List duplicates, byte[] md5sum, String callingAET) {
         for (int i = 0, n = duplicates.size(); i < n; ++i) {
             FileDTO dto = (FileDTO) duplicates.get(i);
-            if (storeDuplicateIfDiffMD5
-                    && !Arrays.equals(md5sum, dto.getFileMd5()))
+            if (dontStoreDuplicateIfFromExternalRetrieveAET && callingAET.equals(dto.getExternalRetrieveAET()))
+                return true;
+            if (storeDuplicateIfDiffMD5 && !Arrays.equals(md5sum, dto.getFileMd5()))
                 continue;
             if (storeDuplicateIfDiffHost
                     && !service.isFileSystemGroupLocalAccessable(

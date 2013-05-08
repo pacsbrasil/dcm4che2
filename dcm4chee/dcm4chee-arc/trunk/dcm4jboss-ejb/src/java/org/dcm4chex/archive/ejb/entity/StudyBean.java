@@ -698,13 +698,20 @@ public abstract class StudyBean implements EntityBean {
             } catch (FinderException e) {
                 throw new EJBException(e);
             }
-            if (eAetSet.size() == 1)
+            if (eAetSet.size() == 1) {
                 aet = (String) eAetSet.iterator().next();
+            } else {
+                log.warn("Update ExternalRetrieveAET - Study pk="+this.getPk()+" Number of extRetrAets != 1:"+eAetSet.size());
+            }
+        } else {
+            log.warn("Update ExternalRetrieveAET - Study pk="+this.getPk()+" getNumberOfStudyRelatedInstances() < 1:"+getNumberOfStudyRelatedInstances());
         }
         if (aet == null ? getExternalRetrieveAET() == null 
                 : aet.equals(getExternalRetrieveAET())) {
             return false;
         }
+        if (log.isDebugEnabled())
+            log.debug("Update ExternalRetrieveAET - Study pk="+this.getPk()+" extRetrAET:"+aet);
         setExternalRetrieveAET(aet);
         return true;
     }

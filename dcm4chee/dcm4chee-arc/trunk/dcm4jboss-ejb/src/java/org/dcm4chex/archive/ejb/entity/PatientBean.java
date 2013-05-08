@@ -1002,6 +1002,8 @@ public abstract class PatientBean implements EntityBean {
     private Dataset findOtherPIDByIssuer(String issuer, DcmElement opidsq) {
         for (int i = 0, n = opidsq.countItems(); i < n; i++) {
             Dataset opid = opidsq.getItem(i);
+            if (opid == null || opid.isEmpty() || !opid.containsValue(Tags.IssuerOfPatientID))
+                continue;
             if (opid.getString(Tags.IssuerOfPatientID).equals(issuer)) {
                     return opid;
             }
