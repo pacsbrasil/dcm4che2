@@ -240,26 +240,6 @@
      </parameter>
       <return-type>boolean</return-type>
    </operation>
-   <operation impact="ACTION">
-      <description>Register a HSM Module (start queue if the module is set in HSMModulServicename)</description>
-      <name>registerHSMModule</name>
-     <parameter>
-       <description>MBean Name of HSM module</description>
-       <name>moduleName</name>
-       <type>javax.management.ObjectName</type>
-     </parameter>
-      <return-type>void</return-type>
-   </operation>
-   <operation impact="ACTION">
-      <description>Unregister a HSM Module (stop queue if the module is set in HSMModulServicename)</description>
-      <name>unregisterHSMModule</name>
-     <parameter>
-       <description>MBean Name of HSM module</description>
-       <name>moduleName</name>
-       <type>javax.management.ObjectName</type>
-     </parameter>
-      <return-type>void</return-type>
-   </operation>
    
 </mbean>
 

@@ -52,10 +52,10 @@ public class DiceyFSModule extends HSMFileBasedModule {
         if (notMounted[0] == null) {
             t.interrupt();
             log.warn("Accessibility of " + fsID + " seems broken! Timeout during mount check!");
-            throw new HSMException("Filesystem accessibility broken! fsID:"+fsID);
+            throw new HSMException("Filesystem accessibility broken! fsID:"+fsID, null, HSMException.ERROR_ON_FILESYSTEM_LEVEL);
         } else if (notMounted[0]) {
             log.warn("Mount on " + fsID + " seems broken! mountFailedCheckFile file exists:" + getMountFailedCheckFile());
-            throw new HSMException("Filesystem not mounted! fsID:"+fsID);
+            throw new HSMException("Filesystem not mounted! fsID:"+fsID, null, HSMException.ERROR_ON_FILESYSTEM_LEVEL);
         }
     }
     
@@ -77,7 +77,7 @@ public class DiceyFSModule extends HSMFileBasedModule {
         try {
             FileIOTimeOut.copy(fileToFetch, tarFile, readTimeout) ;
         } catch (IOException x) {
-            throw new HSMException("Failed to retrieve "+fileToFetch, x);
+            throw new HSMException("Failed to retrieve "+fileToFetch, x, HSMException.ERROR_ON_FILE_LEVEL);
         }
         return tarFile;
     }

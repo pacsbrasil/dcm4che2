@@ -48,12 +48,27 @@ package org.dcm4chex.archive.hsm.module;
 public class HSMException extends Exception {
 
     private static final long serialVersionUID = 1L;
-
+    
+    public static final int INTERNAL_ERROR = 0;
+    public static final int ERROR_ON_FILE_LEVEL = 1;
+    public static final int ERROR_ON_FILESYSTEM_LEVEL = 2;
+    
+    private int errorLevel = INTERNAL_ERROR;
+    
     public HSMException(String msg) {
         super(msg);
     }
 
     public HSMException(String msg, Exception x) {
         super(msg, x);
+    }
+    
+    public HSMException(String msg, Exception x, int errorLevel) {
+        super(msg, x);
+        this.errorLevel = errorLevel;
+    }
+    
+    public int getErrorLevel() {
+        return errorLevel;
     }
 }

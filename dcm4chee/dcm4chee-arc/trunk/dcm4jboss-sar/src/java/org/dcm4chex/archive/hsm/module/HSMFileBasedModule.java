@@ -155,7 +155,7 @@ public class HSMFileBasedModule extends AbstractHSMModule {
         File nomount = FileUtils.toFile(stripTarIdentifier(fsID), mountFailedCheckFile);
         if (nomount.exists()) {
             log.warn("Mount on " + fsID + " seems broken! mountFailedCheckFile file exists:" + mountFailedCheckFile);
-            throw new HSMException("Filesystem not mounted! fsID:"+fsID);
+            throw new HSMException("Filesystem not mounted! fsID:"+fsID, null, HSMException.ERROR_ON_FILESYSTEM_LEVEL);
         }
     }
     

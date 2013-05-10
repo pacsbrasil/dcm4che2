@@ -65,6 +65,7 @@ import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2Home;
 import org.dcm4chex.archive.ejb.interfaces.MD5;
 import org.dcm4chex.archive.exceptions.ConfigurationException;
+import org.dcm4chex.archive.hsm.module.HSMException;
 import org.dcm4chex.archive.mbean.SchedulerDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.jboss.system.ServiceMBeanSupport;
@@ -295,7 +296,11 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
     }
 
     public void updateOldestCreatedTimeOfCheckFileStatus() {
-        log.info("Start updateOldestCreatedTimeOfCheckFileStatus! current:"+oldestCreatedTimeOfCheckFileStatus);
+        if (fileSystem.isEmpty()) {
+            log.info("SyncFileStatus disabled (fileSystem=NONE)!");
+        } else {
+            log.info("Start updateOldestCreatedTimeOfCheckFileStatus! current:"+oldestCreatedTimeOfCheckFileStatus);
+        }
         try {
             oldestCreatedTimeOfCheckFileStatus = newFileSystemMgt().minCreatedTimeOnFsWithFileStatus(this.fileSystem, this.checkFileStatus);
             if (oldestCreatedTimeOfCheckFileStatus == null) {
@@ -382,9 +387,22 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
             int count = 0;
             HashMap<String, Integer> checkedTarsStatus = new HashMap<String, Integer>();
             HashMap<String, Map<String, byte[]>> checkedTarsMD5 = verifyTar ? new HashMap<String, Map<String, byte[]>>() : null;
+            ArrayList<Long> failedFilesystems = new ArrayList<Long>();
             for (int i = 0; i < c.length; i++) {
-                if (check(fsmgt, c[i], checkedTarsStatus, checkedTarsMD5))
-                    ++count;
+                if (failedFilesystems.contains(c[i].getFileSystemPk()))
+                        continue;
+                try {
+                    if (check(fsmgt, c[i], checkedTarsStatus, checkedTarsMD5))
+                        ++count;
+                } catch (HSMException x) {
+                    if (x.getErrorLevel() == HSMException.ERROR_ON_FILESYSTEM_LEVEL) {
+                        failedFilesystems.add(c[i].getFileSystemPk());
+                        log.warn("Check of file "+c[i].getFilePath()+" failed on filesystem level! skip all files of "+
+                                c[i].getDirectoryPath()+" for this request!");
+                    }
+                } catch (Exception x) {
+                    log.warn("Check of file "+c[i].getFilePath()+" failed! skipped!");
+                }
             }
             log.info("SyncFileStatus finished! changed files:"+count);
             return count;
@@ -394,7 +412,7 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
     }
 
     private boolean check(FileSystemMgt2 fsmgt, FileDTO fileDTO,
-            HashMap<String, Integer> checkedTarsStatus, HashMap<String, Map<String, byte[]>> checkedTarsMD5) throws IOException, VerifyTarException {
+            HashMap<String, Integer> checkedTarsStatus, HashMap<String, Map<String, byte[]>> checkedTarsMD5) throws IOException, VerifyTarException, HSMException {
         String fsId = fileDTO.getDirectoryPath();
         String filePath = fileDTO.getFilePath();
         String tarPathKey = null;
@@ -552,7 +570,7 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
         return false;
     }
 
-    private Integer queryHSM(String fsID, String filePath, String userInfo) throws IOException {
+    private Integer queryHSM(String fsID, String filePath, String userInfo) throws IOException, HSMException {
         try {
             return (Integer) server.invoke(hsmModuleServicename, 
                     "queryStatus", new Object[]{fsID, filePath, userInfo}, 
@@ -560,6 +578,8 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
         } catch (Exception x) {
             log.error("queryHSM failed! fsID:"+fsID+" filePath:"+
                     filePath+" userInfo:"+userInfo, x);
+            if (x.getCause() != null && (x.getCause() instanceof HSMException))
+                throw (HSMException)x.getCause();
             IOException iox = new IOException("Query status of HSMFile failed!");
             iox.initCause(x);
             throw iox;

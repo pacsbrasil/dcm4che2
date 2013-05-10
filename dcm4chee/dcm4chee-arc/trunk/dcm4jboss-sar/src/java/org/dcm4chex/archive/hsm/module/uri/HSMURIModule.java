@@ -171,7 +171,7 @@ public class HSMURIModule extends AbstractHSMModule {
             Uri.copyTo(file.getPath(), stripTarIdentifier(fsID), filePath, absSshPrivateKeyFile.getPath());
             return filePath;
         } catch (Exception e) {
-            throw new HSMException("copy failed...", e);
+            throw new HSMException("copy failed...", e, HSMException.ERROR_ON_FILE_LEVEL);
         } finally {
             log.info("M-DELETE " + file);
             file.delete();
@@ -184,20 +184,20 @@ public class HSMURIModule extends AbstractHSMModule {
 
     @Override
     public File fetchHSMFile(String fsID, String filePath) throws HSMException {
+        File tarFile;
         try {
             if (absIncomingDir.mkdirs()) {
                 log.info("M-WRITE " + absIncomingDir);
             }
-            File tarFile;
-            try {
-                tarFile = File.createTempFile("hsm_", ".tar", absIncomingDir);
-            } catch (IOException x) {
-                throw new HSMException("Failed to create temp file in " + absIncomingDir, x);
-            }
+            tarFile = File.createTempFile("hsm_", ".tar", absIncomingDir);
+        } catch (IOException x) {
+            throw new HSMException("Failed to create temp file in " + absIncomingDir, x);
+        }
+        try {
             Uri.copyFrom(stripTarIdentifier(fsID) + '/' + filePath, tarFile.getPath(), absSshPrivateKeyFile.getPath());
             return tarFile;
         } catch (Exception e) {
-            throw new HSMException("fetch failed...", e);
+            throw new HSMException("fetch failed...", e, HSMException.ERROR_ON_FILE_LEVEL);
         }
     }
 
@@ -227,7 +227,7 @@ public class HSMURIModule extends AbstractHSMModule {
                 }
             }
         } catch (Exception e) {
-            throw new HSMException("query failed...", e);
+            throw new HSMException("query failed...", e, HSMException.ERROR_ON_FILE_LEVEL);
         }
     }
 }

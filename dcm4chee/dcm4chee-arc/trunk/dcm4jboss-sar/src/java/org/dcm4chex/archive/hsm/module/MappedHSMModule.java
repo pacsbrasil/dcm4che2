@@ -126,14 +126,17 @@ public class MappedHSMModule extends AbstractHSMModule {
     private Object invoke(String fsID, String cmd, Object[] params, String[] paramTypes) throws HSMException {
         ObjectName hsmModuleServicename = mapping.get(fsID);
         if (hsmModuleServicename == null) {
-            throw new HSMException("Invoke command '"+cmd+"' on mapped HSMModule failed! No mapping for fsID:"+fsID);
+            throw new HSMException("Invoke command '"+cmd+"' on mapped HSMModule failed! No mapping for fsID:"+fsID, null,
+                    HSMException.ERROR_ON_FILESYSTEM_LEVEL);
         }
         log.debug("Invoke "+cmd+" on MappedHSMModule! module:"+hsmModuleServicename);
         try {
             return server.invoke(hsmModuleServicename, cmd, params, paramTypes);
         } catch (Exception x) {
+            if (x instanceof HSMException)
+                throw (HSMException)x;
             throw new HSMException("Invoke command '"+cmd+"' on mapped HSMModule failed! HSMModule:"+
-                    hsmModuleServicename+" (for fsID:"+fsID+")", x);
+                    hsmModuleServicename+" (for fsID:"+fsID+")", x, HSMException.ERROR_ON_FILESYSTEM_LEVEL);
         }
     }
 }
