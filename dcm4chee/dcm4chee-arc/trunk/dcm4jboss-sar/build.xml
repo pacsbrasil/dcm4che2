@@ -5,7 +5,7 @@
     <property file="build.properties"/>
     <property file="../build.properties"/>
 	
-	<property name="version" value="2.17.1"/>
+	<property name="version" value="2.18.0-SNAPSHOT"/>
 
     <property name="javac.debug" value="on"/>
     <property name="javac.deprecation" value="off"/>
@@ -28,10 +28,14 @@
 
     <!-- Override with your dcm4che-1.4.x source dist location -->
     <property name="dcm4che14.home"
-      value="${user.home}/dcm4che14/build/dcm4che-1.4.33"/>
+      value="${user.home}/dcm4che14/build/dcm4che-1.4.34"/>
     <property name="dcm4che.jar" value="${dcm4che14.home}/lib/dcm4che.jar"/>
     <property name="jai_imagio.jar" value="${dcm4che14.home}/lib/jai_imageio.jar"/>
     <property name="slf4j-api.jar" value="${dcm4che14.home}/lib/slf4j-api-1.6.1.jar"/>
+
+    <!-- Override with your JSch and JCifs dist location -->
+	<property name="jsch.home" value="${user.home}/jsch-0.1.49"/>
+	<property name="jcifs.home" value="${user.home}/jcifs-1.3.17"/>
 
     <!-- Override with your dcm4chee-ejb dist location -->
 	<property name="dcm4chee-ejb.home" value="../dcm4jboss-ejb"/>		
@@ -46,7 +50,7 @@
 
 	<path id="base.path">
 		<pathelement location="${dcm4che.jar}"/>
-    <pathelement location="${jai_imagio.jar}" />
+        <pathelement location="${jai_imagio.jar}" />
 		<pathelement location="${slf4j-api.jar}" />
 		<pathelement location="${dcm4chee-ejb.target}/common/lib/dcm4chee-ejb-client.jar"/>
 		<pathelement location="${dcm4chee-ejb.target}/hsql/lib/dcm4chee-jdbc-hsql.jar"/>
@@ -57,6 +61,8 @@
 		<pathelement location="${lib.dir}/dcm4che-audit-2.0.25.jar"/>
 		<pathelement location="${jboss.home}/bin/"/>
 		<pathelement location="${jboss.home}/client/jmx-rmi-connector-client.jar"/>
+		<pathelement location="${jsch.home}/jsch-0.1.49.jar"/>
+		<pathelement location="${jcifs.home}/jcifs-1.3.17.jar"/>
 		<fileset dir="${jboss.home}/lib">
 			<include name="*.jar"/>
 		</fileset>
