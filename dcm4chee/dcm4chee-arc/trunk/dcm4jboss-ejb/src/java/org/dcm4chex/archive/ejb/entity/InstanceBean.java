@@ -437,6 +437,34 @@ public abstract class InstanceBean implements EntityBean {
     public abstract void setFiles(java.util.Collection files);
 
     /**
+     * @ejb.select query="SELECT OBJECT(f) FROM File f WHERE f.instance.pk = ?1 AND f.fileSystem.pk = ?2"
+     *             transaction-type="Supports"
+     */
+    public abstract Collection ejbSelectFiles(java.lang.Long instance_fk, java.lang.Long filesystem_fk)
+            throws FinderException;
+
+    /**    
+     * @ejb.interface-method
+     */
+    public Collection getFiles(Long fsPk) throws FinderException {      
+        return ejbSelectFiles(getPk(), fsPk);
+    }
+
+    /**
+     * @ejb.select query="SELECT COUNT(f) FROM File f WHERE f.instance.pk = ?1 AND f.fileSystem.pk = ?2"
+     *             transaction-type="Supports"
+     */
+    public abstract int ejbSelectNumberOfFiles(java.lang.Long instance_fk, java.lang.Long filesystem_fk)
+            throws FinderException;
+
+    /**    
+     * @ejb.interface-method
+     */
+    public int getNumberOfFiles(Long fsPk) throws FinderException {      
+        return ejbSelectNumberOfFiles(getPk(), fsPk);
+    }
+
+    /**
      * @ejb.relation name="instance-media" role-name="instance-on-media"
      * @jboss.relation fk-column="media_fk" related-pk-field="pk"
      * 

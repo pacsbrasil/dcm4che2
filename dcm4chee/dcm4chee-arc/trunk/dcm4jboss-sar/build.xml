@@ -95,6 +95,7 @@
     <!-- Compiles the source code                                            -->
     <!-- =================================================================== -->   
     <target name="compile" depends="prepare">
+        <echo message="jsch.home = ${jsch.home}"/>
         <javac
            destdir="${target.classes}"
            classpathref="base.path"
