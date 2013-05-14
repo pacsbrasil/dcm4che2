@@ -41,6 +41,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Map;
 
 import javax.ejb.CreateException;
 import javax.ejb.FinderException;
@@ -61,7 +62,9 @@ import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2Local;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2LocalHome;
+import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.exceptions.ConcurrentStudyStorageException;
+import org.dcm4chex.archive.exceptions.NoSuchInstanceException;
 import org.dcm4chex.archive.exceptions.NoSuchSeriesException;
 import org.dcm4chex.archive.exceptions.NoSuchStudyException;
 import org.dcm4chex.archive.notif.StudyDeleted;
@@ -211,7 +214,7 @@ public class DeleteStudyService extends ServiceMBeanSupport
                 } else if (order instanceof DeleteStudyOrder) {
                     try {
                         if (deleteSeriesBySeries) {
-                            deleteSeries((DeleteStudyOrder) order);
+                            deleteSeriesBySeries((DeleteStudyOrder) order);
                         } else {
                             deleteStudy((DeleteStudyOrder) order);
                         }
@@ -267,7 +270,7 @@ public class DeleteStudyService extends ServiceMBeanSupport
     }
 
     @SuppressWarnings("unchecked")
-    private void deleteStudy(DeleteStudyOrder order) throws Exception {
+    protected void deleteStudy(DeleteStudyOrder order) throws Exception {
         FileSystemMgt2Local fsMgt = fileSystemMgt2();
         Dataset ian = null;
         // prepare IAN if study may be deleted from DB by fsMgt.deleteStudy()
@@ -338,19 +341,23 @@ public class DeleteStudyService extends ServiceMBeanSupport
     }
 
     @SuppressWarnings("unchecked")
-    private void deleteSeries(DeleteStudyOrder order) throws Exception {
+    private void deleteSeriesBySeries(DeleteStudyOrder order) throws Exception {
         FileSystemMgt2Local fsMgt = fileSystemMgt2();
         Collection<Long> seriesPks = fsMgt.getSeriesPks(order);
         
         for (Long seriesPk : seriesPks) {
-            internalDeleteSeries(order, seriesPk, fsMgt);
+            deleteSeries(order, seriesPk, fsMgt);
         }
 
         performPostDeleteCleanup(order, fsMgt);
     }
     
+    protected void deleteSeries(DeleteStudyOrder order, Long seriesPk) throws Exception {
+    	deleteSeries(order, seriesPk, fileSystemMgt2());
+    }
+    
 	@SuppressWarnings("unchecked")
-	private void internalDeleteSeries(DeleteStudyOrder order, Long seriesPk,
+	private void deleteSeries(DeleteStudyOrder order, Long seriesPk,
 			FileSystemMgt2Local fsMgt) throws FinderException,
 			ConcurrentStudyStorageException, CreateException {
             Dataset ian = null;
@@ -376,7 +383,8 @@ public class DeleteStudyService extends ServiceMBeanSupport
                 try {
                     try {
                         ian = fsMgt.createIANforSeries(seriesPk);
-                        updateRetrieveAET(ian, fsMgt.getFileSystem(order.getFsPk()).getRetrieveAET());
+					updateRetrieveAET(ian, fsMgt.getFileSystem(order.getFsPk())
+							.getRetrieveAET());
                     } catch (NoSuchSeriesException e) {
                         // OK, in case of series was deleted from DB
                         if (ian == null) {
@@ -390,6 +398,57 @@ public class DeleteStudyService extends ServiceMBeanSupport
                 }
             }
         }
+
+    @SuppressWarnings("unchecked")
+	protected void deleteInstances(DeleteStudyOrder order, Collection<Long> instancePks) throws Exception {
+    	FileSystemMgt2Local fsMgt = fileSystemMgt2();
+		Map<StudyLocal, Dataset> ians = null;
+		// prepare IAN if series may be deleted from DB by fsMgt.deleteSeries()
+		if (createIANonStudyDelete && deleteStudyFromDB) {
+			try {
+				ians = fsMgt.createIANsforInstances(instancePks);
+			} catch (NoSuchInstanceException e) {
+				return;
+			}
+		}
+
+		Collection<FileDTO> fileDTOs = fsMgt.deleteInstances(order, instancePks,
+				deleteStudyFromDB, deletePatientWithoutObjects);
+
+		if (fileDTOs.isEmpty()) {
+			return;
+		}
+
+		fileDeleter.deleteFiles(fsMgt, fileDTOs);
+
+		if (createIANonStudyDelete) {
+			try {
+				try {
+					ians = fsMgt.createIANsforInstances(instancePks);
+					for (Dataset ian : ians.values()) {
+						updateRetrieveAET(ian,
+								fsMgt.getFileSystem(order.getFsPk())
+										.getRetrieveAET());
+					}
+				} catch (NoSuchInstanceException e) {
+					// OK, in case of series was deleted from DB
+					if (ians == null) {
+						throw e;
+					}
+					
+					for (Dataset ian : ians.values()) {
+						updateAvailability(ian, "UNAVAILABLE");
+					}
+				}
+				
+				for (Dataset ian : ians.values()) {
+					sendJMXNotification(new StudyDeleted(ian));
+				}
+			} catch (Exception e) {
+				log.error("Failed to create IAN on Study Delete:", e);
+			}
+		}
+	}
     
     private FileSystemMgt2Local fileSystemMgt2() throws Exception {
 		return ((FileSystemMgt2LocalHome) jndiHelper

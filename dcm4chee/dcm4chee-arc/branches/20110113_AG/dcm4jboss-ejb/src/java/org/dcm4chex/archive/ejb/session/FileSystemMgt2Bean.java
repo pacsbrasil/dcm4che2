@@ -42,9 +42,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -89,6 +91,7 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocalHome;
 import org.dcm4chex.archive.exceptions.ConcurrentStudyStorageException;
+import org.dcm4chex.archive.exceptions.NoSuchInstanceException;
 import org.dcm4chex.archive.exceptions.NoSuchSeriesException;
 import org.dcm4chex.archive.exceptions.NoSuchStudyException;
 
@@ -114,6 +117,42 @@ import org.dcm4chex.archive.exceptions.NoSuchStudyException;
  * @since Aug 13, 2008
  */
 public abstract class FileSystemMgt2Bean implements SessionBean {
+	private class SubtreeBuilder {
+		private final Map<StudyLocal, Map<SeriesLocal, Collection<InstanceLocal>>> subtree = new HashMap<StudyLocal, Map<SeriesLocal, Collection<InstanceLocal>>>();
+
+		public void add(InstanceLocal instance) {
+			SeriesLocal series = instance.getSeries();
+
+			getInstanceCollection(series, getSeriesMap(series.getStudy())).add(
+					instance);
+		}
+
+		public Map<StudyLocal, Map<SeriesLocal, Collection<InstanceLocal>>> getSubtree() {
+			return subtree;
+		}
+
+		private Collection<InstanceLocal> getInstanceCollection(SeriesLocal series,
+				Map<SeriesLocal, Collection<InstanceLocal>> instanceCollections) {
+			Collection<InstanceLocal> instances = instanceCollections.get(series);
+			if (instances == null) {
+				instanceCollections.put(series,
+						instances = new ArrayList<InstanceLocal>());
+			}
+			return instances;
+		}
+
+		private Map<SeriesLocal, Collection<InstanceLocal>> getSeriesMap(
+				StudyLocal study) {
+			Map<SeriesLocal, Collection<InstanceLocal>> instanceCollections = subtree
+					.get(study);
+			if (instanceCollections == null) {
+				subtree.put(
+						study,
+						instanceCollections = new HashMap<SeriesLocal, Collection<InstanceLocal>>());
+			}
+			return instanceCollections;
+		}
+	}
 
     private static Logger log = Logger.getLogger(FileSystemMgt2Bean.class);
 
@@ -661,7 +700,7 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
         }
     }
 
-    private Dataset createIAN(StudyLocal study) {
+    private Dataset createIAN(StudyLocal study, Map<SeriesLocal, Collection<InstanceLocal>> seriesMap) {
         PatientLocal pat = study.getPatient();
         Dataset ian = DcmObjectFactory.getInstance().newDataset();
         ian.putAll(pat.getAttributes(false).subSet(IAN_PAT_TAGS));
@@ -670,7 +709,7 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
         DcmElement refPPSSeq = ian.putSQ(Tags.RefPPSSeq);
         HashSet ppsuids = new HashSet();
         DcmElement refSerSeq = ian.putSQ(Tags.RefSeriesSeq);
-        Collection seriess = study.getSeries();
+        Collection seriess = (seriesMap == null) ? study.getSeries() : seriesMap.keySet();
         for (Iterator siter = seriess.iterator(); siter.hasNext();) {
             SeriesLocal series = (SeriesLocal) siter.next();
             Dataset serAttrs = series.getAttributes(false);
@@ -682,7 +721,7 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
             Dataset refSer = refSerSeq.addNewItem();
             refSer.putUI(Tags.SeriesInstanceUID, series.getSeriesIuid());
             DcmElement refSopSeq = refSer.putSQ(Tags.RefSOPSeq);
-            Collection insts = series.getInstances();
+            Collection insts = (seriesMap == null) ? series.getInstances() : seriesMap.get(series);
             for (Iterator iiter = insts.iterator(); iiter.hasNext();) {
                 InstanceLocal inst = (InstanceLocal) iiter.next();
                 Dataset refSOP = refSopSeq.addNewItem();
@@ -710,6 +749,35 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
     }
 
     /**
+     * @throws NoSuchInstanceException 
+     * @throws FinderException 
+     * 
+     * @ejb.interface-method
+     */
+	public Map<StudyLocal, Dataset> createIANsforInstances(Collection<Long> instancePks)
+			throws NoSuchInstanceException, FinderException {
+		try {
+			SubtreeBuilder subtreeBuilder = new SubtreeBuilder();
+
+			for (Long instancePk : instancePks) {
+				subtreeBuilder.add(instHome.findByPrimaryKey(instancePk));
+				
+			}
+
+			Map<StudyLocal, Dataset> ians = new HashMap<StudyLocal, Dataset>();
+			for (Map.Entry<StudyLocal, Map<SeriesLocal, Collection<InstanceLocal>>> entry : subtreeBuilder.getSubtree().entrySet()) {
+				StudyLocal key = entry.getKey();
+				
+				ians.put(key, createIAN(entry.getKey(), entry.getValue()));
+			}
+			
+			return ians;
+		} catch (ObjectNotFoundException e) {
+			throw new NoSuchInstanceException(e);
+		}
+    }
+
+    /**
      * @ejb.interface-method
      */
     public IANAndPatientID createIANforSeries(String uid) 
@@ -728,37 +796,18 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private Dataset createIAN(SeriesLocal series) {
-        StudyLocal study = series.getStudy();
-        PatientLocal pat = study.getPatient();
-        Dataset ian = DcmObjectFactory.getInstance().newDataset();
-        ian.putAll(pat.getAttributes(false).subSet(IAN_PAT_TAGS));
-        ian.putSH(Tags.StudyID, study.getStudyId());
-        ian.putUI(Tags.StudyInstanceUID, study.getStudyIuid());
-        DcmElement refPPSSeq = ian.putSQ(Tags.RefPPSSeq);
-        HashSet ppsuids = new HashSet();
-        DcmElement refSerSeq = ian.putSQ(Tags.RefSeriesSeq);
-        Dataset serAttrs = series.getAttributes(false);
-        Dataset refPPS = serAttrs.getItem(Tags.RefPPSSeq);
-        if (refPPS != null
-                && ppsuids.add(refPPS.getString(Tags.RefSOPInstanceUID))) {
-            refPPSSeq.addItem(refPPS);
+		Map<SeriesLocal, Collection<InstanceLocal>> instanceCollections = new HashMap<SeriesLocal, Collection<InstanceLocal>>(
+				1, 1f);
+    	
+		instanceCollections.put(series, series.getInstances());
+    	
+    	return createIAN(series.getStudy(), instanceCollections);
         }
-        Dataset refSer = refSerSeq.addNewItem();
-        refSer.putUI(Tags.SeriesInstanceUID, series.getSeriesIuid());
-        DcmElement refSopSeq = refSer.putSQ(Tags.RefSOPSeq);
-        Collection insts = series.getInstances();
-        for (Iterator iiter = insts.iterator(); iiter.hasNext();) {
-            InstanceLocal inst = (InstanceLocal) iiter.next();
-            Dataset refSOP = refSopSeq.addNewItem();
-            refSOP.putUI(Tags.RefSOPClassUID, inst.getSopCuid());
-            refSOP.putUI(Tags.RefSOPInstanceUID, inst.getSopIuid());
-            DatasetUtils.putRetrieveAET(refSOP, inst.getRetrieveAETs(),
-                    inst.getExternalRetrieveAET());
-            refSOP.putCS(Tags.InstanceAvailability,
-                    Availability.toString(inst.getAvailabilitySafe()));
-        }
-        return ian;
+
+	private Dataset createIAN(StudyLocal study) {
+    	return createIAN(study, null);
     }
 
     /**    
@@ -781,15 +830,10 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
 					privManager().moveFilesToTrash(study.getFiles(fsPk)));
 
             if (delStudyFromDB && study.getAllFiles().isEmpty()) {
-                PatientLocal pat = study.getPatient();
-                study.remove();
-                if (delPatientWithoutObjects) {
-                    deletePatientWithoutObjects(pat);
-                }
+				deleteEmptyStudy(study, delPatientWithoutObjects);
             } else {
-                int availabilityOfExtRetr =
-                        order.getExternalRetrieveAvailability();
-                updateStudyAvailability(study, availabilityOfExtRetr);
+				updateStudyAvailability(study, null,
+						order.getExternalRetrieveAvailability());
              }
             
             return fileDTOs;
@@ -900,7 +944,7 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
             }
             int availabilityOfExtRetr =
                 order.getExternalRetrieveAvailability();
-            updateStudyAvailability(study, availabilityOfExtRetr);
+            updateStudyAvailability(study, null, availabilityOfExtRetr);
             return failed;
         } catch (FinderException x) {
             throw new EJBException(x);
@@ -921,11 +965,15 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
         return null;
     }
 
-    private void updateStudyAvailability(StudyLocal study, int availabilityOfExtRetr) {
-        Collection seriess = study.getSeries();
+	private void updateStudyAvailability(StudyLocal study,
+			Map<SeriesLocal, Collection<InstanceLocal>> instanceCollections,
+			int availabilityOfExtRetr) {
+		Collection seriess = (instanceCollections == null) ? study.getSeries()
+				: instanceCollections.keySet();
         for (Iterator siter = seriess.iterator(); siter.hasNext();) {
             SeriesLocal series = (SeriesLocal) siter.next();
-            Collection insts = series.getInstances();
+			Collection insts = (instanceCollections == null) ? series
+					.getInstances() : instanceCollections.get(series);
             for (Iterator iiter = insts.iterator(); iiter.hasNext();) {
                 InstanceLocal inst = (InstanceLocal) iiter.next();
                 inst.updateRetrieveAETs();
@@ -972,29 +1020,57 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
 			Collection<FileDTO> fileDTOs = marshallPrivFiles(privManager()
 					.moveFilesToTrash(files));
 
-            StudyLocal study = series.getStudy();
             if (delStudyFromDB && series.getAllFiles().isEmpty()) {
-                series.remove();
-                if (study.getSeries().isEmpty()) {
-                    PatientLocal pat = study.getPatient();
-                    study.remove();
-                    if (delPatientWithoutObjects) {
-                        deletePatientWithoutObjects(pat);
+				deleteEmptySeries(series, delPatientWithoutObjects);
+			} else {
+				Map<SeriesLocal, Collection<InstanceLocal>> instanceCollections = new HashMap<SeriesLocal, Collection<InstanceLocal>>(
+						1, 1f);
+				instanceCollections.put(series, series.getInstances());
+
+				updateStudyAvailability(series.getStudy(), instanceCollections,
+						order.getExternalRetrieveAvailability());
                     }
+            
+            return fileDTOs;
+        } catch (FinderException e) {
+            throw new EJBException(e);
+        } catch (RemoveException e) {
+            throw new EJBException(e);
                 }
+    }
+
+    /**    
+     * @ejb.interface-method
+     * 
+     * @ejb.transaction type="RequiresNew"
+     */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+	public Collection<FileDTO> deleteInstances(DeleteStudyOrder order, Collection<Long> instancePks,
+            boolean delStudyFromDB, boolean delPatientWithoutObjects)
+			throws ConcurrentStudyStorageException, CreateException {
+		try {
+			PrivateManagerLocal privManager = privManager();
+			Collection<FileDTO> fileDTOs = new ArrayList<FileDTO>();
+			SubtreeBuilder subtreeBuilder = new SubtreeBuilder();
+
+			for (Long instancePk : instancePks) {
+				InstanceLocal instance = instHome.findByPrimaryKey(instancePk);
+				Collection files = instance.getFiles();
+				fileDTOs.addAll(marshallPrivFiles(privManager
+						.moveFilesToTrash(files)));
+
+				if (delStudyFromDB && instance.getFiles().isEmpty()) {
+					deleteEmptyInstance(instance, delPatientWithoutObjects);
             } else {
-                int availabilityOfExtRetr =
-                        order.getExternalRetrieveAvailability();
-                Collection insts = series.getInstances();
-                for (Iterator iiter = insts.iterator(); iiter.hasNext();) {
-                    InstanceLocal inst = (InstanceLocal) iiter.next();
-                    inst.updateRetrieveAETs();
-                    inst.updateAvailability(availabilityOfExtRetr);
+					subtreeBuilder.add(instance);
                 }
-                series.updateRetrieveAETs();
-                series.updateAvailability();
-                study.updateRetrieveAETs();
-                study.updateAvailability();
+			}
+
+			int availabilityOfExtRetr = order.getExternalRetrieveAvailability();
+			for (Map.Entry<StudyLocal, Map<SeriesLocal, Collection<InstanceLocal>>> entry : subtreeBuilder
+					.getSubtree().entrySet()) {
+				updateStudyAvailability(entry.getKey(), entry.getValue(),
+						availabilityOfExtRetr);
              }
             
             return fileDTOs;
@@ -1004,6 +1080,36 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
             throw new EJBException(e);
         }
     }
+
+	private void deleteEmptyInstance(InstanceLocal instance,
+			boolean delPatientWithoutObjects) throws RemoveException {
+		SeriesLocal series = instance.getSeries();
+		instance.remove();
+
+		if (series.getInstances().isEmpty()) {
+			deleteEmptySeries(series, delPatientWithoutObjects);
+		}
+	}
+
+	private void deleteEmptySeries(SeriesLocal series,
+			boolean delPatientWithoutObjects) throws RemoveException {
+		StudyLocal study = series.getStudy();
+		series.remove();
+
+		if (study.getSeries().isEmpty()) {
+			deleteEmptyStudy(study, delPatientWithoutObjects);
+		}
+	}
+
+	private void deleteEmptyStudy(StudyLocal study,
+			boolean delPatientWithoutObjects) throws RemoveException {
+		PatientLocal pat = study.getPatient();
+		study.remove();
+		
+		if (delPatientWithoutObjects) {
+			deletePatientWithoutObjects(pat);
+		}
+	}
 
     private void deletePatientWithoutObjects(PatientLocal patient)
             throws RemoveException {
