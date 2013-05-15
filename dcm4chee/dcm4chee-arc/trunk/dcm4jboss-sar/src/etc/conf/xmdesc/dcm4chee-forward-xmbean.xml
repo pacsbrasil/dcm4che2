@@ -40,11 +40,15 @@ for this destination .
 <p>
 <b>Syntax:</b>
 <br>&lt;forwarding rules> := (&lt;forwarding rule> &lt;EOL>)+ | 'NONE'
-<br>&lt;forwarding rule> := [&lt;condition>] &lt;aeTitleTo> ['!'&lt;from>'-'&lt;to>] ['{'&lt;priority>'}']
-<br>&lt;condition> := '[calling' ['!'] '=' &lt;aeTitleFrom>']'
+<br>&lt;forwarding rule> := ['['&lt;condition>[,&lt;condition>..]']'] &lt;aeTitleTo> ['!'&lt;from>'-'&lt;to>] ['{'&lt;priority>'}']
+<br>&lt;condition> := calling ['!'] '=' &lt;aeTitleFrom> or 
+       extRetrieveAET ['!'] '=' &lt;extRetrieveAET> or 
+       archived ['!'] '=' 'true' | 'false'
 <br>&lt;priority> := 'MEDIUM' | 'HIGH' | 'LOW'
 <br>where
 <br>&lt;aeTitleFrom> = calling AE titles separated by pipes ('|')
+<br>&lt;extRetrieveAET> = external Retrieve AET (of all instances of SeriesStored) separated by pipes ('|') or '*'
+<br>&lt;archived> = If all instances of SeriesStored are marked as archived
 <br>&lt;aeTitleTo> = comma separated list of AE titles that objects are forwarded to
 <br>'!'&lt;from>'-'&lt;to> = start and end hour (0-23) when no forwarding should be
 performed to that destination
@@ -52,7 +56,11 @@ performed to that destination
 <b>Example:</b> [calling=SCU1|SCU2]SCP3 {HIGH} ,SCP4!8-16 {LOW}
 Forwards objects received from AE Title SCU1 or SCU2 to Storage SCPs, SCP3 with
 high priority and to SCP4 with low priority. Forwarding of objects received
-between 8am and 4pm to SCP4 is delayed until 4 pm.]]>
+between 8am and 4pm to SCP4 is delayed until 4 pm.
+<b>Example with central archive:</b> [calling!=CENTRAL,extRetrieveAET!=*]CENTRAL
+Forwards all objects to CENTRAL with following exceptions:<br/>
+1) If sourceAET of received object is CENTRAL<br/>
+2) If a local object already exists with an extenal RetrieveAET]]>
       </description>
       <name>ForwardingRules</name>
       <type>java.lang.String</type>

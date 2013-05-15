@@ -75,12 +75,15 @@ public class ForwardService extends ServiceMBeanSupport {
             new NotificationListener() {
         public void handleNotification(Notification notif, Object handback) {
             SeriesStored seriesStored = (SeriesStored) notif.getUserData();
+            log.info("handle SeriesStored:"+seriesStored);
             if (seriesStored.getRetrieveAET() == null && ignoreNotLocalRetrievable) {
                 log.warn("Ignore SeriesStored notification! Reason: Series is not locally retrievable.");
                 return;
             }
             Map<String, String[]> param = new HashMap<String, String[]>();
             param.put("calling", new String[] { seriesStored.getSourceAET() });
+            param.put("extRetrieveAET", new String[] { seriesStored.getExtRetrieveAET() });
+            param.put("archived", new String[] { String.valueOf(seriesStored.isArchived()) });
             String[] destAETs = forwardingRules
                     .getForwardDestinationsFor(param);
             for (int i = 0; i < destAETs.length; i++) {

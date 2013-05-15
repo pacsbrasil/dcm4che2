@@ -216,7 +216,7 @@ public class ForwardService2 extends ServiceMBeanSupport {
             try {
                 log.debug("Forward2 transform input:");
                 log.debug(ds);
-                xslt(cal, stored.getSourceAET(), stored.getRetrieveAET(), null,
+                xslt(cal, stored, null,
                         ds, tpl, new DefaultHandler(){
 
                    public void startElement(String uri, String localName,
@@ -353,7 +353,7 @@ public class ForwardService2 extends ServiceMBeanSupport {
             }
         }            
 
-        TransformerHandler th = prepareTransformHandler(cal, stored.getSourceAET(), stored.getRetrieveAET(), 
+        TransformerHandler th = prepareTransformHandler(cal, stored, 
                 transformParams, tpl, new DefaultHandler() {
                    public void startElement(String uri, String localName,
                             String qName, Attributes attrs) {
@@ -472,23 +472,25 @@ public class ForwardService2 extends ServiceMBeanSupport {
         return ForwardingRules.afterBusinessHours(cal, s.substring(index+1));
     }
     
-    private static void xslt(Calendar cal, String sourceAET, String retrieveAET, Properties params,
+    private static void xslt(Calendar cal, SeriesStored stored, Properties params,
             Dataset ds, Templates tpl, ContentHandler ch)
             throws TransformerConfigurationException, IOException {
-        TransformerHandler th = prepareTransformHandler(cal, sourceAET,
-                retrieveAET, params, tpl, ch);
+        TransformerHandler th = prepareTransformHandler(cal, stored, params, tpl, ch);
         ds.writeDataset2(th, null, null, 64, null);
     }
 
     private static TransformerHandler prepareTransformHandler(Calendar cal,
-            String sourceAET, String retrieveAET, Properties params,
+            SeriesStored stored, Properties params,
             Templates tpl, ContentHandler ch)
             throws TransformerFactoryConfigurationError,
             TransformerConfigurationException {
         TransformerHandler th = tf.newTransformerHandler(tpl);
         Transformer t = th.getTransformer();
-        t.setParameter("source-aet", sourceAET);
-        t.setParameter("retrieve-aet", retrieveAET);
+        t.setParameter("source-aet", stored.getSourceAET());
+        t.setParameter("retrieve-aet", stored.getRetrieveAET());
+        if (stored.getExtRetrieveAET() != null)
+            t.setParameter("ext-retrieve-aet", stored.getExtRetrieveAET());
+        t.setParameter("archived", String.valueOf(stored.isArchived()));
         t.setParameter("year", new Integer(cal.get(Calendar.YEAR)));
         t.setParameter("month", new Integer(cal.get(Calendar.MONTH)+1));
         t.setParameter("date", new Integer(cal.get(Calendar.DAY_OF_MONTH)));

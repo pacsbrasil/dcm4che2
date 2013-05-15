@@ -880,7 +880,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             }
             refPPSSeq.addItem(pps);
         }
-        return new SeriesStored(callingAET, retrieveAET, patAttrs, studyAttrs,
+        return new SeriesStored(callingAET, retrieveAET, null, false, patAttrs, studyAttrs,
                 seriesAttrs, ian);
     }
 

@@ -137,9 +137,12 @@ public class Condition {
     }
 
     private boolean containsAny(LinkedHashSet set, String[] val) {
-        if (val != null)
-	        for (int i = 0; i < val.length; i++)
-	            if (set.contains(val[i])) return true;
+        if (val != null) {
+            if (set.contains("*"))
+                return true;
+            for (int i = 0; i < val.length; i++)
+                if (set.contains(val[i])) return true;
+        }
         return false;
     }
 

@@ -4,8 +4,10 @@
 
   <!--
    The following parameters are made available by the application:
-   source-aet   - AET of the Storage SCU from which the series was received
-   retrieve-aet - AET of the Query Retrieve SCP from which the series can be retrieved
+   source-aet       - AET of the Storage SCU from which the series was received
+   retrieve-aet     - AET of the Query Retrieve SCP from which the series can be retrieved
+   ext-retrieve-aet - external AET (e.g. central archive) of the Query Retrieve SCP from which the series can be retrieved
+   archived         - All referenced instances are archived (e.g. HSM)
    year  - The current year
    month - The current month (1=Jan, 2=Feb ..)
    date  - The current day of the month
@@ -18,6 +20,8 @@
    An example of the parameters that are made available to this stylesheet is as follows:
    <xsl:param name="source-aet">DCMSND</xsl:param>
    <xsl:param name="retrieve-aet">DCM4CHEE</xsl:param>
+   <xsl:param name="ext-retrieve-aet">CENTRAL</xsl:param>
+   <xsl:param name="archived">true</xsl:param>
    <xsl:param name="month">4</xsl:param>
    <xsl:param name="date">30</xsl:param> 
    <xsl:param name="day">1</xsl:param>
@@ -25,6 +29,8 @@
   -->
   <xsl:param name="source-aet"/>
   <xsl:param name="retrieve-aet"/>
+  <xsl:param name="ext-retrieve-aet"/>
+  <xsl:param name="archived"/>
   <xsl:param name="year"/>
   <xsl:param name="month"/>
   <xsl:param name="date"/> 
@@ -68,6 +74,12 @@
                               (default: Disable restriction of modalities)
 	       -->
       </xsl:if>
+      
+      <!-- Forward to CENTRAL only if external RetrieveAET is not CENTRAL
+      <xsl:if test="$ext-retrieve-aet!='CENTRAL'">
+        <destination aet="CENTRAL" priority="high"/>
+      </xsl:if>
+       -->
       
     </destinations>
   </xsl:template>
