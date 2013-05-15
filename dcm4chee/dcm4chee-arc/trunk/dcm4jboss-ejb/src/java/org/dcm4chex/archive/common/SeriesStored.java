@@ -70,9 +70,11 @@ public class SeriesStored implements Serializable {
     private final Dataset seriesAttrs;
     private final String sourceAET;
     private final String retrieveAET;
+    private final String extRetrieveAET;
+    private final boolean archived;
     private final Dataset ian;
 
-    public SeriesStored(String sourceAET, String retrieveAET, Dataset patient,
+    public SeriesStored(String sourceAET, String retrieveAET, String extRetrieveAET, boolean archived, Dataset patient,
             Dataset study, Dataset series, Dataset ian) {
         if (patient == null) {
             throw new NullPointerException("patient");
@@ -88,6 +90,8 @@ public class SeriesStored implements Serializable {
         }
         this.sourceAET = sourceAET;
         this.retrieveAET = retrieveAET;
+        this.extRetrieveAET = extRetrieveAET;
+        this.archived = archived;
         this.patAttrs = patient;
         this.studyAttrs = study;
         this.seriesAttrs = series;
@@ -97,6 +101,8 @@ public class SeriesStored implements Serializable {
     public String toString() {
         return "SeriesStored[sourceAET=" + getSourceAET()
                 + ", retrieveAET=" + getRetrieveAET()
+                + ", extRetrieveAET=" + getExtRetrieveAET()
+                + ", archived=" + isArchived()
                 + ", modality=" + getModality()
                 + ", numOfInst=" + getNumberOfInstances()
                 + ", study-iuid=" + getStudyInstanceUID()
@@ -109,6 +115,14 @@ public class SeriesStored implements Serializable {
 
     public final String getRetrieveAET() {
         return retrieveAET;
+    }
+
+    public String getExtRetrieveAET() {
+        return extRetrieveAET;
+    }
+
+    public boolean isArchived() {
+        return archived;
     }
 
     public final Dataset getPatientAttrs() {
