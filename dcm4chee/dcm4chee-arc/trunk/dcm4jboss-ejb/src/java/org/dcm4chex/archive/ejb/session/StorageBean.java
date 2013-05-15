@@ -74,6 +74,7 @@ import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.FileStatus;
 import org.dcm4chex.archive.common.FileSystemStatus;
 import org.dcm4chex.archive.common.PatientMatching;
+import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.ejb.interfaces.FileLocal;
 import org.dcm4chex.archive.ejb.interfaces.FileLocalHome;
@@ -212,8 +213,13 @@ public abstract class StorageBean implements SessionBean {
                 prevAvailability = instance.getAvailabilitySafe();
                 coerceInstanceIdentity(instance, ds, coercedElements);
                 if (clearExternalRetrieveAET && instance.getExternalRetrieveAET() != null) {
-                    log.info("Clear ExternalRetrieveAET of instance "+instance.getSopIuid());
-                    instance.setExternalRetrieveAET(null);
+                    ds.setPrivateCreatorID(PrivateTags.CreatorID);
+                    if ( instance.getExternalRetrieveAET().equals(ds.getString(PrivateTags.CallingAET))) {
+                        log.debug("CallingAET == ExternalRetrieveAET! Don't clear ExternalRetrieveAET of instance "+instance.getSopIuid());
+                    } else {
+                        log.info("Clear ExternalRetrieveAET of instance "+instance.getSopIuid());
+                        instance.setExternalRetrieveAET(null);
+                    }
                 }
             } catch (ObjectNotFoundException onfe) {
                 instance = instHome.create(ds,
@@ -379,6 +385,9 @@ public abstract class StorageBean implements SessionBean {
         refSeries.putUI(Tags.SeriesInstanceUID, series.getSeriesIuid());
         HashSet commonRetrieveAETs = null;
         Collection c = series.getInstances();
+        String extRetrieveAET = null;
+        boolean extRetrieveFlag = true;
+        boolean archived = true;
         for (Iterator iter = c.iterator(); iter.hasNext();) {
             InstanceLocal inst = (InstanceLocal) iter.next();
             if (inst.getInstanceStatus() != RECEIVED) {
@@ -397,6 +406,16 @@ public abstract class StorageBean implements SessionBean {
             } else {
                 commonRetrieveAETs.retainAll(Arrays.asList(retrieveAETs));
             }
+            if (extRetrieveFlag) {
+                if (inst.getExternalRetrieveAET() == null) {
+                    extRetrieveFlag = false;
+                } else if (extRetrieveAET == null) {
+                    extRetrieveAET = inst.getExternalRetrieveAET();
+                } else if (!extRetrieveAET.equals(inst.getExternalRetrieveAET())) {
+                    extRetrieveFlag = false;
+                }
+            }
+            archived &= inst.getArchived();
             Dataset refSOP = refSOPs.addNewItem();           
             refSOP.putUI(Tags.RefSOPClassUID, inst.getSopCuid());
             refSOP.putUI(Tags.RefSOPInstanceUID, inst.getSopIuid());
@@ -421,6 +440,7 @@ public abstract class StorageBean implements SessionBean {
         SeriesStored seriesStored = new SeriesStored(series.getSourceAET(),
                 commonRetrieveAETs.isEmpty() ? null
                         : (String) commonRetrieveAETs.iterator().next(),
+                        extRetrieveFlag ? extRetrieveAET : null, archived,
                 patAttrs, studyAttrs, seriesAttrs, ian);
         return seriesStored;
     }
