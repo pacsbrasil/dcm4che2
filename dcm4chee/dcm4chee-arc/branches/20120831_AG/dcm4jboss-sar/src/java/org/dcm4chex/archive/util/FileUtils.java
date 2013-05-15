@@ -45,6 +45,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.ByteOrder;
 
 import org.apache.log4j.Logger;
@@ -163,11 +165,25 @@ public class FileUtils {
         File serverHomeDir = ServerConfigLocator.locate().getServerHomeDir();
         return new File(serverHomeDir, f.getPath());
     }
-
-    public static File toFile(String unixPath) {
-        return resolve(new File(unixPath.replace('/', File.separatorChar)));
+    
+    public static boolean isURI(String pathOrUri) {
+        return pathOrUri.indexOf(':') > 1;
     }
 
+    public static URI toURI(String uri) {
+        try {
+            return new URI(uri);
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException("Invalid URI: " + uri, e);
+        }
+    }
+
+    public static File toFile(String unixPathOrUri) {
+        return isURI(unixPathOrUri) ? resolve(new File(toURI(unixPathOrUri)))
+                : resolve(new File(unixPathOrUri.replace('/',
+                        File.separatorChar)));
+    }
+    
     public static File toExistingFile(String unixPath)
             throws FileNotFoundException {
         File f = toFile(unixPath);
