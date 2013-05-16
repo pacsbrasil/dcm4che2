@@ -56,10 +56,12 @@
 		</xsl:apply-templates>
 																
 		<td title="Delete user {userID}!" align="left" valign="top" border="0" >
+            <xsl:if test="/model/currentUser!=userID">
 				<a href="user_editsubmit.m?userID={url:encode(userID)}&amp;cmd=deleteUser" 
 					onclick="return confirm('Are you sure you want to delete?')">
 				<img src="images/delete.gif" alt="delete" border="0"/>							
-				</a>					
+				</a>	
+            </xsl:if>
 		</td>
 		<xsl:if test="/model/currentUser=userID">
 			<td title="Change password for current user ({userID})!" align="left" valign="top" border="0" >
