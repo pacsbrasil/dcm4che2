@@ -501,7 +501,11 @@ final class FsmImpl
                 try {
                     raw = new UnparsedPDUImpl(in, buf);
                 } catch (IOException e) {
+                    State prev = this.state;
                     changeState(STA1);
+                    if (prev == STA2){
+                        return null;
+                    }
                     throw e;
                 }
             }
