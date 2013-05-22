@@ -74,6 +74,7 @@ import org.dcm4che.data.DcmDecodeParam;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmEncodeParam;
 import org.dcm4che.data.DcmObjectFactory;
+import org.dcm4che.data.DcmParseException;
 import org.dcm4che.data.DcmParser;
 import org.dcm4che.data.DcmParserFactory;
 import org.dcm4che.data.DcmValueException;
@@ -1268,7 +1269,10 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     }});
                 fos = null;
             }
-        } finally {
+        }catch (DcmParseException e) {
+            String message = "Corrupt instance " + ds.getString(Tags.SOPInstanceUID) + " in study " + ds.getString(Tags.StudyInstanceUID); 
+            throw new DcmParseException(message, e);
+        }finally {
             if (fos != null)
                 try {
                     fos.close();
