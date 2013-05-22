@@ -42,6 +42,7 @@ package org.dcm4chex.archive.util;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import javax.xml.transform.OutputKeys;
@@ -126,5 +127,14 @@ public class XSLTUtils {
             out.close();
         }
     }
-
+    public static void logDataset(Dataset ds, String subdir, String type) {
+        try {
+            type = type == null ? "" : "-"+type;
+            File dir = new File(System.getProperty("jboss.server.log.dir"), subdir);
+            SimpleDateFormat df = new SimpleDateFormat("yyyyMMddHHmmss.SSS'"+type+".xml'");
+            File f = new File(dir, df.format(new Date()));
+            dir.mkdir();
+            writeTo(ds, f);
+        } catch (Exception ignore) {}
+    }
 }

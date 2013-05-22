@@ -46,8 +46,10 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -73,6 +75,7 @@ import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 import javax.xml.transform.Templates;
+import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXResult;
@@ -131,6 +134,7 @@ import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileDataSource;
 import org.dcm4chex.archive.util.FileUtils;
 import org.dcm4chex.archive.util.HomeFactoryException;
+import org.dcm4chex.archive.util.XSLTUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
 
@@ -467,6 +471,7 @@ public class ExportManagerService extends AbstractScuService
         new NotificationListener() {
             public void handleNotification(Notification notif, Object handback) {
                 SeriesStored seriesStored = (SeriesStored) notif.getUserData();
+                log.info("handle SeriesStored:"+seriesStored);
                 ExportManagerService.this.onSeriesStored(seriesStored);
             }
     };
@@ -1367,11 +1372,14 @@ public class ExportManagerService extends AbstractScuService
         };
 
     private void onIAN(final Dataset mpps) {
+        log.info("handle IAN Notification:");log.debug(mpps);
         String aet = mpps.getString(Tags.PerformedStationAET);
         Templates tpl = templates.getTemplatesForAET(aet, EXPORT_XSL);
         if (tpl == null) {
             return;
         }
+        if (log.isTraceEnabled())
+            XSLTUtils.logDataset(mpps, "TCE", "mpps");
         SAXTransformerFactory tf = (SAXTransformerFactory)
                 TransformerFactory.newInstance();
         TransformerHandler th;
@@ -1380,6 +1388,16 @@ public class ExportManagerService extends AbstractScuService
         } catch (TransformerConfigurationException e) {
             throw new ConfigurationException(e);
         }
+        Transformer t = th.getTransformer();
+        try {
+            Calendar cal = Calendar.getInstance();
+            t.setParameter("today", new SimpleDateFormat("yyyyMMdd").format(new Date()));
+            t.setParameter("year", new Integer(cal.get(Calendar.YEAR)));
+            t.setParameter("month", new Integer(cal.get(Calendar.MONTH)+1));
+            t.setParameter("date", new Integer(cal.get(Calendar.DAY_OF_MONTH)));
+            t.setParameter("day", new Integer(cal.get(Calendar.DAY_OF_WEEK)-1));
+            t.setParameter("hour", new Integer(cal.get(Calendar.HOUR_OF_DAY)));
+        } catch (Exception ignore){}
         th.setResult(new SAXResult(new DefaultHandler(){
             public void startElement(String uri, String localName,
                     String qName, Attributes attrs) {
