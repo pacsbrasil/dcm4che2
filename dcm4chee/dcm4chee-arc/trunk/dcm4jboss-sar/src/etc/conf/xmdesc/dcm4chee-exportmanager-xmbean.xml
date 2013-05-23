@@ -199,6 +199,17 @@ T2 and T3 actually used by JAI-IMAGEIO JPEG-LS encoder.
       </descriptors>
    </attribute>   
    <attribute access="read-write"
+      getMethod="getMaxKOSage"
+      setMethod="setMaxKOSage">
+      <description>Maximum age of Key Object (ContentDate/ContentTime) to schedule export.
+      </description>
+      <name>MaxKeyObjectAge</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="1d" />
+      </descriptors>
+   </attribute>   
+   <attribute access="read-write"
       getMethod="getExportDelay"
       setMethod="setExportDelay">
       <description>Delay in milliseconds before export process starts.

@@ -117,6 +117,7 @@ import org.dcm4che2.audit.util.InstanceSorter;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.config.DicomPriority;
+import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.dcm.AbstractScuService;
 import org.dcm4chex.archive.dcm.ianscu.IANScuService;
 import org.dcm4chex.archive.ejb.interfaces.AEDTO;
@@ -199,7 +200,9 @@ public class ExportManagerService extends AbstractScuService
     private String mediaIDPrefix;
 
     private TemplatesDelegate templates = new TemplatesDelegate(this);
-    
+
+    private long maxKOSage;
+
     public final String getAutoExportConfigDir() {
         return templates.getConfigDir();
     }
@@ -375,6 +378,14 @@ public class ExportManagerService extends AbstractScuService
         this.deleteKeyObjects = deleteKeyObjects;
     }
 
+    public String getMaxKOSage() {
+        return RetryIntervalls.formatInterval(maxKOSage);
+    }
+
+    public void setMaxKOSage(String maxKOSage) {
+        this.maxKOSage = RetryIntervalls.parseInterval(maxKOSage);
+    }
+
     public final ObjectName getStoreScpServiceName() {
         return storeScpServiceName;
     }
@@ -492,6 +503,13 @@ public class ExportManagerService extends AbstractScuService
                     UIDs.KeyObjectSelectionDocument, code, designator, false);
             for ( Iterator iter = l.iterator() ; iter.hasNext() ; ) {
                 Dataset manifest = (Dataset) iter.next();
+                Date contentDT = manifest.getDateTime(Tags.ContentDate, Tags.ContentTime);
+                if (contentDT != null && System.currentTimeMillis() - contentDT.getTime() > maxKOSage) {
+                    log.info("Key Selection Object older than "+RetryIntervalls.formatInterval(maxKOSage)+
+                            "! Skipped to avoid re-scheduling this export order:");
+                    log.debug(manifest);
+                    continue;
+                }
                 if (!isAllReceived(manifest, storeIUIDs))
                     continue;
                 try {
