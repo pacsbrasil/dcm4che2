@@ -46,6 +46,8 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 
+import org.dcm4che.dict.UIDs;
+
 /**
  * @author gunter.zeilinter@tiani.com
  * @version $Revision$ $Date$
@@ -115,7 +117,7 @@ public class Condition {
             set = new LinkedHashSet();
             map.put(key, set);
         }
-        set.add(val);
+        set.add(convertFromHumanReadableValue(key, val));
     }
 
     public boolean isAlwaysTrue() {
@@ -162,5 +164,13 @@ public class Condition {
         }
         sb.setCharAt(sb.length() - 1, ']');
         return sb;
+    }
+    
+    protected String convertFromHumanReadableValue(String key, String value) {
+        if ("cuid".equalsIgnoreCase(key) && !Character.isDigit(value.charAt(0))) {
+            return UIDs.forName(value);
+        }
+        
+        return value;
     }
 }
