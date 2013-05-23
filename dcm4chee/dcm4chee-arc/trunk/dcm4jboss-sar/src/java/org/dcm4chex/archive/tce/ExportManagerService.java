@@ -478,19 +478,21 @@ public class ExportManagerService extends AbstractScuService
 
     private void onSeriesStored(SeriesStored seriesStored) {
         Dataset ian = seriesStored.getIAN();
+        List<String> storeIUIDs = new ArrayList<String>();
+        copyIUIDsFromRefSopSeq(ian.get(Tags.RefSeriesSeq), storeIUIDs);
         String suid = ian.getString(Tags.StudyInstanceUID);
         for (int i = 0, len = exportSelectorTitles.length; i < len; i++ )
             onSeriesStored(suid, exportSelectorTitles[i][0],
-                    exportSelectorTitles[i][1]);
+                    exportSelectorTitles[i][1], storeIUIDs );
     }
 
-    private void onSeriesStored(String suid, String code, String designator) {
+    private void onSeriesStored(String suid, String code, String designator, List<String>storeIUIDs) {
         try {
             List l = getContentManager().listInstanceInfosByStudyAndSRCode(suid, 
                     UIDs.KeyObjectSelectionDocument, code, designator, false);
             for ( Iterator iter = l.iterator() ; iter.hasNext() ; ) {
                 Dataset manifest = (Dataset) iter.next();
-                if (!isAllReceived(manifest))
+                if (!isAllReceived(manifest, storeIUIDs))
                     continue;
                 try {
                     manifest = loadManifest(manifest);
@@ -548,14 +550,23 @@ public class ExportManagerService extends AbstractScuService
         }
     }
 
-    private boolean isAllReceived(Dataset sel) {
-        ArrayList list = new ArrayList();
+    private boolean isAllReceived(Dataset sel, List<String> storeIUIDs) {
+        ArrayList<String> list = new ArrayList<String>();
         copyIUIDs(sel.get(Tags.IdenticalDocumentsSeq), list);
         copyIUIDs(sel.get(Tags.CurrentRequestedProcedureEvidenceSeq), list);
         if ( list.size() < 1) {
-        	log.warn("No instance referenced in KOS! This manifest will be ignored!");
-        	return false;
+            log.warn("No instance referenced in KOS! This manifest will be ignored!");
+            return false;
         }
+        boolean notInStore = true;
+        for (String iuid: list) {
+            if (storeIUIDs.contains(iuid)) {
+                notInStore = false;
+                break;
+            }
+        }
+        if (notInStore)
+            return false;
         final String[] iuids = (String[]) list.toArray(new String[list.size()]);
         log.info("Check if " + iuids.length
                 + " referenced objects were already received");
@@ -1151,20 +1162,24 @@ public class ExportManagerService extends AbstractScuService
                 + "] not locally available!");
     }
 
-    private void copyIUIDs(DcmElement sq1, List list) {
+    private void copyIUIDs(DcmElement sq1, List<String> list) {
         if (sq1 == null)
             return;
         for (int i1 = 0, n1 = sq1.countItems(); i1 < n1; ++i1) {
             Dataset item1 = sq1.getItem(i1);
             DcmElement sq2 = item1.get(Tags.RefSeriesSeq);
-            for (int i2 = 0, n2 = sq2.countItems(); i2 < n2; ++i2) {
-                Dataset item2 = sq2.getItem(i2);
-                DcmElement sq3 = item2.get(Tags.RefSOPSeq);
-                for (int i3 = 0, n3 = sq3.countItems(); i3 < n3; ++i3) {
-                    Dataset item3 = sq3.getItem(i3);
-                    String iuid = item3.getString(Tags.RefSOPInstanceUID);
-                    list.add(iuid);
-                }
+            copyIUIDsFromRefSopSeq(sq2, list);
+        }
+    }
+
+    public void copyIUIDsFromRefSopSeq(DcmElement refSopSeq, List<String> list) {
+        for (int i2 = 0, n2 = refSopSeq.countItems(); i2 < n2; ++i2) {
+            Dataset item2 = refSopSeq.getItem(i2);
+            DcmElement sq3 = item2.get(Tags.RefSOPSeq);
+            for (int i3 = 0, n3 = sq3.countItems(); i3 < n3; ++i3) {
+                Dataset item3 = sq3.getItem(i3);
+                String iuid = item3.getString(Tags.RefSOPInstanceUID);
+                list.add(iuid);
             }
         }
     }
