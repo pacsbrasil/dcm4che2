@@ -561,7 +561,7 @@ public class SyncFileStatusService extends ServiceMBeanSupport {
         if (fileDTO.getFileStatus() != status) {
             log.info("Change status of " + fileDTO + " to " + status);
             try {
-                fsmgt.setFileStatus(fileDTO.getPk(), status);
+                fsmgt.setFileStatus(fileDTO.getPk(), status, fileSystem);
                 return true;
             } catch (Exception e) {
                 log.error("Failed to update status of file " + fileDTO, e);

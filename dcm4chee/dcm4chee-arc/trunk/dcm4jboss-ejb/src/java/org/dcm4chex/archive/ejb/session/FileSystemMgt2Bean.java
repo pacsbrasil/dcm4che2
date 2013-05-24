@@ -1202,7 +1202,7 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public void setFileStatus(long pk, int status) throws FinderException {
+    public void setFileStatus(long pk, int status, ArrayList<String> archiveFileSystems) throws FinderException {
         FileLocal f = fileHome.findByPrimaryKey(pk);
         f.setFileStatus(status);
         if (status == FileStatus.ARCHIVED) {
@@ -1210,10 +1210,29 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
             if (il.getArchived()) {
                 log.debug("Instance "+il.getSopIuid()+" is already marked as ARCHIVED!");
             } else {
+                if (archiveFileSystems != null && archiveFileSystems.size() > 1) {
+                    @SuppressWarnings("unchecked")
+                    Collection<FileLocal> files = il.getFiles();
+                    loop: for (String fs : archiveFileSystems) {
+                        for (FileLocal file : files) {
+                           if (file.getFileStatus() == FileStatus.ARCHIVED &&
+                                   fs.equals(file.getFileSystem().getDirectoryPath()))
+                               continue loop;
+                        }
+                        return;//no archived file found for filesystem
+                    }
+                }
                 il.setArchived(true);
                 log.info("Instance "+il.getSopIuid()+" marked as ARCHIVED! File:"+f.asString());
             }
         }
+    }
+    /**
+     * @ejb.interface-method
+     */
+    public void setFileStatus(long pk, int status) throws FinderException {
+        FileLocal f = fileHome.findByPrimaryKey(pk);
+        f.setFileStatus(status);
     }
 
     private FileDTO[] toFileDTOs(Collection c) {
