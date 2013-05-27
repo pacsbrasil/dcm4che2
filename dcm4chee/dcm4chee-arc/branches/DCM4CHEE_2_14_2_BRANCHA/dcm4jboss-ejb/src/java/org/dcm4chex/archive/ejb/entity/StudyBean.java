@@ -1013,6 +1013,35 @@ public abstract class StudyBean implements EntityBean {
     public Collection getFiles(Long fsPk) throws FinderException {    	
         return ejbSelectFiles(getPk(), fsPk);
     }
+    
+    /**
+	 * @ejb.select query=
+	 *             "SELECT COUNT(DISTINCT f) FROM File f WHERE f.instance.series.study.pk = ?1 AND f.fileSystem.pk = ?2"
+	 *             transaction-type="Supports"
+	 */
+    public abstract int ejbSelectNumberOfFiles(java.lang.Long study_fk, java.lang.Long filesystem_fk)
+            throws FinderException;
+
+    /**    
+     * @ejb.interface-method
+     */
+    public int getNumberOfFiles(Long fsPk) throws FinderException {    	
+        return ejbSelectNumberOfFiles(getPk(), fsPk);
+    }
+
+    /**
+     * @ejb.select query="SELECT DISTINCT OBJECT(s) FROM Series s, IN(s.instances) i, IN(i.files) f WHERE s.study.pk = ?1 AND f.fileSystem.pk = ?2"
+     *             transaction-type="Supports"
+     */
+    public abstract Collection ejbSelectSeries(java.lang.Long study_fk, java.lang.Long filesystem_fk)
+            throws FinderException;
+
+    /**    
+     * @ejb.interface-method
+     */
+    public Collection getSeries(Long fsPk) throws FinderException {      
+        return ejbSelectSeries(getPk(), fsPk);
+    }
 
     /**
      * @ejb.select query="SELECT OBJECT(f) FROM File f WHERE f.instance.series.study.pk = ?1"
