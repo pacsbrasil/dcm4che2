@@ -82,6 +82,7 @@ import org.jboss.system.ServiceMBeanSupport;
 public class CompressionService extends ServiceMBeanSupport {
 
     private static final String _DCM = ".dcm";
+    private static final String _ORIGINAL = ".orig";
     private static final String _COMPRESSED = ".comp";
     private static final String _DECOMPRESSED = ".decomp";
 
@@ -385,93 +386,82 @@ public class CompressionService extends ServiceMBeanSupport {
         File baseDir = FileUtils.toFile(fileDTO.getDirectoryPath());
         File srcFile = FileUtils.toFile(fileDTO.getDirectoryPath(), fileDTO
                 .getFilePath());
-        File destFile = null;
+        File compressedFile = null;
+        File decompressedFile = null;
         try {
             if (!ClaimCompressingFileCmd.claim(fileDTO.getPk())) {
                 log.info("File " + srcFile
                         + " already compressed by concurrent thread!");
                 return false;
             }
-            destFile = FileUtils.createNewFile(srcFile.getParentFile(),
+            compressedFile = FileUtils.createNewFile(srcFile.getParentFile(),
                     (int) Long.parseLong(srcFile.getName(), 16) + 1);
             if (log.isDebugEnabled())
-                log.debug("Compress file " + srcFile + " to " + destFile
-                        + " with CODEC:" + info.getCodec() + "("
+                log.debug("Compress file " + srcFile + " to " + compressedFile
+                        + " with CODEC: " + info.getCodec() + " ("
                         + info.getTransferSyntax() + ")");
             int[] pxvalVR = new int[1];
-            byte[] md5 = CompressCmd.compressFile(srcFile, destFile, info
+            byte[] md5 = CompressCmd.compressFile(srcFile, compressedFile, info
                     .getTransferSyntax(), pxvalVR, buffer);
             if (verifyCompression && fileDTO.getFileMd5() != null) {
                 File absTmpDir = FileUtils.resolve(tmpDir);
                 if (absTmpDir.mkdirs())
                     log.info("Create directory for decompressed files");
-                File decFile = new File(absTmpDir, getTempDecompressedFilename(fileDTO));
-                byte[] dec_md5 = DecompressCmd.decompressFile(destFile,
-                        decFile, fileDTO.getFileTsuid(), pxvalVR[0], buffer);
+                decompressedFile = new File(absTmpDir, getTempDecompressedFilename(fileDTO));
+                byte[] dec_md5 = DecompressCmd.decompressFile(compressedFile,
+                        decompressedFile, fileDTO.getFileTsuid(), pxvalVR[0], buffer);
                 if (!Arrays.equals(dec_md5, fileDTO.getFileMd5())) {
                     log.info("MD5 sum after compression+decompression of "
                             + srcFile + " differs - compare pixel matrix");
-                    if (!FileUtils.equalsPixelData(srcFile, decFile)) {
+                    if (!FileUtils.equalsPixelData(srcFile, decompressedFile)) {
                         String errmsg = "Pixel matrix after decompression differs from original file "
-                                + srcFile + "! Keep original uncompressed file.";
+                                + srcFile + "!";
                         log.warn(errmsg);
-                        fsMgt.setFileStatus(fileDTO.getPk(),
-                                FileStatus.VERIFY_COMPRESS_FAILED);
-                        
-                        if (keepTempFileIfVerificationFails <= 0L) {
-                            FileUtils.delete(destFile, false);
-                            FileUtils.delete(decFile, false);
-                        } else {
-                           saveCompressedFile(destFile, new File(absTmpDir,
-                             getTempCompressedFilename(fileDTO)));
-                        }
-                        
+                        setFileStatusOnFailure(srcFile, fileDTO, fsMgt, FileStatus.VERIFY_COMPRESS_FAILED);
                         throw new CompressionFailedException(errmsg);
                     }
                 }
-                FileUtils.delete(decFile, false);
+                FileUtils.delete(decompressedFile, false);
             }
             final int baseDirPathLength = baseDir.getPath().length();
-            final String destFilePath = destFile.getPath().substring(
+            final String compressedFilePath = compressedFile.getPath().substring(
                     baseDirPathLength + 1).replace(File.separatorChar, '/');
             if (log.isDebugEnabled())
-                log.debug("replace File " + srcFile + " with " + destFile);
-            fsMgt.replaceFile(fileDTO.getPk(), destFilePath,
-                    info.getTransferSyntax(), destFile.length(), md5,
+                log.debug("replace File " + srcFile + " with " + compressedFile);
+            fsMgt.replaceFile(fileDTO.getPk(), compressedFilePath,
+                    info.getTransferSyntax(), compressedFile.length(), md5,
                     FileStatus.DEFAULT);
             fileDTO.setPk(0);
-            fileDTO.setFilePath(destFilePath);
-            fileDTO.setFileSize((int) destFile.length());
+            fileDTO.setFilePath(compressedFilePath);
+            fileDTO.setFileSize((int) compressedFile.length());
             fileDTO.setFileMd5(md5);
             fileDTO.setFileTsuid(info.getTransferSyntax());
             srcFile.delete();
             return true;
         } catch (CompressionFailedException e) {
+            handleFilesOnFailure(srcFile, compressedFile, decompressedFile, fileDTO);
             throw e;
         } catch (Exception e) {
-            String errmsg = "Can't compress file:" + srcFile;
+            String errmsg = "Problem performing or verifying compression for file: " + srcFile;
             log.error(errmsg, e);
-            if (destFile != null && destFile.exists())
-                destFile.delete();
-            try {
-                fsMgt.setFileStatus(fileDTO.getPk(),
-                                FileStatus.COMPRESS_FAILED);
-            } catch (Exception x1) {
-                log.error("Failed to set FAILED_TO_COMPRESS for file "
-                        + srcFile);
-            }
+            handleFilesOnFailure(srcFile, compressedFile, decompressedFile, fileDTO);
+            setFileStatusOnFailure(srcFile, fileDTO, fsMgt, FileStatus.COMPRESS_FAILED);
             throw new CompressionFailedException(errmsg, e);
         }
     }
 
-	private void saveCompressedFile(File srcFile, File dstFile) {
-		try {
-			org.apache.commons.io.FileUtils.moveFile(srcFile, dstFile);
-		} catch (IOException e) {
-			log.warn(
-					format("Error encountered while moving %s to %s.", srcFile,
-							dstFile), e);
-		}
+    private void saveCopyOfFile(File srcFile, File dstFile) {
+    	try {
+    		org.apache.commons.io.FileUtils.copyFile(srcFile, dstFile);
+    	} catch (IOException e) {
+    		log.warn(
+    				format("Error encountered while copying %s to %s.", srcFile,
+    						dstFile), e);
+    	}
+    }
+
+	private String getTempOriginalFilename(FileDTO fileDTO) {
+		return getTempFilename(fileDTO, _ORIGINAL + _DCM);
 	}
 
 	private String getTempCompressedFilename(FileDTO fileDTO) {
@@ -486,6 +476,52 @@ public class CompressionService extends ServiceMBeanSupport {
 		return fileDTO.getFilePath().replace('/', '-') + extension;
 	}
 
+    /**
+    * Make copies of files for analysis and delete temporary files as necessary 
+    * @param srcFile Source file against which compression was attempted
+    * @param compressedFile Compressed file
+    * @param decompressedFile Temporary decompressed file
+    * @param fileDTO Original file 
+    */
+    private void handleFilesOnFailure(File srcFile, File compressedFile, File decompressedFile, FileDTO fileDTO) {
+        try {
+            boolean compressedFileExists = (compressedFile != null && compressedFile.exists());
+            if (keepTempFileIfVerificationFails <= 0L) {
+                if (decompressedFile != null && decompressedFile.exists()) {
+                    // Remove the temporary decompressed file
+                    FileUtils.delete(decompressedFile, false);
+                }
+            } else {
+                if (srcFile != null && srcFile.exists()) {
+                    // Save a copy of the original file with the appropriate suffix
+                    saveCopyOfFile(srcFile, new File(FileUtils.resolve(tmpDir),
+                            getTempOriginalFilename(fileDTO)));
+                }
+
+                if (compressedFileExists) {
+                    // Save a copy of the compressed file with the appropriate suffix
+                    saveCopyOfFile(compressedFile, new File(FileUtils.resolve(tmpDir),
+                            getTempCompressedFilename(fileDTO)));
+                }
+            }
+            
+            if (compressedFileExists) {
+                FileUtils.delete(compressedFile, false);
+            }
+        } catch (Exception e) {
+            log.error("Unable to handle temporary files after failure to compress/verify", e);
+        }
+    }
+
+    private void setFileStatusOnFailure(File srcFile, FileDTO fileDTO, FileSystemMgt2 fsMgt, int fileStatus) {
+        try {
+            fsMgt.setFileStatus(fileDTO.getPk(), fileStatus);
+        } catch (Exception x1) {
+            log.error("Failed to set FAILED_TO_COMPRESS for file "
+                    + srcFile);
+        }	
+    }
+	
     private boolean isDisabled(int hour) {
         if (disabledEndHour == -1)
             return false;
