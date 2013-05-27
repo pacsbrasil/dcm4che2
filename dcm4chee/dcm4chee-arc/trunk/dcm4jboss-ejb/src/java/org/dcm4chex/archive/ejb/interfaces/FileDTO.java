@@ -245,11 +245,11 @@ public final class FileDTO implements Serializable, Comparable {
     }
 
     public String getSopInstanceUID() {
-        return sopCuid;
+        return sopIuid;
     }
 
-    public void setSopInstanceUID(String sopClassUID) {
-        this.sopCuid = sopClassUID;
+    public void setSopInstanceUID(String sopIUID) {
+        this.sopIuid = sopIUID;
     }
 
     /**
