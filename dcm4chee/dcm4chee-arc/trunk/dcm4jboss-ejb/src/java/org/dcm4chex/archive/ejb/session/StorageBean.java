@@ -86,6 +86,7 @@ import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.StorageLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyOnFileSystemLocalHome;
@@ -521,7 +522,7 @@ public abstract class StorageBean implements SessionBean {
             pat = patHome.selectPatient(ds, matching, true);
         } catch (ObjectNotFoundException onfe) {
             try {
-                pat = patHome.create(ds);
+                 pat = ((StorageLocal)sessionCtx.getEJBLocalObject()).createPatient(ds);
                 // Check if patient record was also inserted by concurrent thread
                 try {
                     return patHome.selectPatient(ds, matching, true);
@@ -547,6 +548,14 @@ public abstract class StorageBean implements SessionBean {
         }
         coercePatientIdentity(pat, ds, coercedElements);
         return pat;
+    }
+
+    /**
+     * @ejb.interface-method
+     * @ejb.transaction type="RequiresNew"
+     */
+    public PatientLocal createPatient(Dataset ds) throws CreateException {
+        return patHome.create(ds);
     }
 
     private void coercePatientIdentity(PatientLocal patient, Dataset ds,
