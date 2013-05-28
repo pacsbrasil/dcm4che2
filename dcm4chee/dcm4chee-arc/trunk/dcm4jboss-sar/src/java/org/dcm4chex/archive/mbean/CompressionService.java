@@ -464,10 +464,7 @@ public class CompressionService extends ServiceMBeanSupport {
             byte[] md5 = CompressCmd.compressFile(srcFile, destFile, info
                     .getTransferSyntax(), planarConfiguration, pxvalVR, buffer);
             if (verifyCompression && fileDTO.getFileMd5() != null) {
-                File absTmpDir = FileUtils.resolve(tmpDir);
-                if (absTmpDir.mkdirs())
-                    log.info("Create directory for decompressed files");
-                File decFile = new File(absTmpDir, getTempDecompressedFilename(fileDTO));
+                File decFile = getTempDecompressedFile(fileDTO);
                 byte[] dec_md5 = DecompressCmd.decompressFile(destFile,
                         decFile, fileDTO.getFileTsuid(), planarConfiguration[0],
                         pxvalVR[0], buffer);
@@ -485,8 +482,7 @@ public class CompressionService extends ServiceMBeanSupport {
                             FileUtils.delete(destFile, false);
                             FileUtils.delete(decFile, false);
                         } else {
-							saveCompressedFile(destFile, new File(absTmpDir,
-									getTempCompressedFilename(fileDTO)));
+                            saveCompressedFile(destFile, getTempCompressedFile(fileDTO));
                         }
                         
                         throw new CompressionFailedException(errmsg);
@@ -514,8 +510,13 @@ public class CompressionService extends ServiceMBeanSupport {
         } catch (Exception e) {
             String errmsg = "Can't compress file:" + srcFile;
             log.error(errmsg, e);
-            if (destFile != null && destFile.exists())
-                FileUtils.delete(destFile, false);
+            if (destFile != null && destFile.exists()) {
+                if (keepTempFileIfVerificationFails <= 0L) {
+                    FileUtils.delete(destFile, false);
+                } else {
+                    saveCompressedFile(destFile, getTempCompressedFile(fileDTO));
+                }
+            }
             try {
                 fsMgt.setFileStatus(fileDTO.getPk(),
                                 FileStatus.COMPRESS_FAILED);
@@ -527,27 +528,29 @@ public class CompressionService extends ServiceMBeanSupport {
         }
     }
 
-	private void saveCompressedFile(File srcFile, File dstFile) {
-		try {
-			org.apache.commons.io.FileUtils.moveFile(srcFile, dstFile);
-		} catch (IOException e) {
-			log.warn(
-					format("Error encountered while moving %s to %s.", srcFile,
-							dstFile), e);
-		}
-	}
+    private void saveCompressedFile(File srcFile, File dstFile) {
+        try {
+            FileUtils.moveFile(srcFile, dstFile);
+        } catch (IOException e) {
+            log.warn(format("Error encountered while moving %s to %s.", srcFile, dstFile), e);
+            srcFile.delete();
+        }
+    }
 
-	private String getTempCompressedFilename(FileDTO fileDTO) {
-		return getTempFilename(fileDTO, _COMPRESSED + _DCM);
-	}
+    private File getTempCompressedFile(FileDTO fileDTO) {
+        return getTempFile(fileDTO, _COMPRESSED + _DCM);
+    }
 
-	private String getTempDecompressedFilename(FileDTO fileDTO) {
-		return getTempFilename(fileDTO, _DECOMPRESSED + _DCM);
-	}
+    private File getTempDecompressedFile(FileDTO fileDTO) {
+        return getTempFile(fileDTO, _DECOMPRESSED + _DCM);
+    }
 
-	private String getTempFilename(FileDTO fileDTO, String extension) {
-		return fileDTO.getFilePath().replace('/', '-') + extension;
-	}
+    private File getTempFile(FileDTO fileDTO, String extension) {
+        File absTmpDir = FileUtils.resolve(tmpDir);
+        if (absTmpDir.mkdirs())
+            log.info("M-WRITE: Create temp directory for compressed/decompressed files:"+absTmpDir);
+        return new File(absTmpDir, fileDTO.getFilePath().replace('/', '-') + extension);
+    }
 
     private boolean isDisabled(int hour) {
         if (disabledEndHour == -1)

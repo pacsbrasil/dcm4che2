@@ -239,7 +239,7 @@ public class FileCopyService extends AbstractFileCopyService {
             File src = FileUtils.toFile(finfo.basedir + '/' + finfo.fileID);
             File dst = FileUtils.toFile(destPath + '/' + finfo.fileID);
             try {
-                copy(src, dst, buffer);
+                copy(src, dst);
                 byte[] md5sum0 = finfo.md5 != null ? MD5Utils
                         .toBytes(finfo.md5) : null;
                 if (md5sum0 != null && digest != null) {
@@ -263,27 +263,17 @@ public class FileCopyService extends AbstractFileCopyService {
             throw ex;
     }
 
-    private void copy(File src, File dst, byte[] buffer) throws IOException {
-        FileInputStream fis = new FileInputStream(src);
+    private void copy(File src, File dst) throws IOException {
         try {
             File dir = dst.getParentFile();
             if (dir.mkdirs()) {
                 log.info("M-WRITE dir:" + dir);
             }
             log.info("M-WRITE file:" + dst);
-            BufferedOutputStream bos = new BufferedOutputStream(
-                    new FileOutputStream(dst), buffer);
-            try {
-                bos.copyFrom(fis, (int) src.length());
-            } finally {
-                bos.close();
-            }
+            FileUtils.copyFile(src, dst);
         } catch (IOException e) {
             log.error("Copy file "+src+" failed", e);
-            dst.delete();
             throw e;
-        } finally {
-            fis.close();
         }
     }
 

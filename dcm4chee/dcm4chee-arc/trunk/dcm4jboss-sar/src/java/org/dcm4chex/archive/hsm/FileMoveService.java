@@ -526,7 +526,10 @@ public class FileMoveService extends AbstractDeleterService implements MessageLi
                 srcFiles.add(file);
                 File dst = FileUtils.toFile(dirPath + '/' + dtoSrc.getFilePath());
                 try {
-                    copy(file, dst, buffer);
+                    if (dst.getParentFile().mkdirs())
+                        log.info("M-WRITE dir:"+dst.getParent());
+                    log.info("M-WRITE file:" + dst);
+                    FileUtils.copyFile(file, dst);
                     byte[] md5sum0 = dtoSrc.getFileMd5();
                     if (md5sum0 != null && digest != null) {
                         byte[] md5sum = MD5Utils.md5sum(dst, digest, buffer);
@@ -551,26 +554,6 @@ public class FileMoveService extends AbstractDeleterService implements MessageLi
         return (File[]) srcFiles.toArray(new File[srcFiles.size()]);
     }
 
-    private void copy(File src, File dst, byte[] buffer) throws IOException {
-        FileInputStream fis = new FileInputStream(src);
-        try {
-            File dir = dst.getParentFile();
-            if (dir.mkdirs()) {
-                log.info("M-WRITE dir:" + dir);
-            }
-            log.info("M-WRITE file:" + dst);
-            BufferedOutputStream bos = new BufferedOutputStream(
-                    new FileOutputStream(dst), buffer);
-            try {
-                bos.copyFrom(fis, (int) src.length());
-            } finally {
-                bos.close();
-            }
-        } finally {
-            fis.close();
-        }
-    }
-    
     private File[] copyTar(FileDTO[] files, String destPath, long destFsPk) throws Exception {
         String tarPath = mkTarPath(files[0].getFilePath());
         String[] tarEntryNames = new String[files.length];

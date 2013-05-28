@@ -42,15 +42,18 @@ package org.dcm4chex.archive.util;
 import static java.lang.String.format;
 
 import java.io.BufferedInputStream;
+import java.io.Closeable;
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteOrder;
+import java.nio.channels.FileChannel;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.util.Arrays;
@@ -448,6 +451,42 @@ public class FileUtils {
         	log.error("MD5 for " + file.getAbsolutePath() + " is different that expected.  Has the file been changed or corrupted?");
             throw new IllegalStateException("MD5 mismatch");
         }
+    }
+    
+    public static void copyFile(File src, File dest) throws IOException{
+        FileChannel srcCh = null;
+        FileChannel destCh = null;
+        try {
+            srcCh = new FileInputStream(src).getChannel();
+            destCh = new FileOutputStream(dest).getChannel();
+            for (long pos=0, len = srcCh.size() ; pos < len ; )
+                pos += destCh.transferFrom(srcCh, pos, len - pos);
+        } finally {
+            saveClose(srcCh);
+            saveClose(destCh);
+            if (dest.exists() && dest.length() != src.length()) {
+                dest.delete();
+                throw new IOException("File length of source and destination differs!");
+            }
+        }
+    }
+    
+    public static void moveFile(File src, File dest) throws IOException {
+        if (!src.renameTo(dest)) {
+            moveFile(src, dest);
+            if (dest.exists()) {
+                if (!src.delete()) {
+                    dest.delete();
+                    throw new IOException("Failed to delete source file!");
+                }
+            }
+        }
+    }
+    
+    public static void saveClose(Closeable c) {
+        if (c != null) try {
+            c.close();
+        } catch (Exception ignore){}
     }
     
     protected static void readOut(InputStream in, int len) throws IOException {
