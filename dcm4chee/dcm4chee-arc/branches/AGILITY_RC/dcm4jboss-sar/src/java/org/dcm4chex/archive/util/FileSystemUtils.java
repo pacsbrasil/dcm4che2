@@ -106,6 +106,12 @@ public class FileSystemUtils {
         }        
     }
     
+    private static AvailableDiskSpaceCalculator spaceCalculator;
+    
+    public static void setAvailableSpaceCalculator(AvailableDiskSpaceCalculator calculator) {
+        spaceCalculator = calculator;
+    }
+    
     public static final String getDFCommand() {
         return dfCommand;
     }
@@ -147,23 +153,27 @@ public class FileSystemUtils {
      * @throws IOException if an error occurs when finding the free space
      */
     public static long freeSpace(String path) throws IOException {
-        if (jdk6getUsableSpace != null) {
-            try {
-                Long l = (Long) jdk6getUsableSpace.invoke(
-                		new File(path), (Object[]) null);
-                long space = l.longValue();
-                // Following is a workaround for a bug in the Sun JDK 6. The
-                // File.getFreeSpace method always returns 0 on file systems
-                // greater than 4 TB. If we get a 0 back from the method call,
-                // fall through to the "df" style check.
-                if (space != 0) 
-                    return space;
-            } catch (Exception e) {
-                // Should not happen
-                e.printStackTrace();
+        if (spaceCalculator == null) {
+            if (jdk6getUsableSpace != null) {
+                try {
+                    Long l = (Long) jdk6getUsableSpace.invoke(
+                            new File(path), (Object[]) null);
+                    long space = l.longValue();
+                    // Following is a workaround for a bug in the Sun JDK 6. The
+                    // File.getFreeSpace method always returns 0 on file systems
+                    // greater than 4 TB. If we get a 0 back from the method call,
+                    // fall through to the "df" style check.
+                    if (space != 0) 
+                        return space;
+                } catch (Exception e) {
+                    // Should not happen
+                    e.printStackTrace();
+                }
             }
+            return INSTANCE.freeSpaceOS(path, OS);
+        } else {
+            return spaceCalculator.calculateAvailableSpace(new File(path));
         }
-        return INSTANCE.freeSpaceOS(path, OS);
     }
 
     /**
