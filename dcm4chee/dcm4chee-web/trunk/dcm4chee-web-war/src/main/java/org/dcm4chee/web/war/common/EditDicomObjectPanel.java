@@ -43,6 +43,7 @@ import java.util.Iterator;
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxCheckBox;
 import org.apache.wicket.ajax.markup.html.form.AjaxFallbackButton;
@@ -249,8 +250,15 @@ public class EditDicomObjectPanel extends Panel {
                         new Model<String>("") 
                       : new DicomElementModel(el, cs, tagPath);
             add(new TextField<String>("value", model)
-                                              .setVisible(!el.hasItems())
-                                              .setEnabled(el.length() < 65 && editable.isEditable(tagPath)));
+                    .setVisible(!el.hasItems())
+                    .setEnabled(el.length() < 65 && editable.isEditable(tagPath))
+                    .add(new AjaxFormComponentUpdatingBehavior("onChange") {
+                        private static final long serialVersionUID = 1L;
+
+                        @Override
+                        protected void onUpdate(AjaxRequestTarget arg0) {}
+                        
+                    }));
             
             AjaxFallbackLink<?> removeLink = new AjaxFallbackLink<Object>("remove"){
                 
