@@ -1025,7 +1025,10 @@ public class StudyListPage extends Panel {
                 } catch (RuntimeMBeanException e) {
                 	log.error("moveToTrash failed: ", e);
                 	if (e.getCause() instanceof EJBException)
-                		this.setStatus(new StringResourceModel("folder.message.deleteFailed.alreadyExists", StudyListPage.this, null));
+                		if (WebCfgDelegate.getInstance().getTrustPatientIdWithoutIssuer())
+                			this.setStatus(new StringResourceModel("folder.message.deleteFailed.alreadyExists", StudyListPage.this, null));
+                		else 
+                			this.setStatus(new StringResourceModel("folder.message.deleteFailed.notAllowed", StudyListPage.this, null));
                 } catch (Throwable t) {
                     log.error("moveToTrash failed: ", t);
                     setStatus(new StringResourceModel("folder.message.deleteFailed", StudyListPage.this,null));
