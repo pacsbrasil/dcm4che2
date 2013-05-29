@@ -995,6 +995,20 @@ public abstract class SeriesBean implements EntityBean {
     }
 
     /**
+     * @ejb.select query="SELECT OBJECT(f) FROM File f WHERE f.instance.series.pk = ?1 AND f.fileSystem.pk = ?2"
+     *             transaction-type="Supports"
+     */
+    public abstract Collection ejbSelectFiles(java.lang.Long series_fk, java.lang.Long filesystem_fk)
+            throws FinderException;
+
+    /**    
+     * @ejb.interface-method
+     */
+    public Collection getFiles(Long fsPk) throws FinderException {      
+        return ejbSelectFiles(getPk(), fsPk);
+    }
+
+    /**
      * @ejb.select query="SELECT COUNT(f) FROM File f WHERE f.instance.series.pk = ?1 AND f.fileSystem.pk = ?2"
      *             transaction-type="Supports"
      */
@@ -1021,4 +1035,18 @@ public abstract class SeriesBean implements EntityBean {
     public Collection getInstances(Long fsPk) throws FinderException {      
         return ejbSelectInstances(getPk(), fsPk);
     }
+
+    /**
+     * @ejb.select query="SELECT OBJECT(f) FROM File f WHERE f.instance.series.pk = ?1"
+     *             transaction-type="Supports"
+     */
+    public abstract Collection ejbSelectAllFiles(java.lang.Long series_fk)
+            throws FinderException;
+
+    /**    
+     * @ejb.interface-method
+     */
+    public Collection getAllFiles() throws FinderException {      
+        return ejbSelectAllFiles(getPk());
+    }    
 }
