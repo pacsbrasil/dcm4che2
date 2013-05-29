@@ -570,8 +570,9 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
         FileSystemMgt2 fsMgt = fileSystemMgt();
         if (storageFileSystem == null) {
             initStorageFileSystem(fsMgt);
-        } else if (checkStorageFileSystemStatus) {
-            checkStorageFileSystemStatus(fsMgt);
+        } else {
+            if (checkStorageFileSystemStatus)
+                checkStorageFileSystemStatus(fsMgt);
         }
         if (storageFileSystem == null) {
             log.warn("No writeable storage file system configured in group "
@@ -701,8 +702,8 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
     private void checkStorageFileSystemStatus(FileSystemMgt2 fsMgt)
             throws FinderException, RemoteException {
         try {
-            storageFileSystem = fsMgt.getFileSystem(storageFileSystem.getPk());
-            if (storageFileSystem.getStatus() == FileSystemStatus.DEF_RW) {
+            FileSystemDTO tmpFS = fsMgt.getFileSystem(storageFileSystem.getPk());
+            if (tmpFS.getStatus() == FileSystemStatus.DEF_RW) {
                 return;
             }
             log.info("Status of previous storage file system changed: "

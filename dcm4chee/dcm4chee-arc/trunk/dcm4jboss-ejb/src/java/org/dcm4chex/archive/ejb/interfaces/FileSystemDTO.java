@@ -69,6 +69,8 @@ public class FileSystemDTO implements Serializable {
     private String userInfo;
 
     private String next;
+    
+    private long fsDTOCreated = System.currentTimeMillis();
 
     public StringBuffer toString(StringBuffer sb) {
         sb.append("FileSystem[pk=").append(pk);
@@ -150,6 +152,10 @@ public class FileSystemDTO implements Serializable {
 
     public void setNext(String next) {
         this.next = next;
+    }
+
+    public long getFileSystemDTOCreated() {
+        return fsDTOCreated;
     }
 
 }
