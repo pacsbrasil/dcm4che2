@@ -592,89 +592,30 @@ div.tc-view-bibliography-options
 
 #tc-view-images-main-container
 {
-	height: 80%;
+	padding: 5px;
+	color: lightgray;
 }
 
-#tc-view-images-main-header-container
+.tc-view-images-nav-container
 {
-	height: 8%;
-	text-align: center;
-	color: gray;
-}
-
-#tc-view-images-main-header-container > span
-{
-	float: right;
-}
-
-#tc-view-images-main-header-container > a
-{
-    float: left;
-    padding: 1px;
-}
-
-#tc-view-images-main-content-container
-{
-	height: 92%;
-}
-
-#tc-view-images-main-prev-image-container
-{
-	position: relative;
-    float: left;
-    height: 100%;
-    width: 10%;
-}
-
-#tc-view-images-main-next-image-container
-{
-    position: relative;
-    float: right;
-    height: 100%;
-    width: 10%;
-}
-
-#tc-view-images-main-prev-image-container a
-{
-	position: relative;
-	float: right;
-	top: 50%;
-	margin-top: -20px;
-}
-
-#tc-view-images-main-next-image-container a
-{
-    position: relative;
-    float: left;
-    top: 50%;
-    margin-top: -20px;
-}
-
-#tc-view-images-main-image-container
-{
-	float: left;
-    height: 90%;
-    text-align: center;
-    width: 80%;
-}
-
-#tc-view-images-main-image-container img
-{
-    height: 100%;
-    width: auto;
+	display:inline-block;
+	vertical-align:middle;
+	padding:5px;
+	background-color:black;
 }
 
 #tc-view-images-thumbnail-container
 {
-    height: 20%;
-    overflow: auto;
+    overflow-x: auto;
+    overflow-y: hidden;
     white-space: nowrap;
+    padding: 3px;
 }
 
 #tc-view-images-thumbnail-container img
 {
     display: inline-block;
-    height: 90%;
+    height: 82%;
     width: auto;
     min-height: 64px;
     min-width: 64px;
@@ -686,6 +627,7 @@ div.tc-view-bibliography-options
 #tc-view-images-series-popup
 {
 	height: 6em;
+	width: 320px;
 	overflow: auto;
 }
 

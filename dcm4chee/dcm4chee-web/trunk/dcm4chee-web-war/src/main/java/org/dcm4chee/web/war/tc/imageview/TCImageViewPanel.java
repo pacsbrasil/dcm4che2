@@ -13,6 +13,7 @@ import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxEventBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
+import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.list.ListItem;
@@ -60,59 +61,65 @@ public class TCImageViewPanel extends Panel
     {
         super(id, new SeriesListModel(model));
 
-        prev = new AjaxLink<Void>("tc-view-images-prev-btn") {
-            @Override
-            public void onClick(AjaxRequestTarget target)
-            {
-                try
-                {
-                    int index = list.getPreviousImageIndex();
-                    TCImageViewImage image = list.getPreviousImage();
-                    if (image!=null)
-                    {
-                        list.setCurrentImage(image, target);
-
-                        target.addComponent(numberLabel);
-                        target.appendJavascript(getSetCurrentImageJavascript(currentImage, image));
-                        target.appendJavascript(getUpdatePreviousLinkJavascript(this, index));
-                        target.appendJavascript(getUpdateNextLinkJavascript(next, index, list.getImageCount()));
-                    }
-                }
-                catch (Exception e)
-                {
-                    log.error("Displaying previous image of teaching-file failed!", e);
-                }
-            }
-        }
-        .add(new TooltipBehaviour("tc.view.images","previous"))
+        prev = new WebMarkupContainer("tc-view-images-prev-container").add(
+	        new AjaxLink<Void>("tc-view-images-prev-btn") {
+	            @Override
+	            public void onClick(AjaxRequestTarget target)
+	            {
+	                try
+	                {
+	                    int index = list.getPreviousImageIndex();
+	                    TCImageViewImage image = list.getPreviousImage();
+	                    if (image!=null)
+	                    {
+	                        list.setCurrentImage(image, target);
+	
+	                        target.addComponent(numberLabel);
+	                        target.appendJavascript(getSetCurrentImageJavascript(currentImage, image));
+	                        target.appendJavascript(getUpdatePreviousLinkJavascript(prev, index));
+	                        target.appendJavascript(getUpdateNextLinkJavascript(next, index, list.getImageCount()));
+	                    }
+	                }
+	                catch (Exception e)
+	                {
+	                    log.error("Displaying previous image of teaching-file failed!", e);
+	                }
+	            }
+	        }
+	        .add(new TooltipBehaviour("tc.view.images","previous"))
+	        .setMarkupId("tc-view-images-prev-btn")
+        )
         .setOutputMarkupId(true)
         .setOutputMarkupPlaceholderTag(true);
         
-        next = new AjaxLink<Void>("tc-view-images-next-btn") {
-            @Override
-            public void onClick(AjaxRequestTarget target)
-            {
-                try
-                {
-                    int index = list.getNextImageIndex();
-                    TCImageViewImage image = list.getNextImage();
-                    if (image!=null)
-                    {
-                        list.setCurrentImage(image, target);
-
-                        target.addComponent(numberLabel);
-                        target.appendJavascript(getSetCurrentImageJavascript(currentImage, image));
-                        target.appendJavascript(getUpdatePreviousLinkJavascript(prev, index));
-                        target.appendJavascript(getUpdateNextLinkJavascript(this, index, list.getImageCount()));
-                    }
-                }
-                catch (Exception e)
-                {
-                    log.error("Displaying next image of teaching-file failed!", e);
-                }
-            }
-        }
-        .add(new TooltipBehaviour("tc.view.images","next"))
+        next = new WebMarkupContainer("tc-view-images-next-container").add(
+	        new AjaxLink<Void>("tc-view-images-next-btn") {
+	            @Override
+	            public void onClick(AjaxRequestTarget target)
+	            {
+	                try
+	                {
+	                    int index = list.getNextImageIndex();
+	                    TCImageViewImage image = list.getNextImage();
+	                    if (image!=null)
+	                    {
+	                        list.setCurrentImage(image, target);
+	
+	                        target.addComponent(numberLabel);
+	                        target.appendJavascript(getSetCurrentImageJavascript(currentImage, image));
+	                        target.appendJavascript(getUpdatePreviousLinkJavascript(prev, index));
+	                        target.appendJavascript(getUpdateNextLinkJavascript(next, index, list.getImageCount()));
+	                    }
+	                }
+	                catch (Exception e)
+	                {
+	                    log.error("Displaying next image of teaching-file failed!", e);
+	                }
+	            }
+	        }
+	        .add(new TooltipBehaviour("tc.view.images","next"))
+	        .setMarkupId("tc-view-images-next-btn")
+        )
         .setOutputMarkupId(true)
         .setOutputMarkupPlaceholderTag(true);
         
@@ -161,6 +168,9 @@ public class TCImageViewPanel extends Panel
         });
         numberLabel.setOutputMarkupId(true);
         
+        Label seriesChooserLabel = new Label("tc-view-images-series-chooser-label", 
+        		TCUtilities.getLocalizedString("tc.view.images.serieschooser.label"));
+        
         final SeriesListPopup seriesPopup = new SeriesListPopup(getModel(), getPopupManager()) {
             @Override
             protected void seriesClicked(TCImageViewSeries series, AjaxRequestTarget target)
@@ -197,7 +207,7 @@ public class TCImageViewPanel extends Panel
         seriesChooser.add(new TooltipBehaviour("tc.view.images","serieschooser"));
         seriesChooser.setOutputMarkupId(true);
         seriesChooser.setMarkupId("tc-view-images-series-chooser");
-        seriesChooser.add(new Label("tc-view-images-series-chooser-label", new AbstractReadOnlyModel<String>() {
+        seriesChooser.add(new Label("tc-view-images-series-chooser-caption", new AbstractReadOnlyModel<String>() {
             @Override
             public String getObject()
             {
@@ -223,6 +233,7 @@ public class TCImageViewPanel extends Panel
                 new Model<String>("visibility:"+
                         (list.getCurrentImageIndex()<list.getImageCount()-1&&list.getImageCount()>1?"visible":"hidden"))));
 
+        add(seriesChooserLabel);
         add(seriesChooser);
         add(seriesPopup);
         add(currentImage);          
