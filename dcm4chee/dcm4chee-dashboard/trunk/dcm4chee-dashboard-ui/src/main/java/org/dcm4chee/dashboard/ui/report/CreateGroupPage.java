@@ -86,7 +86,7 @@ public class CreateGroupPage extends SecureSessionCheckPage {
             super(id);
                       
             add((new TextField<String>("dashboard.report.add-group-form.groupname.input", newGroupname)
-            .add(new PatternValidator("^[A-Za-z0-9]+$"))
+            .add(new PatternValidator("^[A-Za-z0-9äÄöÖüÜ-]+$"))
             .setRequired(true)));
             add(new AjaxFallbackButton("add-group-submit", AddGroupForm.this) {
         
