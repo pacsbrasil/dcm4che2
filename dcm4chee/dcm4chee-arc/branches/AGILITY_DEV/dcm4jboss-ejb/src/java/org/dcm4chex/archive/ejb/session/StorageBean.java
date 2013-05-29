@@ -132,7 +132,7 @@ public abstract class StorageBean implements SessionBean {
     
     private static final int MAX_PK_CACHE_ENTRIES = 100;
     private static Map seriesPkCache = Collections.synchronizedMap(
-     new LinkedHashMap() {        
+     new LinkedHashMap() {
         protected boolean removeEldestEntry(Map.Entry eldest) {
            return size() > MAX_PK_CACHE_ENTRIES;
         }
@@ -216,7 +216,7 @@ public abstract class StorageBean implements SessionBean {
                 instance.setAvailability(fs.getAvailability());
                 instance.addRetrieveAET(fs.getRetrieveAET());
                 if (updateStudyAccessTime) {
-                touchStudyOnFileSystem(ds.getString(Tags.StudyInstanceUID), fs);                
+                    touchStudyOnFileSystem(ds.getString(Tags.StudyInstanceUID), fs);
                 }
             } else {
                 instance.setAvailability(
@@ -676,4 +676,3 @@ public abstract class StorageBean implements SessionBean {
                 .getAttributes(false);
     }
 }
-
