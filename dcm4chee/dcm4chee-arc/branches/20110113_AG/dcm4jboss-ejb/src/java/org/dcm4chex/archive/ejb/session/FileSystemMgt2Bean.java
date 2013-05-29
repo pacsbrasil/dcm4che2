@@ -1049,13 +1049,14 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
             boolean delStudyFromDB, boolean delPatientWithoutObjects)
 			throws ConcurrentStudyStorageException, CreateException {
 		try {
+			long fsPk = order.getFsPk();
 			PrivateManagerLocal privManager = privManager();
 			Collection<FileDTO> fileDTOs = new ArrayList<FileDTO>();
 			SubtreeBuilder subtreeBuilder = new SubtreeBuilder();
 
 			for (Long instancePk : instancePks) {
 				InstanceLocal instance = instHome.findByPrimaryKey(instancePk);
-				Collection files = instance.getFiles();
+				Collection files = instance.getFiles(fsPk);
 				fileDTOs.addAll(marshallPrivFiles(privManager
 						.moveFilesToTrash(files)));
 
