@@ -152,6 +152,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     protected static final String SERIES_STORED = "SERIES_STORED";
 
+    private static final String ASSOC_START_TIME = "ASSOC_START_TIME";
+
     //    private static final String SOP_IUIDS = "SOP_IUIDS";
 
     protected final StoreScpService service;
@@ -665,6 +667,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             SeriesStored seriesStored = handleSeriesStored(assoc, store, ds);
             boolean newSeries = seriesStored == null;
             boolean newStudy = false;
+            boolean fsSwitched = false;
             String seriuid = ds.getString(Tags.SeriesInstanceUID);
             if (newSeries) {
                 Dataset mwlFilter = service.getCoercionAttributesFor(callingAET,
@@ -680,6 +683,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     service.generatePatientID(ds, ds, calledAET);
                 }
                 newStudy = !store.studyExists(ds.getString(Tags.StudyInstanceUID));
+            } else {
+                fsSwitched = fsDTO.getFileSystemDTOCreated() > ((Long)assoc.getProperty(ASSOC_START_TIME));
             }
             perfMon.start(activeAssoc, rq,
                     PerfCounterEnum.C_STORE_SCP_OBJ_REGISTER_DB);
@@ -688,14 +693,14 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             Dataset coercedElements;
             try {
                 coercedElements = updateDB(store, ds, fspk, filePath,
-                        fileLength, md5sum, newSeries);
+                        fileLength, md5sum, newSeries || fsSwitched);
             } catch (NonUniquePatientIDException e) {
                 service.coercePatientID(ds);
                 coerced.putLO(Tags.PatientID, ds.getString(Tags.PatientID));
                 coerced.putLO(Tags.IssuerOfPatientID,
                         ds.getString(Tags.IssuerOfPatientID));
                 coercedElements = updateDB(store, ds, fspk, filePath,
-                        fileLength, md5sum, newSeries);
+                        fileLength, md5sum, newSeries || fsSwitched);
             }
             if(newSeries) {
                 seriesStored = initSeriesStored(ds, callingAET, retrieveAET);
@@ -1384,8 +1389,10 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     }
 
     public void received(Association src, PDU pdu) {
-        if (pdu instanceof AAssociateRQ)
+        if (pdu instanceof AAssociateRQ) {
             perfMon.assocEstStart(src, Command.C_STORE_RQ);
+            src.putProperty(ASSOC_START_TIME, System.currentTimeMillis());
+        }
     }
 
     public void write(Association src, Dimse dimse) {

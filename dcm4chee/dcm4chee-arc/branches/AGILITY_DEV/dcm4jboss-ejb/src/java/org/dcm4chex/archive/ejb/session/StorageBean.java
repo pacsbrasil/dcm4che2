@@ -215,7 +215,9 @@ public abstract class StorageBean implements SessionBean {
                         instance, fs);
                 instance.setAvailability(fs.getAvailability());
                 instance.addRetrieveAET(fs.getRetrieveAET());
+                if (updateStudyAccessTime) {
                 touchStudyOnFileSystem(ds.getString(Tags.StudyInstanceUID), fs);                
+                }
             } else {
                 instance.setAvailability(
                         Availability.toInt(ds.getString(Tags.InstanceAvailability)));
