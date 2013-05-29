@@ -160,7 +160,7 @@ public class CreateOrEditAETPage extends SecureSessionCheckPage {
         form.addLabeledDropDownChoice("fileSystemGroupID", null, 
                 ((FileSystemHomeLocal) JNDIUtils.lookup(FileSystemHomeLocal.JNDI_NAME)).listGroupIDs()
                 ).setNullValid(true);
-        form.addLabeledTextField("wadoURL").add(new UrlValidator1()); //Wicket UrlValidator doesn't accept http://hostname:8080/web!
+        form.addLabeledTextField("wadoURL").add(new UrlValidator1().addAllowedNoneURLValue("DICOM_QR_ONLY")); //Wicket UrlValidator doesn't accept http://hostname:8080/web!
         form.addLabeledTextField("userID"); 
         form.add(new Label("password.label", new ResourceModel("ae.password") ) );
         form.add(new PasswordTextField("password").setResetPassword(false).setRequired(false)); 
