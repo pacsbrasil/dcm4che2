@@ -37,7 +37,10 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.web.common.validators;
 
+import java.util.ArrayList;
+
 import org.apache.wicket.util.lang.Classes;
+import org.apache.wicket.validation.IValidatable;
 import org.apache.wicket.validation.validator.UrlValidator;
 
 /**
@@ -53,7 +56,20 @@ public class UrlValidator1 extends UrlValidator {
 
     private static final long serialVersionUID = 1L;
     private static final String DUMMY_TOP_DOMAIN = ".at";
+    private final ArrayList<String> allowedNoneURLValues = new ArrayList<String>();
 
+    public UrlValidator1 addAllowedNoneURLValue(String value) {
+        allowedNoneURLValues.add(value);
+        return this;
+    }
+    
+    @Override
+    protected void onValidate(IValidatable<String> validatable) {
+        String url = validatable.getValue();
+        if (url != null && !allowedNoneURLValues.contains(url) && !isValid(url)) {
+            error(validatable);
+        }
+    }
     @Override
     protected boolean isValidAuthority(String authority) {
         if ( authority == null )
