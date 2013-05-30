@@ -74,6 +74,7 @@ import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
+import org.dcm4chex.archive.exceptions.NonUniquePatientIDException;
 
 /**
  * @author gunter.zeilinger@tiani.com
@@ -158,6 +159,14 @@ public abstract class StudyMgtBean implements SessionBean {
         }
     }
     
+    private PatientLocal findOrCreatePatientByIssuerPID(Dataset ds) throws FinderException, CreateException {
+        try {
+            return patHome.selectPatient(ds.getString(Tags.PatientID), ds.getString(Tags.IssuerOfPatientID));
+        } catch (ObjectNotFoundException onfe) {
+            return patHome.create(ds);
+        }
+    }
+    
     private PatientLocal findOrCreatePatient(Dataset ds,
             PatientMatching matching) throws FinderException, CreateException {
         try {
@@ -193,9 +202,7 @@ public abstract class StudyMgtBean implements SessionBean {
             StudyLocal study = getStudy(iuid);
             if (study == null) {
                 // Study may be deleted already
-                log
-                        .warn("Unable to update the study that does not exist. StudyIuid: "
-                                + iuid);
+                log.warn("Unable to update the study that does not exist. StudyIuid: " + iuid);
                 return;
             }
 
@@ -229,14 +236,14 @@ public abstract class StudyMgtBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public void updatePatientOnly(String iuid, Dataset ds, Dataset modAttrs, PatientMatching matching)
-            throws DcmServiceException {
+    public void updatePatientOnly(String iuid, Dataset ds, Dataset modAttrs)
+            throws DcmServiceException{
         try {
             PatientLocal patient = getStudy(iuid).getPatient();
             Dataset origModAttrs = (modAttrs == null) ? null : DcmObjectFactory.getInstance().newDataset();
             
         	// Existing patient with same PID and ISSUER
-        	PatientLocal lookForExisting = findOrCreatePatient(ds, matching);
+        	PatientLocal lookForExisting = findOrCreatePatientByIssuerPID(ds);
         	if (lookForExisting != null && lookForExisting.getPk() != patient.getPk()) {
         		// Move Studies to new patient
         		StudyLocal study = getStudy(iuid);
@@ -249,9 +256,12 @@ public abstract class StudyMgtBean implements SessionBean {
 
         		DcmElement el = modAttrs.putSQ(Tags.OriginalAttributesSeq);
                 Dataset item = el.addNewItem();
-                item.putAll(origModAttrs);                
-        		AttrUtils.fetchModifiedAttributes(ds, origModAttrs, modAttrs, AttributeFilter.getPatientAttributeFilter());
 
+        		if(lookForExisting.updateAttributes(ds, origModAttrs)) {
+                    item.putAll(origModAttrs);                
+            		AttrUtils.fetchModifiedAttributes(ds, origModAttrs, modAttrs, AttributeFilter.getPatientAttributeFilter());
+        		}
+        		
         	} else {
                 DcmElement el = modAttrs.putSQ(Tags.OriginalAttributesSeq);
                 Dataset item = el.addNewItem();
@@ -261,8 +271,6 @@ public abstract class StudyMgtBean implements SessionBean {
                     AttrUtils.fetchModifiedAttributes(ds, origModAttrs, modAttrs, AttributeFilter.getPatientAttributeFilter());
                 }        		
         	}
-                        
-   
         } catch (Exception e) {
             throw new EJBException(e);
         }
