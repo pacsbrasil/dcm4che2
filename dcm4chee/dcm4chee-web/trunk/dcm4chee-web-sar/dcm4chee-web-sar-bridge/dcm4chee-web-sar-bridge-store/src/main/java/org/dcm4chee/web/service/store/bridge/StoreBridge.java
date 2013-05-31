@@ -140,8 +140,8 @@ public class StoreBridge extends ServiceMBeanSupport {
     public void importFile(FileDTO fileDTO, Dataset ds, String prevseriuid,
             boolean last) throws Exception {
         server.invoke(storeScpServiceName, "importFile", 
-                new Object[] {fileDTO, ds, prevseriuid, last},
-                new String[] {FileDTO.class.getName(), Dataset.class.getName(), String.class.getName(), boolean.class.getName()});
+                new Object[] {fileDTO, ds, prevseriuid, last, true},
+                new String[] {FileDTO.class.getName(), Dataset.class.getName(), String.class.getName(), boolean.class.getName(), boolean.class.getName()});
     }
  }
 
