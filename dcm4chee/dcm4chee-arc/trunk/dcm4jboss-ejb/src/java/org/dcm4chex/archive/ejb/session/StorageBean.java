@@ -76,6 +76,7 @@ import org.dcm4chex.archive.common.FileSystemStatus;
 import org.dcm4chex.archive.common.PatientMatching;
 import org.dcm4chex.archive.common.PrivateTags;
 import org.dcm4chex.archive.common.SeriesStored;
+import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileLocal;
 import org.dcm4chex.archive.ejb.interfaces.FileLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemLocal;
@@ -257,6 +258,26 @@ public abstract class StorageBean implements SessionBean {
                 throw new DcmServiceException(Status.ProcessingFailure, e);
             }
         }
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public Collection<FileDTO> getDuplicateFiles(FileDTO dto) throws FinderException {
+        try {
+            InstanceLocal instance = instHome.findBySopIuid(dto.getSopInstanceUID());
+            return toFileDTOs(instance.getDuplicateFiles(dto.getFileSystemPk(), dto.getMd5String()));
+        } catch (ObjectNotFoundException ignore) {
+            return Collections.EMPTY_LIST;
+        }
+    }
+    
+    private Collection<FileDTO> toFileDTOs(Collection c) {
+        Collection<FileDTO> dtos = new ArrayList<FileDTO>();
+        for (FileLocal f : (Collection<FileLocal>) c) {
+            dtos.add(f.getFileDTO());
+        }
+        return dtos;
     }
 
     private void touchStudyOnFileSystem(String siud, FileSystemLocal fs)

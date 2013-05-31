@@ -482,9 +482,9 @@ public class KeyObjectService extends ServiceMBeanSupport {
 
     protected void importFile(FileDTO fileDTO, Dataset dataset) throws Exception {
         server.invoke(storeScpServiceName, "importFile",
-                new Object[] { fileDTO, dataset, null, Boolean.TRUE },
+                new Object[] { fileDTO, dataset, null, Boolean.TRUE, false },
                 new String[] { FileDTO.class.getName(), Dataset.class.getName(),
-                        String.class.getName(), boolean.class.getName() });
+                        String.class.getName(), boolean.class.getName(), boolean.class.getName() });
     }
     
 }

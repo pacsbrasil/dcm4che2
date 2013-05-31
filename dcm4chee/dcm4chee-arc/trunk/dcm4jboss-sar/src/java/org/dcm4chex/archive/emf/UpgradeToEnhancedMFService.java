@@ -450,9 +450,9 @@ public class UpgradeToEnhancedMFService extends ServiceMBeanSupport
 
     private void importFile(FileDTO fileDTO, Dataset dataset) throws Exception {
         server.invoke(storeScpServiceName, "importFile",
-                new Object[] { fileDTO, dataset, null, Boolean.TRUE },
+                new Object[] { fileDTO, dataset, null, Boolean.TRUE, Boolean.TRUE },
                 new String[] { FileDTO.class.getName(), Dataset.class.getName(),
-                        String.class.getName(), boolean.class.getName() });
+                        String.class.getName(), boolean.class.getName(), boolean.class.getName() });
     }
 
     private File locateInstance(String iuid) throws Exception {

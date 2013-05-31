@@ -451,6 +451,20 @@ public abstract class InstanceBean implements EntityBean {
     }
 
     /**
+     * @ejb.select query="SELECT OBJECT(f) FROM File f WHERE f.instance.pk = ?1 AND f.fileSystem.pk = ?2 AND f.fileMd5Field = ?3"
+     *             transaction-type="Supports"
+     */
+    public abstract Collection ejbSelectDuplicateFiles(java.lang.Long instance_fk, java.lang.Long filesystem_fk, String md5)
+            throws FinderException;
+
+    /**    
+     * @ejb.interface-method
+     */
+    public Collection getDuplicateFiles(Long fsPk, String md5) throws FinderException {      
+        return ejbSelectDuplicateFiles(getPk(), fsPk, md5);
+    }
+
+    /**
      * @ejb.select query="SELECT COUNT(f) FROM File f WHERE f.instance.pk = ?1 AND f.fileSystem.pk = ?2"
      *             transaction-type="Supports"
      */

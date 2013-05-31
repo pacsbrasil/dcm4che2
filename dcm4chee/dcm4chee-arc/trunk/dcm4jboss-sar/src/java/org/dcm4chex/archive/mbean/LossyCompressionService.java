@@ -523,9 +523,9 @@ public class LossyCompressionService extends ServiceMBeanSupport {
     private void importFile(FileDTO fileDTO, Dataset ds, String prevseriuid,
             boolean last) throws Exception {
         server.invoke(this.getStoreScpServiceName(), "importFile", new Object[] {
-                fileDTO, ds, prevseriuid, new Boolean(last) }, new String[] {
+                fileDTO, ds, prevseriuid, new Boolean(last), false }, new String[] {
                 FileDTO.class.getName(), Dataset.class.getName(),
-                String.class.getName(), boolean.class.getName() });
+                String.class.getName(), boolean.class.getName(), boolean.class.getName() });
     }
 
     private boolean isDisabled(int hour) {

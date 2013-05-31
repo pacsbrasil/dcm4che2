@@ -928,9 +928,9 @@ public class ContentEditService extends ServiceMBeanSupport {
     private void importFile(FileDTO fileDTO, Dataset ds, String prevseriuid,
             boolean last) throws Exception {
         server.invoke(this.storeScpServiceName, "importFile", new Object[] {
-                fileDTO, ds, prevseriuid, new Boolean(last) }, new String[] {
+                fileDTO, ds, prevseriuid, new Boolean(last), false }, new String[] {
                 FileDTO.class.getName(), Dataset.class.getName(),
-                String.class.getName(), boolean.class.getName() });
+                String.class.getName(), boolean.class.getName(), boolean.class.getName() });
     }
 
     protected void logPatientRecord(Dataset ds, AuditEvent.ActionCode actionCode) {

@@ -896,20 +896,44 @@ public class StoreScpService extends AbstractScpService {
      *                last file to import
      */
     public void importFile(FileDTO fileDTO, Dataset ds, String prevseriuid,
-            boolean last) throws Exception {
+            boolean last, boolean deleteFileIfDuplicateExists) throws Exception {
         Storage store = getStorage();
         String seriuid = ds.getString(Tags.SeriesInstanceUID);
+        String iuid = ds.getString(Tags.SOPInstanceUID);
         if (prevseriuid != null && !prevseriuid.equals(seriuid)) {
             logInstancesStoredAndSendSeriesStoredNotification(store, prevseriuid);
         }
-        String cuid = ds.getString(Tags.SOPClassUID);
-        String iuid = ds.getString(Tags.SOPInstanceUID);
-        FileMetaInfo fmi = DcmObjectFactory.getInstance().newFileMetaInfo(cuid,
-                iuid, fileDTO.getFileTsuid());
-        ds.setFileMetaInfo(fmi);
-        String filePath = fileDTO.getFilePath();
-        scp.updateDB(store, ds, fileDTO.getFileSystemPk(), filePath, fileDTO.getFileSize(),
-                fileDTO.getFileMd5(), fileDTO.getFileStatus(), true, false);
+        if (!iuid.equals(fileDTO.getSopInstanceUID()))
+               fileDTO.setSopInstanceUID(iuid); 
+        Collection<FileDTO> duplicates = store.getDuplicateFiles(fileDTO);
+        if (duplicates.isEmpty()) {
+            String cuid = ds.getString(Tags.SOPClassUID);
+            FileMetaInfo fmi = DcmObjectFactory.getInstance().newFileMetaInfo(cuid,
+                    iuid, fileDTO.getFileTsuid());
+            ds.setFileMetaInfo(fmi);
+            String filePath = fileDTO.getFilePath();
+            scp.updateDB(store, ds, fileDTO.getFileSystemPk(), filePath, fileDTO.getFileSize(),
+                    fileDTO.getFileMd5(), fileDTO.getFileStatus(), true, false);
+        } else {
+            log.info("Import of file "+fileDTO+" ignored! Duplicate already exists!");
+            if (deleteFileIfDuplicateExists) {
+                boolean delete = true;
+                for (FileDTO dto : duplicates) {
+                    if (dto.getFilePath().equals(fileDTO.getFilePath())) {
+                        delete = false;
+                        break;
+                    }
+                }
+                if (delete) {
+                    File f = FileUtils.toFile(fileDTO.getDirectoryPath(), fileDTO.getFilePath());
+                    log.info("Remove imported file (duplicate exists):"+f);
+                    if (f.delete())
+                        log.info("M-DELETE file:"+f);
+                } else {
+                    log.info("Skip deleting imported file. File is already referenced by instance!");
+                }
+            }
+        }
         if (last) {
             logInstancesStoredAndSendSeriesStoredNotification(store, seriuid);
         }

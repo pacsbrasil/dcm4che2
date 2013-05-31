@@ -1326,6 +1326,11 @@ Note: A default delay (without '&lt;AE Title&gt;:') must be configured!
         <name>last</name>
         <type>boolean</type>
       </parameter>
+      <parameter>
+        <description>Delete the given file if a duplicate file (same md5 checksum) already exists on the same filesystem.</description>
+        <name>deleteFileIfDuplicateExists</name>
+        <type>boolean</type>
+      </parameter>
       <return-type>void</return-type>
    </operation>
    <operation impact="ACTION">
