@@ -92,6 +92,16 @@ public class DeleteStudyService extends ServiceMBeanSupport
 
     private int availabilityOfExternalRetrieveable;
 
+    protected final JndiHelper jndiHelper;
+
+    public DeleteStudyService() {
+        jndiHelper = new JndiHelper();
+    }
+
+    DeleteStudyService(JndiHelper jndiHelper) {
+        this.jndiHelper = jndiHelper;
+    }
+
     public boolean isDeleteStudyFromDB() {
         return deleteStudyFromDB;
     }
