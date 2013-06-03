@@ -127,7 +127,6 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
                 : FileUtils.formatSize(minFreeDiskSpace);
     }
 
-    @Override
 	public long getMinFreeDiskSpaceBytes() {
         return minFreeDiskSpace;
     }
@@ -141,7 +140,6 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
         return FileUtils.formatSize(expectedDataVolumePerDay);
     }
 
-    @Override
 	public long getExpectedDataVolumePerDayBytes() throws Exception {
         Calendar now = Calendar.getInstance();
         if (adjustExpectedDataVolumePerDay != 0
@@ -269,7 +267,7 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
         }
     };
 
-    private final NotificationListener deleteOrphanedPrivateFilesListener =
+    private NotificationListener deleteOrphanedPrivateFilesListener =
             new NotificationListener() {
         private Thread thread;
 
@@ -500,7 +498,6 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
                 getFileSystemGroupID(), dirPath,
                 FileSystemStatus.toInt(status));
         selectStorageFileSystem();
-        
         return fsDTO;
     }
 
@@ -561,7 +558,13 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
 
     private synchronized boolean switchFileSystem(FileSystemMgt2 fsMgt,
             FileSystemDTO fsDTO) throws Exception {
-        if (storageFileSystem.getPk() != fsDTO.getPk()) {
+	if (!updateStorageFileSystem(fsMgt)) {
+	    return selectStorageFileSystem() != null;
+	}
+        if (storageFileSystem == null || fsDTO == null) {
+            log.info("Storage filesystem not set! No RW filesystem configured or no space left!");
+            return false;
+        } else if (storageFileSystem.getPk() != fsDTO.getPk()) {
             log.info("Storage file system has already been switched from "
                     + fsDTO + " to " + storageFileSystem
                     + " by another thread.");
@@ -654,6 +657,19 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
         }
         checkFreeDiskSpaceTime = 0;
     }
+    private boolean updateStorageFileSystem(FileSystemMgt2 fsMgt) throws FinderException, RemoteException {
+        if (storageFileSystem == null)
+            return false;
+        try {
+            storageFileSystem = fsMgt.getFileSystem(storageFileSystem.getPk());
+            return true;
+        } catch (ObjectNotFoundException ignore) {
+            log.warn("Current storage file system: " + storageFileSystem
+                    + " was removed from configuration");
+            storageFileSystem = null;
+            return false;
+        }
+    }
 
     private void initStorageFileSystem(FileSystemMgt2 fsMgt) throws Exception {
         storageFileSystem = fsMgt.getDefRWFileSystemsOfGroup(
@@ -731,7 +747,6 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
         return false;
     }
 
-    @Override
 	protected String showTriggerInfo() {
         StringBuilder sb = new StringBuilder();
         sb.append("Trigger intervall: ").append(getScheduleStudiesForDeletionInterval())
