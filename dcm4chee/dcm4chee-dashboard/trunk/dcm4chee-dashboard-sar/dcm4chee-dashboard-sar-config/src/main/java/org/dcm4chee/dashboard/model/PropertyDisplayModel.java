@@ -45,7 +45,7 @@ import java.io.Serializable;
  * @version $Revision$ $Date$
  * @since 25.11.2009
  */
-public class SystemPropertyModel implements Serializable, Comparable<SystemPropertyModel> {
+public class PropertyDisplayModel implements Serializable, Comparable<PropertyDisplayModel> {
 
     private static final long serialVersionUID = 1L;
     
@@ -54,10 +54,10 @@ public class SystemPropertyModel implements Serializable, Comparable<SystemPrope
     String name;
     String value;
     
-    public SystemPropertyModel() {
+    public PropertyDisplayModel() {
     }
 
-    public SystemPropertyModel(String group, String label, String name, String value) {
+    public PropertyDisplayModel(String group, String label, String name, String value) {
         this.setGroup(group);
         this.setLabel(label);
         this.setName(name);
@@ -100,7 +100,7 @@ public class SystemPropertyModel implements Serializable, Comparable<SystemPrope
     	return name;
     }
 
-    public int compareTo(SystemPropertyModel o) {
+    public int compareTo(PropertyDisplayModel o) {
     	if (this.label == null) 
     		return o.getLabel() == null ? 0 : -1; 
     	else 

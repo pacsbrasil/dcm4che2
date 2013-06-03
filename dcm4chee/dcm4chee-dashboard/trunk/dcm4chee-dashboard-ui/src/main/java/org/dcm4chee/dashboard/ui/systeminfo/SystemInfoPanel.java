@@ -78,7 +78,7 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.dashboard.mbean.DashboardDelegator;
 import org.dcm4chee.dashboard.model.MBeanValueModel;
-import org.dcm4chee.dashboard.model.SystemPropertyModel;
+import org.dcm4chee.dashboard.model.PropertyDisplayModel;
 import org.dcm4chee.dashboard.ui.DashboardPanel;
 import org.dcm4chee.dashboard.ui.common.DashboardTreeTable;
 import org.dcm4chee.dashboard.ui.util.CSSUtils;
@@ -159,37 +159,39 @@ public class SystemInfoPanel extends Panel {
                 }
             });
             
-            DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(new SystemPropertyModel());
-            Map<String, List<SystemPropertyModel>> propertyMap = null; 
-            		
+            DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(new PropertyDisplayModel());
+            Map<String, List<PropertyDisplayModel>> propertyDisplayMap = new HashMap<String, List<PropertyDisplayModel>>();            		
+
             try {
-            	propertyMap = DashboardDelegator.getInstance((((BaseWicketApplication) getApplication()).getInitParameter("DashboardServiceName"))).getSystemProperties();
+                for (PropertyDisplayModel model : DashboardDelegator.getInstance((((BaseWicketApplication) getApplication()).getInitParameter("DashboardServiceName"))).getSystemProperties()) {
+                    if (!propertyDisplayMap.containsKey(model.getGroup()))
+                        propertyDisplayMap.put(model.getGroup(), new ArrayList<PropertyDisplayModel>());
+                    propertyDisplayMap.get(model.getGroup()).add((PropertyDisplayModel) model);
+                }
             } catch (Exception e) {
                 log.error("Can't create list for system properties: ", e);
             }
 
             try {
-            	if (propertyMap == null)
-            		propertyMap = new HashMap<String, List<SystemPropertyModel>>();
                 for (MBeanValueModel model : DashboardDelegator.getInstance((((BaseWicketApplication) getApplication()).getInitParameter("DashboardServiceName"))).getMBeanValues()) {
-                    if (!propertyMap.containsKey(model.getGroup()))
-                        propertyMap.put(model.getGroup(), new ArrayList<SystemPropertyModel>());
-                    propertyMap.get(model.getGroup()).add((SystemPropertyModel) model);
+                    if (!propertyDisplayMap.containsKey(model.getGroup()))
+                        propertyDisplayMap.put(model.getGroup(), new ArrayList<PropertyDisplayModel>());
+                    propertyDisplayMap.get(model.getGroup()).add((PropertyDisplayModel) model);
                 }
             } catch (Exception e) {
                 log.error("Can't create list for mbean values: ", e);
             }
             
-            for (String key : propertyMap.keySet()) {
-                SystemPropertyModel group = new SystemPropertyModel();
+            for (String key : propertyDisplayMap.keySet()) {
+                PropertyDisplayModel group = new PropertyDisplayModel();
                 group.setLabel(key);
                 DefaultMutableTreeNode groupNode;
                 rootNode.add(groupNode = new DefaultMutableTreeNode(group));
 
-                List<SystemPropertyModel> propertyModelList = propertyMap.get(key);
-                Collections.sort(propertyModelList);
-                for (SystemPropertyModel propertyModel : propertyModelList) {
-                    groupNode.add(new DefaultMutableTreeNode(propertyModel));
+                List<PropertyDisplayModel> propertyDisplayModelList = propertyDisplayMap.get(key);
+                Collections.sort(propertyDisplayModelList);
+                for (PropertyDisplayModel propertyDisplayModel : propertyDisplayModelList) {
+                    groupNode.add(new DefaultMutableTreeNode(propertyDisplayModel));
                 }
             }
 
@@ -240,12 +242,12 @@ public class SystemInfoPanel extends Panel {
                     super.onComponentTag(tag);
 
                     tag.put("style", "background-image: url('" + 
-                    ((((SystemPropertyModel) ((DefaultMutableTreeNode) node).getUserObject()).getGroup() == null) ? 
+                    ((((PropertyDisplayModel) ((DefaultMutableTreeNode) node).getUserObject()).getGroup() == null) ? 
                         getRequestCycle().urlFor(ImageManager.IMAGE_DASHBOARD_PROPERTY_FOLDER) 
                         : getRequestCycle().urlFor(ImageManager.IMAGE_DASHBOARD_PROPERTY)) 
                         +"')"
                     );
-                    tag.put("title", ((SystemPropertyModel) ((DefaultMutableTreeNode) node).getUserObject()).getDescription());
+                    tag.put("title", ((PropertyDisplayModel) ((DefaultMutableTreeNode) node).getUserObject()).getDescription());
                 }
             };
         }        

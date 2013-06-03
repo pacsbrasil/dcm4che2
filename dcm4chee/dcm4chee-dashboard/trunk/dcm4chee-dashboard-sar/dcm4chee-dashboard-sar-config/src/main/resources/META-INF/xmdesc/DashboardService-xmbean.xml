@@ -53,18 +53,27 @@
         <type>java.lang.String</type>
     </attribute>
 	<attribute access="read-write" getMethod="getPropertyList" setMethod="setPropertyList">
-        <description>
+        <description><![CDATA[
             Represents the system properties to display, 
-            as strings, separated by newline
-            format is group;label;property
+            separated by newline
+            using json format, f.e.:
+            {
+            	"group":"Java",
+            	"label":"Version",
+                "name":"java.version",
+            }<br />
+            group is the name of the table group for display.<br />
+            label is the display name of the table row.<br />
+            name is the system property name.]]>
         </description>
         <name>propertyList</name>
         <type>java.lang.String</type>
         <descriptors>
-            <value>Operating system;Name;os.name
-Operating system;Architecture;os.arch
-Operating system;Version;os.version
-Java;Version;java.version</value>
+            <value>{"group":"Operating system","label":"Name","name":"os.name"}
+            {"group":"Operating system","label":"Architecture","name":"os.arch"}
+            {"group":"Operating system","label":"Version","name":"os.version"}
+			{"group":"Java","label":"Version","name":"java.version"}
+			</value>
         </descriptors>
     </attribute>
     <attribute access="read-write" getMethod="getMBeanValueList" setMethod="setMBeanValueList">
@@ -184,7 +193,7 @@ Java;Version;java.version</value>
    <operation>
       <description>MBean Operation.</description>
       <name>getSystemProperties</name>
-	  <return-type>java.util.Map</return-type>
+	  <return-type>java.util.List</return-type>
    </operation>
    <operation>
       <description>MBean Operation.</description>

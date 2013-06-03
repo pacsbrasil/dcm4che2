@@ -52,7 +52,8 @@ import javax.management.ReflectionException;
 
 import org.dcm4chee.dashboard.model.MBeanValueModel;
 import org.dcm4chee.dashboard.model.ReportModel;
-import org.dcm4chee.dashboard.model.SystemPropertyModel;
+import org.dcm4chee.dashboard.model.PropertyDisplayModel;
+import org.dcm4chee.dashboard.model.PropertyDisplayModel;
 import org.jboss.mx.util.MBeanServerLocator;
 
 /**
@@ -128,8 +129,8 @@ public final class DashboardDelegator {
     }
     
     @SuppressWarnings("unchecked")
-    public Map<String, List<SystemPropertyModel>> getSystemProperties() throws InstanceNotFoundException, MalformedObjectNameException, ReflectionException, MBeanException, NullPointerException {
-        return (Map<String, List<SystemPropertyModel>>) server.invoke(
+    public List<PropertyDisplayModel> getSystemProperties() throws InstanceNotFoundException, MalformedObjectNameException, ReflectionException, MBeanException, NullPointerException {
+        return (List<PropertyDisplayModel>) server.invoke(
                         this.objectName,
                         "getSystemProperties", null, null);
     }

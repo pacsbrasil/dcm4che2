@@ -46,7 +46,7 @@ import java.util.List;
  * @version $Revision$ $Date$
  * @since 14.09.2011
  */
-public class MBeanValueModel extends SystemPropertyModel {
+public class MBeanValueModel extends PropertyDisplayModel {
 
     private static final long serialVersionUID = 1L;
     

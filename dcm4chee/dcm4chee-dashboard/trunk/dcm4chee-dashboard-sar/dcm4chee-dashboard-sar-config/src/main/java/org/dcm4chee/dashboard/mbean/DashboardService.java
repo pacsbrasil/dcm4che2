@@ -67,7 +67,7 @@ import net.sf.json.JSONObject;
 
 import org.dcm4chee.dashboard.model.ReportModel;
 import org.dcm4chee.dashboard.model.MBeanValueModel;
-import org.dcm4chee.dashboard.model.SystemPropertyModel;
+import org.dcm4chee.dashboard.model.PropertyDisplayModel;
 import org.jboss.system.ServiceMBeanSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -210,36 +210,35 @@ public class DashboardService extends ServiceMBeanSupport {
         return this.otherList;
     }
 
-    public Map<String, List<SystemPropertyModel>> getSystemProperties() throws InstanceNotFoundException, MalformedObjectNameException, ReflectionException, MBeanException, NullPointerException {
+    public List<PropertyDisplayModel> getSystemProperties() throws InstanceNotFoundException, MalformedObjectNameException, ReflectionException, MBeanException, NullPointerException {
 
-        Map<String, List<SystemPropertyModel>> propertyMap = new HashMap<String, List<SystemPropertyModel>>();
-        for (String property : this.propertyList) {
+        List<PropertyDisplayModel> propertyDisplayModelList = new ArrayList<PropertyDisplayModel>();
+        for (String systemPropertyValue : this.propertyList) {
             try {
-                String[] attributes = property.split(";");
-                SystemPropertyModel propertyModel = new SystemPropertyModel(
-                                attributes[0], 
-                                attributes[1],
-                                attributes[2], 
-                                (String) this.server.invoke(new ObjectName("jboss:name=SystemProperties,type=Service"),
-                                                    "get", 
-                                                    new Object[] {attributes[2]}, new String[] {"java.lang.String"}));
-                if (propertyModel.getValue() == null) {
-                    for (String type : this.jbossSystemTypesToQuery) {
-                        try {
-                            propertyModel.setValue((String) this.server.getAttribute(
-                                    new ObjectName("jboss.system:type=" + type), 
-                                    attributes[2]));
-                            break;
-                        } catch (AttributeNotFoundException e) {}
-                    }
-                }
-                if (!propertyMap.containsKey(attributes[0]))
-                        propertyMap.put(attributes[0], new ArrayList<SystemPropertyModel>());
-                propertyMap.get(attributes[0]).add(propertyModel);
+            	PropertyDisplayModel propertyDisplayModel = 
+                        (PropertyDisplayModel) JSONObject.toBean(
+                                JSONObject.fromObject(systemPropertyValue), 
+                                PropertyDisplayModel.class);
+            	propertyDisplayModel.setValue(
+            			(String) this.server.invoke(new ObjectName("jboss:name=SystemProperties,type=Service"),
+            					"get", 
+            					new Object[] {propertyDisplayModel.getName()}, new String[] {"java.lang.String"}));
+
+            	if (propertyDisplayModel.getValue() == null) {
+            		for (String type : this.jbossSystemTypesToQuery) {
+            			try {
+            				propertyDisplayModel.setValue((String) this.server.getAttribute(
+            						new ObjectName("jboss.system:type=" + type), 
+            						propertyDisplayModel.getName()));
+            				break;
+            			} catch (AttributeNotFoundException e) {}
+            		}
+            	}
+            	propertyDisplayModelList.add(propertyDisplayModel);
             } catch (Exception ignore) {
             }
         }
-        return propertyMap;
+        return propertyDisplayModelList;
     }
 
     public List<MBeanValueModel> getMBeanValues() throws InstanceNotFoundException, MalformedObjectNameException, ReflectionException, MBeanException, NullPointerException {
