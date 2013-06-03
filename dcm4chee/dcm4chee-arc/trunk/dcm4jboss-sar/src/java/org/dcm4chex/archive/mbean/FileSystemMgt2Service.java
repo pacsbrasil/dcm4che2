@@ -572,7 +572,7 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
             initStorageFileSystem(fsMgt);
         } else {
             if (checkStorageFileSystemStatus)
-                checkStorageFileSystemStatus(fsMgt);
+                updateFilesystem(fsMgt, true);
         }
         if (storageFileSystem == null) {
             log.warn("No writeable storage file system configured in group "
@@ -617,12 +617,13 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
         if (storageFileSystem == null || fsDTO == null) {
             log.info("Storage filesystem not set! No RW filesystem configured or no space left!");
             return false;
-        }
-        if (storageFileSystem.getPk() != fsDTO.getPk()) {
+        } else if (storageFileSystem.getPk() != fsDTO.getPk()) {
             log.info("Storage file system has already been switched from "
                     + fsDTO + " to " + storageFileSystem
                     + " by another thread.");
             return true; 
+        } else if (storageFileSystem.getNext() == null) {
+            updateFilesystem(fsMgt, false);
         }
         FileSystemDTO tmp = storageFileSystem;
         String next;
@@ -699,15 +700,18 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
         return dir;
     }
 
-    private void checkStorageFileSystemStatus(FileSystemMgt2 fsMgt)
+    private void updateFilesystem(FileSystemMgt2 fsMgt, boolean checkStatusOnly)
             throws FinderException, RemoteException {
         try {
             FileSystemDTO tmpFS = fsMgt.getFileSystem(storageFileSystem.getPk());
-            if (tmpFS.getStatus() == FileSystemStatus.DEF_RW) {
-                return;
+            if (checkStatusOnly) {
+                if (tmpFS.getStatus() == FileSystemStatus.DEF_RW) {
+                    return;
+                }
+                log.info("Status of previous storage file system changed: " + storageFileSystem);
             }
-            log.info("Status of previous storage file system changed: "
-                    + storageFileSystem);
+            storageFileSystem = tmpFS;
+            return;
         } catch (ObjectNotFoundException onfe) {
             log.info("Previous storage file system: " + storageFileSystem
                     + " was removed from configuration");
