@@ -98,7 +98,7 @@ public class DeleteStudyService extends ServiceMBeanSupport
         jndiHelper = new JndiHelper();
     }
 
-    DeleteStudyService(JndiHelper jndiHelper) {
+    protected DeleteStudyService(JndiHelper jndiHelper) {
         this.jndiHelper = jndiHelper;
     }
 
