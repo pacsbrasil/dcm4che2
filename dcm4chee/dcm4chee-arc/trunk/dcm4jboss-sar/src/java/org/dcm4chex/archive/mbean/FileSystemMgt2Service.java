@@ -572,7 +572,7 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
             initStorageFileSystem(fsMgt);
         } else {
             if (checkStorageFileSystemStatus)
-                updateFilesystem(fsMgt, true);
+                checkStorageFileSystemStatus(fsMgt);
         }
         if (storageFileSystem == null) {
             log.warn("No writeable storage file system configured in group "
@@ -614,6 +614,9 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
     private boolean switchFileSystem(FileSystemMgt2 fsMgt,
             FileSystemDTO fsDTO) throws Exception {
 		synchronized (switchFileSystemMonitor) {
+	if (!updateStorageFileSystem(fsMgt)) {
+	    return selectStorageFileSystem() != null;
+	}
         if (storageFileSystem == null || fsDTO == null) {
             log.info("Storage filesystem not set! No RW filesystem configured or no space left!");
             return false;
@@ -622,8 +625,6 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
                     + fsDTO + " to " + storageFileSystem
                     + " by another thread.");
             return true; 
-        } else if (storageFileSystem.getNext() == null) {
-            updateFilesystem(fsMgt, false);
         }
         FileSystemDTO tmp = storageFileSystem;
         String next;
@@ -700,18 +701,15 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
         return dir;
     }
 
-    private void updateFilesystem(FileSystemMgt2 fsMgt, boolean checkStatusOnly)
+    private void checkStorageFileSystemStatus(FileSystemMgt2 fsMgt)
             throws FinderException, RemoteException {
         try {
             FileSystemDTO tmpFS = fsMgt.getFileSystem(storageFileSystem.getPk());
-            if (checkStatusOnly) {
-                if (tmpFS.getStatus() == FileSystemStatus.DEF_RW) {
-                    return;
-                }
-                log.info("Status of previous storage file system changed: " + storageFileSystem);
+            if (tmpFS.getStatus() == FileSystemStatus.DEF_RW) {
+                return;
             }
-            storageFileSystem = tmpFS;
-            return;
+            log.info("Status of previous storage file system changed: "
+                    + storageFileSystem);
         } catch (ObjectNotFoundException onfe) {
             log.info("Previous storage file system: " + storageFileSystem
                     + " was removed from configuration");
@@ -725,6 +723,19 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
             minFreeDiskSpace = calcFreeDiskSpace(storageFileSystem);
         }
         checkFreeDiskSpaceTime = 0;
+    }
+    private boolean updateStorageFileSystem(FileSystemMgt2 fsMgt) throws FinderException, RemoteException {
+        if (storageFileSystem == null)
+            return false;
+        try {
+            storageFileSystem = fsMgt.getFileSystem(storageFileSystem.getPk());
+            return true;
+        } catch (ObjectNotFoundException ignore) {
+            log.warn("Current storage file system: " + storageFileSystem
+                    + " was removed from configuration");
+            storageFileSystem = null;
+            return false;
+        }
     }
 
     private void initStorageFileSystem(FileSystemMgt2 fsMgt) throws Exception {
