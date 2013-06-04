@@ -492,4 +492,8 @@ public class WebCfgDelegate extends BaseCfgDelegate {
             return sb.toString();
         }
     }
+
+	public List<String> getModalityFilterList() {
+		return getStringList("getModalityFilterList");
+	}
 }

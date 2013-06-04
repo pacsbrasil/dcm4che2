@@ -207,6 +207,8 @@ public class WebCfgService extends ServiceMBeanSupport implements
 
 	private boolean trustPatientIdWithoutIssuer;
 
+    private List<String> modalityFilter = new ArrayList<String>();
+    
     public WebCfgService() throws MalformedObjectNameException {
         timerServiceName = new ObjectName(DEFAULT_TIMER_SERVICE);
     }
@@ -1461,4 +1463,15 @@ public class WebCfgService extends ServiceMBeanSupport implements
                 Integer.parseInt(s.substring(++pos).trim()) };
     }
 
+    public String getModalityFilter() {
+    	return listAsString(modalityFilter, "|");
+    }
+
+    public void setModalityFilter(String s) {
+        updateList(modalityFilter, s, "|");
+    }
+    
+    public List<String> getModalityFilterList() {
+    	return modalityFilter;
+    }
 }

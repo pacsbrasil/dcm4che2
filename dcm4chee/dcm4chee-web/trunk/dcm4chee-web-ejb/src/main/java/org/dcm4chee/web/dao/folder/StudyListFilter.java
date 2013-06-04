@@ -41,6 +41,7 @@ package org.dcm4chee.web.dao.folder;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.dcm4che2.data.BasicDicomObject;
@@ -88,6 +89,7 @@ public class StudyListFilter implements Serializable {
     private int autoWildcard = 0;
     private boolean isStudyIuidQuery;
     private boolean isSeriesIuidQuery;
+	private List<String> modalityFilter;
     
     public StudyListFilter(String forUsername) {
         clear();
@@ -405,4 +407,12 @@ public class StudyListFilter implements Serializable {
             obj.putDateRange(Tag.PatientBirthDate, VR.DA, new DateRange(birthDateMin, birthDateMax));
         }
     }
+
+	public List<String> getModalityFilter() {
+		return modalityFilter;
+	}
+	
+	public void setModalityFilter(List<String> modalityFilter) {
+		this.modalityFilter = modalityFilter;
+	}
 }

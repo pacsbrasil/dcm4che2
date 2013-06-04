@@ -70,6 +70,7 @@ public class ViewPort extends AbstractViewPort {
                 filter.setStudyDateMin(studyDatePreset[0]);
                 filter.setStudyDateMax(studyDatePreset[1]);
             }
+            filter.setModalityFilter(WebCfgDelegate.getInstance().getModalityFilterList());
         }
         return filter;
     }

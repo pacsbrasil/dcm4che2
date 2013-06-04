@@ -219,7 +219,7 @@ public class StudyListBean implements StudyListLocal {
             } else {
                 appendPatFilter(ql, "p", filter);
                 QueryUtil.appendAccessionNumberFilter(ql, QueryUtil.checkAutoWildcard(filter.getAccessionNumber(), filter.isAutoWildcard()));
-                QueryUtil.appendPpsWithoutMwlFilter(ql, filter.isWithoutPps(), filter.isPpsWithoutMwl());
+                QueryUtil.appendPpsWithoutMwlFilter(ql, filter.isWithoutPps(), filter.isPpsWithoutMwl(), !filter.getModalityFilter().isEmpty());
                 QueryUtil.appendStudyDateMinFilter(ql, filter.getStudyDateMin());
                 QueryUtil.appendStudyDateMaxFilter(ql, filter.getStudyDateMax());
                 if (filter.isExactModalitiesInStudy()) {
@@ -267,6 +267,9 @@ public class StudyListBean implements StudyListLocal {
                 query.setParameter("roles", roles);
             if (!QueryUtil.isUniversalMatch(filter.getModality()) && filter.isExactModalitiesInStudy()) 
                 query.setParameter("modality", filter.getModality());
+            if (!filter.getModalityFilter().isEmpty() && (filter.isWithoutPps() || filter.isPpsWithoutMwl())) {
+            	query.setParameter("modalityFilter", filter.getModalityFilter());
+            }
         }
     }
 
