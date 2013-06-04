@@ -561,7 +561,13 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
 
     private synchronized boolean switchFileSystem(FileSystemMgt2 fsMgt,
             FileSystemDTO fsDTO) throws Exception {
-        if (storageFileSystem.getPk() != fsDTO.getPk()) {
+	if (!updateStorageFileSystem(fsMgt)) {
+	    return selectStorageFileSystem() != null;
+	}
+        if (storageFileSystem == null || fsDTO == null) {
+            log.info("Storage filesystem not set! No RW filesystem configured or no space left!");
+            return false;
+        } else if (storageFileSystem.getPk() != fsDTO.getPk()) {
             log.info("Storage file system has already been switched from "
                     + fsDTO + " to " + storageFileSystem
                     + " by another thread.");
@@ -637,8 +643,8 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
     private void checkStorageFileSystemStatus(FileSystemMgt2 fsMgt)
             throws FinderException, RemoteException {
         try {
-            storageFileSystem = fsMgt.getFileSystem(storageFileSystem.getPk());
-            if (storageFileSystem.getStatus() == FileSystemStatus.DEF_RW) {
+            FileSystemDTO tmpFS = fsMgt.getFileSystem(storageFileSystem.getPk());
+            if (tmpFS.getStatus() == FileSystemStatus.DEF_RW) {
                 return;
             }
             log.info("Status of previous storage file system changed: "
@@ -653,6 +659,19 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
             log.info("New storage file system: " + storageFileSystem);
         }
         checkFreeDiskSpaceTime = 0;
+    }
+    private boolean updateStorageFileSystem(FileSystemMgt2 fsMgt) throws FinderException, RemoteException {
+        if (storageFileSystem == null)
+            return false;
+        try {
+            storageFileSystem = fsMgt.getFileSystem(storageFileSystem.getPk());
+            return true;
+        } catch (ObjectNotFoundException ignore) {
+            log.warn("Current storage file system: " + storageFileSystem
+                    + " was removed from configuration");
+            storageFileSystem = null;
+            return false;
+        }
     }
 
     private void initStorageFileSystem(FileSystemMgt2 fsMgt) throws Exception {
