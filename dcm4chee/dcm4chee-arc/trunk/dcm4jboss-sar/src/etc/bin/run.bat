@@ -97,6 +97,10 @@ set JAVA_OPTS=%JAVA_OPTS% -Djavax.xml.transform.TransformerFactory=com.sun.org.a
 
 rem Uncomment to enable the jconsole agent locally
 rem JAVA_OPTS=%JAVA_OPTS% -Dcom.sun.management.jmxremote
+rem Tell JBossAS to use the platform MBean server
+rem set JAVA_OPTS=%JAVA_OPTS% -Djboss.platform.mbeanserver
+rem Make the platform MBean server able to work with JBossAS MBeans
+rem set JAVA_OPTS=%JAVA_OPTS% -Djavax.management.builder.initial=org.jboss.system.server.jmx.MBeanServerBuilderImpl
 
 rem Uncomment to enable the jconsole agent remotely on port 12345 with disabled security and ssl transport
 rem set JAVA_OPTS=%JAVA_OPTS% -Dcom.sun.management.jmxremote.port=12345
