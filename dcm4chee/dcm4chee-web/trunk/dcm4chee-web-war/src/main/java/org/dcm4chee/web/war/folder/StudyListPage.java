@@ -271,8 +271,12 @@ public class StudyListPage extends Panel {
     private ModalWindow arrWindow = new ModalWindow("arrWindow");
 
     private ExternalLink egg;
+    private Model<String> eggModel;
+    
     public static final ResourceReference SOKOBAN_SVG = 
         new ResourceReference(StudyListPage.class, "sokoban.svg");
+    public static final ResourceReference TETRIS_SVG = 
+        new ResourceReference(StudyListPage.class, "tetris.svg");
     public static final ResourceReference EGG_PNG = 
         new ResourceReference(StudyListPage.class, "egg.png");
 	
@@ -780,8 +784,8 @@ public class StudyListPage extends Panel {
             .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle")))
         );
         form.addComponent(resetBtn);
-
-        egg = new ExternalLink("egg",getRequestCycle().urlFor(SOKOBAN_SVG).toString());
+        eggModel = new Model<String>();
+        egg = new ExternalLink("egg",eggModel);
         egg.add(new Image("eggImg",EGG_PNG));
         form.addComponent(egg.setOutputMarkupPlaceholderTag(true)
                 .setOutputMarkupId(true).setVisible(false));
@@ -890,7 +894,8 @@ public class StudyListPage extends Panel {
 
     protected void doSearch(AjaxRequestTarget target, Form<?> form, boolean reset) {
             String p = viewport.getFilter().getPatientID();
-            if ( p != null && "SOKOBAN".equalsIgnoreCase(p)) {
+            if ("SOKOBAN".equals(p) || "TETRIS".equals(p)) {
+                eggModel.setObject(getRequestCycle().urlFor(p.charAt(0) == 'S' ? SOKOBAN_SVG : TETRIS_SVG).toString());
                 egg.setVisible(true);
                 viewport.getFilter().setPatientID(null);
             } else {
