@@ -200,7 +200,12 @@ public class VOIUtils {
                 }
             }
         }
-        DicomObject shared = img.getNestedDicomObject(Tag.SharedFunctionalGroupsSequence);
+        DicomObject shared = null;
+        try {
+            shared = img.getNestedDicomObject(Tag.SharedFunctionalGroupsSequence);
+        } catch(UnsupportedOperationException e) {
+            log.warn("Image contains binary object in shared functional groups sequence - invalid dicom");
+        }
         if (shared != null) {
             DicomObject voiObj = shared.getNestedDicomObject(Tag.FrameVOILUTSequence);
             if (voiObj != null && containsVOIAttributes(voiObj)) {
