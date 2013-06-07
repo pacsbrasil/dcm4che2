@@ -257,11 +257,8 @@ public abstract class StudyMgtBean implements SessionBean {
         		DcmElement el = modAttrs.putSQ(Tags.OriginalAttributesSeq);
                 Dataset item = el.addNewItem();
 
-        		if(lookForExisting.updateAttributes(ds, origModAttrs)) {
-                    item.putAll(origModAttrs);                
-            		AttrUtils.fetchModifiedAttributes(ds, origModAttrs, modAttrs, AttributeFilter.getPatientAttributeFilter());
-        		}
-        		
+                item.putAll(origModAttrs);                
+                AttrUtils.fetchModifiedAttributes(ds, origModAttrs, modAttrs, AttributeFilter.getPatientAttributeFilter());
         	} else {
                 DcmElement el = modAttrs.putSQ(Tags.OriginalAttributesSeq);
                 Dataset item = el.addNewItem();
