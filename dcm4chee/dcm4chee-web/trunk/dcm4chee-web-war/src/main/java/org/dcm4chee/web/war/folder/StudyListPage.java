@@ -71,6 +71,7 @@ import org.apache.wicket.RequestCycle;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.Component.IVisitor;
 import org.apache.wicket.ajax.AbstractAjaxTimerBehavior;
+import org.apache.wicket.ajax.AbstractDefaultAjaxBehavior;
 import org.apache.wicket.ajax.AjaxEventBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.IAjaxCallDecorator;
@@ -92,6 +93,8 @@ import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow.CloseButt
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow.WindowClosedCallback;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.CSSPackageResource;
+import org.apache.wicket.markup.html.IHeaderResponse; 
+import org.apache.wicket.markup.html.JavascriptPackageResource;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
@@ -415,6 +418,17 @@ public class StudyListPage extends Panel {
                 target.addComponent(getPage());
             }            
         });
+        
+        add(JavascriptPackageResource.getHeaderContribution(StudyListPage.class, "scrollstate.js"));
+
+		add(new AjaxEventBehavior("onclick") {
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			protected void onEvent(AjaxRequestTarget target) {
+				target.appendJavascript("storeScrollPosition();");
+			}
+		});
     }
 
     private void initWebviewerLinkProvider() {
@@ -2839,6 +2853,15 @@ public class StudyListPage extends Panel {
     @Override
     protected void onBeforeRender() {
         applyPageParameters(getPageParameters());
+		add(new AbstractBehavior() {
+			private static final long serialVersionUID = 1L;
+
+	        public void renderHead(IHeaderResponse response) {
+		        super.renderHead(response);
+				response.renderOnLoadJavascript(
+						"window.scrollTo(retrieveScrollX(), retrieveScrollY());");
+			}
+		});
         super.onBeforeRender();
     }
     
