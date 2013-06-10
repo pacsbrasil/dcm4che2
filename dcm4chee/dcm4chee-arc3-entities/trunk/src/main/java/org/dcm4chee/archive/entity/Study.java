@@ -499,6 +499,7 @@ public class Study extends BaseEntity implements Serializable {
             this.referringPhysicianGivenNameSoundex = AttributeFilter.toSoundex(pn, PersonName.GIVEN, "*");
         }
         this.studyDescription = filter.toUpperCase(attrs.getString(Tag.StudyDescription, ""), Tag.StudyDescription);
+        this.studyStatusID = filter.toUpperCase(attrs.getString(Tag.StudyStatusID), Tag.StudyStatusID);
         int[] fieldTags = filter.getFieldTags();
         for (int i = 0; i < fieldTags.length; i++) {
             try {
