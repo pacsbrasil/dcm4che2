@@ -362,31 +362,31 @@ public class UserAccessBean implements UserAccess {
                     aetPos = i;
             }
             
-            if (aetPos > 0) {
+            if (aetPos != -1) {
                 Group aetGroup = groupList.get(aetPos);
                 groupList.remove(aetPos);
                 groupList.add(0, aetGroup);
-            } else if (aetPos == -1) {
+            } else {
                 Group group = new Group();
                 group.setGroupname("AET");
                 addGroup(group);
                 groupList.add(0, group);
             }
-            if (dicomPos > 0) {
+            if (dicomPos != -1) {
                 Group dicomGroup = groupList.get(dicomPos);
                 groupList.remove(dicomPos);
                 groupList.add(0, dicomGroup);
-            } else if (dicomPos == -1) {
+            } else {
                 Group group = new Group();
                 group.setGroupname("Dicom");
                 addGroup(group);
                 groupList.add(0, group);
             }
-            if (webPos > 0) {
+            if (webPos != -1) {
                 Group webGroup = groupList.get(webPos);
                 groupList.remove(webPos);
                 groupList.add(0, webGroup);
-            } else if (webPos == -1) {
+            } else {
                 Group group = new Group();
                 group.setGroupname("Web");
                 addGroup(group);

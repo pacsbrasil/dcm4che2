@@ -67,6 +67,7 @@ import org.apache.wicket.protocol.http.WebApplication;
 import org.apache.wicket.protocol.http.WebRequest;
 import org.apache.wicket.protocol.http.WebResponse;
 import org.apache.wicket.security.swarm.SwarmWebApplication;
+import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
 import org.dcm4chee.web.common.model.ProgressProvider;
 import org.dcm4chee.web.common.secure.SecureAjaxTabbedPanel;
@@ -92,7 +93,7 @@ public class ModuleSelectorPanel extends SecureAjaxTabbedPanel {
     private static final long serialVersionUID = 1L;
     private static List<String> languages;
     private static String defaultLanguage;
-//    private IModel<ResourceReference> baseCssModel;
+    private IModel<ResourceReference> baseCssModel;
     
     public boolean showLogout = true;
     
@@ -129,7 +130,7 @@ public class ModuleSelectorPanel extends SecureAjaxTabbedPanel {
     }
     public ModuleSelectorPanel(String id, IModel<ResourceReference> cssModel) {
         super(id);
-//        this.baseCssModel = cssModel;
+        this.baseCssModel = cssModel;
         boolean found = false;
         Cookie[] cs = ((WebRequest) RequestCycle.get().getRequest()).getHttpServletRequest().getCookies();
         if (cs != null)
@@ -241,37 +242,37 @@ public class ModuleSelectorPanel extends SecureAjaxTabbedPanel {
         });
         add(languageSelector);
         
-//        final DropDownChoice<ResourceReference> cssSelector = 
-//            new DropDownChoice<ResourceReference>("cssSelect", baseCssModel, 
-//                    getBaseCssResources(), new ChoiceRenderer<ResourceReference>() {
-//
-//            private static final long serialVersionUID = 1L;
-//            
-//            @Override
-//            public String getDisplayValue(ResourceReference object) {
-//                String n = object.getName();
-//                if (n.endsWith(".css"))
-//                    n = n.substring(0, n.length()-4);
-//                return ModuleSelectorPanel.this.getString("style.name."+n, null, n);
-//            }
-//        }) {
-//
-//            private static final long serialVersionUID = 1L;
-//
-//            @Override
-//            protected void onSelectionChanged(ResourceReference newSelection) {
-//                log.info("set Base CSS resource:"+newSelection);
-//            }
-//        };
-//        cssSelector.add(new AjaxFormComponentUpdatingBehavior("onchange") {
-//            private static final long serialVersionUID = 1L;
-//
-//            protected void onUpdate(AjaxRequestTarget target) {
-//                cssSelector.onSelectionChanged();
-//                target.addComponent(getPage());
-//            }
-//        }).add(new TooltipBehaviour("application.", "styleselect"));
-//        add(cssSelector);
+        final DropDownChoice<ResourceReference> cssSelector = 
+            new DropDownChoice<ResourceReference>("cssSelect", baseCssModel, 
+                    getBaseCssResources(), new ChoiceRenderer<ResourceReference>() {
+
+            private static final long serialVersionUID = 1L;
+            
+            @Override
+            public String getDisplayValue(ResourceReference object) {
+                String n = object.getName();
+                if (n.endsWith(".css"))
+                    n = n.substring(0, n.length()-4);
+                return ModuleSelectorPanel.this.getString("style.name."+n, null, n);
+            }
+        }) {
+
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            protected void onSelectionChanged(ResourceReference newSelection) {
+                log.info("set Base CSS resource:"+newSelection);
+            }
+        };
+        cssSelector.add(new AjaxFormComponentUpdatingBehavior("onchange") {
+            private static final long serialVersionUID = 1L;
+
+            protected void onUpdate(AjaxRequestTarget target) {
+                cssSelector.onSelectionChanged();
+                target.addComponent(getPage());
+            }
+        }).add(new TooltipBehaviour("application.", "styleselect"));
+        add(cssSelector);
         
         add(new Image("img_logo", new ResourceReference(ModuleSelectorPanel.class, 
                 "images/logo.gif"))
