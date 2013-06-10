@@ -10,7 +10,7 @@
     <name>Dcm4chee File cleanup</name>
     <description>Service for cleanup duplicated files in online storage and trash</description>
     <properties>
-        <project.version>3.0.3</project.version>
+        <project.version>3.0.4-SNAPSHOT</project.version>
     </properties>
     <modules>
         <module>dcm4chee-cleanup-ejb</module>
