@@ -50,8 +50,12 @@
 				<textarea name="exportResult" wicket:id="exportResult" 
 					rows="10" cols="60" readonly>[ExportResult]</textarea>
 			</div>
-	  		<input type="submit" wicket:id="export" />
-	  		<input type="submit" wicket:id="close" />
+	  		<button type="submit" wicket:id="export">
+	  			<span wicket:id="exportText" />
+	  		</button>
+	  		<button type="submit" wicket:id="close">
+	  			<span wicket:id="closeText" />
+	  		</button>
 	  		<input type="checkbox" wicket:id="closeOnFinished" />
 	  		<span wicket:id="closeOnFinishedLabel">Close after export is finished</span>
 	  		<div style="margin-top: 30px;">

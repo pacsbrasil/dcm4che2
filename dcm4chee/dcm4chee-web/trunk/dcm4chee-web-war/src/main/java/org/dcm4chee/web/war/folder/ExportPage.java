@@ -54,6 +54,7 @@ import java.util.zip.ZipException;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.catalina.connector.ClientAbortException;
+import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.IRequestTarget;
 import org.apache.wicket.MetaDataKey;
 import org.apache.wicket.RequestCycle;
@@ -268,7 +269,7 @@ public class ExportPage extends SecureSessionCheckPage implements CloseRequestSu
             }
         }.setOutputMarkupId(true));
         
-        form.add(new AjaxButton("export", new ResourceModel("export.exportBtn.text")){
+        form.add(new AjaxButton("export"){
 
             private static final long serialVersionUID = 1L;
             
@@ -283,8 +284,10 @@ public class ExportPage extends SecureSessionCheckPage implements CloseRequestSu
                 exportSelected();
                 target.addComponent(form);
             }
-        }.setOutputMarkupId(true));
-        form.add(new AjaxButton("close", new ResourceModel("export.closeBtn.text")){
+        }.add(new Label("exportText", new ResourceModel("export.exportBtn.text"))
+         .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle"))))
+         .setOutputMarkupId(true));
+        form.add(new AjaxButton("close"){
 
             private static final long serialVersionUID = 1L;
 
@@ -294,7 +297,9 @@ public class ExportPage extends SecureSessionCheckPage implements CloseRequestSu
                 getPage().getPageMap().remove(ExportPage.this);
                 target.appendJavascript("javascript:self.close()");
             }
-        });
+        }.add(new Label("closeText", new ResourceModel("export.closeBtn.text"))
+        .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle"))))
+        .setOutputMarkupId(true));
         form.add(new AjaxCheckBox("closeOnFinished", new IModel<Boolean>(){
 
             private static final long serialVersionUID = 1L;

@@ -442,7 +442,12 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 doSearch(target);
             }
-            
+            @Override
+            public void onComponentTag(ComponentTag tag) {
+                super.onComponentTag(tag);
+                tag.put("class", "IE_DEFAULT_SUBMIT");
+            }
+  
         });
         searchBtn = new IndicatingAjaxButton("searchBtn") {
             
