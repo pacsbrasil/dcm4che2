@@ -33,7 +33,7 @@
    <attribute access="read-write"
       getMethod="getWorklistProviders"
       setMethod="setWorklistProviders">
-      <description><![CDATA[AE title(s) of MWL C-FIND SCPs (worklist provider). <br />
+      <description><![CDATA[AE title(s) separated by '\' of MWL C-FIND SCPs (worklist provider). <br />
       		These AE's are used as selection option in MWL search dialog.<br />
       		Use NONE to disable external worklist providers in MWL search dialog.
       ]]></description>
