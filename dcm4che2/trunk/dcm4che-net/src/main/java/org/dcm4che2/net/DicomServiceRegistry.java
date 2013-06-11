@@ -67,7 +67,7 @@ import org.slf4j.LoggerFactory;
  * @since Oct 3, 2005
  *
  */
-class DicomServiceRegistry 
+public class DicomServiceRegistry implements ServiceRegistry 
 {
     static Logger log = LoggerFactory.getLogger(DicomServiceRegistry.class);
     private final HashSet<String> sopCUIDs = new HashSet<String>();

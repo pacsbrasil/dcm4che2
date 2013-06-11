@@ -140,7 +140,7 @@ public class NetworkApplicationEntity {
 
     private AssociationListener[] als = {};
 
-    private final DicomServiceRegistry serviceRegistry = new DicomServiceRegistry();
+    private ServiceRegistry serviceRegistry = new DicomServiceRegistry();
 
     private final List<Association> pool = new ArrayList<Association>();
 
@@ -1086,6 +1086,15 @@ public class NetworkApplicationEntity {
                 return tc;
         }
         return null;
+    }
+    
+    /**
+     * Replaces the current {@link ServiceRegistry} with the given implementation.
+     * 
+     * @param newServiceRegistry the new {@link ServiceRegistry} to use.
+     */
+    public void setServiceRegistry(ServiceRegistry newServiceRegistry) {
+    	this.serviceRegistry = newServiceRegistry;
     }
 
     /**
