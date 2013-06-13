@@ -62,7 +62,7 @@ public class SecureSessionCheckPage extends SecureWebPage {
     public static final ResourceReference BASE_CSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
     public static final ResourceReference BASE_CSS_R = new CompressedResourceReference(BaseWicketPage.class, "base-style-r.css");
     
-    private static MetaDataKey<Model<ResourceReference>> BASE_CSS_MODEL_MKEY = 
+    public static final MetaDataKey<Model<ResourceReference>> BASE_CSS_MODEL_MKEY = 
         new MetaDataKey<Model<ResourceReference>>() {
             private static final long serialVersionUID = 1L;
     };

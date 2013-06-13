@@ -39,11 +39,11 @@ package org.dcm4chee.web.war.tc;
 
 import org.apache.wicket.Component;
 import org.apache.wicket.ResourceReference;
+import org.apache.wicket.Session;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.behavior.AttributeAppender;
 import org.apache.wicket.behavior.HeaderContributor;
-import org.apache.wicket.markup.html.CSSPackageResource;
 import org.apache.wicket.markup.html.IHeaderContributor;
 import org.apache.wicket.markup.html.IHeaderResponse;
 import org.apache.wicket.markup.html.basic.Label;
@@ -58,6 +58,7 @@ import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.ajax.MaskingAjaxCallBehavior;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
+import org.dcm4chee.web.common.secure.SecureSessionCheckPage;
 import org.dcm4chee.web.dao.tc.TCQueryFilter;
 import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
@@ -84,8 +85,14 @@ public class TCPanel extends Panel {
     private static final ResourceReference BASE_CSS = new CompressedResourceReference(
             TCPanel.class, "css/tc-style.css");
     
+    private static final ResourceReference BASE_DARKROOM_CSS = new CompressedResourceReference(
+            TCPanel.class, "css/tc-style-darkroom.css");
+    
     private static final ResourceReference THEME_CSS = new CompressedResourceReference(
             TCPanel.class, "css/theme/theme.css");
+    
+    private static final ResourceReference THEME_DARKROOM_CSS = new CompressedResourceReference(
+            TCPanel.class, "css/theme-darkroom/theme.css");
     
     public static final String ModuleName = "tc";
 
@@ -100,18 +107,6 @@ public class TCPanel extends Panel {
     @SuppressWarnings("serial")
 	public TCPanel(final String id) {
         super(id);
-
-        if (TCPanel.THEME_CSS != null) {
-            add(CSSPackageResource.getHeaderContribution(TCPanel.THEME_CSS));
-        }
-        
-        if (TCPanel.LAYOUT_CSS != null) {
-            add(CSSPackageResource.getHeaderContribution(TCPanel.LAYOUT_CSS));
-        }
-        
-        if (TCPanel.BASE_CSS != null) {
-            add(CSSPackageResource.getHeaderContribution(TCPanel.BASE_CSS));
-        }
         
         setOutputMarkupId(true);
         
@@ -121,6 +116,25 @@ public class TCPanel extends Panel {
 		{
 			public void renderHead(IHeaderResponse response)
 			{
+				IModel<ResourceReference> cssModel = Session.get().getMetaData(SecureSessionCheckPage.BASE_CSS_MODEL_MKEY);
+				boolean darkroom = cssModel!=null &&
+						SecureSessionCheckPage.BASE_CSS_R==cssModel.getObject();
+				
+				if (darkroom)
+				{
+					log.info("DARKROOM");
+					response.renderCSSReference(THEME_DARKROOM_CSS);
+					response.renderCSSReference(LAYOUT_CSS);
+					response.renderCSSReference(BASE_DARKROOM_CSS);
+				}
+				else
+				{
+					log.debug("NORMAL");
+					response.renderCSSReference(THEME_CSS);
+					response.renderCSSReference(LAYOUT_CSS);
+					response.renderCSSReference(BASE_CSS);
+				}
+
 				response.renderOnDomReadyJavascript("initUI($('#" + getMarkupId(true) + "'));");
 			}
 		}));

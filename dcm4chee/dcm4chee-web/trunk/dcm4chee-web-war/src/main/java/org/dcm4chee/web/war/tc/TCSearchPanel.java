@@ -79,6 +79,7 @@ import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue;
 import org.dcm4chee.web.war.common.AutoSelectInputTextBehaviour;
 import org.dcm4chee.web.war.tc.TCUtilities.NullDropDownItem;
+import org.dcm4chee.web.war.tc.TCUtilities.TCClassAppender;
 import org.dcm4chee.web.war.tc.widgets.TCAjaxComboBox;
 import org.dcm4chee.web.war.tc.widgets.TCMaskingAjaxDecorator;
 import org.slf4j.Logger;
@@ -120,6 +121,8 @@ public abstract class TCSearchPanel extends Panel {
         dateItems.add(dateSpanItem);
         
         Form<?> dateSpanDialogOuterForm = new Form<Void>("date-input-dialog-outer-form");
+        dateSpanDialogOuterForm.setOutputMarkupId(true);
+        dateSpanDialogOuterForm.setMarkupId("tc-search-date-input-form-helper");
         dateSpanDialogOuterForm.add(dateSpanDialog);
         
         final TCInput keywordInput = TCUtilities.createInput(
@@ -643,6 +646,12 @@ public abstract class TCSearchPanel extends Panel {
 			item.setUntilDate(fragment.getUntilDate());
 			super.close(target);
     	}
+    	
+    	@Override
+    	public String getCssClassName()
+    	{
+    		return super.getCssClassName() + " tc-dialog";
+    	}
 
     	private class DateSpanContentFragment extends Fragment
     	{
@@ -654,7 +663,6 @@ public abstract class TCSearchPanel extends Panel {
 			public DateSpanContentFragment(final String id)
     		{
     			super(id, "date-input-dialog-content", TCSearchPanel.this);
-    			setOutputMarkupId(true);
     			
     			final TextField<String> fromField = new TextField<String>(
     					"date-input-dialog-from-input", fromModel);
