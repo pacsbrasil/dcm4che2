@@ -598,7 +598,7 @@ public class FileSystemMgt2Service extends AbstractDeleterService {
         super.sendNotification(notif);
     }
 
-    private boolean checkFreeDiskSpace(FileSystemDTO fsDTO) throws IOException {
+    protected boolean checkFreeDiskSpace(FileSystemDTO fsDTO) throws IOException {
         File dir = FileUtils.toFile(fsDTO.getDirectoryPath());
         if (!dir.exists()) {
             if (!makeStorageDirectory) {
