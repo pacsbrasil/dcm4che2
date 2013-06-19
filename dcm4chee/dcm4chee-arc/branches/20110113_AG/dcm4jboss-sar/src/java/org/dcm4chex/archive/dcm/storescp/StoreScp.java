@@ -748,7 +748,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                         fileLength, md5sum, newSeries);
             }
 			
-		    	seriesStored = setSeriesStored(ds, assoc, originalCallingAET, fsDTO,
+		    	seriesStored = setSeriesStored(ds, assoc, callingAET, fsDTO,
 					seriesStored, newSeries, seriuid);
             if(newSeries && newStudy) {
                    service.sendNewStudyNotification(ds);
