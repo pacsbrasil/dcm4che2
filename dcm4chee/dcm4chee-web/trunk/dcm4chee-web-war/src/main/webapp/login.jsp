@@ -9,22 +9,28 @@
      Cookie[] cookies = request.getCookies();
      String userName = "";
      String focus = "self.focus();document.login.j_username.focus()";
+     boolean darkroom = false;
      if (cookies != null) {
 	     int count = 0;
 	     for (int i = 0; i < cookies.length; i++) {
 	         if (cookies[i].getName().equals("WEB3LOCALE")) {
 	             login.setLocale(cookies[i].getValue());
 	             count++;
-	             if (count==2)
+	             if (count==3)
 	             	break;
-	         }
-	         if (cookies[i].getName().equals("signInPanel.signInForm.username")) {
+	         } else if (cookies[i].getName().equals("WEB3_CSS")) {
+	             if ("base-style-r.css".equals(cookies[i].getValue()))
+	                 darkroom = true;
+	             count++;
+	             if (count==3)
+		            break;
+	         } else if (cookies[i].getName().equals("signInPanel.signInForm.username")) {
 	             userName = cookies[i].getValue();
 	             if (userName!=null && userName.length()>0)
 	                 focus = "self.focus();document.login.j_username.value='"+userName+
 	                 	"';document.login.j_password.focus()";
 	             count++;
-	             if (count==2)
+	             if (count==3)
 	             	break;
 	         }
 	     }
@@ -33,7 +39,11 @@
     <head>
 	    <title>${login.browser_title} (<%= nodeInfo %>)</title>
 	    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-        <link rel="stylesheet" type="text/css" href="resources/org.dcm4chee.web.common.base.BaseWicketPage/base-style.css" />
+        <% if (darkroom) { %>
+           <link rel="stylesheet" type="text/css" href="resources/org.dcm4chee.web.common.base.BaseWicketPage/base-style-r.css" />
+        <% } else {%>
+           <link rel="stylesheet" type="text/css" href="resources/org.dcm4chee.web.common.base.BaseWicketPage/base-style.css" />
+  	    <% } %>
         <script>
             function login_init() {
             	<%= focus %>
@@ -79,8 +89,8 @@
 			                <tr style="text-align: left;">
 			                    <td></td>
 			                    <td>
-			                        <input type="submit" name="submit" value="${login.submit}" />
-			                        <input type="reset" value="${login.reset}" onclick="document.login.j_username.focus()"/>
+			                        <input type="submit" name="submit" value="${login.submit}" class="button" />
+			                        <input type="reset" value="${login.reset}" onclick="document.login.j_username.focus()" class="button"/>
 			                    </td>
 			                </tr>
                         </tbody>
