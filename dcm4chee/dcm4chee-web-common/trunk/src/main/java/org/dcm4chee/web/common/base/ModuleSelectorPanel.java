@@ -131,14 +131,23 @@ public class ModuleSelectorPanel extends SecureAjaxTabbedPanel {
     public ModuleSelectorPanel(String id, IModel<ResourceReference> cssModel) {
         super(id);
         this.baseCssModel = cssModel;
-        boolean found = false;
+        boolean found = false, cssCookie = false;
         Cookie[] cs = ((WebRequest) RequestCycle.get().getRequest()).getHttpServletRequest().getCookies();
         if (cs != null)
             for (Cookie c : cs) {
                 if (c.getName().equals("WEB3LOCALE")) {
                     getSession().setLocale(new Locale(c.getValue()));
                     found = true;
-                    break;
+                    if (cssCookie)
+                        break;
+                } else if (c.getName().equals("WEB3_CSS")) {
+                    for (ResourceReference rsrc : getBaseCssResources()) {
+                        if (rsrc.getName().equals(c.getValue()))
+                            baseCssModel.setObject(rsrc);
+                    }
+                    cssCookie = true;
+                    if (found)
+                        break;
                 }
             }
 
@@ -262,6 +271,9 @@ public class ModuleSelectorPanel extends SecureAjaxTabbedPanel {
             @Override
             protected void onSelectionChanged(ResourceReference newSelection) {
                 log.info("set Base CSS resource:"+newSelection);
+                Cookie c = new Cookie("WEB3_CSS", newSelection.getName());
+                c.setMaxAge(Integer.MAX_VALUE);
+                ((WebResponse) RequestCycle.get().getResponse()).addCookie(c);
             }
         };
         cssSelector.add(new AjaxFormComponentUpdatingBehavior("onchange") {
