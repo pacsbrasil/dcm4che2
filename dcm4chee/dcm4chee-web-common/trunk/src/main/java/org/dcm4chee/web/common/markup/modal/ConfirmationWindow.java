@@ -53,6 +53,7 @@ import org.apache.wicket.markup.html.IHeaderContributor;
 import org.apache.wicket.markup.html.IHeaderResponse;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.AbstractReadOnlyModel;
@@ -225,6 +226,10 @@ public abstract class ConfirmationWindow<T> extends ModalWindow {
         }
     }
 
+    public void setImage(ResourceReference image) {
+    	messageWindowPanel.replace(new Image("warnImg", image));
+    }
+
     public class ConfirmPage extends WebPage {
         public ConfirmPage() {
             add(getBaseCSSHeaderContributor());
@@ -254,6 +259,8 @@ public abstract class ConfirmationWindow<T> extends ModalWindow {
             
             final MaskingAjaxCallBehavior macb = new MaskingAjaxCallBehavior();
             add(macb);
+            
+            add(new Label("warnImg"));
             
             add((msgLabel = new Label("msg", new AbstractReadOnlyModel<Object>() {
 
@@ -421,7 +428,7 @@ public abstract class ConfirmationWindow<T> extends ModalWindow {
 
         public Label getRemarkLabel() {
             return remarkLabel;
-        }
+        }        
     }
     
     public MessageWindowPanel getMessageWindowPanel() {
