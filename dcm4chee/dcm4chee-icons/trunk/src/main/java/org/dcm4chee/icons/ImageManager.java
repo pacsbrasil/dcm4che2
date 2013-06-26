@@ -82,6 +82,8 @@ public class ImageManager {
         new ResourceReference(ImageManager.class, "common/cancel.png");
     public static final ResourceReference IMAGE_COMMON_ARR =
             new ResourceReference(ImageManager.class, "common/arr.png");
+    public static final ResourceReference IMAGE_COMMON_WARN =
+            new ResourceReference(ImageManager.class, "common/warn.png");
 
     public static final ResourceReference IMAGE_FOLDER_DELETE = 
         new ResourceReference(ImageManager.class, "folder/delete.png");
