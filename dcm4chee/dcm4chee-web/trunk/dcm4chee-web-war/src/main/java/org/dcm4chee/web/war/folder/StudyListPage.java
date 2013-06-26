@@ -329,7 +329,7 @@ public class StudyListPage extends Panel {
             }
         };
         add(confirmSearch
-            .setInitialHeight(150)
+            .setInitialHeight(170)
             .setInitialWidth(410));
 
 
@@ -1185,6 +1185,14 @@ public class StudyListPage extends Panel {
                 }
 
                 checkWarnings(selected, remarkModel);
+                
+                if (selected.hasPatients()) {
+                	confirmDelete.setImage(ImageManager.IMAGE_COMMON_WARN);
+                	// TODO: add icon
+                	// TODO: expand size vertically
+                	
+                }
+                
                 if (hasIgnored) {
                 	confirmDelete.initContent(confirmDelete.getInitialWidth(), confirmDelete.getInitialHeight() + 50);
                     remarkModel.addModel(new StringResourceModel("folder.message.deleteNotAllowed",this, null));
