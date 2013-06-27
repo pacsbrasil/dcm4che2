@@ -140,15 +140,15 @@ table.folded-table tr.instance td.expand,
 table.folded-table tr.patient td.expand { width: 21px; border: thin; border-left-width: 1px; border-left-style: solid; border-left-color: #AAAAAA; }
 table.folded-table tr.file { background-color: #E1E0DE; color: black; }
 table.folded-table tr.instance { background-color: #D1FEF6; color: black; }
-table.folded-table tr.instance_selected { background-color: orange; }
+table.folded-table tr.instance_selected { background-color: orange; color: black;}
 table.folded-table tr.series { background-color: #A0D8C4; color: black; }
-table.folded-table tr.series_selected { background-color: orange; }
+table.folded-table tr.series_selected { background-color: orange; color: black;}
 table.folded-table tr.pps { background-color: #666666; color: white; }
-table.folded-table tr.pps_selected { background-color: orange; }
+table.folded-table tr.pps_selected { background-color: orange; color: black;}
 table.folded-table tr.study { background-color: #54B291;  color: black;}
-table.folded-table tr.study_selected { background-color: orange; }
+table.folded-table tr.study_selected { background-color: orange; color: black;}
 table.folded-table tr.patient { background-color: #446666; color: #FFFFFF;}
-table.folded-table tr.patient_selected { background-color: orange; }
+table.folded-table tr.patient_selected { background-color: orange; color: black;}
 
 div.dicomobjectpanel { border: thin; border-width: 1px; border-style: inset; border-color: #AAAAAA; }
 table.dicomobject { background: #FFFFFF; color: black; width: 100%; }
@@ -167,6 +167,8 @@ table.dicomobject { background: #FFFFFF; color: black; width: 100%; }
 .confirmWindow_button { padding: 10px; margin-top: 1em;}
 
 div.movePage-msg {color: #ffffff; }
+div.movePage-previewOrigin {color: #bbbbbb; }
+div.movePage-previewDest {color: #bbbbbb; }
 div.edit-title {margin-bottom: 9px;}
 div.edit-content div.edit-table-panel { width: 100%; }
 div.edit-table-panel div.edit-table-row { float: left; width: 100%; background: #222222; color: #aaaaaa; height: 30px;}
