@@ -92,7 +92,7 @@ public class TCViewDialog extends ModalWindow {
             	createView(tcModel, trainingModeModel, caseProvider));
             
             setTitle(title==null?"":title);
-            setInitialWidth(940);
+            setInitialWidth(1024);
             setInitialHeight(780);
             setResizable(true);
             

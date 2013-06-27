@@ -671,6 +671,19 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getTCForumIntegrationType"
+      setMethod="setTCForumIntegrationType">
+      <description><![CDATA[
+      	Specifies the type of thirdparty forum software that shall be used.
+      	Supported values are JForum or NONE.
+      ]]></description>
+      <name>TCForumIntegrationType</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>   
+   <attribute access="read-write"
       getMethod="getTCSeriesDisplayFormat"
       setMethod="setTCSeriesDisplayFormat">
       <description><![CDATA[

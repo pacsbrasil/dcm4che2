@@ -2,9 +2,15 @@ package org.dcm4chee.web.war.tc;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.Serializable;
 import java.lang.reflect.Field;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.wicket.Component;
 import org.apache.wicket.Page;
@@ -524,6 +530,100 @@ public class TCUtilities
     		log.error("Unable to init jquery UI without markup id!");
     		return null;
     	}
+    }
+        
+    
+    public static String doHTTPPost(String targetURL, Map<String,String> parameters, byte[] content) throws Exception
+    {
+    	HttpURLConnection connection = null;
+    	DataOutputStream out = null;
+    	DataInputStream in = null;
+    	
+        try {
+            // build URL params
+        	StringBuilder params = null;
+        	if (parameters!=null && !parameters.isEmpty()) {
+        		params = new StringBuilder();
+        		for (Map.Entry<String, String> param : parameters.entrySet()) {
+        			if (params.length()>0) {
+        				params.append("&");
+        			}
+        			params.append(URLEncoder.encode(param.getKey(),"ISO-8859-1"));
+        			params.append("=");
+        			params.append(URLEncoder.encode(param.getValue(),"ISO-8859-1"));
+        		}
+        	}
+        	
+        	// build the used HTTP URL
+        	StringBuilder url = new StringBuilder();
+        	if (!targetURL.startsWith("http://")) {
+        		url.append("http://");
+        	}
+        	
+        	url.append(targetURL);
+        	
+        	if (params!=null && params.length()>0) {
+        		if (!targetURL.endsWith("?")) {
+        			url.append("?");
+        		}
+        		url.append(params);
+        	}
+
+            // Create connection
+            connection = (HttpURLConnection) new URL(url.toString()).openConnection();
+            connection.setRequestMethod("POST");
+            connection.setDoInput(true);
+            connection.setDoOutput(true);
+            connection.setUseCaches(false);
+            connection.setInstanceFollowRedirects(true);
+            connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            connection.setRequestProperty("Content-Length", content!=null ?
+            		Integer.toString(content.length) : "0");
+            connection.connect();
+
+            // Send content
+            if (content!=null) {
+                out = new DataOutputStream(connection.getOutputStream());
+            	out.write(content);
+            	out.flush();
+            }
+            
+            // Get response
+            int responseCode = connection.getResponseCode();
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                in = new DataInputStream(connection.getInputStream());
+                String buffer;
+                StringBuilder response = new StringBuilder();
+                while(in.available()>0 && (buffer = in.readLine()) != null) {
+                    response.append(buffer);
+                }
+                return response.toString();
+            }
+            else {
+            	throw new Exception(connection.getResponseMessage());
+            }
+        }
+        finally {
+        	if (out!=null) {
+        		try {
+        			out.close();
+        		}
+        		catch (Exception e) {
+        			log.error(null, e);
+        		}
+        	}
+        	if (in!=null) {
+        		try {
+        			in.close();
+        		}
+        		catch (Exception e) {
+        			log.error(null, e);
+        		}
+        	}
+        	if (connection!=null) {
+        		connection.disconnect();
+        	}
+        }
     }
     
     

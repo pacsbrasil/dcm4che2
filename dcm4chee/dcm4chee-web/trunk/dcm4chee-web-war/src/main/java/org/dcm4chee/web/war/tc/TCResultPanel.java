@@ -142,6 +142,9 @@ public class TCResultPanel extends Panel {
         add(msgWin);
         final ModalWindow modalWindow = new ModalWindow("modal-window");
         add(modalWindow);
+                
+        final ModalWindow forumWindow = new ModalWindow("forum-window");
+        add(forumWindow);
 
         final TCStudyListPage studyPage = new TCStudyListPage();
         final ModalWindow studyWindow = new ModalWindow("study-window");
@@ -372,11 +375,54 @@ public class TCResultPanel extends Panel {
               .add(new TooltipBehaviour("tc.result.table.","showStudy"))
               .add(new SecurityBehavior(TCPanel.getModuleName() + ":showTCStudy"))
               .setOutputMarkupId(true);
+              
+              final Component forumLink = new IndicatingAjaxLink<String>("tc-forum") {
+                  private static final long serialVersionUID = 1L;
+                  @Override
+                  public void onClick(AjaxRequestTarget target) { 
+                      try
+                      {
+                          TCForumPostsPanel content = new TCForumPostsPanel(
+                        		  forumWindow.getContentId(), new Model<String>(
+                        				  TCForumIntegration.get(WebCfgDelegate.getInstance()
+                        						  .getTCForumIntegrationType()).getPostsPageURL(tc)));
+                          forumWindow.setInitialHeight(820);
+                          forumWindow.setInitialWidth(1024);
+                          forumWindow.setContent(content);
+                          forumWindow.show(target);
+                      } catch (Exception e) {
+                          log.error("Unable to open case forum page!", e);
+                      }
+                  }
+                  @Override
+                  public boolean isVisible() {
+                	  return TCForumIntegration.get(WebCfgDelegate.getInstance().getTCForumIntegrationType())!=null;
+                  }
+                  @Override
+                  protected void onComponentTag(ComponentTag tag) {
+                      super.onComponentTag(tag);
+                      tag.put("ondblclick",jsStopEventPropagationInline);
+                  }
+                  @Override
+                  protected IAjaxCallDecorator getAjaxCallDecorator() {
+                      try {
+                          return TCPanel.getMaskingBehaviour().getAjaxCallDecorator();
+                      } catch (Exception e) {
+                          log.error("Failed to get IAjaxCallDecorator: ", e);
+                      }
+                      return null;
+                  }
+              }
+             .add(new Image("tcForumImg", ImageManager.IMAGE_TC_FORUM)
+             .add(new ImageSizeBehaviour("vertical-align: middle;")))
+             .add(new TooltipBehaviour("tc.result.table.","showForum"))
+             .setOutputMarkupId(true);
                
               item.add(viewLink);
               item.add(editLink);
               item.add(studyLink);
-                
+              item.add(forumLink);
+              
                 item.add(new AttributeModifier("class", true,
                         new AbstractReadOnlyModel<String>() {
 
@@ -489,7 +535,7 @@ public class TCResultPanel extends Panel {
         dataView.setItemsPerPage(WebCfgDelegate.getInstance()
                 .getDefaultFolderPagesize());
         dataView.setOutputMarkupId(true);
-        
+
         SortLinkGroup sortGroup = new SortLinkGroup(dataView);
         add(new SortLink("sortTitle", sortGroup, TCModel.Sorter.Title));
         add(new SortLink("sortAbstract", sortGroup, TCModel.Sorter.Abstract));

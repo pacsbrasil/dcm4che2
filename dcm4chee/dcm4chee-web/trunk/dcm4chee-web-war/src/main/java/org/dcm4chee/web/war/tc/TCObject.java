@@ -110,6 +110,8 @@ public class TCObject implements Serializable {
 
     protected String title;
     
+    protected Date creationDate;
+    
     protected List<TCLink> links;
 
     private List<TCReferencedStudy> studyRefs;
@@ -186,6 +188,10 @@ public class TCObject implements Serializable {
     public String getPatientName()
     {
     	return patName;
+    }
+    
+    public Date getCreationDate() {
+    	return creationDate;
     }
     
     public String getAbstr() {
@@ -662,6 +668,7 @@ public class TCObject implements Serializable {
         docRefs=null;
         imageRefs=null;
         links=null;
+        creationDate=null;
     }
 
     private void parse(DicomObject o) {
@@ -672,6 +679,7 @@ public class TCObject implements Serializable {
         patId= o.getString(Tag.PatientID);
         patIdIssuer = o.getString(Tag.IssuerOfPatientID);
         patName = o.getString(Tag.PatientName);
+        creationDate = o.getDate(Tag.ContentDate);
         
         // parse content
         DicomElement content = o != null ? o.get(Tag.ContentSequence) : null;

@@ -141,6 +141,7 @@ public class WebCfgService extends ServiceMBeanSupport implements
 
     private Map<String, List<String>> ridMimeTypes = new LinkedHashMap<String, List<String>>();
 
+    private String tcForumIntegrationType;
     private String tcSeriesDisplayFormat;
     private String tcKeywordCataloguesPath;
     private Map<String, String> tcKeywordCatalogues = new LinkedHashMap<String, String>();
@@ -405,6 +406,14 @@ public class WebCfgService extends ServiceMBeanSupport implements
         else {
             return Collections.emptyMap();
         }
+    }
+    
+    public String getTCForumIntegrationType() {
+    	return tcForumIntegrationType;
+    }
+    
+    public void setTCForumIntegrationType(String type) {
+    	this.tcForumIntegrationType = type;
     }
 
     public String getTCKeywordCatalogues() {

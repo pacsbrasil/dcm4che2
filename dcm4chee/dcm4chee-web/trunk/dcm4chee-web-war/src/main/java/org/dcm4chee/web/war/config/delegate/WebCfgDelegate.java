@@ -294,6 +294,10 @@ public class WebCfgDelegate extends BaseCfgDelegate {
         return getString("TCSeriesDisplayFormat");
     }
     
+    public String getTCForumIntegrationType() {
+    	return getString("TCForumIntegrationType");
+    }
+    
     public boolean getTCEditOnDoubleClick()
     {
         return getBoolean("TCEditOnDoubleClick", false);

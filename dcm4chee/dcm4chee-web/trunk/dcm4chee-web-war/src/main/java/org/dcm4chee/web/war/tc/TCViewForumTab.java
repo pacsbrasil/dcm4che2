@@ -37,70 +37,71 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.web.war.tc;
 
-import org.apache.wicket.behavior.AttributeAppender;
-import org.apache.wicket.markup.html.form.TextArea;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
-import org.apache.wicket.model.Model;
-import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
-import org.dcm4chee.web.war.tc.TCUtilities.SelfUpdatingTextArea;
 import org.dcm4chee.web.war.tc.TCViewPanel.AbstractEditableTCViewTab;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Bernhard Ableitinger <bernhard.ableitinger@agfa.com>
  * @version $Revision$ $Date$
  * @since Nov 25, 2011
  */
-public abstract class TCViewGenericTextTab extends AbstractEditableTCViewTab 
+@SuppressWarnings("serial")
+public class TCViewForumTab extends AbstractEditableTCViewTab 
 {
-
-    private static final long serialVersionUID = 1L;
-
-    private TextArea<String> area;
+	private static final Logger log = LoggerFactory.getLogger(TCViewForumTab.class);
+	
     private AbstractReadOnlyModel<Boolean> infoVisibilityModel;
     
-    public TCViewGenericTextTab(final String id, IModel<TCEditableObject> model,
+	public TCViewForumTab(final String id, final IModel<TCEditableObject> model,
     		AbstractReadOnlyModel<Boolean> infoVisibilityModel) 
     {
         this(id, model, false, infoVisibilityModel);
     }
         
-    @SuppressWarnings("serial")
-	public TCViewGenericTextTab(final String id, IModel<TCEditableObject> model, 
+    public TCViewForumTab(final String id, final IModel<TCEditableObject> model, 
     		boolean editing, AbstractReadOnlyModel<Boolean> infoVisibilityModel) {
         super(id, model, editing);
+        
         this.infoVisibilityModel = infoVisibilityModel;
         
-        this.area = new SelfUpdatingTextArea("tc-view-text", new Model<String>() {
+        add(new TCForumPostsPanel("forum-container", new AbstractReadOnlyModel<String>() {
+        	String lastUID=null;
+        	String lastURL=null;
         	@Override
         	public String getObject() {
-        		return getStringValue(getKey());
+        		TCEditableObject o = model.getObject();
+        		String uid = o!=null ? o.getInstanceUID() : null;
+        		if (!TCUtilities.equals(uid, lastUID)) {
+        			lastURL = null;
+        			if (uid!=null) {
+        				try {
+	         				lastURL = TCForumIntegration.JForum.getPostsPageURL(o);
+	           				lastUID = uid;
+        				}
+        				catch (Exception e) {
+        					log.error(null, e);
+        				}
+        			}
+        		}
+        		return lastURL;
         	}
-        	@Override
-        	public void setObject(String value) {
-                if (isEditing())
-                {
-                	super.setObject(value);
-                	
-                    getTC().setValue(getKey(),value!=null?value.toString():null);
-                }
-        	}
-        });
-        
-        this.area.add(super.createTextInputCssClassModifier());
-        
-        if (!isEditing()) {
-            this.area.add(new AttributeAppender("readonly",true,new Model<String>("readonly"), " "));
-        }
-        
-        add(this.area);
+        }));
+    }
+
+    @Override
+    public String getTabTitle()
+    {
+        return getString("tc.view.forum.tab.title");
     }
     
     @Override
-    protected void saveImpl()
+    public boolean hasContent()
     {
-        getTC().setValue(getKey(), area.getModel().getObject());
+        return true;
     }
     
     @Override
@@ -108,27 +109,21 @@ public abstract class TCViewGenericTextTab extends AbstractEditableTCViewTab
     	boolean defaultVisibility = super.isTabVisible();
     	
     	if (defaultVisibility) {
-	    	if (infoVisibilityModel!=null) {
-	    		if (TCQueryFilterKey.Discussion.equals(getKey())) {
-	    			return infoVisibilityModel.getObject() ||
-	    	    			!WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey("Remarks");
-	    		}
-	    		else {
-		    		return infoVisibilityModel.getObject() ||
-		    			!WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey(
-		    					getKey());
-	    		}
-	    	}
+    		if (TCForumIntegration.get(WebCfgDelegate.getInstance().
+    				getTCForumIntegrationType())==null) {
+    			return false;
+    		}
+    		if (infoVisibilityModel!=null) {
+    			return infoVisibilityModel.getObject() ||
+    					!WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey("Discussion");
+    		}
     	}
     	
     	return defaultVisibility;
     }
     
     @Override
-    public boolean hasContent()
+    protected void saveImpl()
     {
-        return getTC()!=null && !getStringValue(getKey()).isEmpty();
     }
-        
-    protected abstract TCQueryFilterKey getKey();
 }

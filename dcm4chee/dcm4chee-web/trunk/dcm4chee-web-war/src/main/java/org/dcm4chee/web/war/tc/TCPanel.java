@@ -178,7 +178,7 @@ public class TCPanel extends Panel {
             			public void dialogClosed(AjaxRequestTarget target, boolean changesSaved) {
             				if (changesSaved) {
 					            //trigger new search and select new SR
-            					searchPanel.redoSearch(target, viewDialog.getView().getTC().getInstanceUID());
+            					//searchPanel.redoSearch(target, viewDialog.getView().getTC().getInstanceUID());
             				}
             			}
             		}

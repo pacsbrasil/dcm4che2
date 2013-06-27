@@ -244,6 +244,7 @@ public class TCViewPanel extends Panel
         final Label linksTitleLabel = new Label("tc.view.links.tab.title");
         linksTitleLabel.setOutputMarkupId(true);
         
+        final TCViewForumTab forumTab = new TCViewForumTab("tc-view-forum", getModel(), isEditable(), infoVisibilityModel);
         final TCViewOverviewTab overviewTab = new TCViewOverviewTab("tc-view-overview", getModel(), isEditable(), infoVisibilityModel);
         final TCViewDiagnosisTab diagnosisTab = new TCViewDiagnosisTab("tc-view-diagnosis", getModel(), isEditable(), infoVisibilityModel);
         final WebMarkupContainer imagesTab =  new TCViewImagesTab("tc-view-images", getModel(), infoVisibilityModel);
@@ -450,6 +451,14 @@ public class TCViewPanel extends Panel
             }
         }));
         
+        content.add(new Label("tc.view.forum.tab.title", new AbstractReadOnlyModel<String>() {
+            @Override
+            public String getObject()
+            {
+                return forumTab.getTabTitle();
+            }
+        }));
+        
         content.add(new Label("tc.view.organSystem.tab.title", new AbstractReadOnlyModel<String>() {
             @Override
             public String getObject()
@@ -478,14 +487,15 @@ public class TCViewPanel extends Panel
         tabsToIndices.put(findingTab, 3);
         tabsToIndices.put(historyTab, 4);
         tabsToIndices.put(discussionTab, 5);
-        tabsToIndices.put(organSystemTab, 6);
-        tabsToIndices.put(biblioTab, 7);
-        tabsToIndices.put(documentsTab, 8);
-        tabsToIndices.put(linksTab, 9);
+        tabsToIndices.put(forumTab, 6);
+        tabsToIndices.put(organSystemTab, 7);
+        tabsToIndices.put(biblioTab, 8);
+        tabsToIndices.put(documentsTab, 9);
+        tabsToIndices.put(linksTab, 10);
         
         if (imagesTab instanceof TCViewImagesTab)
         {
-        	tabsToIndices.put((TCViewImagesTab)imagesTab, 10);
+        	tabsToIndices.put((TCViewImagesTab)imagesTab, 11);
         }
                 
         content.add(overviewTab);
@@ -494,6 +504,7 @@ public class TCViewPanel extends Panel
         content.add(findingTab);
         content.add(historyTab);
         content.add(discussionTab);
+        content.add(forumTab);
         content.add(organSystemTab);
         content.add(biblioTab);
         content.add(documentsTab);
