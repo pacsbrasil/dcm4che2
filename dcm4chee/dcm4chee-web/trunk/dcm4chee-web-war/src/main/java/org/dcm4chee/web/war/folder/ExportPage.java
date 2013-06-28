@@ -98,7 +98,6 @@ import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.archive.entity.StudyPermission;
 import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.web.common.ajax.AjaxIntervalBehaviour;
-import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.common.model.ProgressProvider;
 import org.dcm4chee.web.common.secure.SecureSession;
@@ -108,6 +107,7 @@ import org.dcm4chee.web.common.util.CloseRequestSupport;
 import org.dcm4chee.web.common.util.FileUtils;
 import org.dcm4chee.web.dao.ae.AEHomeLocal;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
+import org.dcm4chee.web.war.AuthenticatedWebSession;
 import org.dcm4chee.web.war.StudyPermissionHelper;
 import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
 import org.dcm4chee.web.war.folder.delegate.ExportDelegate;
@@ -163,7 +163,7 @@ public class ExportPage extends SecureSessionCheckPage implements CloseRequestSu
         }
         public void detach() {}
     };
-
+    		
     protected ExportResult r;
     private boolean exportPerformed = false;
     
@@ -178,6 +178,8 @@ public class ExportPage extends SecureSessionCheckPage implements CloseRequestSu
         if (ExportPage.CSS != null)
             add(CSSPackageResource.getHeaderContribution(ExportPage.CSS));
 
+        initDestinationAETs();
+
         HashMap<Integer,ExportResult> results = getSession().getMetaData(EXPORT_RESULTS);
         exportInfo = new ExportInfo(list);
         if ( results == null ) {
@@ -189,7 +191,7 @@ public class ExportPage extends SecureSessionCheckPage implements CloseRequestSu
         results.put(resultId, result);
         destinationAET = getSession().getMetaData(LAST_DESTINATION_AET_ATTRIBUTE);
         add(CSSPackageResource.getHeaderContribution(ExportPage.class, "folder-style.css"));
-        initDestinationAETs();
+
         final BaseForm form = new BaseForm("form");
         form.setResourceIdPrefix("export.");
         add(form);
@@ -214,11 +216,13 @@ public class ExportPage extends SecureSessionCheckPage implements CloseRequestSu
             .setVisible(studyPermissionHelper.isUseStudyPermissions()));
         form.addLabel("totInstances");
         form.add( new Label("totInstancesValue", new PropertyModel<Integer>(exportInfo, "totNrOfInstances")));
+
         form.add(new DropDownChoice<AE>("destinationAETs", destinationModel, destinationAETs, new IChoiceRenderer<AE>(){
+
             private static final long serialVersionUID = 1L;
 
             public Object getDisplayValue(AE ae) {
-                if (ae.getDescription() == null) {
+                if (ae.getDescription() == null || ae.getDescription().length() == 0) {
                     return ae.getTitle();
                 } else {
                     return ae.getTitle()+"("+ae.getDescription()+")";
@@ -233,9 +237,13 @@ public class ExportPage extends SecureSessionCheckPage implements CloseRequestSu
 
             @Override
             public boolean isEnabled() {
-                return exportInfo.hasSelection() && isExportInactive();
+                return exportInfo.hasSelection() && isExportInactive() && destinationAETs.size() > 0;
             }
-        }.setNullValid(false).setOutputMarkupId(true));
+        }.setNullValid(false).setOutputMarkupId(true));        	
+        
+        if (destinationModel.getObject() == null && destinationAETs.size() > 0)
+        	destinationModel.setObject(destinationAETs.get(0));
+        
         form.addLabel("destinationAETsLabel");
         form.addLabel("exportResultLabel");
         form.add(new Label("exportResult", new AbstractReadOnlyModel<String>() {
@@ -275,7 +283,7 @@ public class ExportPage extends SecureSessionCheckPage implements CloseRequestSu
             
             @Override
             public boolean isEnabled() {
-                return exportInfo.hasSelection() && isExportInactive();
+                return exportInfo.hasSelection() && isExportInactive() && destinationAETs.size() > 0;
             }
 
             @Override
@@ -296,6 +304,7 @@ public class ExportPage extends SecureSessionCheckPage implements CloseRequestSu
                 removeProgressProvider(getExportResults().remove(resultId), true);
                 getPage().getPageMap().remove(ExportPage.this);
                 target.appendJavascript("javascript:self.close()");
+                target.addComponent(form);
             }
         }.add(new Label("closeText", new ResourceModel("export.closeBtn.text"))
         .add(new AttributeModifier("style", true, new Model<String>("vertical-align: middle"))))
@@ -562,12 +571,21 @@ public class ExportPage extends SecureSessionCheckPage implements CloseRequestSu
     }
     
     private void initDestinationAETs() {
+        List<String> aetChoices = ((AuthenticatedWebSession) AuthenticatedWebSession.get()).getFolderViewPort().getAetChoices();
+        for (int i = aetChoices.size()-1; i >= 0; i--)
+            if (aetChoices.get(i).startsWith("(") && aetChoices.get(i).endsWith(")"))
+            	aetChoices.remove(i);
+
         destinationAETs.clear();
         AEHomeLocal dao = (AEHomeLocal) JNDIUtils.lookup(AEHomeLocal.JNDI_NAME);
         destinationAETs.addAll(dao.findAll(null));
-        if ( destinationAET == null && destinationAETs.size() > 0) {
-            destinationAET = destinationAETs.get(0);
-        }
+        for (int i = destinationAETs.size()-1; i >= 0; i--)
+        	if (!aetChoices.contains(destinationAETs.get(i).getTitle()))
+        			destinationAETs.remove(i);
+        
+        if (destinationAETs.size() > 0)
+        	if (destinationAET == null)
+        		destinationAET = destinationAETs.get(0);
     }
 
     private HashMap<Integer,ExportResult> getExportResults() {
