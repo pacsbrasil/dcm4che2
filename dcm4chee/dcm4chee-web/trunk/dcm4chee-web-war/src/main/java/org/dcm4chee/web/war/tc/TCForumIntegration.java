@@ -56,7 +56,7 @@ public enum TCForumIntegration {
 	}
 		
 	public class JForumAPI extends ForumAPI {
-		private final String BASE_URL = "localhost:8080/jforum";
+		private final String BASE_URL = getBaseURL();
 		private final String API_KEY = "dcm4chee-web";
 		private final String SSO_COOKIE_NAME = "dcm4chee-web.userId";
 		@Override
@@ -188,6 +188,18 @@ public enum TCForumIntegration {
 
 	      	TCUtilities.doHTTPPost(
 	      			BASE_URL+"/tccaseApi/insertMapping.page", params, null);
+		}
+		
+		private String getBaseURL() {
+			StringBuilder url = new StringBuilder();
+			String host = System.getProperty("jboss.bind.address");
+			if (host==null) {
+				host = "localhost";
+			}
+			url.append(host);
+			url.append(":8080");
+			url.append("/jforum");
+			return url.toString();
 		}
 	}
 }
