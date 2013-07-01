@@ -18,7 +18,7 @@ import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.war.AuthenticatedWebSession;
-import org.dcm4chee.web.war.common.SelectAllLink;
+import org.dcm4chee.web.war.common.SelectAllCheckBox;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 import org.dcm4chee.web.war.folder.model.PatientModel;
 
@@ -147,24 +147,12 @@ public class StudyListHeader extends Panel {
         List<PatientModel> patients = ((AuthenticatedWebSession) getSession()).getFolderViewPort().getPatients();
         toUpd.setOutputMarkupId(true);
         add(new Row("patient", PatientModel.PATIENT_LEVEL).add(patCell)
-                .add(new SelectAllLink("selectAll", patients,PatientModel.PATIENT_LEVEL, true, toUpd, true)
-                .add(new TooltipBehaviour("folder.studyview.", "selectAllPatients")))
-                .add(new SelectAllLink("deselectAll", patients,PatientModel.PATIENT_LEVEL, false, toUpd, true)
-                .add(new TooltipBehaviour("folder.studyview.", "deselectAllPatients")))
-                );
+        		.add(new SelectAllCheckBox("toggleSelectAll", patients, PatientModel.PATIENT_LEVEL, toUpd, true)));
         add(new Row("study", PatientModel.STUDY_LEVEL).setVisibleModel(hideStudyModel).add(new Cell("cell", 1))
-                .add(new SelectAllLink("selectAll", patients,PatientModel.STUDY_LEVEL, true, toUpd, true)
-                .add(new TooltipBehaviour("folder.studyview.", "selectAllStudies")))
-                .add(new SelectAllLink("deselectAll", patients,PatientModel.STUDY_LEVEL, false, toUpd, true)
-                .add(new TooltipBehaviour("folder.studyview.", "deselectAllStudies")))
-                );
+        		.add(new SelectAllCheckBox("toggleSelectAll", patients, PatientModel.STUDY_LEVEL, toUpd, true)));
         add(new Row("pps", PatientModel.PPS_LEVEL).setVisibleModel(hidePPSModel).add(new Cell("cell", 2)));
         add(new Row("series", PatientModel.SERIES_LEVEL).add(new Cell("cell", 3))
-                .add(new SelectAllLink("selectAll", patients,PatientModel.SERIES_LEVEL, true, toUpd, true)
-                .add(new TooltipBehaviour("folder.studyview.", "selectAllSeries")))
-                .add(new SelectAllLink("deselectAll", patients,PatientModel.SERIES_LEVEL, false, toUpd, true)
-                .add(new TooltipBehaviour("folder.studyview.", "deselectAllSeries")))
-                );
+        		.add(new SelectAllCheckBox("toggleSelectAll", patients, PatientModel.SERIES_LEVEL, toUpd, true)));
         add(new Row("instance", PatientModel.INSTANCE_LEVEL).add(new Cell("cell", 4)));
         add(new Row("file", 5));
     }
