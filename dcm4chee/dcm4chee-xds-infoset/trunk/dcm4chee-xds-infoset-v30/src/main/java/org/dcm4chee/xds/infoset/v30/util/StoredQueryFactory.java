@@ -42,6 +42,7 @@ public class StoredQueryFactory {
     public static final String QRY_FOLDER_PATIENT_ID = "$XDSFolderPatientId";
     public static final String QRY_UUID = "$uuid";
     public static final String QRY_DOCUMENT_ENTRY_ENTRY_UUID = "$XDSDocumentEntryEntryUUID";
+    public static final String QRY_DOCUMENT_ENTRY_UNIQUE_ID = "$XDSDocumentEntryUniqueId";
     public static final String QRY_ASSOCIATION_TYPES = "$AssociationTypes";
 
     /** Status Constants */
@@ -118,6 +119,11 @@ public class StoredQueryFactory {
         return rq;
     }
 
+    public AdhocQueryRequest createGetDocumentsByUniqueIdRequest(List uids) throws SOAPException, JAXBException {
+        AdhocQueryRequest rq = getBasicRequest(STORED_QUERY_GET_DOCUMENTS, true);
+        createSlot(rq, QRY_DOCUMENT_ENTRY_UNIQUE_ID, uids);
+        return rq;
+    }
 
     public AdhocQueryRequest createGetFoldersQuery(List uuids) throws SOAPException, JAXBException {
         AdhocQueryRequest rq = getBasicRequest(STORED_QUERY_GET_FOLDERS, true);
