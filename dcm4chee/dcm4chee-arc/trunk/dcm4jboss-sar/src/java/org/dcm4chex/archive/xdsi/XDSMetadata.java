@@ -452,6 +452,7 @@ public class XDSMetadata {
                     mdValues.getProperty("formatCodeDN."+mime,"PDF Document"), 
                     mdValues.getProperty("formatCodeCodingSchemeOID."+mime,"Connect-a-thon formatCodes") );
         }
+        this.addSlot("studyInstanceUID", mdValues.getProperty("studyInstanceUID"));
         addClassification(UUID.XDSDocumentEntry_healthCareFacilityTypeCode, doc.getDocumentID(), 
                 mdValues.getProperty("healthCareFacilityTypeCode","Assisted Living"),
                 mdValues.getProperty("healthCareFacilityTypeCodeDN","Assisted Living"),

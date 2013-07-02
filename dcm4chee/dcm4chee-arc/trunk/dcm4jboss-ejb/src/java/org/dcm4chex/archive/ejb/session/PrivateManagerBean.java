@@ -66,6 +66,7 @@ import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
 import org.dcm4chex.archive.common.PatientMatching;
+import org.dcm4chex.archive.ejb.interfaces.ContentEditLocal;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
@@ -126,7 +127,7 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocalHome;
  * 
  * @ejb.ejb-ref ejb-name="PrivateFile" view-type="local"
  *              ref-name="ejb/PrivateFile"
- * 
+ *              
  */
 public abstract class PrivateManagerBean implements SessionBean {
 
@@ -364,6 +365,7 @@ public abstract class PrivateManagerBean implements SessionBean {
                     } else
                         UpdateDerivedFieldsUtils.updateDerivedFieldsOf(series);
                 }
+                markPublishedStudy(study, study.getSeries().isEmpty());
                 if (study.getSeries().size() == 0 && cascading) {
                     // Delete the study too since there's no series left
                     getPrivateStudy(study, DELETED, null, false);
@@ -397,6 +399,7 @@ public abstract class PrivateManagerBean implements SessionBean {
             Dataset ds = makeIAN(series.getStudy(), mapSeries);
             getPrivateInstance(instance, DELETED, null);
             instance.remove();
+            this.markPublishedStudy(series.getStudy(), false);
             UpdateDerivedFieldsUtils.updateDerivedFieldsOf(series);
             UpdateDerivedFieldsUtils.updateDerivedFieldsOf(series.getStudy());
             return ds;
@@ -419,9 +422,10 @@ public abstract class PrivateManagerBean implements SessionBean {
             StudyLocal study = series.getStudy();
             Map mapSeries = new HashMap();
             mapSeries.put(series, series.getInstances());
-            Dataset ds = makeIAN(series.getStudy(), mapSeries);
+            Dataset ds = makeIAN(study, mapSeries);
             getPrivateSeries(series, DELETED, null, true);
             series.remove();
+            markPublishedStudy(study, study.getSeries().isEmpty());
             UpdateDerivedFieldsUtils.updateDerivedFieldsOf(study);
             return ds;
         } catch (CreateException e) {
@@ -461,6 +465,7 @@ public abstract class PrivateManagerBean implements SessionBean {
                     getPrivateSeries(series, DELETED, null, true);
                     series.remove();
                 }
+                markPublishedStudy(study, study.getSeries().isEmpty());
                 UpdateDerivedFieldsUtils.updateDerivedFieldsOf(study);
             }
             return result;
@@ -488,6 +493,7 @@ public abstract class PrivateManagerBean implements SessionBean {
                     getPrivateSeries(series, DELETED, null, true);
                     series.remove();
                 }
+                markPublishedStudy(study, study.getSeries().isEmpty());
                 if (removeEmptyParents && study.getSeries().isEmpty()) {
                     study.remove();
                 } else {
@@ -528,6 +534,7 @@ public abstract class PrivateManagerBean implements SessionBean {
         try {
             Dataset ds = makeIAN(study, null);
             getPrivateStudy(study, DELETED, null, true);
+            markPublishedStudy(study, true);
             study.remove();
             return ds;
         } catch (FinderException e) {
@@ -557,6 +564,7 @@ public abstract class PrivateManagerBean implements SessionBean {
                             null, file.getFileSystem());
                 }
             }
+            markPublishedStudy(study, true);
             study.remove();
             return ds;
         } catch (FinderException e) {
@@ -566,6 +574,16 @@ public abstract class PrivateManagerBean implements SessionBean {
         } catch (RemoveException e) {
             throw new EJBException(e);
         }
+    }
+
+    private void markPublishedStudy(StudyLocal study, boolean deleted){
+        try {
+            if (deleted) {
+                contentEdit().markPublishedStudyDeleted(study.getStudyIuid());
+            } else {
+                contentEdit().markPublishedStudyChanged(study.getStudyIuid());
+            }
+        } catch (Exception ignore) {}
     }
     
     /**
@@ -826,4 +844,10 @@ public abstract class PrivateManagerBean implements SessionBean {
         }
         return ds;
     }
+    
+    /**
+     * @ejb.ejb-ref ejb-name="ContentEdit" view-type="local" ref-name="ejb/ContentEdit"
+     */
+    protected abstract ContentEditLocal contentEdit();
+
 }

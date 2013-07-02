@@ -75,7 +75,9 @@ import org.dcm4chex.archive.common.FileStatus;
 import org.dcm4chex.archive.common.FileSystemStatus;
 import org.dcm4chex.archive.common.PatientMatching;
 import org.dcm4chex.archive.common.PrivateTags;
+import org.dcm4chex.archive.common.PublishedStudyStatus;
 import org.dcm4chex.archive.common.SeriesStored;
+import org.dcm4chex.archive.ejb.interfaces.ContentEditLocal;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileLocal;
 import org.dcm4chex.archive.ejb.interfaces.FileLocalHome;
@@ -85,6 +87,9 @@ import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.PrivateManagerLocal;
+import org.dcm4chex.archive.ejb.interfaces.PublishedStudyLocal;
+import org.dcm4chex.archive.ejb.interfaces.PublishedStudyLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StorageLocal;
@@ -109,6 +114,8 @@ import org.dcm4chex.archive.exceptions.NonUniquePatientIDException;
  * @ejb.ejb-ref ejb-name="File" view-type="local" ref-name="ejb/File"
  * @ejb.ejb-ref ejb-name="FileSystem" view-type="local" ref-name="ejb/FileSystem"
  * @ejb.ejb-ref ejb-name="StudyOnFileSystem" view-type="local" ref-name="ejb/StudyOnFileSystem"
+ * @ejb.ejb-ref ejb-name="StudyOnFileSystem" view-type="local" ref-name="ejb/StudyOnFileSystem"
+ * @ejb.ejb-ref ejb-name="PublishedStudy" view-type="local" ref-name="ejb/PublishedStudy"
  * 
  * @author <a href="mailto:gunter@tiani.com">Gunter Zeilinger </a>
  * @version $Revision$ $Date$
@@ -134,6 +141,8 @@ public abstract class StorageBean implements SessionBean {
     private FileSystemLocalHome fileSystemHome;
     
     private StudyOnFileSystemLocalHome sofHome;
+    
+    private PublishedStudyLocalHome publishedStudyHome;
     
     private SessionContext sessionCtx;
     
@@ -163,6 +172,8 @@ public abstract class StorageBean implements SessionBean {
                     .lookup("java:comp/env/ejb/FileSystem");
             sofHome = (StudyOnFileSystemLocalHome) jndiCtx
                     .lookup("java:comp/env/ejb/StudyOnFileSystem");
+            publishedStudyHome = (PublishedStudyLocalHome) jndiCtx
+                    .lookup("java:comp/env/ejb/PublishedStudy");
         } catch (NamingException e) {
             throw new EJBException(e);
         } finally {
@@ -184,6 +195,7 @@ public abstract class StorageBean implements SessionBean {
         fileHome = null;
         fileSystemHome = null;
         sofHome = null;
+        publishedStudyHome = null;
     }
 
     /**
@@ -226,6 +238,11 @@ public abstract class StorageBean implements SessionBean {
             } catch (ObjectNotFoundException onfe) {
                 instance = instHome.create(ds,
                         getSeries(matching, ds, coercedElements));
+                Collection<PublishedStudyLocal> pStudies = publishedStudyHome.findByStudyPkAndStatus(instance.getSeries().getStudy().getPk(), 
+                            PublishedStudyStatus.STUDY_COMPLETE);
+                for (PublishedStudyLocal pStudy : pStudies) {
+                    pStudy.setStatus(PublishedStudyStatus.STUDY_CHANGED);
+                }
             }
             if (fspk != -1) {
                 FileSystemLocal fs = fileSystemHome.findByPrimaryKey(new Long(fspk));
@@ -732,8 +749,10 @@ public abstract class StorageBean implements SessionBean {
             if (deleteSeries && series.getNumberOfSeriesRelatedInstances() == 0)
                 series.remove();	    	
             UpdateDerivedFieldsUtils.updateDerivedFieldsOf(study);
-            if (deleteStudy && study.getNumberOfStudyRelatedSeries() == 0)
+            markPublishedStudy(study, study.getNumberOfStudyRelatedSeries() == 0);
+            if (deleteStudy && study.getNumberOfStudyRelatedSeries() == 0) {
                 study.remove();
+            }
         }
     }
 
@@ -804,5 +823,21 @@ public abstract class StorageBean implements SessionBean {
         return iuids;
     }
 
+    private void markPublishedStudy(StudyLocal study, boolean deleted){
+        try {
+            if (deleted) {
+                contentEdit().markPublishedStudyDeleted(study.getStudyIuid());
+            } else {
+                contentEdit().markPublishedStudyChanged(study.getStudyIuid());
+            }
+        } catch (Exception ignore) {}
+    }
+
+    /**
+     * @ejb.ejb-ref ejb-name="ContentEdit" view-type="local" ref-name="ejb/ContentEdit"
+     */
+    protected abstract ContentEditLocal contentEdit();
+
 }
+
 

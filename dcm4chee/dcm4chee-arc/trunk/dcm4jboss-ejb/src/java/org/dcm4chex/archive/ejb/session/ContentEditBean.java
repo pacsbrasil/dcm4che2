@@ -62,6 +62,7 @@ import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.PrivateTags;
+import org.dcm4chex.archive.common.PublishedStudyStatus;
 import org.dcm4chex.archive.ejb.interfaces.GPSPSLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocal;
 import org.dcm4chex.archive.ejb.interfaces.InstanceLocalHome;
@@ -71,6 +72,8 @@ import org.dcm4chex.archive.ejb.interfaces.MWLItemLocal;
 import org.dcm4chex.archive.ejb.interfaces.MWLItemLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocalHome;
+import org.dcm4chex.archive.ejb.interfaces.PublishedStudyLocal;
+import org.dcm4chex.archive.ejb.interfaces.PublishedStudyLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
@@ -102,6 +105,7 @@ import org.dcm4chex.archive.util.Convert;
  * @ejb.ejb-ref ejb-name="File" view-type="local" ref-name="ejb/File"
  * @ejb.ejb-ref ejb-name="MPPS" view-type="local" ref-name="ejb/MPPS" 
  * @ejb.ejb-ref ejb-name="MWLItem" view-type="local" ref-name="ejb/MWLItem"
+ * @ejb.ejb-ref ejb-name="PublishedStudy" view-type="local" ref-name="ejb/PublishedStudy"
  *  
  */
 public abstract class ContentEditBean implements SessionBean {
@@ -119,6 +123,7 @@ public abstract class ContentEditBean implements SessionBean {
     private InstanceLocalHome instHome;
     private MPPSLocalHome mppsHome;
     private MWLItemLocalHome mwlHome;
+    private PublishedStudyLocalHome publishedStudyHome;
 
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
 
@@ -141,6 +146,8 @@ public abstract class ContentEditBean implements SessionBean {
             .lookup("java:comp/env/ejb/MPPS");
             mwlHome = (MWLItemLocalHome) jndiCtx
             .lookup("java:comp/env/ejb/MWLItem");
+            publishedStudyHome = (PublishedStudyLocalHome) jndiCtx
+            .lookup("java:comp/env/ejb/PublishedStudy");
         } catch (NamingException e) {
             throw new EJBException(e);
         } finally {
@@ -159,6 +166,7 @@ public abstract class ContentEditBean implements SessionBean {
         seriesHome = null;
         instHome = null;
         mppsHome = null;
+        publishedStudyHome = null;
     }
 
     /**
@@ -359,6 +367,9 @@ public abstract class ContentEditBean implements SessionBean {
             PatientLocal oldPat = study.getPatient();
             if (oldPat.isIdentical(pat)) continue;
             moveReferencedEntities(study, pat);
+            try {
+                markPublishedStudyDeleted(study.getStudyIuid());
+            } catch (Exception ignore) {}
             studies.add(study);
             ds1 = getStudyMgtDataset( study, study.getSeries(), null, 
                     CHANGE_MODE_STUDY, dsPat );
@@ -541,6 +552,66 @@ public abstract class ContentEditBean implements SessionBean {
                     instHome.findByPrimaryKey(instancePks[i]) : null;
         }
         return ds;
+    }
+    
+    /**
+     * @ejb.interface-method
+     */
+    public void commitPublishedStudy(long studyPk, String docUID, String docEntryUID, String repUID ) throws CreateException, FinderException {
+        StudyLocal study = studyHome.findByPrimaryKey(studyPk);
+        Collection<PublishedStudyLocal> pStudies = 
+            publishedStudyHome.findByStudyPkAndStatus(studyPk, PublishedStudyStatus.STUDY_CHANGED);
+        for (PublishedStudyLocal pStudy :pStudies) {
+            pStudy.setStatus(PublishedStudyStatus.DEPRECATED);
+        }
+        publishedStudyHome.create(study, docUID, docEntryUID, repUID);
+    }
+
+    /**
+     * @throws RemoveException 
+     * @throws EJBException 
+     * @ejb.interface-method
+     */
+    public void removePublishedStudy(long publishedStudyPk) throws FinderException, EJBException, RemoveException {
+        publishedStudyHome.findByPrimaryKey(publishedStudyPk).remove();
+    }
+
+    /**
+     * @throws FinderException 
+     * @throws EJBException 
+     * @ejb.interface-method
+     */
+    public void markPublishedStudyChanged(String studyIUID) throws FinderException{
+        Collection<PublishedStudyLocal> pStudies = 
+            publishedStudyHome.findByStudyIUIDAndStatus(studyIUID, PublishedStudyStatus.STUDY_COMPLETE);
+        for (PublishedStudyLocal p :pStudies) {
+            p.setStatus(PublishedStudyStatus.STUDY_CHANGED);
+        }
+    }
+    
+    /**
+     * @throws FinderException 
+     * @throws RemoveException 
+     * @throws EJBException 
+     * @ejb.interface-method
+     */
+    public void markPublishedStudyDeleted(String studyIUID) throws FinderException, RemoveException {
+        Collection<PublishedStudyLocal> pStudies = 
+            publishedStudyHome.findByStudyIUID(studyIUID);
+        for (PublishedStudyLocal p :pStudies) {
+            if (p.getStatus() == PublishedStudyStatus.DEPRECATED) {
+                p.remove();
+            } else {
+                p.setStudy(null);
+            }
+        }
+    }
+    
+    /**
+     * @ejb.interface-method
+     */
+    public void setXDSDocumentStatus(long publishedStudyPk, int status) throws FinderException {
+        publishedStudyHome.findByPrimaryKey(publishedStudyPk).setStatus(status);
     }
 
     private Dataset getStudyMgtDataset( StudyLocal study, Collection series, Collection instances ) {

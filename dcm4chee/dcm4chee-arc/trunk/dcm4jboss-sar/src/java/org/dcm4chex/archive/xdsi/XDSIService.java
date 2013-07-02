@@ -45,13 +45,17 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.rmi.RemoteException;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -63,11 +67,16 @@ import java.util.StringTokenizer;
 import java.util.TreeMap;
 
 import javax.activation.DataHandler;
+import javax.ejb.FinderException;
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanException;
 import javax.management.MalformedObjectNameException;
 import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
+import javax.management.ReflectionException;
 import javax.management.RuntimeMBeanException;
+import javax.xml.bind.JAXBElement;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -98,20 +107,35 @@ import org.dcm4che2.audit.message.AuditMessage;
 import org.dcm4che2.audit.message.DataExportMessage;
 import org.dcm4che2.audit.message.ParticipantObjectDescription;
 import org.dcm4che2.audit.util.InstanceSorter;
+import org.dcm4chee.xds.infoset.v30.AdhocQueryResponse;
+import org.dcm4chee.xds.infoset.v30.ExternalIdentifierType;
+import org.dcm4chee.xds.infoset.v30.ExtrinsicObjectType;
+import org.dcm4chee.xds.infoset.v30.IdentifiableType;
+import org.dcm4chee.xds.infoset.v30.SlotType1;
+import org.dcm4chee.xds.infoset.v30.ValueListType;
 import org.dcm4cheri.util.StringUtils;
+import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.dcm.ianscu.IANScuService;
+import org.dcm4chex.archive.ejb.interfaces.ContentEdit;
+import org.dcm4chex.archive.ejb.interfaces.ContentEditHome;
 import org.dcm4chex.archive.ejb.interfaces.ContentManager;
 import org.dcm4chex.archive.ejb.interfaces.ContentManagerHome;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.jdbc.QueryFilesCmd;
+import org.dcm4chex.archive.ejb.jdbc.QueryXdsPublishCmd;
+import org.dcm4chex.archive.ejb.jdbc.QueryXdsPublishCmd.PublishStudy;
 import org.dcm4chex.archive.mbean.HttpUserInfo;
+import org.dcm4chex.archive.mbean.SchedulerDelegate;
+import org.dcm4chex.archive.util.DateTimeFormat;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
 import org.jboss.system.ServiceMBeanSupport;
+import org.jboss.system.server.ServerImplMBean;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+
 
 //import com.sun.xml.messaging.saaj.util.JAXMStreamSource;
 
@@ -120,8 +144,13 @@ import org.xml.sax.SAXException;
  * @version $Revision$ $Date$
  * @since Feb 15, 2006
  */
-public class XDSIService extends ServiceMBeanSupport {
+public class XDSIService extends ServiceMBeanSupport implements NotificationListener {
 
+    private static final String STUDY_INSTANCE_UID = "studyInstanceUID";
+    private static final String SRC_PATIENT_ID = "srcPatientID";
+    private static final String XAD_PATIENT_ID = "xadPatientID";
+    private static final String SQL_NOT_VALID_REASON = "!SQL NOT VALID! Reason: ";
+    private static final String RPLC_DOC_ENTRY_UID = "rplcDocEntryUID";
     private static final String DEFAULT_XDSB_SOURCE_SERVICE = "dcm4chee.xds:service=XDSbSourceService";
     public static final String DOCUMENT_ID = "doc_1";
     public static final String PDF_DOCUMENT_ID = "pdf_doc_1";
@@ -129,15 +158,17 @@ public class XDSIService extends ServiceMBeanSupport {
     public static final String AUTHOR_PERSON = "authorPerson";
     public static final String AUTHOR_ROLE = "authorRole";
     public static final String AUTHOR_ROLE_DISPLAYNAME = "authorRoleDisplayName";
-    public  static final String AUTHOR_INSTITUTION = "authorInstitution";
-    public  static final String SOURCE_ID = "sourceId";
+    public static final String AUTHOR_INSTITUTION = "authorInstitution";
+    public static final String SOURCE_ID = "sourceId";
 
     private static final String NONE = "NONE";
+    private static final String NEWLINE = System.getProperty("line.separator", "\n");
 
     private ObjectName ianScuServiceName;
     private ObjectName keyObjectServiceName;
     private ObjectName xdsbSourceServiceName;
     private ObjectName xdsHttpCfgServiceName;
+    private ObjectName xdsQueryServiceName;
     private Boolean httpCfgServiceAvailable;
 
     protected String[] autoPublishAETs;
@@ -160,6 +191,7 @@ public class XDSIService extends ServiceMBeanSupport {
     private File eventCodeListFile;
     private File healthCareFacilityCodeListFile;
     private File autoPublishPropertyFile;
+    private File autoPublishStudyDeletedPDFFile;
 
     private List authorRoles = new ArrayList();
     private List confidentialityCodes;
@@ -190,6 +222,57 @@ public class XDSIService extends ServiceMBeanSupport {
     };
     private boolean logITI15;
 
+    private boolean isRunning;
+    private Integer listenerID;
+    private String timerIDAutoPublish;
+    private long autoPublishInterval;
+    private Timestamp beforeDate;
+    private Timestamp afterDate;
+    private long olderThan;
+    private long notOlderThan;
+    private List<String> autoPublishSQL = new ArrayList<String>();
+    private List<QueryXdsPublishCmd> autoPublishSQLcmd = new ArrayList<QueryXdsPublishCmd>();
+    private int maxNumberOfStudiesByOneTask;
+    private boolean addStudyInstanceUIDSlot;
+    private boolean disableStudyDeleteSQL;
+    private String sqlCheckStudyDeleted = "@SELECT study_fk, pk, docentry_uid from published_study where study_fk IS NULL";
+    private QueryXdsPublishCmd checkStudyDeletedCmd;
+    private int fetchSize;
+    private final SchedulerDelegate scheduler = new SchedulerDelegate(this);
+
+    private final NotificationListener autoPublishListener = new NotificationListener() {
+        public void handleNotification(Notification notif, Object handback) {
+            synchronized(this) {
+                if (isRunning) {
+                    log.info("XDS autoPublish is already running!");
+                    return;
+                }
+                isRunning = true;
+            }
+            new Thread(new Runnable(){
+                public void run() {
+                    try {
+                        log.debug("Start checkAutoPublish");
+                        checkAutoPublish();
+                    } catch (Exception e) {
+                        log.error("checkAutoPublish failed:", e);
+                    } finally {
+                        isRunning = false;
+                    }
+                }}).start();
+        }
+    };
+
+    public void handleNotification(Notification notification, Object handback) {
+        if (notification.getType().equals(org.jboss.system.server.Server.START_NOTIFICATION_TYPE)) {
+            try {
+                updateSQLCmds();
+                startScheduler();
+            } catch (Exception x) {
+                log.error("Can not start timer!", x);
+            }
+        }
+    }
     /**
      * @return Returns the property file path.
      */
@@ -414,6 +497,13 @@ public class XDSIService extends ServiceMBeanSupport {
         this.xdsbSourceServiceName = NONE.equals(name) ? null : ObjectName.getInstance(name);
     }
 
+    public String getXdsQueryServiceName() {
+        return xdsQueryServiceName == null ? NONE : xdsQueryServiceName.toString();
+    }
+    public void setXdsQueryServiceName(String name) throws MalformedObjectNameException, NullPointerException {
+        xdsQueryServiceName = NONE.equals(name) ? null : ObjectName.getInstance(name);
+    }
+    
     public String getXdsHttpCfgServiceName() {
         return xdsHttpCfgServiceName == null ? NONE : xdsHttpCfgServiceName.toString();
     }
@@ -426,6 +516,15 @@ public class XDSIService extends ServiceMBeanSupport {
             httpCfgServiceAvailable = xdsHttpCfgServiceName == null ? Boolean.FALSE : null;
         }
     }
+    
+    public ObjectName getSchedulerServiceName() {
+        return scheduler.getSchedulerServiceName();
+    }
+
+    public void setSchedulerServiceName(ObjectName schedulerServiceName) {
+        scheduler.setSchedulerServiceName(schedulerServiceName);
+    }
+
 
     public boolean isHttpCfgServiceAvailable() {
         if (httpCfgServiceAvailable==null) {
@@ -474,6 +573,183 @@ public class XDSIService extends ServiceMBeanSupport {
                      : StringUtils.split(autoPublishAETs, '\\');
     }
 
+    public String getTimerIDAutoPublish() {
+        return timerIDAutoPublish;
+    }
+    public void setTimerIDAutoPublish(String timerID) {
+        this.timerIDAutoPublish = timerID;
+    }
+    public final String getAutoPublishInterval() {
+        return RetryIntervalls.formatIntervalZeroAsNever(autoPublishInterval);
+    }
+
+    public void setAutoPublishInterval(String interval)
+            throws Exception {
+        long oldInterval = autoPublishInterval;
+        autoPublishInterval = RetryIntervalls.parseIntervalOrNever(interval);
+        if (getState() == STARTED && oldInterval != autoPublishInterval) {
+            stopScheduler();
+            startScheduler();
+        }
+    }
+    
+    public boolean isRunning() {
+        return isRunning;
+    }
+    
+    public String getAutoPublishSQL() {
+        if (autoPublishSQL.isEmpty())
+            return NONE;
+        StringBuilder sb = new StringBuilder();
+        for (String s: autoPublishSQL) {
+            sb.append(s).append(NEWLINE);
+        }
+        return sb.toString(); 
+    }
+    public void setAutoPublishSQL(String sql) {
+        if (sql.equals(this.getAutoPublishSQL())) {
+            return;
+        }
+        autoPublishSQL.clear();
+        autoPublishSQLcmd.clear();
+        if (!NONE.equals(sql.trim())) {
+            boolean serviceStarted = this.getState() == STARTED;
+            String tk, sqlError;
+            for (StringTokenizer st = new StringTokenizer(sql, ";\r\n") ; st.hasMoreElements() ; ) {
+                tk = st.nextToken();
+                if (serviceStarted) {
+                    Map<String, Object> params = getSQLparams();
+                    if (tk.length() == 0 || tk.charAt(0) == '!') {
+                        if (!tk.startsWith(SQL_NOT_VALID_REASON)) {
+                            continue;
+                        } else {
+                            tk = tk.substring(1);
+                        }
+                    }
+                    if (tk.charAt(0) != '*') {
+                        sqlError = checkSQL(tk, params);
+                        if (sqlError == null) {
+                            addSQLcmd(tk);
+                        } else {
+                            autoPublishSQL.add(SQL_NOT_VALID_REASON+sqlError);
+                            tk = "!"+tk;
+                        }
+                    }
+                }
+                autoPublishSQL.add(tk);
+            }
+            if (!disableStudyDeleteSQL) {
+                try {
+                    autoPublishSQLcmd.add(new QueryXdsPublishCmd(sqlCheckStudyDeleted, fetchSize, getMaxNumberOfStudiesByOneTask()));
+                } catch (SQLException ignore) {}
+            }
+        }
+    }
+    
+    private void updateSQLCmds() {
+        autoPublishSQLcmd.clear();
+        if (!autoPublishSQL.isEmpty()) {
+            for (String s : autoPublishSQL) {
+                if (s.charAt(0) != '*' && s.charAt(0) != '!') {
+                    addSQLcmd(s);
+                }
+            }
+            if (!disableStudyDeleteSQL) {
+                try {
+                    autoPublishSQLcmd.add(new QueryXdsPublishCmd(sqlCheckStudyDeleted, fetchSize, getMaxNumberOfStudiesByOneTask()));
+                } catch (SQLException ignore) {}
+            }
+        }
+    }
+    
+    private void addSQLcmd(String sql) {
+        try {
+            autoPublishSQLcmd.add(new QueryXdsPublishCmd(sql, fetchSize, getMaxNumberOfStudiesByOneTask()));
+        } catch (Exception ignore) {
+            log.warn("addSQLcmd failed! sql:"+sql, ignore);
+        }
+    }
+    
+    private String checkSQL(String sql, Map<String, Object> params) {
+        String sqlUC = sql.toUpperCase();
+        if ( sqlUC.indexOf("DELETE ") != -1 ) {
+            return "DELETE is not allowed in this SQL statement!";
+        }
+        if ( sqlUC.indexOf("UPDATE ") != -1 ) {
+            return "UPDATE is not allowed in this SQL statement!";
+        }
+        try {
+            QueryXdsPublishCmd cmd = new QueryXdsPublishCmd(sql, 1, 1);
+            cmd.getPublishStudies(params);
+        } catch (Exception x) {
+            return x.getCause() == null ? x.toString() : x.getCause().toString();
+        }
+        return null;
+    }
+    public boolean isDisableStudyDeleteSQL() {
+        return disableStudyDeleteSQL;
+    }
+    public void setDisableStudyDeleteSQL(boolean b) {
+        if (disableStudyDeleteSQL != b) {
+            this.disableStudyDeleteSQL = b;
+            this.updateSQLCmds();
+        }
+    }
+    
+    public String getBeforeDate() {
+        return beforeDate == null ? NONE : new DateTimeFormat(true).format(beforeDate);
+    }
+    public void setBeforeDate(String createdBefore) throws ParseException {
+        this.beforeDate = NONE.equals(createdBefore) ? null : new Timestamp(new DateTimeFormat(true).parse(createdBefore).getTime());
+    }
+    public String getAfterDate() {
+        return afterDate == null ? NONE : new DateTimeFormat().format(afterDate);
+    }
+    public void setAfterDate(String createdAfter) throws ParseException {
+        this.afterDate = NONE.equals(createdAfter) ? null : new Timestamp(new DateTimeFormat().parse(createdAfter).getTime());
+    }
+    public String getOlderThan() {
+        return RetryIntervalls.formatInterval(olderThan);
+    }
+    public void setOlderThan(String olderThan) {
+        this.olderThan = RetryIntervalls.parseInterval(olderThan);
+    }
+    public String getNotOlderThan() {
+        return RetryIntervalls.formatInterval(notOlderThan);
+    }
+    public void setNotOlderThan(String notOlderThan) {
+        this.notOlderThan = RetryIntervalls.parseInterval(notOlderThan);
+    }
+    public int getMaxNumberOfStudiesByOneTask() {
+        return maxNumberOfStudiesByOneTask;
+    }
+    public void setMaxNumberOfStudiesByOneTask(
+            int maxNumberOfStudiesByOneTask) {
+        if (this.maxNumberOfStudiesByOneTask != maxNumberOfStudiesByOneTask) {
+            this.maxNumberOfStudiesByOneTask = maxNumberOfStudiesByOneTask;
+            if (getState() == STARTED)
+                updateSQLCmds();
+        }
+    }
+    
+    public boolean isAddStudyInstanceUIDSlot() {
+        return addStudyInstanceUIDSlot;
+    }
+    public void setAddStudyInstanceUIDSlot(boolean addStudyInstanceUIDSlot) {
+        this.addStudyInstanceUIDSlot = addStudyInstanceUIDSlot;
+    }
+    public int getFetchSize() {
+        return fetchSize;
+    }
+    public void setFetchSize(int fetchSize) {
+        if (this.fetchSize != fetchSize) {
+            this.fetchSize = fetchSize;
+            if (getState() == STARTED)
+                updateSQLCmds();
+        }
+    }
+
+
     public final String getAutoPublishDocTitle() {
         return autoPublishDocTitle;
     }
@@ -489,6 +765,16 @@ public class XDSIService extends ServiceMBeanSupport {
             autoPublishPropertyFile = null;
         } else {
             autoPublishPropertyFile = new File(file.replace('/', File.separatorChar));
+        }
+    }
+    public String getAutoPublishStudyDeletedPDFFile() {
+        return autoPublishStudyDeletedPDFFile == null ? "TEXT" : autoPublishStudyDeletedPDFFile.getPath();
+    }
+    public void setAutoPublishStudyDeletedPDFFile(String file) throws IOException {
+        if ( file == null || file.trim().length() < 1 || file.equalsIgnoreCase("TEXT")) {
+            autoPublishStudyDeletedPDFFile = null;
+        } else {
+            autoPublishStudyDeletedPDFFile = new File(file.replace('/', File.separatorChar));
         }
     }
 
@@ -728,14 +1014,12 @@ public class XDSIService extends ServiceMBeanSupport {
             SOAPConnectionFactory connFactory = SOAPConnectionFactory.newInstance();
 
             conn = connFactory.createConnection();
-            log.info("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-            log.info("send request to "+url);
-            if ( logSOAPMessage ) log.info("-------------------------------- request  ----------------------------------");
-            dumpSOAPMessage(message);
+            log.debug("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+            log.debug("send request to "+url);
+            dumpSOAPMessage(message, "SOAP request");
             SOAPMessage response = conn.call(message, url);
-            if ( ! logSOAPMessage ) log.info("-------------------------------- response ----------------------------------");
-            dumpSOAPMessage(response);
-            if ( logSOAPMessage ) log.info("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+            dumpSOAPMessage(response, "SOAP response");
+            log.debug("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
             return checkResponse( response );
         } catch ( Throwable x ) {
             log.error("Cant send SOAP message! Reason:", x);
@@ -782,6 +1066,48 @@ public class XDSIService extends ServiceMBeanSupport {
             log.error("Export Documents failed via XDS.b transaction",x);
             return false;
         }
+    }
+    
+    private boolean checkXDSDocument(PublishStudy study, String docUID) {
+        log.info("get XDS Document for documentUniqueID:"+docUID);
+        AdhocQueryResponse rsp = null;
+        try {
+            rsp = getXDSDocument(docUID, "getDocumentsByUniqueId");
+            List<JAXBElement<? extends IdentifiableType>> objs = rsp.getRegistryObjectList().getIdentifiable();
+            if (objs != null && objs.size() > 0) {
+                IdentifiableType doc = objs.get(0).getValue();
+                String docEntryUID = doc.getId();
+                String repUID = null;
+                for (SlotType1 slot : doc.getSlot() ) {
+                    if ("repositoryUniqueId".equals(slot.getName())) {
+                        repUID = slot.getValueList().getValue().get(0);
+                        break;
+                    }
+                }
+                if (study.getStudyPk() != null) {
+                    getContentEdit().commitPublishedStudy(study.getStudyPk(), docUID, docEntryUID, repUID);
+                } else {
+                    getContentEdit().removePublishedStudy(study.getPublishedStudyPk());
+                }
+                return true;
+            } else {
+                log.warn("Query result of published document ("+docUID+") is empty! response:"+rsp);
+            }
+        } catch (Exception x) {
+            log.error("checkXDSDocument failed via XDS.b transaction!",x);
+        }
+        return false;
+    }
+    private AdhocQueryResponse getXDSDocument(String docUID, String qryCmd)
+            throws ReflectionException, InstanceNotFoundException,
+            MBeanException {
+        AdhocQueryResponse rsp;
+        rsp = (AdhocQueryResponse) server.invoke(this.xdsQueryServiceName,
+                qryCmd,
+                new Object[] { docUID },
+                new String[] { String.class.getName() });
+        log.info("response from xds.b getDocumentsByUniqueId:"+rsp);
+        return rsp;
     }
     
     private void logITI15(String submissionUid, String patId, boolean success) {
@@ -836,23 +1162,38 @@ public class XDSIService extends ServiceMBeanSupport {
         return sendSOAP(kos,null);
     }
     public boolean sendSOAP(Dataset kos, Properties mdProps) throws SQLException {
-        if ( log.isDebugEnabled()) {
-            log.debug("Key Selection Object:");log.debug(kos);
-        }
-        if ( kos == null ) return false;
+        log.debug("Manifest Key Selection Object:");log.debug(kos);
         if ( mdProps == null ) mdProps = this.metadataProps;
+        XDSIDocument mainDoc;
+        boolean hasInstances = hasManifestInstances(kos);
+        if ( !hasInstances ) {
+            if (mdProps.getProperty(RPLC_DOC_ENTRY_UID) == null) {
+                log.info("Ignore publishing of empty study!");
+                return false;
+            }
+            log.info("Publish a 'study deleted' PDF document for empty study to replace manifest!");
+            kos.putUI(Tags.SOPInstanceUID, UIDGenerator.getInstance().createUID());
+            mainDoc = getStudyDeletedDocument(mdProps, kos);
+            if (mainDoc == null)
+                return false;
+        } else {
+            if (addStudyInstanceUIDSlot) {
+                mdProps.setProperty(STUDY_INSTANCE_UID, kos.getString(Tags.StudyInstanceUID));
+            }
+            mainDoc = new XDSIDatasetDocument(kos, "application/dicom", DOCUMENT_ID);
+        }
+        mdProps.setProperty(XAD_PATIENT_ID, getAffinityDomainPatientID(kos));
+        mdProps.setProperty(SRC_PATIENT_ID, getSourcePatientID(kos));
         String user = mdProps.getProperty("user");
-        mdProps.setProperty("xadPatientID", getAffinityDomainPatientID(kos));
-        mdProps.setProperty("srcPatientID", getSourcePatientID(kos));
         XDSIDocument[] docs;
         String pdfIUID = mdProps.getProperty("pdf_iuid");
         if ( pdfIUID == null || !UIDs.isValid(pdfIUID) ) {
-            docs = new XDSIDocument[]{ new XDSIDatasetDocument(kos,"application/dicom",DOCUMENT_ID)};
+            docs = new XDSIDocument[]{ mainDoc };
         } else {
             String pdfUID = UIDGenerator.getInstance().createUID();
             log.info("Add PDF document with IUID "+pdfIUID+" to this submission set!");
             try {
-                docs = new XDSIDocument[]{ new XDSIDatasetDocument(kos,"application/dicom",DOCUMENT_ID),
+                docs = new XDSIDocument[]{ mainDoc,
                         new XDSIURLDocument(new URL(ridURL+pdfIUID),"application/pdf",PDF_DOCUMENT_ID,pdfUID)};
             } catch (Exception x) {
                 log.error("Cant attach PDF document! :"+x.getMessage(), x);
@@ -860,13 +1201,126 @@ public class XDSIService extends ServiceMBeanSupport {
             }
         }
         addAssociations(docs, mdProps);
+        String rplcDocUID = mdProps.getProperty(RPLC_DOC_ENTRY_UID);
+        if (rplcDocUID != null) {
+            docs[0].addAssociation(rplcDocUID, "RPLC", null);
+        }
         XDSMetadata md = new XDSMetadata(kos, mdProps, docs);
         Document metadata = md.getMetadata();
         boolean b = sendSOAP(metadata, docs , null);
-        logExport(md, user, b);
+        logExport(md, user, b, hasInstances);
         return b;
     }
 
+    private boolean hasManifestInstances(Dataset kos) {
+        Dataset item = kos.getItem(Tags.CurrentRequestedProcedureEvidenceSeq);
+        if (item != null) {
+            Dataset refSerItem = item.getItem(Tags.RefSeriesSeq);
+            if ( refSerItem != null) {
+                Dataset refSopItem = refSerItem.getItem(Tags.RefSOPSeq);
+                if (refSopItem != null)
+                    return true;
+            }
+        }
+        return false;
+    }
+    
+    private XDSIDocument getStudyDeletedDocument(Properties mdProps, Dataset kos) {
+        String docUID = mdProps.getProperty(RPLC_DOC_ENTRY_UID);
+        try {
+            AdhocQueryResponse rsp = getXDSDocument(docUID, "getDocuments");
+            List<JAXBElement<? extends IdentifiableType>> objs = rsp.getRegistryObjectList().getIdentifiable();
+            if (objs != null && objs.size() > 0) {
+                ExtrinsicObjectType doc = null;
+                for (int i = 0; i < objs.size() ; i++ ) {
+                    if (objs.get(i).getValue() instanceof ExtrinsicObjectType) {
+                        doc = (ExtrinsicObjectType) objs.get(i).getValue();
+                        break;
+                    }
+                }
+                if (doc == null) {
+                    log.warn("ExtrinsicObjectType missing in XDSDocument :"+docUID);
+                    return null;
+                }
+                String docEntryUID = doc.getId();
+                String repUID = null;
+                String slotName;
+                for (SlotType1 slot : doc.getSlot() ) {
+                    slotName = slot.getName();
+                    if ("sourcePatientId".equals(slotName)) {
+                        String srcPID = toPID(slot.getValueList().getValue().get(0));
+                        mdProps.setProperty(SRC_PATIENT_ID, srcPID);
+                        int pos = srcPID.indexOf('^');
+                        kos.putLO(Tags.PatientID, srcPID.substring(0,pos));
+                        kos.putLO(Tags.IssuerOfPatientID, srcPID.substring(pos+3));
+                    } else if ("creationTime".equals(slotName)) {
+                        setTime(kos,Tags.InstanceCreationDate, Tags.InstanceCreationTime, slot.getValueList());
+                    } else if ("serviceStartTime".equals(slotName)) {
+                        setTime(kos,Tags.StudyDate, Tags.StudyTime, slot.getValueList());
+                    } else if ("sourcePatientInfo".equals(slotName)) {
+                        setPatInfo(kos, slot.getValueList());
+                    } else if (STUDY_INSTANCE_UID.equals(slotName)) {
+                        String suid = slot.getValueList().getValue().get(0);
+                        mdProps.setProperty(STUDY_INSTANCE_UID, suid);
+                        kos.putUI(Tags.StudyInstanceUID, suid);
+                    }
+                }
+                for(ExternalIdentifierType extType : doc.getExternalIdentifier()) {
+                    if (UUID.XDSDocumentEntry_patientId.equals(extType.getIdentificationScheme())) {
+                        mdProps.setProperty(XAD_PATIENT_ID, toPID(extType.getValue()));
+                        break;
+                    }
+                }
+            } else {
+                log.warn("Query result of published document ("+docUID+") is empty! response:"+rsp);
+                return null;
+            }
+        } catch (Exception x) {
+            log.error("GetDocument for "+docUID+" failed!",x);
+            return null;
+        }
+        if (this.autoPublishStudyDeletedPDFFile != null) {
+            File pdfFile = FileUtils.resolve(this.autoPublishStudyDeletedPDFFile);
+            if (pdfFile.isFile()) {
+                return new XDSIFileDocument(pdfFile, "application/pdf", DOCUMENT_ID, kos.getString(Tags.SOPInstanceUID));
+            } else {
+                log.warn("autoPublishStudyDeletedPDFFile does not exist! use TEXT as fallback!");
+            }
+        }
+        String content ="Manifest deprecated!\nDocumentEntryUUID:"+docUID+"\nStudy Instance UID:"+mdProps.getProperty(STUDY_INSTANCE_UID);
+        return new XDSIByteArrayDocument(content, "text/plain", DOCUMENT_ID, kos.getString(Tags.SOPInstanceUID));
+    }
+    
+    private void setPatInfo(Dataset kos, ValueListType valueList) {
+        for (String v : valueList.getValue()) {
+            switch (v.charAt(4)) {
+                case 5:
+                    kos.putPN(Tags.PatientName, v.substring(6));
+                    break;
+                case 7:
+                    kos.putDA(Tags.PatientBirthDate, v.substring(6));
+                    break;
+                case 8:
+                    kos.putCS(Tags.PatientSex, v.substring(6));
+                    break;
+            }
+        }
+        
+    }
+    private void setTime(Dataset kos, int dateTag, int timeTag, ValueListType valueList) {
+        Date d;
+        try {
+            d = new SimpleDateFormat("yyyyMMddhhmmss").parse(valueList.getValue().get(0));
+        } catch (ParseException e) {
+            log.warn("Failed to parse Date/Time value for "+Tags.toString(dateTag)+"! Use current date.", e);
+            d = new Date();
+        }
+        kos.putDA(dateTag, d);
+        kos.putTM(timeTag, d);
+    }
+    private String toPID(String s) {
+        return s== null ? null : s.replaceAll("&amp;", "&");
+    }
     private void addAssociations(XDSIDocument[] docs, Properties mdProps) {
         if ( mdProps.getProperty("nrOfAssociations") == null) return; 
         int len = Integer.parseInt(mdProps.getProperty("nrOfAssociations"));
@@ -897,15 +1351,15 @@ public class XDSIService extends ServiceMBeanSupport {
         if ( mdProps == null ) mdProps = this.metadataProps;
         String user = mdProps.getProperty("user");
         mdProps.setProperty("mimetype", "application/pdf");
-        mdProps.setProperty("xadPatientID", getAffinityDomainPatientID(ds));
-        mdProps.setProperty("srcPatientID", getSourcePatientID(ds));
+        mdProps.setProperty(XAD_PATIENT_ID, getAffinityDomainPatientID(ds));
+        mdProps.setProperty(SRC_PATIENT_ID, getSourcePatientID(ds));
         XDSIDocument[] docs = new XDSIURLDocument[]
                                                   {new XDSIURLDocument(new URL(ridURL+iuid),"application/pdf",PDF_DOCUMENT_ID,pdfUID)};
         addAssociations(docs, mdProps);
         XDSMetadata md = new XDSMetadata(ds, mdProps, docs);
         Document metadata = md.getMetadata();
         boolean b = sendSOAP(metadata,docs , null);
-        logExport(md, user, b);
+        logExport(md, user, b, false);
         return b;
     }
 
@@ -913,9 +1367,9 @@ public class XDSIService extends ServiceMBeanSupport {
         String patDsIUID = mdProps.getProperty("folder.patDatasetIUID");
         Dataset ds = queryInstance(patDsIUID);
         log.info("create XDS Folder for patient:"+ds.getString(Tags.PatientID));
-        mdProps.setProperty("xadPatientID", getAffinityDomainPatientID(ds));
-        mdProps.setProperty("srcPatientID", getSourcePatientID(ds));
-        log.info("XAD patient:"+mdProps.getProperty("xadPatientID"));
+        mdProps.setProperty(XAD_PATIENT_ID, getAffinityDomainPatientID(ds));
+        mdProps.setProperty(SRC_PATIENT_ID, getSourcePatientID(ds));
+        log.info("XAD patient:"+mdProps.getProperty(XAD_PATIENT_ID));
         XDSMetadata md = new XDSMetadata(null, mdProps, null);
         Document metadata = md.getMetadata();
         boolean b = sendSOAP(metadata, null , null);
@@ -938,46 +1392,48 @@ public class XDSIService extends ServiceMBeanSupport {
         return suids;
     }
 
-    private void logExport(XDSMetadata metaData, String user, boolean success) {
+    private void logExport(XDSMetadata metaData, String user, boolean success, boolean hasInstances) {
         Dataset manifest = metaData.getManifest();
-        try {
-            String requestHost = null;
-            HttpUserInfo userInfo = new HttpUserInfo(AuditMessage.isEnableDNSLookups());
-            user = userInfo.getUserId();
-            requestHost = userInfo.getHostName();
-            DataExportMessage msg = new DataExportMessage();
-            msg.setOutcomeIndicator(success ? AuditEvent.OutcomeIndicator.SUCCESS:
-                AuditEvent.OutcomeIndicator.MINOR_FAILURE);
-            msg.addExporterProcess(AuditMessage.getProcessID(), 
-                    AuditMessage.getLocalAETitles(),
-                    AuditMessage.getProcessName(), user == null,
-                    AuditMessage.getLocalHostName());
-            if (user != null) {
-                msg.addExporterPerson(user, null, null, true, requestHost);
-            }
-            String host = "unknown";
+        if (hasInstances) {
             try {
-                host = new URL(docRepositoryURI).getHost();
-            } catch (MalformedURLException ignore) {
-            }
-            msg.addDestinationMedia(docRepositoryURI, null, "XDS-I Export", false, host );
-            msg.addPatient(manifest.getString(Tags.PatientID), manifest.getString(Tags.PatientName));
-            InstanceSorter sorter = getInstanceSorter(manifest);
-            for (String suid : sorter.getSUIDs()) {
-                ParticipantObjectDescription desc = new ParticipantObjectDescription();
-                for (String cuid : sorter.getCUIDs(suid)) {
-                    ParticipantObjectDescription.SOPClass sopClass =
-                        new ParticipantObjectDescription.SOPClass(cuid);
-                    sopClass.setNumberOfInstances(
-                            sorter.countInstances(suid, cuid));
-                    desc.addSOPClass(sopClass);
+                String requestHost = null;
+                HttpUserInfo userInfo = new HttpUserInfo(AuditMessage.isEnableDNSLookups());
+                user = userInfo.getUserId();
+                requestHost = userInfo.getHostName();
+                DataExportMessage msg = new DataExportMessage();
+                msg.setOutcomeIndicator(success ? AuditEvent.OutcomeIndicator.SUCCESS:
+                    AuditEvent.OutcomeIndicator.MINOR_FAILURE);
+                msg.addExporterProcess(AuditMessage.getProcessID(), 
+                        AuditMessage.getLocalAETitles(),
+                        AuditMessage.getProcessName(), user == null,
+                        AuditMessage.getLocalHostName());
+                if (user != null) {
+                    msg.addExporterPerson(user, null, null, true, requestHost);
                 }
-                msg.addStudy(suid, desc);
+                String host = "unknown";
+                try {
+                    host = new URL(docRepositoryURI).getHost();
+                } catch (MalformedURLException ignore) {
+                }
+                msg.addDestinationMedia(docRepositoryURI, null, "XDS-I Export", false, host );
+                msg.addPatient(manifest.getString(Tags.PatientID), manifest.getString(Tags.PatientName));
+                InstanceSorter sorter = getInstanceSorter(manifest);
+                for (String suid : sorter.getSUIDs()) {
+                    ParticipantObjectDescription desc = new ParticipantObjectDescription();
+                    for (String cuid : sorter.getCUIDs(suid)) {
+                        ParticipantObjectDescription.SOPClass sopClass =
+                            new ParticipantObjectDescription.SOPClass(cuid);
+                        sopClass.setNumberOfInstances(
+                                sorter.countInstances(suid, cuid));
+                        desc.addSOPClass(sopClass);
+                    }
+                    msg.addStudy(suid, desc);
+                }
+                msg.validate();
+                Logger.getLogger("auditlog").info(msg);
+            } catch (Exception ignore) {
+                log.error("Audit log of XDS-I Dicom Export message failed! Ignored!", ignore);
             }
-            msg.validate();
-            Logger.getLogger("auditlog").info(msg);
-        } catch (Exception ignore) {
-            log.error("Audit log of XDS-I Dicom Export message failed! Ignored!", ignore);
         }
         if ( logITI15 && xdsbSourceServiceName != null) {
             this.logITI15(metaData.getSubmissionSetUID(), metaData.getSubmissionSetPatId(), success);
@@ -1151,7 +1607,6 @@ public class XDSIService extends ServiceMBeanSupport {
      * @throws SOAPException
      */
     private boolean checkResponse(Node n) throws SOAPException {
-        log.info("checkResponse node:"+n.getLocalName()+" in NS:"+n.getNamespaceURI());
         String status = n.getAttributes().getNamedItem("status").getNodeValue();
         log.info("XDSI: SOAP response status."+status);
         if ("Success".equals(status)) {
@@ -1174,7 +1629,7 @@ public class XDSIService extends ServiceMBeanSupport {
         }
     }
     private boolean checkResponse(SOAPMessage response) throws SOAPException {
-        log.info("checkResponse:"+response);
+        log.debug("checkResponse:"+response);
         try {
             SOAPBody body = response.getSOAPBody();
             log.debug("SOAPBody:"+body );
@@ -1203,8 +1658,10 @@ public class XDSIService extends ServiceMBeanSupport {
      * @throws SAXException
      * @throws ParserConfigurationException
      */
-    private void dumpSOAPMessage(SOAPMessage message) throws SOAPException, IOException, ParserConfigurationException, SAXException {
-        if ( ! logSOAPMessage ) return;
+    private void dumpSOAPMessage(SOAPMessage message, String title) throws SOAPException, IOException, ParserConfigurationException, SAXException {
+        if ( !logSOAPMessage )
+            return;
+        log.info("-------------------------------- "+title+" ----------------------------------");
         Source s = message.getSOAPPart().getContent();
         try {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -1217,6 +1674,7 @@ public class XDSIService extends ServiceMBeanSupport {
         } catch (Exception e) {
             log.warn("Failed to log SOAP message", e);
         }
+        log.info("-------------------------------");
     }
 
     private Document readXMLFile(File xmlFile){
@@ -1235,12 +1693,25 @@ public class XDSIService extends ServiceMBeanSupport {
     protected void startService() throws Exception {
         server.addNotificationListener(ianScuServiceName,
                 ianListener, IANScuService.NOTIF_FILTER, null);
+        server.addNotificationListener(ServerImplMBean.OBJECT_NAME, this, null, null);
     }
 
     protected void stopService() throws Exception {
+        stopScheduler();
         server.removeNotificationListener(ianScuServiceName,
                 ianListener, IANScuService.NOTIF_FILTER, null);
     }
+    
+    protected void startScheduler() throws Exception {
+        listenerID = scheduler.startScheduler(timerIDAutoPublish,
+                autoPublishInterval,
+                autoPublishListener);
+    }
+    private void stopScheduler() throws Exception {
+        scheduler.stopScheduler(timerIDAutoPublish, listenerID,
+                autoPublishListener);
+    }
+
 
     private void onIAN(Dataset mpps) {
         try {
@@ -1252,11 +1723,11 @@ public class XDSIService extends ServiceMBeanSupport {
             if (autoPublish.indexOf(aet) != -1) {
                 List iuids = getIUIDS(mpps);
                 log.debug("iuids:" + iuids);
-                Dataset manifest = getKeyObject(iuids, getAutoPublishRootInfo(mpps), null);
+                Dataset manifest = getKeyObject(iuids, getAutoPublishRootInfo(), null);
                 log.debug("Created manifest KOS:");
                 log.debug(manifest);
                 try {
-                    sendSOAP(manifest, getAutoPublishMetadataProperties(mpps));
+                    sendSOAP(manifest, getAutoPublishMetadataProperties(null));
                 } catch (SQLException x) {
                     log.error("XDS-I Autopublish failed! Reason:", x);
                 }
@@ -1286,7 +1757,7 @@ public class XDSIService extends ServiceMBeanSupport {
         return l;
     }
 
-    private Dataset getAutoPublishRootInfo(Dataset mpps) {
+    private Dataset getAutoPublishRootInfo() {
         Dataset rootInfo = DcmObjectFactory.getInstance().newDataset();
         DcmElement sq = rootInfo.putSQ(Tags.ConceptNameCodeSeq);
         Dataset item = sq.addNewItem();
@@ -1297,7 +1768,7 @@ public class XDSIService extends ServiceMBeanSupport {
         return rootInfo;
     }
 
-    private Properties getAutoPublishMetadataProperties(Dataset mpps) {
+    private Properties getAutoPublishMetadataProperties(String rplcDocEntryUID) {
         Properties props = new Properties();
         BufferedInputStream bis = null;
         try {
@@ -1317,6 +1788,8 @@ public class XDSIService extends ServiceMBeanSupport {
                 } catch (IOException ignore) {}
             }
         }
+        if (rplcDocEntryUID != null)
+            props.setProperty(RPLC_DOC_ENTRY_UID, rplcDocEntryUID);
         return props;
     }
 
@@ -1336,10 +1809,104 @@ public class XDSIService extends ServiceMBeanSupport {
         }
         return (Dataset) o;
     }
+    
+    private void checkAutoPublish() {
+        log.info("############ check Studies for XDS AutoPublish");
+        if (xdsQueryServiceName == null) {
+            log.info("XdsQueryServiceName not configured! Skipped");
+            return;
+        }
+        if (autoPublishSQLcmd.isEmpty()) {
+            log.info("No (valid) SQL defined for auto publish!");
+        }
+        long t1 = System.currentTimeMillis();
+        Map<String, Object> params = getSQLparams();
+        int countSQL = 0, nrStudies = 0, countSuccess = 0, countSkipped = 0;
+        for (QueryXdsPublishCmd cmd : autoPublishSQLcmd) {
+            countSQL++;
+            if (!cmd.checkProposedExecutionHours()) {
+                if (log.isDebugEnabled())
+                    log.debug("Execution of SQL #"+countSQL+" is skipped due to proposedExecutionHours! sql:"+cmd);
+                countSkipped++;
+                continue;
+            }
+            log.debug("Use SQL:"+cmd);
+            try {
+                List<PublishStudy> studies = cmd.getPublishStudies(params);
+                nrStudies += studies.size();
+                if (log.isDebugEnabled()) {
+                    log.debug("SQL #"+countSQL+": Found Studies to publish:"+studies);
+                } else {
+                    log.info("SQL #"+countSQL+": Found "+studies.size()+" Studies to publish!");
+                }
+                for (PublishStudy study : studies) {
+                    if (publishStudy(study))
+                        countSuccess++;
+                }
+            } catch (SQLException x) {
+                log.error("Execute SQL failed!", x);
+            }
+        }
+        if (countSkipped == autoPublishSQLcmd.size()) {
+            log.info("############ No SQL query defined for current hour of day!");
+        } else {
+            log.info("############ "+countSuccess+" of "+nrStudies+" Studies published to XDS in "+
+                (System.currentTimeMillis() - t1)+"ms.");
+        }
+    }
+    private Map<String, Object> getSQLparams() {
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("AfterDate", this.afterDate);
+        params.put("BeforeDate", this.beforeDate);
+        params.put("OlderThan", this.olderThan);
+        params.put("NotOlderThan", this.notOlderThan);
+        if (log.isDebugEnabled())
+            log.debug("SQL params:"+params);
+        return params;
+    }
 
+    private boolean publishStudy(PublishStudy study) {
+        log.debug("Publish study pk:"+study.getStudyPk());
+        Dataset manifest = null;
+        try {
+            manifest = study.getStudyPk() != null ?
+                getKeyObject(study.getStudyPk(), getAutoPublishRootInfo(), null) :
+                DcmObjectFactory.getInstance().newDataset();
+            if (sendSOAP(manifest, getAutoPublishMetadataProperties(study.getDocumentEntryUID()))) {
+                return checkXDSDocument(study, manifest.getString(Tags.SOPInstanceUID));
+            }
+        } catch (Exception x) {
+            log.error("Failed to publish Study! "+ (manifest == null ? "Create manifest KOS failed:" : "Provide and register failed:"), x);
+        }
+        return false;
+    }
+    
+    private Dataset getKeyObject(long studyPk, Dataset rootInfo, List contentItems) {
+        Object o = null;
+        try {
+            o = server.invoke(keyObjectServiceName,
+                    "getKeyObject",
+                    new Object[] { studyPk, rootInfo, contentItems },
+                    new String[] { long.class.getName(), Dataset.class.getName(), Collection.class.getName() });
+        } catch (RuntimeMBeanException x) {
+            log.warn("RuntimeException thrown in KeyObject Service:"+x.getCause());
+            throw new IllegalArgumentException(x.getCause().getMessage());
+        } catch (Exception e) {
+            log.warn("Failed to create Key Object:", e);
+            throw new IllegalArgumentException("Error: KeyObject Service cant create manifest Key Object! Reason:"+e.getClass().getName());
+        }
+        return (Dataset) o;
+    }
+    
+    
     private ContentManager getContentManager() throws Exception {
         ContentManagerHome home = (ContentManagerHome) EJBHomeFactory.getFactory()
         .lookup(ContentManagerHome.class, ContentManagerHome.JNDI_NAME);
+        return home.create();
+    }
+    private ContentEdit getContentEdit() throws Exception {
+        ContentEditHome home = (ContentEditHome) EJBHomeFactory.getFactory()
+        .lookup(ContentEditHome.class, ContentEditHome.JNDI_NAME);
         return home.create();
     }
 }

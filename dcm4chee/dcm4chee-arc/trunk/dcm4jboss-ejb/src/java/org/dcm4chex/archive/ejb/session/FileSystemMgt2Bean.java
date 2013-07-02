@@ -71,6 +71,8 @@ import org.dcm4chex.archive.common.FileStatus;
 import org.dcm4chex.archive.common.FileSystemStatus;
 import org.dcm4chex.archive.common.IANAndPatientID;
 import org.dcm4chex.archive.common.SeriesStored;
+import org.dcm4chex.archive.ejb.interfaces.ContentEditLocal;
+import org.dcm4chex.archive.ejb.interfaces.ContentEditLocalHome;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
 import org.dcm4chex.archive.ejb.interfaces.FileLocal;
 import org.dcm4chex.archive.ejb.interfaces.FileLocalHome;
@@ -814,6 +816,7 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
 
             if (delStudyFromDB && study.getAllFiles().isEmpty()) {
                 PatientLocal pat = study.getPatient();
+                markPublishedStudy(study, true);
                 study.remove();
                 if (delPatientWithoutObjects) {
                     deletePatientWithoutObjects(pat);
@@ -822,6 +825,7 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
                 int availabilityOfExtRetr =
                         order.getExternalRetrieveAvailability();
                 updateStudyAvailability(study, availabilityOfExtRetr);
+                markPublishedStudy(study, false);
              }
             
             return fileDTOs;
@@ -1017,6 +1021,7 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
                 series.remove();
                 if (study.getSeries().isEmpty()) {
                     PatientLocal pat = study.getPatient();
+                    markPublishedStudy(study, true);
                     study.remove();
                     if (delPatientWithoutObjects) {
                         deletePatientWithoutObjects(pat);
@@ -1035,6 +1040,7 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
                 series.updateAvailability();
                 study.updateRetrieveAETs();
                 study.updateAvailability();
+                markPublishedStudy(study, false);
              }
             
             return fileDTOs;
@@ -1466,11 +1472,25 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
        log.info( "Study "+order.getStudyIUID()+" [pk=" + order.getStudyPk() + 
            "] on FileSystem[pk="+ order.getFsPk()+ "] "+msg);
     }
-    
+
+    private void markPublishedStudy(StudyLocal study, boolean deleted){
+        try {
+            if (deleted) {
+                contentEdit().markPublishedStudyDeleted(study.getStudyIuid());
+            } else {
+                contentEdit().markPublishedStudyChanged(study.getStudyIuid());
+            }
+        } catch (Exception ignore) {}
+    }
+
     /**
      * @ejb.ejb-ref ejb-name="PrivateManager" view-type="local" ref-name="ejb/PrivateManagerLocal"  
      */
     protected abstract PrivateManagerLocal privManager();
+    /**
+     * @ejb.ejb-ref ejb-name="ContentEdit" view-type="local" ref-name="ejb/ContentEdit"
+     */
+    protected abstract ContentEditLocal contentEdit();
 }
 
 

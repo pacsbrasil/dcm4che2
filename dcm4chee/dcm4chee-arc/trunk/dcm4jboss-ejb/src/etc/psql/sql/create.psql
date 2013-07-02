@@ -848,6 +848,20 @@ FOREIGN KEY (filesystem_fk) REFERENCES filesystem(pk)
 CREATE INDEX priv_instance_fk ON priv_file(instance_fk);
 CREATE INDEX priv_fs_fk ON priv_file(filesystem_fk);
 
+CREATE TABLE published_study (
+    pk                SERIAL8 NOT NULL CONSTRAINT published_study_pk PRIMARY KEY,
+    study_fk          INT8,
+    created_time      TIMESTAMP,
+    updated_time      TIMESTAMP,
+    doc_uid           TEXT,
+    docentry_uid      TEXT,
+    repository_uid    TEXT,
+    status            INTEGER NOT NULL,
+FOREIGN KEY (study_fk) REFERENCES study(pk)
+);
+CREATE INDEX published_study ON published_study(study_fk);
+CREATE INDEX published_study_status ON published_study(status);
+CREATE INDEX repository_uid ON published_study(repository_uid);
 
 CREATE TABLE device (
     pk                SERIAL8 NOT NULL CONSTRAINT device_pk PRIMARY KEY,

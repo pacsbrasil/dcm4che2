@@ -98,6 +98,36 @@
       </parameter>
       <return-type>org.dcm4che.data.Dataset</return-type>
    </operation>
+    <operation impact="ACTION">
+      <description>Creates a KeyObject Dataset for given Study.</description>
+      <name>getKeyObject</name>
+      <parameter>
+        <description>Primary key of Study</description>
+        <name>studyPk</name>
+        <type>long</type>
+      </parameter>
+      <return-type>org.dcm4che.data.Dataset</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description>Creates a KeyObject Dataset for given Study.</description>
+      <name>getKeyObject</name>
+      <parameter>
+        <description>Primary key of Study</description>
+        <name>studyPk</name>
+        <type>long</type>
+      </parameter>
+      <parameter>
+        <description>Dataset with Attributes of Key object root node. (e.g. Concept Name Code Sequence for title)</description>
+        <name>rootInfo</name>
+        <type>org.dcm4che.data.Dataset</type>
+      </parameter>
+      <parameter>
+        <description>List of Items for Content Sequence</description>
+        <name>contentItems</name>
+        <type>java.util.Collection</type>
+      </parameter>
+      <return-type>org.dcm4che.data.Dataset</return-type>
+   </operation>
    <operation impact="ACTION">
       <description>Stores a KeyObject and registers it in the database.</description>
       <name>storeAndRegister</name>

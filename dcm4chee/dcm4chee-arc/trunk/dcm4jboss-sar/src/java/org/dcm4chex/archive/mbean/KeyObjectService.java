@@ -45,6 +45,7 @@ import java.rmi.RemoteException;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
@@ -287,9 +288,23 @@ public class KeyObjectService extends ServiceMBeanSupport {
      * @throws HomeFactoryException
      * @throws CreateException
      */
-	public Dataset getKeyObject(Collection iuids, Dataset rootInfo, Collection contentItems) throws RemoteException, FinderException, HomeFactoryException, CreateException{
+    public Dataset getKeyObject(Collection iuids, Dataset rootInfo, Collection contentItems) throws RemoteException, FinderException, HomeFactoryException, CreateException{
     	Collection col = lookupContentManager().getSOPInstanceRefMacros(iuids);
-    	Dataset ds;
+    	return toKeyObject(col, rootInfo, contentItems);
+    }
+    
+    public Dataset getKeyObject(long studyPk) throws RemoteException, FinderException, HomeFactoryException, CreateException{
+        return getKeyObject(studyPk, null, null);
+    }
+    public Dataset getKeyObject(long studyPk, Dataset rootInfo, Collection contentItems) throws RemoteException, FinderException, HomeFactoryException, CreateException{
+        Dataset kos = lookupContentManager().getSOPInstanceRefMacro(studyPk, false);
+        return toKeyObject(Arrays.asList(kos), rootInfo, contentItems);
+    }
+
+    private Dataset toKeyObject(Collection col, Dataset rootInfo,
+            Collection contentItems) throws RemoteException, FinderException,
+            HomeFactoryException, CreateException {
+        Dataset ds;
     	if ( ! col.isEmpty() ) {
     		String studyIUID = ((Dataset)col.iterator().next()).getString(Tags.StudyInstanceUID);
         	ds = newKeyObject( studyIUID, rootInfo );

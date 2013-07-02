@@ -173,6 +173,172 @@
          <value value="conf/dcm4chee-xdsi/nist/metadata.conf"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write" getMethod="getAutoPublishStudyDeletedPDFFile" setMethod="setAutoPublishStudyDeletedPDFFile">
+      <description><![CDATA[PDF File or 'TEXT' to mark a published study as deleted.<br />
+      		A relative path name is resolved relative to dcm4chee_home/server/default/.<br />
+      		With TEXT a simple text/plain document will be registered for a deleted study.  
+      	]]>
+      </description>
+      <name>AutoPublishStudyDeletedPDFFile</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="conf/dcm4chee-xdsi/study_deleted.pdf" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getAutoPublishInterval"
+      setMethod="setAutoPublishInterval">
+      <description><![CDATA[Interval in hours (#h), minutes (#m) or
+		seconds (#s) in which the data base is polled for Studies that are not published to XDS.<br/>
+		Use NEVER to disable this feature.<br />
+		Note: This feature requires XdsQueryServiceName]]>
+      </description>
+      <name>AutoPublishInterval</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NEVER"/>
+      </descriptors>
+   </attribute>
+   
+   <attribute access="read-only"
+      getMethod="isRunning">
+      <description>Current state if a AutoPublish task is running. Used to avoid concurrency!
+      </description>
+      <name>isRunning</name>
+      <type>boolean</type>
+   </attribute>
+
+   <attribute access="read-write"
+      getMethod="getAutoPublishSQL"
+      setMethod="setAutoPublishSQL">
+      <description><![CDATA[SQL Statements to select studies for XDS auto publish. <br />
+      Format: Each line can contain a complete SQL Statement or a comment (Line starts with '*')<br />
+      The statement must return only one column with study.pk!<br />
+      <dl><dt>Following named parameter can be used:</dt>
+        <dd>:AfterDate</dd>
+        <dd>:BeforeDate</dd>
+        <dd>:OlderThan</dd>
+        <dd>:NotOlderThan</dd>
+      </dl>
+      <dl><dt>Example:</dt>
+	  <dd>*</dd>
+	  <dd>* All studies with updated_time between configured AfterDate and BeforeDate:</dd>
+	  <dd>SELECT pk FROM study WHERE updated_time > :AfterDate AND updated_time < :BeforeDate</dd>
+	  <dd>*</dd>
+	  <dd>* All studies that are created before n days:</dd>
+	  <dd>SELECT pk FROM study WHERE created_time < :OlderThan</dd>
+	  </dl>
+      Note: the configured queries are used as subquery of a query which exclude studies that are already published (via table published_study) <br />
+      This behaviour can be disabled by using '@' as first character in SQL statement. In this case 
+      the first culumns must be study.pk, published_study.pk and published_study.docentry_uid!<br /><br />
+      If the SQL statement starts with '[&lt;startHour&gt;-&lt;endHour&gt;]' this query will be only performed between start and end hour (0-23).<br />
+      e.g.: '[23-4]SELECT pk from study' check all (unpublished) studies between 23:00:00 and 4:59:59.
+      ]]>
+      </description>
+      <name>AutoPublishSQL</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write" getMethod="isDisableStudyDeleteSQL" setMethod="setDisableStudyDeleteSQL">
+      <description><![CDATA[Disable Query for deleted published studies.<br />
+      		Should be only disabled if a similar query is defined in AutoPublishSQL!<br />
+      		(@SELECT study_fk, pk, docentry_uid from published_study where study_fk IS NULL)  
+      	]]>
+      </description>
+      <name>DisableStudyDeleteSQL</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write" getMethod="getAfterDate" setMethod="setAfterDate">
+      <description><![CDATA[AfterDate SQL parameter for auto publish migration. <br />
+        Usage: ':AfterDate' in WHERE clause. e.g WHERE study.updated_time > :AfterDate <br />
+      	Format:yyyy[-MM[-dd[ HH[:mm[:ss]]]]] or NONE<br />
+      	Note: Missing parts are set to corresponding minimum. eg. '2013-03' -> '2013-03-01 00:00:00'
+      	 ]]>
+      </description>
+      <name>AfterDate</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write" getMethod="getBeforeDate" setMethod="setBeforeDate">
+      <description><![CDATA[BeforeDate SQL parameter for auto publish. <br />
+        Usage: ':BeforeDate' in WHERE clause. e.g WHERE study.updated_time < :BeforeDate <br />
+        Format:yyyy[-MM[-dd[ HH[:mm[:ss]]]]] or NONE<br />
+      	Note: Missing parts are set to corresponding maximun. eg. '2012-02' -> '2012-02-29 23:55:55' (and 999 milliseconds)
+      	]]>
+      </description>
+      <name>BeforeDate</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getOlderThan"
+      setMethod="setOlderThan">
+      <description><![CDATA[OlderThan SQL parameter for auto publish. <br /> 
+        Usage: ':OlderThan' in WHERE clause. e.g WHERE study.updated_time < :OlderThan <br />
+		Format: days(#d), weeks (#w), hours (#h), minutes (#m) or seconds (#s)<br/>
+		Note: the SQL parameter value is a timestamp calculated as currentDate - olderThan.]]>
+      </description>
+      <name>OlderThan</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="1d"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getNotOlderThan"
+      setMethod="setNotOlderThan">
+      <description><![CDATA[NotOlderThan SQL parameter for auto publish. <br /> 
+        Usage: ':NotOlderThan' in WHERE clause. e.g WHERE study.updated_time > :NotOlderThan <br />
+		Format: days(#d), weeks (#w), hours (#h), minutes (#m) or seconds (#s)<br/>
+		Note: the SQL parameter value is a timestamp calculated as currentDate - NotOlderThan.]]>
+      </description>
+      <name>NotOlderThan</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="10w"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write" getMethod="getMaxNumberOfStudiesByOneTask" setMethod="setMaxNumberOfStudiesByOneTask">
+      <description><![CDATA[Maximum number of Migrated MPPS by one task. <br /> 
+      	]]>
+      </description>
+      <name>MaxNumberOfStudiesByOneTask</name>
+      <type>int</type>
+      <descriptors>
+         <value value="100"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write" getMethod="isAddStudyInstanceUIDSlot" setMethod="setAddStudyInstanceUIDSlot">
+      <description><![CDATA[Add Study Instance UID as extra metadata (Slot with name 'studyInstanceUID') to published studies. <br /> 
+      	]]>
+      </description>
+      <name>AddStudyInstanceUIDSlot</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="true"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write" 
+      getMethod="getFetchSize"
+      setMethod="setFetchSize">
+      <description>JDBC Fetch size. (-1 means: use Limit)
+      </description>
+      <name>FetchSize</name>
+      <type>int</type>
+      <descriptors>
+         <value value="50"/>
+      </descriptors>
+   </attribute>
+   
    <attribute access="read-write" getMethod="getAutoPublishDocTitle" setMethod="setAutoPublishDocTitle">
       <description><![CDATA[Document title for auto published metainfo KOS. <br> 
       	Format:&lt;CodeValue&gt;^&lt;CodeMeaning&gt;[^&lt;CodeDesignator&gt;] ]]>
@@ -321,7 +487,8 @@
    <attribute access="read-write"
       getMethod="isUseXDSb"
       setMethod="setUseXDSb">
-      <description>Use XDS.b rather than XDS.a to export documents.
+      <description><![CDATA[Use XDS.b rather than XDS.a to export documents.<br />
+      	Note: XDS.b requires XdsbSourceServiceName]]>
       </description>
       <name>UseXDSb</name>
       <type>boolean</type>
@@ -332,7 +499,8 @@
    <attribute access="read-write"
      getMethod="getXdsbSourceServiceName"
      setMethod="setXdsbSourceServiceName">
-      <description>Used internally. Do not modify (dcm4chee.xds:service=XDSbSourceService).
+      <description><![CDATA[Used internally. Do not modify (dcm4chee.xds:service=XDSbSourceService).<br />
+      	Note: Requires installed dcm4chee.xds services!]]>
       </description>
       <name>XdsbSourceServiceName</name>
       <type>java.lang.String</type>
@@ -340,7 +508,35 @@
          <value value="NONE" />
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+     getMethod="getXdsQueryServiceName"
+     setMethod="setXdsQueryServiceName">
+      <description>Used internally. Used if AutoPublishSQL is configured! Do not modify (dcm4chee.xds:service=XDSQueryService).
+      </description>
+      <name>XdsQueryServiceName</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE" />
+      </descriptors>
+   </attribute>
    
+   <attribute access="read-write"
+      getMethod="getTimerIDAutoPublish"
+      setMethod="setTimerIDAutoPublish">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>TimerIDAutoPublish</name>
+      <type>java.lang.String</type>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="getSchedulerServiceName"
+      setMethod="setSchedulerServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>SchedulerServiceName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
+
    &defaultAttributes;
 
    <!-- Operations -->

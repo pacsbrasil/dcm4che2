@@ -48,6 +48,12 @@
 	<property name="jboss.server.home" value="${jboss.home}/server/default"/>		
 	<property name="jboss.deploy" value="${jboss.server.home}/deploy"/>		
 
+    <!-- Override with your local Maven2 repository location -->
+    <property name="infoset-version" value="1.0.3"/>
+    <property name="m2.repos" value="${user.home}/.m2/repository"/>
+    <property name="dcm4chee-xds-infoset-v30.lib" 
+        value="${m2.repos}/dcm4che/dcm4chee-xds-infoset-v30/${infoset-version}"/>
+
 	<path id="base.path">
 		<pathelement location="${dcm4che.jar}"/>
         <pathelement location="${jai_imagio.jar}" />
@@ -68,6 +74,9 @@
 		<fileset dir="${jboss.server.home}/lib">
 			<include name="*.jar"/>
 		</fileset>
+        <fileset dir="${dcm4chee-xds-infoset-v30.lib}">
+            <include name="*.jar"/>
+        </fileset>
 	</path>
 
    	<!-- =================================================================== -->
