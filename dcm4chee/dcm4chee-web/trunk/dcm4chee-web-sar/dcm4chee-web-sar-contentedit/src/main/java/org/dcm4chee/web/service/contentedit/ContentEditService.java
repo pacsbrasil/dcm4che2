@@ -444,8 +444,8 @@ public class ContentEditService extends ServiceMBeanSupport {
             Set<Study> studies = entityTree.getEntityTreeMap().values().iterator().next().keySet();
             String[] suids = new String[studies.size()];
             int i = 0;
-            for (Iterator<Study> it = studies.iterator() ; it.hasNext() ; ) {
-                suids[i++] = it.next().getStudyInstanceUID();
+            for (Study study : studies) {
+                suids[i++] = study.getStudyInstanceUID();
             }
             studies.iterator().next().getPatient().getAttributes().copyTo(obj);
             obj.putStrings(Tag.StudyInstanceUID, VR.UI, suids);

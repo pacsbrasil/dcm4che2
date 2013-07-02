@@ -61,6 +61,7 @@ import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
 import org.dcm4chee.archive.common.Availability;
 import org.dcm4chee.archive.common.PrivateTag;
+import org.dcm4chee.archive.common.PublishedStudyStatus;
 import org.dcm4chee.archive.common.StorageStatus;
 import org.dcm4chee.archive.entity.BaseEntity;
 import org.dcm4chee.archive.entity.File;
@@ -73,6 +74,7 @@ import org.dcm4chee.archive.entity.PrivateInstance;
 import org.dcm4chee.archive.entity.PrivatePatient;
 import org.dcm4chee.archive.entity.PrivateSeries;
 import org.dcm4chee.archive.entity.PrivateStudy;
+import org.dcm4chee.archive.entity.PublishedStudy;
 import org.dcm4chee.archive.entity.Series;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.archive.entity.StudyOnFileSystem;
@@ -131,7 +133,8 @@ public class DicomEditBean implements DicomEditLocal {
         for ( Instance instance : instances) {
             moveInstanceToTrash(instance, trustPatientIdWithoutIssuer);
             if (deleteInstance) {
-                studies.add(instance.getSeries().getStudy());
+                if (studies.add(instance.getSeries().getStudy()))
+                    markPublishedStudyChanged(instance.getSeries().getStudy());
                 log.debug("Delete Instance:{}",instance.getAttributes(false));
                 em.remove(instance);
             }
@@ -146,6 +149,31 @@ public class DicomEditBean implements DicomEditLocal {
         return entityTree == null ? new EntityTree(instances) : entityTree.addInstances(instances);
     }
 
+    private void markPublishedStudyChanged(Study study) {
+        Query qry = em.createNamedQuery("PublishedStudy.findByStudyPkAndStatus");
+        qry.setParameter("studyPk", study.getPk());
+        qry.setParameter("status", PublishedStudyStatus.STUDY_COMPLETE);
+        @SuppressWarnings("unchecked")
+        List<PublishedStudy> pStudies = qry.getResultList();
+        for (PublishedStudy pStudy : pStudies) {
+            pStudy.setStatus(PublishedStudyStatus.STUDY_CHANGED);
+            em.merge(pStudy);
+        }
+    }
+
+    private void markPublishedStudyDeleted(Study st) {
+        Query q = em.createQuery("select object(s) from PublishedStudy s where s.study.pk = :studyPk");
+        q.setParameter("studyPk", st.getPk());
+        for ( PublishedStudy p : (List<PublishedStudy>)q.getResultList()) {
+            if (p.getStatus() == PublishedStudyStatus.DEPRECATED) {
+                em.remove(p);
+            } else {
+                p.setStudy(null);
+                em.merge(p);
+            }
+        }
+    }
+    
     @SuppressWarnings("unchecked")
     public EntityTree moveSeriesToTrash(long[] pks, boolean trustPatientIdWithoutIssuer) {
         Query q;
@@ -177,7 +205,8 @@ public class DicomEditBean implements DicomEditLocal {
             if (mpps!=null) mpps.getAccessionNumber();//initialize MPPS
             if (deleteSeries) {
                 removeSeriesFromMPPS(mpps, s.getSeriesInstanceUID());
-                studies.add(study = s.getStudy());
+                if (studies.add(study = s.getStudy()))
+                    markPublishedStudyChanged(s.getStudy());
                 em.remove(s);
                 study.getSeries().remove(s);
             }
@@ -234,12 +263,13 @@ public class DicomEditBean implements DicomEditLocal {
             for ( StudyOnFileSystem sof : (List<StudyOnFileSystem>)q.getResultList()) {
                 em.remove(sof);
             }
+            markPublishedStudyDeleted(st);
             
             em.remove(st);
         }
         return entityTree == null ? new EntityTree() : entityTree;
     }
-    
+
     @SuppressWarnings("unchecked")
     public EntityTree movePatientsToTrash(long[] pks, boolean trustPatientIdWithoutIssuer) {
         Query q = QueryUtil.getQueryForPks(em, "SELECT OBJECT(p) FROM Patient p WHERE pk ", pks);
@@ -314,6 +344,7 @@ public class DicomEditBean implements DicomEditLocal {
         }
         for (Study st : studies) {
             getUpdateDerivedFieldsUtil().updateDerivedFieldsOfStudy(st);
+            markPublishedStudyChanged(st);
         }
     }
     
@@ -330,6 +361,7 @@ public class DicomEditBean implements DicomEditLocal {
         removeInstancesFromMpps(instances);
         for (Study st : studies) {
             getUpdateDerivedFieldsUtil().updateDerivedFieldsOfStudy(st);
+            markPublishedStudyChanged(st);
         }
     }
     
@@ -590,6 +622,7 @@ public class DicomEditBean implements DicomEditLocal {
         for(Study s : studies) {
             tree.addStudy(s);
             s.setPatient(patient);
+            markPublishedStudyDeleted(s);
             HashSet<MPPS> set = new HashSet<MPPS>();
             for (Series series : s.getSeries()) {
                 MPPS mpps = series.getModalityPerformedProcedureStep();
