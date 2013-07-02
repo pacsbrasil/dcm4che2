@@ -27,8 +27,6 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "F
 //
     permission ${ComponentPermission} "org.dcm4chee.web.war.folder.MoveEntitiesPage", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.folder.InstanceViewPage", "render, enable";
-	permission ${ComponentPermission} "org.dcm4chee.web.war.folder.studypermissions.StudyPermissionsPage", "render, enable";
-    permission ${ComponentPermission} "org.dcm4chee.web.war.folder.studypermissions.CreateDicomRolePage", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:imageSelectionWindow", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:wadoImageWindow", "render, enable";
 // Permissions for edit patient
@@ -85,6 +83,7 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "Q
 grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "StudyPermissionsAll"
 {
 // KEY: swarm.principal.StudyPermissionsAll
+	permission ${ComponentPermission} "org.dcm4chee.web.war.folder.studypermissions.StudyPermissionsPage", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.folder.studypermissions.StudyPermissionsPage:studypermissions:changeStudyPermissionAssignmentCheckbox", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:studyPermissionsPatientLink", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:studyPermissionsStudyLink", "render, enable";
@@ -93,6 +92,7 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "S
 grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "StudyPermissionsPropagation"
 {
 // KEY: swarm.principal.StudyPermissionsPropagation
+	permission ${ComponentPermission} "org.dcm4chee.web.war.folder.studypermissions.StudyPermissionsPage", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.folder.studypermissions.StudyPermissionsPage:studypermissions:changeStudyPermissionAssignmentCheckbox", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:studyPermissionsPatientLink", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:studyPermissionsStudyLink", "render, enable";
@@ -101,6 +101,7 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "S
 grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "StudyPermissionsOwn"
 {
 // KEY: swarm.principal.StudyPermissionsOwn
+	permission ${ComponentPermission} "org.dcm4chee.web.war.folder.studypermissions.StudyPermissionsPage", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.folder.studypermissions.StudyPermissionsPage:studypermissions:changeStudyPermissionAssignmentCheckbox", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:studyPermissionsPatientLink", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:folder:studyPermissionsStudyLink", "render, enable";
