@@ -253,6 +253,14 @@ public class XDSQueryService extends ServiceMBeanSupport {
         return performQuery(queryFac.createGetDocumentsRequest(uuids));
     }
 
+    public AdhocQueryResponse getDocumentsByUniqueId(String uids) throws SOAPException, JAXBException {
+        return getDocumentsByUniqueId(getListString(uids));
+    }
+
+    public AdhocQueryResponse getDocumentsByUniqueId(List uids) throws SOAPException, JAXBException {
+        return performQuery(queryFac.createGetDocumentsByUniqueIdRequest(uids));
+    }
+
     public AdhocQueryResponse getFolders(String uuids) throws SOAPException,
     JAXBException {
         return getFolders(getListString(uuids));

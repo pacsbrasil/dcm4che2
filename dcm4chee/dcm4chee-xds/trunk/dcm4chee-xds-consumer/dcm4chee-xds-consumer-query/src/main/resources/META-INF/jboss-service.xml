@@ -268,7 +268,7 @@
 			</operation>
 
 			<operation impact="ACTION">
-				<description><![CDATA[ Get documents for given list of UUIDs.<br/>
+				<description><![CDATA[ Get documents for given list of UUIDs (DocumentEntry.entryUUID).<br/>
       			Return type is LEAF_CLASS
       		]]>
 				</description>
@@ -283,7 +283,7 @@
 				</return-type>
 			</operation>
 			<operation impact="ACTION">
-				<description><![CDATA[ Get documents for given list of UUIDs.<br/>
+				<description><![CDATA[ Get documents for given list of UUIDs (DocumentEntry.entryUUID).<br/>
       			Use ',' to seperate entries. <br/>
       			Return type is LEAF_CLASS
       		]]>
@@ -292,6 +292,38 @@
 				<parameter>
 					<description>List of document UUIDs</description>
 					<name>uuids</name>
+					<type>java.lang.String</type>
+				</parameter>
+				<return-type>
+					org.dcm4chee.xds.infoset.v30.AdhocQueryResponse
+				</return-type>
+			</operation>
+
+			<operation impact="ACTION">
+				<description><![CDATA[ Get documents for given list of DocumentEntry.uniqueIDs.<br/>
+      			Return type is LEAF_CLASS
+      		]]>
+				</description>
+				<name>getDocumentsByUniqueId</name>
+				<parameter>
+					<description>List of document uniqueIds</description>
+					<name>uids</name>
+					<type>java.util.List</type>
+				</parameter>
+				<return-type>
+					org.dcm4chee.xds.infoset.v30.AdhocQueryResponse
+				</return-type>
+			</operation>
+			<operation impact="ACTION">
+				<description><![CDATA[ Get documents for given list of DocumentEntry.uniqueIDs.<br/>
+      			Use ',' to seperate entries. <br/>
+      			Return type is LEAF_CLASS
+      		]]>
+				</description>
+				<name>getDocumentsByUniqueId</name>
+				<parameter>
+					<description>List of document uniqueIds</description>
+					<name>uids</name>
 					<type>java.lang.String</type>
 				</parameter>
 				<return-type>
