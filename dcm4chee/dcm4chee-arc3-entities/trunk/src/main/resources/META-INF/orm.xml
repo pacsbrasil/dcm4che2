@@ -384,5 +384,12 @@
     <table name="ups_subscr" />
     <sequence-generator name="seq" sequence-name="ups_subscr_pk_seq" />
   </entity>
+ 
+    <entity class="PublishedStudy" access="FIELD" metadata-complete="false">
+    <table name="published_study" />
+    <sequence-generator name="seq" sequence-name="published_study_pk_seq" />
+    <pre-persist method-name="onPrePersist" />
+    <pre-update method-name="onPreUpdate" />
+  </entity>
   
 </entity-mappings>
