@@ -158,6 +158,7 @@
       <type>java.lang.String</type>
       <descriptors>
          <value value="
+           BreastTomosynthesisImageStorage
            ComputedRadiographyImageStorage
            DigitalXRayImageStorageForPresentation
            DigitalXRayImageStorageForProcessing
