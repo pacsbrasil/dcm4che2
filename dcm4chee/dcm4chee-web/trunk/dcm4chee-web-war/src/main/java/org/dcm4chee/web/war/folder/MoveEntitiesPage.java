@@ -902,7 +902,7 @@ public class MoveEntitiesPage extends SecureSessionCheckPage {
             AbstractDicomModel toDel;
             HashSet<AbstractDicomModel>[] modelsToDel = new HashSet[4];
             String[] moveCmds = {"movePatientsToTrash","moveStudiesToTrash",
-                    null,"moveSeriesToTrash"};
+                    null,"moveSeriessToTrash"};
             int level;
             for (AbstractDicomModel m : emptySourceParents) {
                 toDel = m;
