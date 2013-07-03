@@ -42,6 +42,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -96,10 +97,12 @@ import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.ajax.MaskingAjaxCallBehavior;
+import org.dcm4chee.web.common.behaviours.CheckOneDayBehaviour;
 import org.dcm4chee.web.common.behaviours.SelectableTableRowBehaviour;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.common.markup.DateTimeLabel;
+import org.dcm4chee.web.common.markup.SimpleDateTimeField;
 import org.dcm4chee.web.common.markup.modal.ConfirmationWindow;
 import org.dcm4chee.web.common.markup.modal.MessageWindow;
 import org.dcm4chee.web.common.secure.SecurityBehavior;
@@ -160,6 +163,8 @@ public class TrashListPage extends Panel {
 
     private TextField<String> accessionNumber;
     private DropDownChoice<String> sourceAET;
+    private SimpleDateTimeField dtf;
+    private SimpleDateTimeField dtfEnd;
 
     public TrashListPage(final String id) {
         super(id);
@@ -262,6 +267,7 @@ public class TrashListPage extends Panel {
         form.addInternalLabel("patientIDDescr");
         form.addInternalLabel("accessionNumber");
         form.addInternalLabel("sourceAET");
+        form.addInternalLabel("deletedDate");
 
         searchTableComponents.add(form.createAjaxParent("searchFields"));
 
@@ -290,6 +296,10 @@ public class TrashListPage extends Panel {
             (sourceAET = form.addDropDownChoice("sourceAET", null,
                     new Model<ArrayList<String>>(new ArrayList(aetChoices)),
                     new Model<Boolean>(false), false)).setNullValid(true);
+        dtf = form.addDateTimeField("deletedDateMin", new PropertyModel<Date>(filter, "deletedDateMin"), 
+                enabledModel, false, true);
+        dtfEnd = form.addDateTimeField("deletedDateMax", new PropertyModel<Date>(filter, "deletedDateMax"), enabledModel, true, true);
+        dtf.addToDateField(new CheckOneDayBehaviour(dtf, dtfEnd, "onchange"));
 
         searchTableComponents.add(form.createAjaxParent("searchFooter"));
     }
@@ -332,6 +342,8 @@ public class TrashListPage extends Panel {
                         viewport.getFilter().setPatientQuery(b);
                         target.addComponent(accessionNumber.setEnabled(!b));
                         target.addComponent(sourceAET.setEnabled(!b));
+                        target.addComponent(dtf);
+                        target.addComponent(dtfEnd);
                     }
                 });
     }

@@ -46,7 +46,10 @@
 						<td>
 							<div wicket:id="sourceAET.label" class="search-header">Source AET</div>
 						</td>
-						<td colspan="3"></td>
+						<td colspan="2">
+							<div wicket:id="deletedDate.label" class="search-header">Deleted Date</div>
+						</td>
+						<td></td>
 						<td></td>
 					</tr>
 					<tr wicket:id="searchFields" class="search-table">
@@ -68,7 +71,15 @@
 						<td>
 							<select wicket:id="sourceAET" />
 						</td>
-						<td colspan="3"></td>
+						<td>
+							<div wicket:id="deletedDateMin.label">from</div>
+							<div wicket:id="deletedDateMin" id="deletedDateMin" />
+						</td>
+						<td>
+							<div wicket:id="deletedDateMax.label">to</div>
+							<div wicket:id="deletedDateMax" id="deletedDateMax" />
+						</td>
+						<td></td>
 						<td></td>
 					</tr>
 				    <tr class="search-table-footer" wicket:id="searchFooter">
