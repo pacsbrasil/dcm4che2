@@ -30,12 +30,24 @@ public enum TCForumIntegration {
 		return null;
 	}
 	
+	public void setUserCookie() throws Exception {
+		getAPI().setUserCookie();
+	}
+	
+	public void setAdminUserCookie() throws Exception {
+		getAPI().setAdminUserCookie();
+	}
+	
 	public String getPostsPageURL(TCModel tccase) throws Exception {
 		return getAPI().getPostsPageURL(tccase);
 	}
 	
 	public String getPostsPageURL(TCObject tccase) throws Exception {
 		return getAPI().getPostsPageURL(tccase);
+	}
+	
+	public String getAdminPageURL() throws Exception {
+		return getAPI().getAdminPageURL();
 	}
 	
 	private synchronized ForumAPI getAPI() throws Exception {
@@ -47,9 +59,12 @@ public enum TCForumIntegration {
 		return api;
 	}
 	
-	public abstract class ForumAPI {		
+	public abstract class ForumAPI {	
+		public abstract void setUserCookie() throws Exception;
+		public abstract void setAdminUserCookie() throws Exception;
 		public abstract String getPostsPageURL(TCModel tccase) throws Exception;
 		public abstract String getPostsPageURL(TCObject tccase) throws Exception;
+		public abstract String getAdminPageURL() throws Exception;
 		protected String getUserName() {
 			return ((SecureSession)Session.get()).getUsername();
 		}
@@ -68,6 +83,13 @@ public enum TCForumIntegration {
 		public String getPostsPageURL(TCModel tccase) throws Exception {
 			return getPostsPageURL(tccase.getSOPInstanceUID(), tccase.getTitle(), 
 					tccase.getCreationDate(), tccase.getAuthor());
+		}
+		@Override
+		public String getAdminPageURL() throws Exception {
+			StringBuilder url = new StringBuilder();
+			url.append(BASE_URL);
+			url.append("admBase/main.page");
+			return url.toString();
 		}
 		private String getPostsPageURL(String caseUID, String caseTitle, Date caseDate, String caseAuthor) throws Exception {
 			// make sure, that the current user is available in jforum
@@ -89,9 +111,7 @@ public enum TCForumIntegration {
 			//...now we are ready to open the case' posts page
 			if (topicId>=0) {
 				//needed to autom. login current user into jforum
-				Cookie cookie = new Cookie(SSO_COOKIE_NAME, getUserName());
-				cookie.setPath("/");
-				((WebResponse)RequestCycle.get().getResponse()).addCookie(cookie);
+				setUserCookie();
 				
 		      	StringBuilder targetUrl = new StringBuilder();
 		      	targetUrl.append("http://");
@@ -104,6 +124,20 @@ public enum TCForumIntegration {
 			}
 			
 			return null;
+		}
+		
+		@Override
+		public void setUserCookie() throws Exception {
+			Cookie cookie = new Cookie(SSO_COOKIE_NAME, getUserName());
+			cookie.setPath("/");
+			((WebResponse)RequestCycle.get().getResponse()).addCookie(cookie);
+		}
+		
+		@Override
+		public void setAdminUserCookie() throws Exception {
+			Cookie cookie = new Cookie(SSO_COOKIE_NAME, "admin");
+			cookie.setPath("/");
+			((WebResponse)RequestCycle.get().getResponse()).addCookie(cookie);
 		}
 		
 		private void registerCurrentUser() throws Exception {
@@ -193,7 +227,7 @@ public enum TCForumIntegration {
 		private String getBaseURL() {
 			StringBuilder url = new StringBuilder();
 			String host = System.getProperty("jboss.bind.address");
-			if (host==null) {
+			if (host==null || "0.0.0.0".equals(host)) {
 				host = "localhost";
 			}
 			url.append(host);

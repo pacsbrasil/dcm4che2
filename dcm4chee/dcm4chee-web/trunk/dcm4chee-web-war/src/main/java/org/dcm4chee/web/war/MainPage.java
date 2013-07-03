@@ -38,6 +38,7 @@
 
 package org.dcm4chee.web.war;
 
+import java.util.List;
 import java.util.Properties;
 
 import javax.servlet.http.HttpSession;
@@ -63,6 +64,7 @@ import org.dcm4chee.web.common.secure.SecureSession;
 import org.dcm4chee.web.common.secure.SecureWicketPage;
 import org.dcm4chee.web.war.ae.AEPanel;
 import org.dcm4chee.web.war.folder.StudyListPage;
+import org.dcm4chee.web.war.tc.TCEnvironment;
 import org.dcm4chee.web.war.tc.TCPanel;
 import org.dcm4chee.web.war.trash.TrashListPage;
 import org.dcm4chee.web.war.worklist.modality.ModalityWorklistPanel;
@@ -133,13 +135,16 @@ public class MainPage extends SecureWicketPage {
     private void addModules(ModuleSelectorPanel selectorPanel) {
         
         AELicenseProviderSPI provider = AELicenseProviderManager.get(null).getProvider();
-
+        List<ExternalWebApp> extApps = new ExternalWebApplications().getExternalWebAppPanels();
+        
         selectorPanel.addModule(StudyListPage.class);
         selectorPanel.addModule(TrashListPage.class);
         selectorPanel.addModule(AEPanel.class);
         selectorPanel.addModule(ModalityWorklistPanel.class);
-        if (provider.allowFeature("Teachingfiles"))
-            selectorPanel.addModule(TCPanel.class);
+        if (provider.allowFeature("Teachingfiles")) {
+        	TCEnvironment.init(extApps);
+        	selectorPanel.addModule(TCPanel.class);
+        }
         if (provider.allowFeature("Dashboard"))
             selectorPanel.addModule(DashboardPanel.class);
         selectorPanel.addModule(RolePanel.class, null);
@@ -148,7 +153,7 @@ public class MainPage extends SecureWicketPage {
             selectorPanel.addModule(UserListPanel.class, null);
             selectorPanel.addModule(ChangePasswordPanel.class, null);
         }
-        for (ExternalWebApp p : new ExternalWebApplications().getExternalWebAppPanels()) {
+        for (ExternalWebApp p : extApps) {
             selectorPanel.addModule(p.getPanel(), p.getTitle());
         }
         try {
