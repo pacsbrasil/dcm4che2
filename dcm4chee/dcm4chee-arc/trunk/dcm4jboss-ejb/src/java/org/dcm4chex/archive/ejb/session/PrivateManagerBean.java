@@ -612,10 +612,11 @@ public abstract class PrivateManagerBean implements SessionBean {
     }
 
     private Collection movePatientToTrash(PatientLocal patient) {
-        Collection col = patient.getStudies();
+        Collection<StudyLocal> studies = patient.getStudies();
         Collection result = new ArrayList();
-        for (Iterator iter = col.iterator(); iter.hasNext();) {
-            result.add(makeIAN((StudyLocal) iter.next(), null));
+        for (StudyLocal study : studies) {
+            markPublishedStudy(study, true);
+            result.add(makeIAN(study, null));
         }
         Dataset ds = patient.getAttributes(true);
         try {
