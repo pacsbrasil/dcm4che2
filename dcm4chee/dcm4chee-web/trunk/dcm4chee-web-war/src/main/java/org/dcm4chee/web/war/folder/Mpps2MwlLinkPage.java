@@ -457,8 +457,12 @@ public class Mpps2MwlLinkPage extends ModalWindow {
                 String name = patModel.getName();
                 if ( !"*".equals(patPreset)) {
                     int nrofChars = Integer.parseInt(patPreset);
-                    if (name != null && name.length() > nrofChars)
+                    if (name != null && name.length() > nrofChars) {
                         name = name.substring(0,nrofChars);
+                    }
+                    int pos = name.indexOf('^');
+                    if (pos != -1)
+                        name = name.substring(0, pos);
                 }
                 getViewPort().getFilter().setPatientName(name);
             }
