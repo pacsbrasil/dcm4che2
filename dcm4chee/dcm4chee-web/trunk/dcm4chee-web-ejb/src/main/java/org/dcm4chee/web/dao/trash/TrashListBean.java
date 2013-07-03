@@ -148,11 +148,23 @@ public class TrashListBean implements TrashListLocal {
             if ( QueryUtil.isUniversalMatch(filter.getStudyInstanceUID()) ) {
                 appendPatFilter(ql, filter);
                 QueryUtil.appendAccessionNumberFilter(ql, QueryUtil.checkAutoWildcard(filter.getAccessionNumber(), filter.isAutoWildcard()));
+                QueryUtil.appendSourceAETFilter(ql, new String[]{filter.getSourceAET()});
+                if (filter.getDeletedDateMin() != null || filter.getDeletedDateMax() != null) {
+                    ql.append(" AND EXISTS (SELECT st FROM PrivateStudy st JOIN st.series se JOIN se.instances i WHERE st = s AND ");
+                    if (filter.getDeletedDateMin() != null) {
+                        ql.append("i.createdTime >= :deletedDateMin");
+                        if (filter.getDeletedDateMax() != null)
+                            ql.append(" AND ");
+                    }
+                    if (filter.getDeletedDateMax() != null) {
+                        ql.append("i.createdTime <= :deletedDateMax");
+                    }
+                    ql.append(")");
+                }
             } else {
                 ql.append(" AND s.studyInstanceUID = :studyInstanceUID");
             }
-            QueryUtil.appendSourceAETFilter(ql, new String[]{filter.getSourceAET()});
-            if ((roles != null) && !filter.isPatientQuery())
+            if (roles != null)
                 QueryUtil.appendDicomSecurityFilter(ql);
         }
     }
@@ -170,11 +182,17 @@ public class TrashListBean implements TrashListLocal {
             if ( QueryUtil.isUniversalMatch(filter.getStudyInstanceUID()) ) {
                 setPatQueryParameters(query, filter);
                 QueryUtil.setAccessionNumberQueryParameter(query, QueryUtil.checkAutoWildcard(filter.getAccessionNumber(), filter.isAutoWildcard()));
+                QueryUtil.setSourceAETQueryParameter(query, new String[]{filter.getSourceAET()});
+                if (filter.getDeletedDateMin() != null) {
+                    query.setParameter("deletedDateMin", filter.getDeletedDateMin());
+                }
+                if (filter.getDeletedDateMax() != null) {
+                    query.setParameter("deletedDateMax", filter.getDeletedDateMax());
+                }
             } else {
                 QueryUtil.setStudyInstanceUIDQueryParameter(query, filter.getStudyInstanceUID());
             }
-            QueryUtil.setSourceAETQueryParameter(query, new String[]{filter.getSourceAET()});
-            if ((roles != null) && !filter.isPatientQuery())
+            if (roles != null)
                 query.setParameter("roles", roles);
         }
     }

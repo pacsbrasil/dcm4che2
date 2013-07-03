@@ -39,6 +39,7 @@
 package org.dcm4chee.web.dao.trash;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -63,6 +64,8 @@ public class TrashListFilter implements Serializable {
     private String sourceAET;
     private boolean patientQuery;
     private int autoWildcard = 0;
+    private Date deletedDateMin;
+    private Date deletedDateMax;
 
     public TrashListFilter(String forUsername) {
         clear();
@@ -72,6 +75,7 @@ public class TrashListFilter implements Serializable {
         patientName = patientID = issuerOfPatientID = accessionNumber = 
             studyInstanceUID = sourceAET = null;
         patientQuery = false;
+        deletedDateMin = deletedDateMax = null;
     }
 
     public String getPatientName() {
@@ -159,5 +163,21 @@ public class TrashListFilter implements Serializable {
      */
     public void setAutoWildcard(int autoWildcard) {
         this.autoWildcard = autoWildcard;
+    }
+
+    public Date getDeletedDateMin() {
+        return deletedDateMin;
+    }
+
+    public void setDeletedDateMin(Date deletedDateMin) {
+        this.deletedDateMin = deletedDateMin;
+    }
+
+    public Date getDeletedDateMax() {
+        return deletedDateMax;
+    }
+
+    public void setDeletedDateMax(Date deletedDateMax) {
+        this.deletedDateMax = deletedDateMax;
     }
 }
