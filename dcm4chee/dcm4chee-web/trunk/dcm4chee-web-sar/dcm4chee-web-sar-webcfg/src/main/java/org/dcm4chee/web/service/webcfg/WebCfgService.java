@@ -210,6 +210,8 @@ public class WebCfgService extends ServiceMBeanSupport implements
 
     private List<String> modalityFilter = new ArrayList<String>();
     
+    private int searchWarningThreshold;
+    
     public WebCfgService() throws MalformedObjectNameException {
         timerServiceName = new ObjectName(DEFAULT_TIMER_SERVICE);
     }
@@ -1482,5 +1484,13 @@ public class WebCfgService extends ServiceMBeanSupport implements
     
     public List<String> getModalityFilterList() {
     	return modalityFilter;
+    }
+    
+    public int getSearchWarningThreshold() {
+        return searchWarningThreshold;
+    }
+
+    public void setSearchWarningThreshold(int size) {
+        this.searchWarningThreshold = size;
     }
 }

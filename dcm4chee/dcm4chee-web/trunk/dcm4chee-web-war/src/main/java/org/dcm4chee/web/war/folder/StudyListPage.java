@@ -814,7 +814,10 @@ public class StudyListPage extends Panel {
                     viewport.setResetOnSearch(true);
                     confirmSearch.confirm(target, new StringResourceModel("folder.message.confirmSearch", this, null), form);
                 } else {
-                    doSearch(target, form, true);
+                	if (countForWarning(target))
+                		confirmSearch.confirm(target, new StringResourceModel("folder.message.warnSearch", this, null), form);
+                	else
+                		doSearch(target, form, true);
                 }
             }
             
@@ -3028,5 +3031,22 @@ public class StudyListPage extends Panel {
                 .setEscapeModelStrings(false)
                 .add(new AttributeModifier("class", true, new Model<String>("arr"))))
                 .show(target);
+    }
+    
+    private boolean countForWarning(AjaxRequestTarget target) {
+    	int threshold = WebCfgDelegate.getInstance().getSearchWarningThreshold();
+    	try {
+	        StudyListFilter filter = viewport.getFilter();
+	        return filter.isUnconnectedMPPS() ? 
+	        		dao.countUnconnectedMPPS(filter) > threshold : 
+	        			dao.count(filter, (studyPermissionHelper.applyStudyPermissions() ? 
+	                            studyPermissionHelper.getDicomRoles() : null)) > threshold;
+        } catch (Throwable x) {
+            if ((x instanceof EJBException) && x.getCause() != null) 
+                x = x.getCause();
+            log.error("Error on queryStudies: ", x);
+            msgWin.show(target, new WicketExceptionWithMsgKey("folder.message.searcherror", x), true);
+            return false;
+        }
     }
 }

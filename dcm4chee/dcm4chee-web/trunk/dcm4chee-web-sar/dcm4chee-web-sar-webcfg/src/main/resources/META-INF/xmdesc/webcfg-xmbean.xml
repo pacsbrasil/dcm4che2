@@ -1133,6 +1133,16 @@
          <value value="NONE"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="getSearchWarningThreshold"
+      setMethod="setSearchWarningThreshold">
+      <description>Threshold for the display of a warning depending on the number of studies that would be retrieved by the folder search. If the count exceeds this threshold a warning that the search may take long will be displayed and the user is provided with the option to cancel the search.</description>
+      <name>SearchWarningThreshold</name>
+      <type>int</type>
+      <descriptors>
+         <value value="1000"/>
+      </descriptors>
+   </attribute>
 
    <!-- Operations -->
    <operation impact="ACTION">

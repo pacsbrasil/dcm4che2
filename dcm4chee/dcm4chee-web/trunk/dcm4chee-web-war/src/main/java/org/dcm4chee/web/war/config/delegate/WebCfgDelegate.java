@@ -500,4 +500,18 @@ public class WebCfgDelegate extends BaseCfgDelegate {
 	public List<String> getModalityFilterList() {
 		return getStringList("getModalityFilterList");
 	}
+	
+    public Integer getSearchWarningThreshold() {
+        if (server == null)
+            return 1000;
+        try {
+            return (Integer) server.getAttribute(serviceObjectName,
+                    "SearchWarningThreshold");
+        } catch (Exception x) {
+            log.warn(
+                    "Cant get SearchWarningThreshold attribute! return 1000 as default!",
+                    x);
+            return 1000;
+        }
+    }
 }
