@@ -54,6 +54,7 @@ import javax.management.ObjectName;
 
 import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.DeleteStudyOrder;
+import org.dcm4chex.archive.common.DeleteStudyOrdersAndMaxAccessTime;
 import org.dcm4chex.archive.common.FileSystemStatus;
 import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.config.DeleterThresholds;
@@ -968,10 +969,11 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
     private int scheduleStudiesForDeletion(FileSystemMgt2 fsMgt,
             long notAccessedAfter, long sizeToDel0) throws Exception {
         int countStudies = 0;
+        long totalSizeDeleted = 0;
         long minAccessTime = 0;
         long sizeToDel = sizeToDel0;
         do {
-            Collection<DeleteStudyOrder> orders = 
+        	DeleteStudyOrdersAndMaxAccessTime deleteOrdersAndAccessTime = 
                     fsMgt.createDeleteOrdersForStudiesOnFSGroup(
                             getFileSystemGroupID(), minAccessTime,
                             notAccessedAfter,
@@ -979,16 +981,50 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
                             externalRetrieveable, storageNotCommited,
                             copyOnMedia, copyOnFSGroup, copyArchived,
                             copyOnReadOnlyFS);
-            if (orders.isEmpty()) {
+            if (deleteOrdersAndAccessTime == null) {
                 if (sizeToDel0 != Long.MAX_VALUE) {
                     log.warn("Could not find any further study for deletion on "
                             + "file system group " + getFileSystemGroupID());
                 }
                 break;
             }
-            Iterator<DeleteStudyOrder> orderIter = orders.iterator();
-            do {
-                DeleteStudyOrder order = orderIter.next();
+
+            long[] result = markAndScheduleDeleteOrders(deleteOrdersAndAccessTime.deleteStudyOrders, sizeToDel);
+            if (result[0] != 0) {
+                sizeToDel -= result[0];
+                countStudies += result[1];
+                totalSizeDeleted += result[0];
+            }
+            if (deleteOrdersAndAccessTime.deleteStudyOrders.size() == 0 && 
+                    minAccessTime == deleteOrdersAndAccessTime.maxAccessTime) {
+                log.warn("Possible infinite loop in deleter thread detected! Please check access_time in study_on_fs! Current minAccessTime:"+minAccessTime);
+                minAccessTime++;
+            } else {
+            	if (log.isDebugEnabled()) {
+            		log.debug("Moving the minimum access time ahead to find more studies to delete. Batch size: " + scheduleStudiesForDeletionBatchSize + " studies deleted so far: " + countStudies);
+            	}
+                minAccessTime = deleteOrdersAndAccessTime.maxAccessTime;
+            }
+            
+        } while (sizeToDel > 0);
+        if (countStudies == 0 && sizeToDel > 0) {
+            log.warn("No study found for clean up filesystem group "+getFileSystemGroupIDForDeleter()+"! Please check your configuration!");
+            log.warn(showDeleterCriteria());
+        } else if (log.isDebugEnabled()) {
+        	log.debug("Found " + countStudies + " studies to delete for filesystem group "+  getFileSystemGroupIDForDeleter() );        	
+        }
+        return countStudies;
+    }
+    
+    private long[] markAndScheduleDeleteOrders(Collection<DeleteStudyOrder> orders, long maxSize) throws Exception {
+        FileSystemMgt2 fsMgt = fileSystemMgt();
+        long[] result = new long[]{0,0};
+        if (orders.size() > 0) {
+            Iterator<DeleteStudyOrder> iter = orders.iterator();
+            boolean dontCheckMax = maxSize < 1;
+            DeleteStudyOrder order;
+            while (iter.hasNext() && (dontCheckMax || result[0] < maxSize )) {
+                order = iter.next();
                 if (fsMgt.removeStudyOnFSRecord(order)) {
                     try {
                         deleteStudy.scheduleDeleteOrder(order);
@@ -998,15 +1034,50 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
                         fsMgt.createStudyOnFSRecord(order);
                         throw e;
                     }
-                    sizeToDel -= fsMgt.getStudySize(order);
-                    countStudies++;
+                    result[0] += fsMgt.getStudySize(order);
+                    result[1]++;
                 }
-                minAccessTime = order.getAccessTime();
-            } while (sizeToDel > 0 && orderIter.hasNext());
-        } while (sizeToDel > 0);
-        return countStudies;
+            }
+        }
+        return result;
+    }
+    
+
+
+    protected String showTriggerInfo() {
+        return "Trigger intervall: "+getScheduleStudiesForDeletionInterval();
     }
 
+    public String showDeleterCriteria() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(showTriggerInfo());
+        if (maxNotAccessedFor==0) {
+            sb.append("\nOnly triggered by running out of disk space! Studies not accessed for ")
+            .append(getDeleteStudyOnlyIfNotAccessedFor());
+        } else {
+            sb.append("\nAll studies not accessed for ").append(getDeleteStudyIfNotAccessedFor());
+            sb.append(".\n And studies not accessed for ").append(getDeleteStudyOnlyIfNotAccessedFor())
+            .append(" when running out of disk space!");
+        }
+        sb.append("\nDeleter Criteria: ");
+        int i = 0;
+        if (externalRetrieveable)
+            sb.append("\n  ").append(++i).append(") External Retrievable");
+        if (copyOnFSGroup != null)
+            sb.append("\n  ").append(++i).append(") Copy on Filesystem Group "+copyOnFSGroup);
+        if (copyArchived)
+            sb.append("\n  ").append(++i).append(") Copy must be archived");
+        if (copyOnReadOnlyFS)
+            sb.append("\n  ").append(++i).append(") Copy on a ReadOnly Filesystem");
+        if (copyOnMedia)
+            sb.append("\n  ").append(++i).append(") Copy on Media");
+        if (storageNotCommited)
+            sb.append("\n  ").append(++i).append(") Storage Not Commited");
+        if (i==0) 
+            sb.append("\n  WARNING! No Deletion criteria configured!");
+        return sb.toString();
+    }
+    
     public long scheduleStudyForDeletion(String suid) throws Exception {
         FileSystemMgt2 fsMgt = fileSystemMgt();
         Collection<DeleteStudyOrder> orders = 
@@ -1053,4 +1124,10 @@ public class FileSystemMgt2Service extends ServiceMBeanSupport {
         }
         return deleted;
     }
+    
+    protected String getFileSystemGroupIDForDeleter() {
+        return this.getFileSystemGroupID();
+    }
+    
+    
 }
