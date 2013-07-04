@@ -66,6 +66,7 @@ import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.DeleteStudyOrder;
+import org.dcm4chex.archive.common.DeleteStudyOrdersAndMaxAccessTime;
 import org.dcm4chex.archive.common.FileSystemStatus;
 import org.dcm4chex.archive.common.SeriesStored;
 import org.dcm4chex.archive.ejb.interfaces.FileDTO;
@@ -570,15 +571,15 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
     /**    
      * @ejb.interface-method
      */
-    public Collection createDeleteOrdersForStudiesOnFSGroup(
-            String fsGroup, long minAccessTime, long maxAccessTime, int limit,
-            boolean externalRetrieveable, boolean storageNotCommited,
-            boolean copyOnMedia, String copyOnFSGroup, boolean copyArchived,
-            boolean copyOnReadOnlyFS) throws FinderException {
-        return createDeleteOrders(sofHome.findByFSGroupAndAccessedBetween(fsGroup,
-                new Timestamp(minAccessTime), new Timestamp(maxAccessTime), limit),
-                externalRetrieveable, storageNotCommited, copyOnMedia,
-                copyOnFSGroup, copyArchived, copyOnReadOnlyFS);
+    public DeleteStudyOrdersAndMaxAccessTime createDeleteOrdersForStudiesOnFSGroup(
+        String fsGroup, long minAccessTime, long maxAccessTime, int limit,
+        boolean externalRetrieveable, boolean storageNotCommited,
+        boolean copyOnMedia, String copyOnFSGroup, boolean copyArchived,
+        boolean copyOnReadOnlyFS) throws FinderException {
+		return createDeleteOrders(sofHome.findByFSGroupAndAccessedBetween(fsGroup,
+            	new Timestamp(minAccessTime), new Timestamp(maxAccessTime), limit),
+            	externalRetrieveable, storageNotCommited, copyOnMedia,
+            	copyOnFSGroup, copyArchived, copyOnReadOnlyFS);   		
     }
 
     /**    
@@ -599,25 +600,30 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
         return orders;
     }
 
-    private Collection createDeleteOrders(
+    private DeleteStudyOrdersAndMaxAccessTime createDeleteOrders(
             Collection sofs, boolean externalRetrieveable,
             boolean storageNotCommited, boolean copyOnMedia,
             String copyOnFSGroup, boolean copyArchived,
             boolean copyOnReadOnlyFS) throws FinderException {
-        Collection orders = new ArrayList(sofs.size());
+        if (sofs.isEmpty())
+            return null;
+        Collection<DeleteStudyOrder> orders = new ArrayList<DeleteStudyOrder>(sofs.size());
+        long maxAccessTime = 0;
         for (Iterator iter = sofs.iterator(); iter.hasNext();) {
             StudyOnFileSystemLocal sof = (StudyOnFileSystemLocal) iter.next();
+            maxAccessTime = sof.getAccessTime().getTime();
             if (sof.matchDeleteConstrains(externalRetrieveable,
                     storageNotCommited, copyOnMedia, copyOnFSGroup,
                     copyArchived, copyOnReadOnlyFS)) {
-                DeleteStudyOrder deleteStudyOrder = new DeleteStudyOrder(sof.getPk(),
-                        sof.getStudy().getPk(), sof.getFileSystem().getPk(),
-                                sof.getAccessTime().getTime());
-                deleteStudyOrder.processOrderProperties(sof.getStudy().getStudyIuid());
+                StudyLocal study = sof.getStudy();
+                DeleteStudyOrder deleteStudyOrder = new DeleteStudyOrder(
+                        sof.getPk(), study.getPk(), sof.getFileSystem().getPk(),
+                        maxAccessTime);
+                deleteStudyOrder.processOrderProperties(study.getStudyIuid());
                 orders.add(deleteStudyOrder);
             }
         }
-        return orders;
+        return new DeleteStudyOrdersAndMaxAccessTime(orders, maxAccessTime);
     }
 
     /**    
