@@ -47,6 +47,7 @@ import java.util.Set;
 
 import org.dcm4chee.archive.entity.Instance;
 import org.dcm4chee.archive.entity.MPPS;
+import org.dcm4chee.archive.entity.MWLItem;
 import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.Series;
 import org.dcm4chee.archive.entity.Study;
@@ -65,7 +66,12 @@ public class EntityTree implements Serializable {
     private Collection<Instance> allInstances;
     private Map<Patient, Map<Study, Map<Series, Set<Instance>>>> entityTreeMap = 
         new HashMap<Patient, Map<Study, Map<Series, Set<Instance>>>>();
+    private Set<MWLItem> mwlItems = new HashSet<MWLItem>();
     
+    public Set<MWLItem> getMwlItems() {
+        return mwlItems;
+    }
+
     private static Logger log = LoggerFactory.getLogger(EntityTree.class);
     
     public EntityTree() {
@@ -160,6 +166,10 @@ public class EntityTree implements Serializable {
         if (entityTreeMap.get(pat) == null) {
             entityTreeMap.put(pat, new HashMap<Study, Map<Series, Set<Instance>>>());
         }
+    }
+    
+    public void addMWLItem(MWLItem mwl) {
+        mwlItems.add(mwl);
     }
     
     public boolean isEmpty() {

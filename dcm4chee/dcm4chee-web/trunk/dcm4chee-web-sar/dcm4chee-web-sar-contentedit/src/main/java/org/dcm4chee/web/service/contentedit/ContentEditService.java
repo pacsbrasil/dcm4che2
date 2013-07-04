@@ -64,7 +64,6 @@ import org.dcm4che2.audit.message.AuditEvent;
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
-import org.dcm4che2.data.PersonName;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.UID;
 import org.dcm4che2.data.VR;
@@ -611,7 +610,7 @@ public class ContentEditService extends ServiceMBeanSupport {
     }
     
     private void doAfterLinkMppsToMwl(MppsToMwlLinkResult result) throws InstanceNotFoundException, MBeanException, ReflectionException {
-        log.info("MppsToMwlLinkResult:"+result);
+        log.debug("MppsToMwlLinkResult:{}",result);
         logMppsLinkRecord(result);
         Map<String,DicomObject> fwdIANs = updateSeriesAttributes(result);
         if (this.addMwlAttrsToMppsXsl != null) {
@@ -630,8 +629,8 @@ public class ContentEditService extends ServiceMBeanSupport {
             }
             this.moveStudiesToPatient(studyPks, pat.getPk());
         }
-        log.debug("forwardModifiedToAETs:", forwardModifiedToAETs);
-        log.debug("fwdIANs:", fwdIANs);
+        log.debug("forwardModifiedToAETs:{}", forwardModifiedToAETs);
+        log.debug("fwdIANs:{}", fwdIANs);
         if (this.forwardModifiedToAETs != null && fwdIANs != null) {
             for (Iterator<DicomObject> it = fwdIANs.values().iterator() ; it.hasNext() ;) {
                 this.scheduleForward(it.next());
@@ -664,10 +663,10 @@ public class ContentEditService extends ServiceMBeanSupport {
                     DicomObject mppsAttrs;
                     for (MPPS mpps : mppss) {
                         mppsAttrs = mpps.getAttributes();
-                        log.debug("MPPS attributes before addMwlAttrs2Mpps:"+mppsAttrs);
-                        log.debug("Coercion Attrs:"+coerce);
+                        log.debug("MPPS attributes before addMwlAttrs2Mpps:{}", mppsAttrs);
+                        log.debug("Coercion Attrs:{}", coerce);
                         CoercionUtil.coerceAttributes(mppsAttrs, coerce);
-                        log.debug("MPPS attributes with MWL attributes:"+mppsAttrs);
+                        log.debug("MPPS attributes with MWL attributes:{}", mppsAttrs);
                         lookupMppsToMwlLinkLocal().updateMPPSAttributes(mpps, mppsAttrs);
                     }
                 }
@@ -747,7 +746,7 @@ public class ContentEditService extends ServiceMBeanSupport {
     }
     private DicomObject getCoercionAttrs(DicomObject ds) throws InstanceNotFoundException, MBeanException, ReflectionException {
         if ( ds == null ) return null;
-        log.info("Dataset to get coercion ds:"+ds);
+        log.debug("Dataset to get coercion ds:{}",ds);
         DicomObject sps = ds.get(Tag.ScheduledProcedureStepSequence).getDicomObject();
         String aet = sps == null ? null : sps.getString(Tag.ScheduledStationAETitle);
         Templates tpl = templates.getTemplatesForAET(aet, MWL2STORE_XSL);
@@ -769,7 +768,7 @@ public class ContentEditService extends ServiceMBeanSupport {
             log.error("Attribute coercion failed:", e);
             return null;
         }
-        log.info("return coerced attributes:"+out);
+        log.debug("return coerced attributes:{}",out);
         return out;
     }
     
@@ -779,7 +778,7 @@ public class ContentEditService extends ServiceMBeanSupport {
         int i = 0;
         for ( Map<Study, Map<Series, Set<Instance>>> studies : entityTreeMap.values()) {
             rejNotes[i] = studies.isEmpty() ? null : toRejectionNote(studies);
-            log.info("Rejection Note! KOS:"+rejNotes[i++]);
+            log.debug("Rejection Note! KOS:{}", rejNotes[i++]);
         }
         return rejNotes;
     }
@@ -882,9 +881,7 @@ public class ContentEditService extends ServiceMBeanSupport {
                 refSopItem.putString(Tag.ReferencedSOPInstanceUID, VR.UI, instance.getSOPInstanceUID());
             }
         }
-        if (log.isDebugEnabled()) {
-            log.debug("IAN:"+ ian);
-        }
+        log.debug("IAN:{}", ian);
         return ian;
     }
     
@@ -916,6 +913,10 @@ public class ContentEditService extends ServiceMBeanSupport {
         Set<Patient> pats = entityTree.getEntityTreeMap().keySet();
         for (Patient pat : pats) {
             Auditlog.logPatientRecord(AuditEvent.ActionCode.DELETE, true, pat.getPatientID(), pat.getPatientName());
+        }
+        for (MWLItem mwl : entityTree.getMwlItems()) {
+            Auditlog.logProcedureRecord(AuditEvent.ActionCode.DELETE, true, mwl.getPatient().getAttributes(), 
+                    mwl.getStudyInstanceUID(), mwl.getAccessionNumber(), null);
         }
     }
 
@@ -965,7 +966,7 @@ public class ContentEditService extends ServiceMBeanSupport {
     
     private void processRejectionNote(DicomObject rejNote) throws InstanceNotFoundException, MBeanException, ReflectionException {
         if (processRejNote) {
-            log.info("RejectionNote KOS:"+rejNote);
+            log.debug("RejectionNote KOS:{}", rejNote);
             server.invoke(rejNoteServiceName, "scheduleRejectionNote", 
                     new Object[]{rejNote}, new String[]{DicomObject.class.getName()});
         }
@@ -999,9 +1000,7 @@ public class ContentEditService extends ServiceMBeanSupport {
     }
 
     public void sendJMXNotification(Object o) {
-        if (log.isDebugEnabled()) {
-            log.debug("Send JMX Notification: " + o);
-        }
+        log.debug("Send JMX Notification: {}", o);
         long eventID = super.getNextNotificationSequenceNumber();
         Notification notif = new Notification(o.getClass().getName(), this,
                 eventID);
@@ -1057,7 +1056,7 @@ public class ContentEditService extends ServiceMBeanSupport {
     }
 
     private void scheduleForward(DicomObject fwdIan) {
-        log.info("fwdIan:"+fwdIan);
+        log.debug("fwdIan:{}",fwdIan);
         if (fwdIan == null) {
             log.warn("Forward of modified Object ignored! Reason: No ONLINE or NEARLINE instance found!");
         } else {

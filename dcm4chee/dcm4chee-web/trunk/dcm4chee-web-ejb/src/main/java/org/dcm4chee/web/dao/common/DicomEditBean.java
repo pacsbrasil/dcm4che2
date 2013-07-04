@@ -67,6 +67,7 @@ import org.dcm4chee.archive.entity.BaseEntity;
 import org.dcm4chee.archive.entity.File;
 import org.dcm4chee.archive.entity.Instance;
 import org.dcm4chee.archive.entity.MPPS;
+import org.dcm4chee.archive.entity.MWLItem;
 import org.dcm4chee.archive.entity.OtherPatientID;
 import org.dcm4chee.archive.entity.Patient;
 import org.dcm4chee.archive.entity.PrivateFile;
@@ -395,6 +396,9 @@ public class DicomEditBean implements DicomEditLocal {
             } else {
                 entityTree = moveStudiesToTrash(studies, entityTree, trustPatientIdWithoutIssuer);
                 studies.clear();
+            }
+            for (MWLItem mwl : p.getModalityWorklistItems()) {
+                entityTree.addMWLItem(mwl);
             }
             deletePatient(p);
         }
