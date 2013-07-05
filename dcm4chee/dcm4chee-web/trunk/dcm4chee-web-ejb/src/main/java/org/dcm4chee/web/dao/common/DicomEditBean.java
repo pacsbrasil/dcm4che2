@@ -397,8 +397,10 @@ public class DicomEditBean implements DicomEditLocal {
                 entityTree = moveStudiesToTrash(studies, entityTree, trustPatientIdWithoutIssuer);
                 studies.clear();
             }
-            for (MWLItem mwl : p.getModalityWorklistItems()) {
-                entityTree.addMWLItem(mwl);
+            if (p.getModalityWorklistItems() != null) {
+                for (MWLItem mwl : p.getModalityWorklistItems()) {
+                    entityTree.addMWLItem(mwl);
+                }
             }
             deletePatient(p);
         }
