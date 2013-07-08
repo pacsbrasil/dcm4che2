@@ -395,6 +395,7 @@ public class ModalityWorklistPanel extends Panel implements MwlActionProvider {
         .add(new ImageSizeBehaviour())));
         link.setOutputMarkupId(true).setOutputMarkupPlaceholderTag(true);
         form.addComponent(link);
+        form.addComponent( new Label("showExtendedFilter.label", new ResourceModel("mw.search.showExtendedFilter.label")));
     }
 
     protected void addQueryOptions(BaseForm form) {

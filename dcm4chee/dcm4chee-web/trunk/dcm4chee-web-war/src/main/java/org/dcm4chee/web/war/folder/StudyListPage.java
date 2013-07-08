@@ -502,8 +502,6 @@ public class StudyListPage extends Panel {
         
         form.addTextField("accessionNumber", enabledModel, false);
 
-        searchTableComponents.add(form.createAjaxParent("searchFuzzy"));
-        
         form.addComponent(new CheckBox("fuzzyPN").setVisible(filter.isFuzzyPNEnabled()));
         form.addInternalLabel("fuzzyPN").setVisible(filter.isFuzzyPNEnabled());
         
@@ -521,7 +519,6 @@ public class StudyListPage extends Panel {
             form.addDropDownChoice("sourceAET", null, new Model<ArrayList<String>>(new ArrayList<String>(aetChoices)), new Model<Boolean>(false), false)
             .setNullValid(true);
 
-        searchTableComponents.add(form.createAjaxParent("exactModalities"));
         form.addLabeledCheckBox("exactModalitiesInStudy", null);        
         
         final WebMarkupContainer extendedFilter = new WebMarkupContainer("extendedFilter") {
@@ -601,7 +598,8 @@ public class StudyListPage extends Panel {
             }
         })))
         .add(new ImageSizeBehaviour()));
-        form.addComponent(link);        
+        form.addComponent(link);      
+        form.addComponent( new Label("showExtendedFilter.label", new ResourceModel("folder.search.showExtendedFilter.label")));
     }
 
     private void addQueryOptions(final BaseForm form) {
