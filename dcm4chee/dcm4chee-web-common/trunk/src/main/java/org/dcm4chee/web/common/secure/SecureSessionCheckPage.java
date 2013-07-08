@@ -40,6 +40,7 @@ package org.dcm4chee.web.common.secure;
 
 import org.apache.wicket.IPageMap;
 import org.apache.wicket.MetaDataKey;
+import org.apache.wicket.PageParameters;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.Session;
 import org.apache.wicket.behavior.HeaderContributor;
@@ -70,6 +71,11 @@ public class SecureSessionCheckPage extends SecureWebPage {
     public SecureSessionCheckPage() {
         super();
         init();
+    }
+    
+    public SecureSessionCheckPage(PageParameters params) {
+    	super(params);
+    	init();
     }
 
     public SecureSessionCheckPage(IPageMap pageMap) {
