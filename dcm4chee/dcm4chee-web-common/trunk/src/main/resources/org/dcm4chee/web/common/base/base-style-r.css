@@ -1,7 +1,7 @@
 /*
     Base CSS for dark rooms
 */
-input, select, textarea {background: #666666; color: #aaaaaa; border-style: solid; border-color: #888888}
+input, select, textarea {background: #666666; color: #aaaaaa; border-style: solid; border-width: 1px; border-color: #888888}
 input[disabled] { background-color: #446666; }
 button { background-color: #999999;
 	border-top-color: #555555; border-left-color: #555555; 
@@ -92,7 +92,7 @@ div.module-selector table.menu-right div.menu-item img {
 }
 
 div.module-panel { width: 100%; background: none #111111; padding-top: 1px; color: #aaaaaa;}
-div.module-panel input, select {background: #666666; color: #aaaaaa; border-style: solid; border-color: #888888}
+div.module-panel input, select {background: #666666; color: #aaaaaa; border-style: solid; border-width: 1px; border-color: #888888}
 
 div.viewport-and-actions { margin-top: 20px; margin-bottom: 5px; padding: 5px; }
 div.viewport { float: left; margin-right: 40px; }
@@ -106,9 +106,11 @@ table.search-table { border: thin; border-width: 1px; border-style: solid; borde
 table.search-table th { background-color: #666666; color: white; width: 20px; height: 20px; text-align: left; }
 table.search-table input, select { background-color: #666666; color: white; border-style: solid; border-color: #888888; }
 table.search-table tr { vertical-align: bottom; }
+table.search-table tr td{ padding-bottom:4px;}
 table.search-table tr.search-table-footer { height: 30px; }
 table.search-table tr.search-table-footer td.buttonPanel{ text-align: right; }
-table.search-table tr.search-table-extended { background-color: #444444; }
+table.search-table tr.search-table-extended { background-color: #555555; border-style: solid; border-width: 1px;  margin-top: 10px;}
+table.search-table tr.search-table-extended td { padding-top: 5px; padding-bottom: 5px;}
 table.search-table span.toggle-text { vertical-align: middle; }
 table.search-table div.search-header { text-decoration: underline; }
 table.search-table .yui-skin-sam div.calheader { width: 14em; }
@@ -133,6 +135,7 @@ table.content-table tr th, table.content-table tr td { padding-left: 10px; paddi
 */
 table.folded-table { border: thin; border-width: 1px; border-style: solid; border-color: #AAAAAA; border-collapse: collapse; empty-cells: show; width:100%; white-space: nowrap; background-color: #FFFFFF; }
 table.folded-table tr { height: 25px; width: auto; border: thin; border-width: 1px 1px 0px; border-style: solid; border-color: #AAAAAA; }
+table.folded-table tr.expand td.expand, 
 table.folded-table tr.study td.expand, 
 table.folded-table tr.pps td.expand, 
 table.folded-table tr.series td.expand, 
@@ -143,12 +146,13 @@ table.folded-table tr.instance { background-color: #D1FEF6; color: black; }
 table.folded-table tr.instance_selected { background-color: orange; color: black;}
 table.folded-table tr.series { background-color: #A0D8C4; color: black; }
 table.folded-table tr.series_selected { background-color: orange; color: black;}
-table.folded-table tr.pps { background-color: #666666; color: white; }
+table.folded-table tr.pps { background-color: #54B291;  color: black;}
 table.folded-table tr.pps_selected { background-color: orange; color: black;}
-table.folded-table tr.study { background-color: #54B291;  color: black;}
+table.folded-table tr.study { background-color: #446666; color: #FFFFFF;}
 table.folded-table tr.study_selected { background-color: orange; color: black;}
-table.folded-table tr.patient { background-color: #446666; color: #FFFFFF;}
+table.folded-table tr.patient { background-color: #666666; color: white; }
 table.folded-table tr.patient_selected { background-color: orange; color: black;}
+table.folded-table tr.expand { background-color: #444444; color: white; }
 
 div.dicomobjectpanel { border: thin; border-width: 1px; border-style: inset; border-color: #AAAAAA; }
 table.dicomobject { background: #FFFFFF; color: black; width: 100%; }
