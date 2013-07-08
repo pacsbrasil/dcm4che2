@@ -39,7 +39,6 @@ package org.dcm4chee.web.war.tc;
 
 import org.apache.wicket.Component;
 import org.apache.wicket.ResourceReference;
-import org.apache.wicket.Session;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.behavior.AttributeAppender;
@@ -50,7 +49,6 @@ import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.panel.Panel;
-import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
@@ -58,10 +56,8 @@ import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.ajax.MaskingAjaxCallBehavior;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
-import org.dcm4chee.web.common.secure.SecureSessionCheckPage;
 import org.dcm4chee.web.dao.tc.TCQueryFilter;
-import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
-import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
+import org.dcm4chee.web.war.tc.TCPopupManager.ITCPopupManagerProvider;
 import org.dcm4chee.web.war.tc.TCResultPanel.ITCCaseProvider;
 import org.dcm4chee.web.war.tc.TCResultPanel.TCListModel;
 import org.dcm4chee.web.war.tc.TCViewDialog.ITCViewDialogCloseCallback;
@@ -73,26 +69,12 @@ import org.slf4j.LoggerFactory;
  * @version $Revision$ $Date$
  * @since April 28, 2011
  */
-public class TCPanel extends Panel {
+public class TCPanel extends Panel implements ITCPopupManagerProvider {
 
     private static final long serialVersionUID = 1L;
 
     private static final Logger log = LoggerFactory.getLogger(TCPanel.class);
 
-    private static final ResourceReference LAYOUT_CSS = new CompressedResourceReference(
-            TCPanel.class, "css/tc-layout.css");
-    
-    private static final ResourceReference BASE_CSS = new CompressedResourceReference(
-            TCPanel.class, "css/tc-style.css");
-    
-    private static final ResourceReference BASE_DARKROOM_CSS = new CompressedResourceReference(
-            TCPanel.class, "css/tc-style-darkroom.css");
-    
-    private static final ResourceReference THEME_CSS = new CompressedResourceReference(
-            TCPanel.class, "css/theme/theme.css");
-    
-    private static final ResourceReference THEME_DARKROOM_CSS = new CompressedResourceReference(
-            TCPanel.class, "css/theme-darkroom/theme.css");
     
     public static final String ModuleName = "tc";
 
@@ -112,29 +94,12 @@ public class TCPanel extends Panel {
         
         add(new AttributeAppender("class",true,new Model<String>("ui-page")," "));
         
+        add(TCEnvironment.getCSSHeaderContributor());
         add(new HeaderContributor(new IHeaderContributor()
 		{
+        	@Override
 			public void renderHead(IHeaderResponse response)
 			{
-				IModel<ResourceReference> cssModel = Session.get().getMetaData(SecureSessionCheckPage.BASE_CSS_MODEL_MKEY);
-				boolean darkroom = cssModel!=null &&
-						SecureSessionCheckPage.BASE_CSS_R==cssModel.getObject();
-				
-				if (darkroom)
-				{
-					log.info("DARKROOM");
-					response.renderCSSReference(THEME_DARKROOM_CSS);
-					response.renderCSSReference(LAYOUT_CSS);
-					response.renderCSSReference(BASE_DARKROOM_CSS);
-				}
-				else
-				{
-					log.debug("NORMAL");
-					response.renderCSSReference(THEME_CSS);
-					response.renderCSSReference(LAYOUT_CSS);
-					response.renderCSSReference(BASE_CSS);
-				}
-
 				response.renderOnDomReadyJavascript("initUI($('#" + getMarkupId(true) + "'));");
 			}
 		}));
@@ -228,12 +193,9 @@ public class TCPanel extends Panel {
 	        		target.addComponent(this);
 	        		target.addComponent(detailsPanel);
 	        		
-	        		if (WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey(
-	        				TCQueryFilterKey.Title) ||
-	        			WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey(
-	        					TCQueryFilterKey.Abstract) ||
-	        			WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey(
-	        					TCQueryFilterKey.AuthorName)) {
+	        		if (TCAttribute.Title.isRestricted() ||
+	        			TCAttribute.Abstract.isRestricted() ||
+	        			TCAttribute.AuthorName.isRestricted()) {
 	        			target.addComponent(resultPanel);
 	        		}
 	        	}
@@ -276,6 +238,7 @@ public class TCPanel extends Panel {
     	return resultPanel.getCaseProvider();
     }
     
+    @Override
     public TCPopupManager getPopupManager()
     {
         return popupManager;

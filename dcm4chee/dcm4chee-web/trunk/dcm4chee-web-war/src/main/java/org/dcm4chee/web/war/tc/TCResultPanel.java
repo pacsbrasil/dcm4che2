@@ -94,7 +94,6 @@ import org.dcm4chee.web.common.secure.SecurityBehavior;
 import org.dcm4chee.web.common.webview.link.WebviewerLinkProvider;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
 import org.dcm4chee.web.dao.tc.TCQueryFilter;
-import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 import org.dcm4chee.web.dao.tc.TCQueryLocal;
 import org.dcm4chee.web.war.StudyPermissionHelper;
 import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
@@ -160,6 +159,9 @@ public class TCResultPanel extends Panel {
                   
         tclistProvider = new SortableTCListProvider(
                 (TCListModel) getDefaultModel());
+        
+        final TCAttributeVisibilityStrategy attrVisibilityStrategy =
+        		new TCAttributeVisibilityStrategy(trainingModeModel);
 
         final DataView<TCModel> dataView = new DataView<TCModel>("row",
                 tclistProvider) {
@@ -179,7 +181,7 @@ public class TCResultPanel extends Panel {
                 item.setOutputMarkupId(true);
                 item.add(new TCMultiLineLabel("title", new AbstractReadOnlyModel<String>() {
                 	public String getObject() {
-                		if (!TCUtilities.isKeyAvailable(trainingModeModel, TCQueryFilterKey.Title)) {
+                		if (!attrVisibilityStrategy.isAttributeVisible(TCAttribute.Title)) {
                 			return TCUtilities.getLocalizedString("tc.case.text") + 
                 					" " + tc.getId();
                 		}
@@ -188,7 +190,7 @@ public class TCResultPanel extends Panel {
                 }, new AutoClampSettings(40)));
                 item.add(new TCMultiLineLabel("abstract", new AbstractReadOnlyModel<String>() {
                 	public String getObject() {
-                		if (!TCUtilities.isKeyAvailable(trainingModeModel, TCQueryFilterKey.Abstract)) {
+                		if (!attrVisibilityStrategy.isAttributeVisible(TCAttribute.Abstract)) {
                 			return TCUtilities.getLocalizedString("tc.obfuscation.text");
                 		}
                 		return tc.getAbstract();
@@ -196,7 +198,7 @@ public class TCResultPanel extends Panel {
                 }, new AutoClampSettings(40)));
                 item.add(new TCMultiLineLabel("author", new AbstractReadOnlyModel<String>() {
                 	public String getObject() {
-                		if (!TCUtilities.isKeyAvailable(trainingModeModel, TCQueryFilterKey.AuthorName)) {
+                		if (!attrVisibilityStrategy.isAttributeVisible(TCAttribute.AuthorName)) {
                 			return TCUtilities.getLocalizedString("tc.obfuscation.text");
                 		}
                 		return tc.getAuthor();

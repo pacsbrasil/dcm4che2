@@ -72,6 +72,7 @@ import org.dcm4chee.web.dao.tc.TCQueryLocal;
 import org.dcm4chee.web.war.StudyPermissionHelper;
 import org.dcm4chee.web.war.tc.TCPanel;
 import org.dcm4chee.web.war.tc.TCPopupManager;
+import org.dcm4chee.web.war.tc.TCPopupManager.ITCPopupManagerProvider;
 import org.dcm4chee.web.war.tc.TCReferencedImage;
 import org.dcm4chee.web.war.tc.TCReferencedInstance;
 import org.dcm4chee.web.war.tc.TCReferencedSeries;
@@ -84,6 +85,7 @@ import org.slf4j.LoggerFactory;
  * @since Jan 23, 2012
  */
 public class TCImageViewPage extends SecureWebPage 
+	implements ITCPopupManagerProvider
 {
     private static final ResourceReference LAYOUT_CSS = new CompressedResourceReference(
             TCPanel.class, "css/tc-layout.css");
@@ -171,6 +173,11 @@ public class TCImageViewPage extends SecureWebPage
         add(indicatingPanel);     
         add(new StartImageLoadBehavior(stuid, suid, iuid));
         add((popupManager=new TCPopupManager()).getGlobalHideOnOutsideClickHandler());
+    }
+    
+    @Override
+    public TCPopupManager getPopupManager() {
+    	return popupManager;
     }
     
     private ListModel<? extends TCImageViewStudy> createImagesModelForInstanceUID(String iuid) 

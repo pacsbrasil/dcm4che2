@@ -96,6 +96,10 @@ public class TCModel extends InstanceModel {
     	return Long.toString(getPk());
     }
     
+    public String getURL() {
+    	return TCCaseViewPage.urlForCase(getSOPInstanceUID());
+    }
+    
     public String getTitle() {
         return dataset.getString(Tag.ContentLabel);
     }

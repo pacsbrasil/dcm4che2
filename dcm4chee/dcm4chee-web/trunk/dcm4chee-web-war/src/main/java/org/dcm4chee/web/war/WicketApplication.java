@@ -43,11 +43,13 @@ import javax.security.auth.Subject;
 import org.apache.wicket.Page;
 import org.apache.wicket.Request;
 import org.apache.wicket.Response;
+import org.apache.wicket.request.target.coding.QueryStringUrlCodingStrategy;
 import org.apache.wicket.security.authentication.LoginException;
 import org.apache.wicket.util.time.Duration;
 import org.dcm4chee.web.common.base.BaseWicketApplication;
 import org.dcm4chee.web.common.login.LoginContextSecurityHelper;
 import org.dcm4chee.web.common.login.SSOLoginContext;
+import org.dcm4chee.web.war.tc.TCCaseViewPage;
 import org.dcm4chee.web.war.tc.imageview.TCImageViewPage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,5 +92,6 @@ public class WicketApplication extends BaseWicketApplication {
     {
         super.init();
         mountBookmarkablePage("/imageview", TCImageViewPage.class);
+        mount(new QueryStringUrlCodingStrategy("/caseview", TCCaseViewPage.class));
     }
 }

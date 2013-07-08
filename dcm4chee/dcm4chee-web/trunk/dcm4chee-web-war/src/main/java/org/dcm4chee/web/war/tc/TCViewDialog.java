@@ -7,6 +7,7 @@ import org.apache.log4j.Logger;
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
+import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.dcm4chee.web.war.tc.TCResultPanel.ITCCaseProvider;
 
@@ -111,14 +112,24 @@ public class TCViewDialog extends ModalWindow {
     private TCViewPanel createView(TCModel tcModel, 
     		IModel<Boolean> trainingModeModel, ITCCaseProvider caseProvider) {
     	return new TCViewPanel(getContentId(), tcModel, 
-        		trainingModeModel, caseProvider);
+        		new TCAttributeVisibilityStrategy(new AbstractReadOnlyModel<Boolean>() {
+        			@Override
+        			public Boolean getObject() {
+        				return false;
+        			}
+        		}, trainingModeModel), caseProvider);
     }
     
     
     private TCViewEditablePanel createEditableView(TCModel tcModel, 
     		IModel<Boolean> trainingModeModel, ITCCaseProvider caseProvider) {
     	return new TCViewEditablePanel(getContentId(), tcModel, 
-        		trainingModeModel, caseProvider) {
+        		new TCAttributeVisibilityStrategy(new AbstractReadOnlyModel<Boolean>() {
+        			@Override
+        			public Boolean getObject() {
+        				return true;
+        			}
+        		}, trainingModeModel), caseProvider) {
 			@Override
 			protected void onClose(AjaxRequestTarget target, boolean save)
 			{

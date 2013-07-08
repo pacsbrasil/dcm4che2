@@ -53,21 +53,11 @@ import org.slf4j.LoggerFactory;
 public class TCViewForumTab extends AbstractEditableTCViewTab 
 {
 	private static final Logger log = LoggerFactory.getLogger(TCViewForumTab.class);
-	
-    private AbstractReadOnlyModel<Boolean> infoVisibilityModel;
-    
-	public TCViewForumTab(final String id, final IModel<TCEditableObject> model,
-    		AbstractReadOnlyModel<Boolean> infoVisibilityModel) 
-    {
-        this(id, model, false, infoVisibilityModel);
-    }
         
     public TCViewForumTab(final String id, final IModel<TCEditableObject> model, 
-    		boolean editing, AbstractReadOnlyModel<Boolean> infoVisibilityModel) {
-        super(id, model, editing);
-        
-        this.infoVisibilityModel = infoVisibilityModel;
-        
+    		TCAttributeVisibilityStrategy attrVisibilityStrategy) {
+        super(id, model, attrVisibilityStrategy);
+
         add(new TCForumPostsPanel("forum-container", new AbstractReadOnlyModel<String>() {
         	String lastUID=null;
         	String lastURL=null;
@@ -106,20 +96,15 @@ public class TCViewForumTab extends AbstractEditableTCViewTab
     
     @Override
     public boolean isTabVisible() {
-    	boolean defaultVisibility = super.isTabVisible();
-    	
-    	if (defaultVisibility) {
+    	if (super.isTabVisible()) {
     		if (TCForumIntegration.get(WebCfgDelegate.getInstance().
-    				getTCForumIntegrationType())==null) {
-    			return false;
-    		}
-    		if (infoVisibilityModel!=null) {
-    			return infoVisibilityModel.getObject() ||
-    					!WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey("Discussion");
+    				getTCForumIntegrationType())!=null) {
+    			return getAttributeVisibilityStrategy()
+    				.isAttributeVisible(TCAttribute.Discussion);
     		}
     	}
     	
-    	return defaultVisibility;
+    	return false;
     }
     
     @Override

@@ -42,7 +42,6 @@ import org.dcm4chee.web.dao.tc.ITextOrCode;
 import org.dcm4chee.web.dao.tc.TCDicomCode;
 import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 import org.dcm4chee.web.war.common.AutoSelectInputTextBehaviour;
-import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
 import org.dcm4chee.web.war.tc.keywords.TCKeyword;
 import org.dcm4chee.web.war.tc.keywords.TCKeywordCatalogue;
 import org.dcm4chee.web.war.tc.keywords.TCKeywordCatalogueProvider;
@@ -63,21 +62,6 @@ public class TCUtilities
     private static final Logger log = LoggerFactory.getLogger(TCUtilities.class);
     
     private static PackageStringResourceLoader stringLoader;
-    
-    public static boolean isKeyAvailable(IModel<Boolean> trainingModeModel, TCQueryFilterKey key) {
-    	return isKeyAvailable(trainingModeModel, key.name());
-    }
-    
-    public static boolean isKeyAvailable(IModel<Boolean> trainingModeModel, String key) {
-    	boolean available = true;
-    	if (trainingModeModel!=null) {
-    		if (trainingModeModel.getObject()) {
-    			available = !WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey(key);
-    		}
-    	}
-
-    	return available;
-    }
     
     public static enum PopupAlign {
         TopLeft("left top"),

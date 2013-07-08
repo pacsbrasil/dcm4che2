@@ -5,13 +5,10 @@ import org.apache.wicket.ajax.IAjaxCallDecorator;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.image.Image;
-import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.ResourceModel;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.war.tc.TCResultPanel.ITCCaseProvider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Bernhard Ableitinger <bernhard.ableitinger@agfa.com>
@@ -21,12 +18,10 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("serial")
 public abstract class TCViewEditablePanel extends TCViewPanel
 {
-    private static final Logger log = LoggerFactory.getLogger(TCViewEditablePanel.class);
-    
     public TCViewEditablePanel(final String id, final TCModel tc, 
-    		final IModel<Boolean> trainingModeModel, ITCCaseProvider caseProvider)
+    		TCAttributeVisibilityStrategy attrVisibilityStrategy, ITCCaseProvider caseProvider)
     {
-        super(id, tc, trainingModeModel, caseProvider);
+        super(id, tc, attrVisibilityStrategy, caseProvider);
         
         add(new AjaxLink<Void>("tc-view-ok-btn") {
             @Override

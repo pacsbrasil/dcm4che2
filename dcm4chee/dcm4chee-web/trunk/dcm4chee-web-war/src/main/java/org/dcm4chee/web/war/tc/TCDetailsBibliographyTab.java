@@ -43,9 +43,7 @@ import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.MultiLineLabel;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
-import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
-import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 
 /**
  * @author Bernhard Ableitinger <bernhard.ableitinger@agfa.com>
@@ -55,13 +53,10 @@ import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 @SuppressWarnings("serial")
 public class TCDetailsBibliographyTab extends TCDetailsTab {
 
-    private IModel<Boolean> trainingModeModel;
+    public TCDetailsBibliographyTab(final String id, 
+    		TCAttributeVisibilityStrategy attrVisibilityStrategy) {
+        super(id, attrVisibilityStrategy);
 
-    public TCDetailsBibliographyTab(final String id, IModel<Boolean> trainingModeModel) {
-        super(id);
-
-        this.trainingModeModel = trainingModeModel;
-        
         ListView<String> list = new ListView<String>("bibliography-list",
                 new Model<ArrayList<String>>() {
 
@@ -112,8 +107,8 @@ public class TCDetailsBibliographyTab extends TCDetailsTab {
     
     @Override
     public boolean visible() {
-    	return TCUtilities.isKeyAvailable(trainingModeModel, 
-    			TCQueryFilterKey.BibliographicReference);
+    	return getAttributeVisibilityStrategy().isAttributeVisible(
+    			TCAttribute.BibliographicReference);
     }
 
     private TCObject getTCObject() {

@@ -43,7 +43,6 @@ import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.basic.MultiLineLabel;
-import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 
@@ -55,18 +54,15 @@ import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 @SuppressWarnings("serial")
 public class TCDetailsAuthorTab extends TCDetailsTab {
 
-    private IModel<Boolean> trainingModeModel;
-    
-	public TCDetailsAuthorTab(final String id, final IModel<Boolean> trainingModeModel) {
-        super(id);
+	public TCDetailsAuthorTab(final String id, 
+			final TCAttributeVisibilityStrategy attrVisibilityStrategy) {
+        super(id, attrVisibilityStrategy);
 
-        this.trainingModeModel = trainingModeModel;
-        
         add(new WebMarkupContainer("author-name-row") {
             @Override
             public boolean isVisible() {
-            	return TCUtilities.isKeyAvailable(trainingModeModel, 
-            			TCQueryFilterKey.AuthorName);
+            	return attrVisibilityStrategy.isAttributeVisible(
+            			TCAttribute.AuthorName);
             }
         }
 	        .add(new Label("details-author-name", new Model<String>() {
@@ -85,8 +81,8 @@ public class TCDetailsAuthorTab extends TCDetailsTab {
         add(new WebMarkupContainer("author-affiliation-row") {
 	            @Override
 	            public boolean isVisible() {
-	            	return TCUtilities.isKeyAvailable(trainingModeModel, 
-	            			TCQueryFilterKey.AuthorAffiliation);
+	            	return attrVisibilityStrategy.isAttributeVisible(
+	            			TCAttribute.AuthorAffiliation);
 	            }
 	        }
 	        .add(new Label("details-author-affiliation", new Model<String>() {
@@ -106,8 +102,8 @@ public class TCDetailsAuthorTab extends TCDetailsTab {
         add(new WebMarkupContainer("author-contact-row") {
 	            @Override
 	            public boolean isVisible() {
-	            	return TCUtilities.isKeyAvailable(trainingModeModel, 
-	            			TCQueryFilterKey.AuthorContact);
+	            	return attrVisibilityStrategy.isAttributeVisible(
+	            			TCAttribute.AuthorContact);
 	            }
 	        }
 	        .add(new MultiLineLabel("details-author-contact", new Model<String>() {
@@ -134,12 +130,15 @@ public class TCDetailsAuthorTab extends TCDetailsTab {
     
     @Override
     public boolean visible() {
-    	return TCUtilities.isKeyAvailable(trainingModeModel, 
-    			TCQueryFilterKey.AuthorName) ||
-    		  TCUtilities.isKeyAvailable(trainingModeModel,
-    				  TCQueryFilterKey.AuthorAffiliation) ||
-    		  TCUtilities.isKeyAvailable(trainingModeModel,
-    				  TCQueryFilterKey.AuthorContact);
+    	TCAttributeVisibilityStrategy attrVisibilityStrategy =
+    			getAttributeVisibilityStrategy();
+    	
+    	return  attrVisibilityStrategy.isAttributeVisible(
+    				TCAttribute.AuthorName) ||
+    			attrVisibilityStrategy.isAttributeVisible(
+    	    		TCAttribute.AuthorContact) ||
+    	    	attrVisibilityStrategy.isAttributeVisible(
+    	    	    TCAttribute.AuthorAffiliation);
     }
 
     private TCObject getTCObject() {

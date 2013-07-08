@@ -58,18 +58,15 @@ import org.dcm4chee.web.war.folder.delegate.WADODelegate;
  * @version $Revision$ $Date$
  * @since May 27, 2011
  */
+@SuppressWarnings("serial")
 public class TCDetailsImagesTab extends TCDetailsTab {
 
-    private static final long serialVersionUID = 1L;
-
     private WebMarkupContainer navWmc;
-    private IModel<Boolean> trainingModeModel;
 
-    public TCDetailsImagesTab(final String id, IModel<Boolean> trainingModeModel) {
-        super(id);
+    public TCDetailsImagesTab(final String id, 
+    		TCAttributeVisibilityStrategy attrVisibilityStrategy) {
+        super(id, attrVisibilityStrategy);
 
-        this.trainingModeModel = trainingModeModel;
-        
         WadoImage.setDefaultWadoBaseUrl(WADODelegate.getInstance()
                 .getWadoBaseUrl());
 
@@ -138,7 +135,8 @@ public class TCDetailsImagesTab extends TCDetailsTab {
     
     @Override
     public boolean visible() {
-    	return TCUtilities.isKeyAvailable(trainingModeModel, "Images");
+    	return getAttributeVisibilityStrategy().isAttributeVisible(
+    			TCAttribute.Images);
     }
 
     private TCObject getTCObject() {

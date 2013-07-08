@@ -3,6 +3,7 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "L
 // KEY: swarm.principal.LoginAllowed
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.tc.imageview.TCImageViewPage", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.web.war.tc.TCCaseViewPage", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.usr.ui.usermanagement.ChangePasswordPanel", "render, enable";
 };
 
@@ -167,6 +168,7 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "T
 // KEY: swarm.principal.TCRead
     permission ${ComponentPermission} "org.dcm4chee.web.war.tc.TCPanel", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:tc:webviewerInstanceLink", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.web.war.tc.TCCaseViewPage:tc:webviewerInstanceLink", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.folder.webviewer.WebviewerSelectionPage", "render, enable";
 };
 
@@ -176,6 +178,7 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "T
     permission ${ComponentPermission} "org.dcm4chee.web.war.tc.TCPanel", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:tc:editTC", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:tc:webviewerInstanceLink", "render, enable";
+    permission ${ComponentPermission} "org.dcm4chee.web.war.tc.TCCaseViewPage:tc:webviewerInstanceLink", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.folder.webviewer.WebviewerSelectionPage", "render, enable";
 };
 
@@ -185,6 +188,11 @@ grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "T
     permission ${ComponentPermission} "org.dcm4chee.web.war.MainPage:tc:showTCStudy", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.tc.TCResultPanel$TCStudyListPage:folder:exportButton", "render, enable";
     permission ${ComponentPermission} "org.dcm4chee.web.war.folder.ExportPage", "render, enable";
+};
+
+grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "TCViewRestricted"
+{
+// KEY: swarm.principal.TCViewRestricted
 };
 
 grant principal org.apache.wicket.security.hive.authorization.SimplePrincipal "AERead"

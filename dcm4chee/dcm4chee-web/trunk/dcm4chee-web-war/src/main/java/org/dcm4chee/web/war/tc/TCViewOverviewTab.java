@@ -50,6 +50,7 @@ import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.CheckBox;
+import org.apache.wicket.markup.html.form.TextArea;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.list.ListItem;
@@ -68,7 +69,6 @@ import org.dcm4chee.web.dao.tc.TCQueryFilterValue.Category;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue.Level;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue.PatientSex;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue.YesNo;
-import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
 import org.dcm4chee.web.war.tc.TCInput.ValueChangeListener;
 import org.dcm4chee.web.war.tc.TCObject.TextOrCode;
 import org.dcm4chee.web.war.tc.TCUtilities.NullDropDownItem;
@@ -94,17 +94,11 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
     private TCInput diagnosisInput;
     private TCInput diffDiagnosisInput;
     private TCInput findingInput;
-    
-    public TCViewOverviewTab(final String id, IModel<TCEditableObject> model,
-    		AbstractReadOnlyModel<Boolean> infoVisbilityModel) 
-    {
-        this(id, model, false, infoVisbilityModel);
-    }
         
     @SuppressWarnings("serial")
 	public TCViewOverviewTab(final String id, IModel<TCEditableObject> model,
-    		final boolean editing, final AbstractReadOnlyModel<Boolean> infoVisibilityModel) {
-        super(id, model, editing);
+			TCAttributeVisibilityStrategy attrVisibilityStrategy) {
+        super(id, model, attrVisibilityStrategy);
         
         tcId = getTC().getId();
         
@@ -112,7 +106,7 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         	@Override
         	public boolean isEnabled(Component component)
         	{
-        		return !editing;
+        		return !isEditing();
         	}
         };
         
@@ -124,9 +118,8 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         		new Model<String>() {
 		        	@Override
 		        	public String getObject() {
-		        		if (!infoVisibilityModel.getObject() && 
-		        				WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey(
-		        						TCQueryFilterKey.Title)) {
+		        		if (!getAttributeVisibilityStrategy()
+		        				.isAttributeVisible(TCAttribute.Title)) {
 		        			return TCUtilities.getLocalizedString("tc.case.text")+" " + getTC().getId();
 		        		}
 		        		return getStringValue(TCQueryFilterKey.Title);
@@ -148,9 +141,8 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         		new Model<String>() {
 		        	@Override
 		        	public String getObject() {
-		        		if (!infoVisibilityModel.getObject() && 
-		        				WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey(
-		        						TCQueryFilterKey.Abstract)) {
+		        		if (!getAttributeVisibilityStrategy()
+		        				.isAttributeVisible(TCAttribute.Abstract)) {
 		        			return TCUtilities.getLocalizedString("tc.obfuscation.text");
 		        		}
 		        		return getStringValue(TCQueryFilterKey.Abstract);
@@ -164,12 +156,26 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         	}
         ).add(readonlyModifier).setOutputMarkupId(true).setMarkupId("tc-view-overview-abstract-area"));
         
+        // URL
+        final WebMarkupContainer urlRow = new WebMarkupContainer("tc-view-overview-url-row");
+        urlRow.add(new Label("tc-view-overview-url-label", 
+                new InternalStringResourceModel("tc.url.text")));
+        urlRow.add(new TextArea<String>("tc-view-overview-url-text",
+        		new Model<String>() {
+		        	@Override
+		        	public String getObject() {
+		        		TCObject tc = getTC();
+		        		return tc!=null ? tc.getURL() : null;
+		        	}
+        		}
+        ).add(new AttributeAppender("readonly",true,new Model<String>("readonly"), " ")));
+        
         // AUTHOR NAME
         final WebMarkupContainer authorNameRow = new WebMarkupContainer("tc-view-overview-authorname-row") {
         	@Override
         	public boolean isVisible() {
-        		return infoVisibilityModel.getObject() || 
-        				!WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey(TCQueryFilterKey.AuthorName);
+        		return getAttributeVisibilityStrategy()
+        				.isAttributeVisible(TCAttribute.AuthorName);
         	}
         };
         authorNameRow.add(new Label("tc-view-overview-authorname-label", 
@@ -178,9 +184,8 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         		new Model<String>() {
         			@Override
         			public String getObject() {
-		        		if (!infoVisibilityModel.getObject() && 
-		        				WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey(
-		        						TCQueryFilterKey.AuthorName)) {
+		        		if (!getAttributeVisibilityStrategy()
+		        				.isAttributeVisible(TCAttribute.AuthorName)) {
 		        			return TCUtilities.getLocalizedString("tc.obfuscation.text");
 		        		}
 		        		return getStringValue(TCQueryFilterKey.AuthorName);
@@ -198,8 +203,8 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         final WebMarkupContainer authorAffiliationRow = new WebMarkupContainer("tc-view-overview-authoraffiliation-row") {
         	@Override
         	public boolean isVisible() {
-        		return infoVisibilityModel.getObject() || 
-        				!WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey(TCQueryFilterKey.AuthorAffiliation);
+        		return getAttributeVisibilityStrategy()
+        				.isAttributeVisible(TCAttribute.AuthorAffiliation);
         	}
         };
         authorAffiliationRow.add(new Label("tc-view-overview-authoraffiliation-label", 
@@ -208,9 +213,8 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         		new Model<String>() {
         			@Override
         			public String getObject() {
-		        		if (!infoVisibilityModel.getObject() && 
-		        				WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey(
-		        						TCQueryFilterKey.AuthorAffiliation)) {
+		        		if (!getAttributeVisibilityStrategy()
+		        				.isAttributeVisible(TCAttribute.AuthorAffiliation)) {
 		        			return TCUtilities.getLocalizedString("tc.obfuscation.text");
 		        		}
 		        		return getStringValue(TCQueryFilterKey.AuthorAffiliation);
@@ -228,8 +232,8 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         final WebMarkupContainer authorContactRow = new WebMarkupContainer("tc-view-overview-authorcontact-row") {
         	@Override
         	public boolean isVisible() {
-        		return infoVisibilityModel.getObject() || 
-        				!WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey(TCQueryFilterKey.AuthorContact);
+        		return getAttributeVisibilityStrategy()
+        				.isAttributeVisible(TCAttribute.AuthorContact);
         	}
         };
         authorContactRow.add(new Label("tc-view-overview-authorcontact-label", 
@@ -238,9 +242,8 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         		new Model<String>() {
 		        	@Override
 		        	public String getObject() {
-		        		if (!infoVisibilityModel.getObject() && 
-		        				WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey(
-		        						TCQueryFilterKey.AuthorContact)) {
+		        		if (!getAttributeVisibilityStrategy()
+		        				.isAttributeVisible(TCAttribute.AuthorContact)) {
 		        			return TCUtilities.getLocalizedString("tc.obfuscation.text");
 		        		}
 		        		return getStringValue(TCQueryFilterKey.AuthorContact);
@@ -255,7 +258,7 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         ).add(readonlyModifier));
                 
         // KEYWORDS
-        final boolean keywordCodeInput = editing && TCKeywordCatalogueProvider.
+        final boolean keywordCodeInput = isEditing() && TCKeywordCatalogueProvider.
                 getInstance().hasCatalogue(TCQueryFilterKey.Keyword);
         final KeywordsListModel keywordsModel = new KeywordsListModel();
         final WebMarkupContainer keywordCodesContainer = new WebMarkupContainer("tc-view-overview-keyword-input-container");
@@ -330,14 +333,13 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         };
         keywordCodesView.setOutputMarkupId(true);    
         keywordCodesContainer.setOutputMarkupId(true);
-        keywordCodesContainer.setVisible(editing);
+        keywordCodesContainer.setVisible(isEditing());
         keywordCodesContainer.add(keywordCodesView);
         final WebMarkupContainer keywordRow = new WebMarkupContainer("tc-view-overview-keyword-row") {
         	@Override
         	public boolean isVisible() {
-        		return infoVisibilityModel.getObject() || 
-        				!WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey(
-        						TCQueryFilterKey.Keyword);
+        		return getAttributeVisibilityStrategy()
+        				.isAttributeVisible(TCAttribute.Keyword);
         	}
         };
         keywordRow.add(new Label("tc-view-overview-keyword-label", 
@@ -347,9 +349,8 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         		new Model<String>() {
 		        	@Override
 		        	public String getObject() {
-		        		if (!infoVisibilityModel.getObject() && 
-		        				WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey(
-		        						TCQueryFilterKey.Keyword)) {
+		        		if (!getAttributeVisibilityStrategy()
+		        				.isAttributeVisible(TCAttribute.Keyword)) {
 		        			return TCUtilities.getLocalizedString("tc.obfuscation.text");
 		        		}
 		        		return getStringValue(TCQueryFilterKey.Keyword);
@@ -387,7 +388,7 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         // ANATOMY
         anatomyInput = TCUtilities.createInput("tc-view-overview-anatomy-input", 
                 TCQueryFilterKey.Anatomy, getTC().getValue(TCQueryFilterKey.Anatomy),true);
-        anatomyInput.getComponent().setVisible(editing);
+        anatomyInput.getComponent().setVisible(isEditing());
         anatomyInput.addChangeListener(
                 new ValueChangeListener() {
                     @Override
@@ -400,8 +401,8 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         final WebMarkupContainer anatomyRow = new WebMarkupContainer("tc-view-overview-anatomy-row") {
         	@Override
         	public boolean isVisible() {
-        		return infoVisibilityModel.getObject() || 
-        				!WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey(TCQueryFilterKey.Anatomy);
+        		return getAttributeVisibilityStrategy()
+        				.isAttributeVisible(TCAttribute.Anatomy);
         	}
         };
         anatomyRow.add(new Label("tc-view-overview-anatomy-label", 
@@ -421,14 +422,14 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
             }
 			@Override
 			public boolean isVisible() {
-				return !editing;
+				return !isEditing();
 			}
         }.add(readonlyModifier));
         
         // PATHOLOGY
         pathologyInput = TCUtilities.createInput("tc-view-overview-pathology-input", 
                 TCQueryFilterKey.Pathology, getTC().getValue(TCQueryFilterKey.Pathology),true);
-        pathologyInput.getComponent().setVisible(editing);
+        pathologyInput.getComponent().setVisible(isEditing());
         pathologyInput.addChangeListener(
                 new ValueChangeListener() {
                     @Override
@@ -441,8 +442,8 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         final WebMarkupContainer pathologyRow = new WebMarkupContainer("tc-view-overview-pathology-row") {
         	@Override
         	public boolean isVisible() {
-        		return infoVisibilityModel.getObject() || 
-        				!WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey(TCQueryFilterKey.Pathology);
+        		return getAttributeVisibilityStrategy()
+        				.isAttributeVisible(TCAttribute.Pathology);
         	}
         };
         pathologyRow.add(new Label("tc-view-overview-pathology-label", 
@@ -463,7 +464,7 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
             }
 			@Override
 			public boolean isVisible() {
-				return !editing;
+				return !isEditing();
 			}
         }.add(readonlyModifier));
 
@@ -485,11 +486,11 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         final WebMarkupContainer categoryRow = new WebMarkupContainer("tc-view-overview-category-row") {
         	@Override
         	public boolean isVisible() {
-        		return infoVisibilityModel.getObject() || 
-        				!WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey(TCQueryFilterKey.Category);
+        		return getAttributeVisibilityStrategy()
+        				.isAttributeVisible(TCAttribute.Category);
         	}
         };
-        categoryCBox.setVisible(editing);
+        categoryCBox.setVisible(isEditing());
         categoryRow.add(new Label("tc-view-overview-category-label", 
                 new InternalStringResourceModel("tc.category.text")));
         categoryRow.add(categoryCBox);
@@ -498,7 +499,7 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         	public String getObject() {
         		return getStringValue(TCQueryFilterKey.Category);
         	}
-        }).add(readonlyModifier).setVisible(!editing));
+        }).add(readonlyModifier).setVisible(!isEditing()));
         
         // LEVEL
         final TCComboBox<TCQueryFilterValue.Level> levelCBox = TCUtilities.createEnumComboBox(
@@ -517,11 +518,11 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         final WebMarkupContainer levelRow = new WebMarkupContainer("tc-view-overview-level-row") {
         	@Override
         	public boolean isVisible() {
-        		return infoVisibilityModel.getObject() || 
-        				!WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey(TCQueryFilterKey.Level);
+        		return getAttributeVisibilityStrategy()
+        				.isAttributeVisible(TCAttribute.Level);
         	}
         };
-        levelCBox.setVisible(editing);
+        levelCBox.setVisible(isEditing());
         levelRow.add(new Label("tc-view-overview-level-label", 
                 new InternalStringResourceModel("tc.level.text")));
         levelRow.add(new TextField<String>("tc-view-overview-level-value-label", new Model<String>() {
@@ -529,7 +530,7 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         		public String getObject() {
         			return getStringValue(TCQueryFilterKey.Level);
         		}
-        }).add(readonlyModifier).setVisible(!editing));
+        }).add(readonlyModifier).setVisible(!isEditing()));
         levelRow.add(levelCBox);
         
         // PATIENT SEX
@@ -549,18 +550,18 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         final WebMarkupContainer patientSexRow = new WebMarkupContainer("tc-view-overview-patientsex-row") {
         	@Override
         	public boolean isVisible() {
-        		return infoVisibilityModel.getObject() || 
-        				!WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey(TCQueryFilterKey.PatientSex);
+        		return getAttributeVisibilityStrategy()
+        				.isAttributeVisible(TCAttribute.PatientSex);
         	}
         };
-        patientSexCBox.setVisible(editing);
+        patientSexCBox.setVisible(isEditing());
         patientSexRow.add(new Label("tc-view-overview-patientsex-label", 
                 new InternalStringResourceModel("tc.patient.sex.text")));
         patientSexRow.add(new TextField<String>("tc-view-overview-patientsex-value-label", new Model<String>() {
         	public String getObject() {
         		return getStringValue(TCQueryFilterKey.PatientSex);
         	}
-        }).add(readonlyModifier).setVisible(!editing));
+        }).add(readonlyModifier).setVisible(!isEditing()));
         patientSexRow.add(patientSexCBox);
 
         // PATIENT AGE
@@ -593,20 +594,19 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         final WebMarkupContainer patientAgeRow = new WebMarkupContainer("tc-view-overview-patientage-row") {
         	@Override
         	public boolean isVisible() {
-        		return infoVisibilityModel.getObject() || 
-        				!WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey(
-        						TCQueryFilterKey.PatientAge);
+        		return getAttributeVisibilityStrategy()
+        				.isAttributeVisible(TCAttribute.PatientAge);
         	}
         };
-        patientAgeYearSpinner.setVisible(editing);
-        patientAgeMonthSpinner.setVisible(editing);
+        patientAgeYearSpinner.setVisible(isEditing());
+        patientAgeMonthSpinner.setVisible(isEditing());
         patientAgeRow.add(new Label("tc-view-overview-patientage-label", 
                 new InternalStringResourceModel("tc.patient.age.text")));
         patientAgeRow.add(new TextField<String>("tc-view-overview-patientage-value-label", new Model<String>() {
         	public String getObject() {
         		return TCPatientAgeUtilities.format(getTC().getPatientAge());
         	}
-        }).add(readonlyModifier).setVisible(!editing));
+        }).add(readonlyModifier).setVisible(!isEditing()));
         patientAgeRow.add(patientAgeYearSpinner);
         patientAgeRow.add(patientAgeMonthSpinner);
         
@@ -614,9 +614,8 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         final WebMarkupContainer patientSpeciesRow = new WebMarkupContainer("tc-view-overview-patientrace-row") {
         	@Override
         	public boolean isVisible() {
-        		return infoVisibilityModel.getObject() || 
-        				!WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey(
-        						TCQueryFilterKey.PatientSpecies);
+        		return getAttributeVisibilityStrategy()
+        				.isAttributeVisible(TCAttribute.PatientSpecies);
         	}
         };
         patientSpeciesRow.add(new Label("tc-view-overview-patientrace-label", 
@@ -627,7 +626,7 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
 	        		return getStringValue(TCQueryFilterKey.PatientSpecies);
 	        	}
         	}     
-        ).add(readonlyModifier).setVisible(!editing));
+        ).add(readonlyModifier).setVisible(!isEditing()));
         patientSpeciesRow.add(TCUtilities.createEnumEditableComboBox(
                 "tc-view-overview-patientrace-select", new Model<String>() {
                 	@Override
@@ -641,15 +640,14 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
                 	}
                 },
                 Arrays.asList(TCQueryFilterValue.PatientSpecies.values()), true,
-                "tc.patient.species", NullDropDownItem.Undefined, null).add(readonlyModifier).setVisible(editing));
+                "tc.patient.species", NullDropDownItem.Undefined, null).add(readonlyModifier).setVisible(isEditing()));
         
         // MODALITIES
         final WebMarkupContainer modalitiesRow = new WebMarkupContainer("tc-view-overview-modalities-row") {
         	@Override
         	public boolean isVisible() {
-        		return infoVisibilityModel.getObject() || 
-        				!WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey(
-        						TCQueryFilterKey.AcquisitionModality);
+        		return getAttributeVisibilityStrategy()
+        				.isAttributeVisible(TCAttribute.AcquisitionModality);
         	}
         };
         modalitiesRow.add(new Label("tc-view-overview-modalities-label", 
@@ -675,7 +673,7 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         // FINDING
         findingInput = TCUtilities.createInput("tc-view-overview-finding-input", 
                 TCQueryFilterKey.Finding, getTC().getValue(TCQueryFilterKey.Finding),true);
-        findingInput.getComponent().setVisible(editing);
+        findingInput.getComponent().setVisible(isEditing());
         findingInput.addChangeListener(
                 new ValueChangeListener() {
                     @Override
@@ -689,8 +687,8 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         	@Override
         	public boolean isVisible() {
         		return TCKeywordCatalogueProvider.getInstance().hasCatalogue(TCQueryFilterKey.Finding) &&
-        				(infoVisibilityModel.getObject() || 
-        				!WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey(TCQueryFilterKey.Finding));
+        				getAttributeVisibilityStrategy()
+        					.isAttributeVisible(TCAttribute.Finding);
         	}
         };
         findingRow.add(new Label("tc-view-overview-finding-label", 
@@ -709,14 +707,14 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
             }
 			@Override
 			public boolean isVisible() {
-				return !editing;
+				return !isEditing();
 			}
         });
                 
         // DIAGNOSIS
         diagnosisInput = TCUtilities.createInput("tc-view-overview-diag-input", 
                 TCQueryFilterKey.Diagnosis, getTC().getValue(TCQueryFilterKey.Diagnosis),true);
-        diagnosisInput.getComponent().setVisible(editing);
+        diagnosisInput.getComponent().setVisible(isEditing());
         diagnosisInput.addChangeListener(
                 new ValueChangeListener() {
                     @Override
@@ -730,8 +728,8 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         	@Override
         	public boolean isVisible() {
         		return TCKeywordCatalogueProvider.getInstance().hasCatalogue(TCQueryFilterKey.Diagnosis) &&
-        				(infoVisibilityModel.getObject() || 
-        				!WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey(TCQueryFilterKey.Diagnosis));
+        				getAttributeVisibilityStrategy()
+        					.isAttributeVisible(TCAttribute.Diagnosis);
         	}
         };
         diagRow.add(new Label("tc-view-overview-diag-label", 
@@ -750,7 +748,7 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
             }
 			@Override
 			public boolean isVisible() {
-				return !editing;
+				return !isEditing();
 			}
         });
         
@@ -759,8 +757,8 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         	@Override
         	public boolean isVisible() {
         		return TCKeywordCatalogueProvider.getInstance().hasCatalogue(TCQueryFilterKey.Diagnosis) &&
-        				(infoVisibilityModel.getObject() || 
-        				!WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey(TCQueryFilterKey.Diagnosis));
+        				getAttributeVisibilityStrategy()
+        					.isAttributeVisible(TCAttribute.Diagnosis);
         	}
         };
         diagConfirmedRow.add(new Label("tc-view-overview-diagconfirmed-label", 
@@ -785,12 +783,12 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         			getTC().setDiagnosisConfirmed(null);
         		}
         	}
-        }).setEnabled(editing));
+        }).setEnabled(isEditing()));
         
         // DIFFERENTIAL DIAGNOSIS
         diffDiagnosisInput = TCUtilities.createInput("tc-view-overview-diffdiag-input", 
                 TCQueryFilterKey.DifferentialDiagnosis, getTC().getValue(TCQueryFilterKey.DifferentialDiagnosis),true);
-        diffDiagnosisInput.getComponent().setVisible(editing);
+        diffDiagnosisInput.getComponent().setVisible(isEditing());
         diffDiagnosisInput.addChangeListener(
                 new ValueChangeListener() {
                     @Override
@@ -804,8 +802,8 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         	@Override
         	public boolean isVisible() {
         		return TCKeywordCatalogueProvider.getInstance().hasCatalogue(TCQueryFilterKey.DifferentialDiagnosis) &&
-        				(infoVisibilityModel.getObject() || 
-        				!WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey(TCQueryFilterKey.DifferentialDiagnosis));
+        				getAttributeVisibilityStrategy()
+        					.isAttributeVisible(TCAttribute.DifferentialDiagnosis);
         	}
         };
         diffDiagRow.add(new Label("tc-view-overview-diffdiag-label", 
@@ -824,7 +822,7 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
             }
 			@Override
 			public boolean isVisible() {
-				return !editing;
+				return !isEditing();
 			}
         });
 
@@ -842,6 +840,7 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
 
         add(titleRow);
         add(abstractRow);
+        add(urlRow);
         add(authorNameRow);
         add(authorAffiliationRow);
         add(authorContactRow);

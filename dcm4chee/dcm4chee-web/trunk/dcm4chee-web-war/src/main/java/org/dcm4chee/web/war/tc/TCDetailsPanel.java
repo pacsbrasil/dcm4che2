@@ -53,7 +53,6 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.resource.loader.PackageStringResourceLoader;
-import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 
 /**
  * @author Bernhard Ableitinger <bernhard.ableitinger@agfa.com>
@@ -129,49 +128,51 @@ public class TCDetailsPanel extends Panel {
             }
         }).setOutputMarkupId(true));
         
+        final TCAttributeVisibilityStrategy attrVisibilityStrategy =
+        		new TCAttributeVisibilityStrategy(trainingModeModel);
         
-        tabsContainer.add(addTab(new TCDetailsInfoTab("details-overview", trainingModeModel)).setDefaultModel(tabModel));
-        tabsContainer.add(addTab(new TCDetailsDiagnosisTab("details-diagnosis", trainingModeModel)).setDefaultModel(tabModel));
-        tabsContainer.add(addTab(new TCDetailsDefaultTab("details-diffDiagnosis", trainingModeModel) {
+        tabsContainer.add(addTab(new TCDetailsInfoTab("details-overview", attrVisibilityStrategy)).setDefaultModel(tabModel));
+        tabsContainer.add(addTab(new TCDetailsDiagnosisTab("details-diagnosis", attrVisibilityStrategy)).setDefaultModel(tabModel));
+        tabsContainer.add(addTab(new TCDetailsDefaultTab("details-diffDiagnosis", attrVisibilityStrategy) {
 	            @Override
-	            public TCQueryFilterKey getKey() {
-	                return TCQueryFilterKey.DifferentialDiagnosis;
+	            public TCAttribute getAttribute() {
+	                return TCAttribute.DifferentialDiagnosis;
 	            }
 	        }).setDefaultModel(tabModel)
         );
-        tabsContainer.add(addTab(new TCDetailsDefaultTab("details-finding", trainingModeModel) {
+        tabsContainer.add(addTab(new TCDetailsDefaultTab("details-finding", attrVisibilityStrategy) {
 	            @Override
-	            public TCQueryFilterKey getKey() {
-	                return TCQueryFilterKey.Finding;
+	            public TCAttribute getAttribute() {
+	                return TCAttribute.Finding;
 	            }
 	        }).setDefaultModel(tabModel)
         );    
-        tabsContainer.add(addTab(new TCDetailsDefaultTab("details-history", trainingModeModel) {
+        tabsContainer.add(addTab(new TCDetailsDefaultTab("details-history", attrVisibilityStrategy) {
 		            @Override
-		            public TCQueryFilterKey getKey() {
-		                return TCQueryFilterKey.History;
+		            public TCAttribute getAttribute() {
+		                return TCAttribute.History;
 		            }
 		        }).setDefaultModel(tabModel)
 		);
-		tabsContainer.add(addTab(new TCDetailsDefaultTab("details-discussion", trainingModeModel) {
+		tabsContainer.add(addTab(new TCDetailsDefaultTab("details-discussion", attrVisibilityStrategy) {
 		            @Override
-		            public TCQueryFilterKey getKey() {
-		                return TCQueryFilterKey.Discussion;
+		            public TCAttribute getAttribute() {
+		                return TCAttribute.Discussion;
 		            }
 		        }).setDefaultModel(tabModel)
 		);
-        tabsContainer.add(addTab(new TCDetailsDefaultTab("details-organSystem", trainingModeModel) {
+        tabsContainer.add(addTab(new TCDetailsDefaultTab("details-organSystem", attrVisibilityStrategy) {
 	            @Override
-	            public TCQueryFilterKey getKey() {
-	                return TCQueryFilterKey.OrganSystem;
+	            public TCAttribute getAttribute() {
+	                return TCAttribute.OrganSystem;
 	            }
 	        }).setDefaultModel(tabModel)
         );
-        tabsContainer.add(addTab(new TCDetailsAuthorTab("details-author", trainingModeModel)).setDefaultModel(tabModel));
-        tabsContainer.add(addTab(new TCDetailsBibliographyTab("details-bibliography", trainingModeModel)).setDefaultModel(tabModel));
-        tabsContainer.add(addTab(new TCDetailsDocumentsTab("details-documents", trainingModeModel)).setDefaultModel(tabModel));
-        tabsContainer.add(addTab(new TCDetailsLinksTab("details-links", trainingModeModel)).setDefaultModel(tabModel));
-        tabsContainer.add(addTab(new TCDetailsImagesTab("details-images", trainingModeModel)).setDefaultModel(tabModel));
+        tabsContainer.add(addTab(new TCDetailsAuthorTab("details-author", attrVisibilityStrategy)).setDefaultModel(tabModel));
+        tabsContainer.add(addTab(new TCDetailsBibliographyTab("details-bibliography", attrVisibilityStrategy)).setDefaultModel(tabModel));
+        tabsContainer.add(addTab(new TCDetailsDocumentsTab("details-documents", attrVisibilityStrategy)).setDefaultModel(tabModel));
+        tabsContainer.add(addTab(new TCDetailsLinksTab("details-links", attrVisibilityStrategy)).setDefaultModel(tabModel));
+        tabsContainer.add(addTab(new TCDetailsImagesTab("details-images", attrVisibilityStrategy)).setDefaultModel(tabModel));
 
         nodetailsContainer = new WebMarkupContainer("no-details-panel");
         nodetailsContainer.setOutputMarkupId(true);

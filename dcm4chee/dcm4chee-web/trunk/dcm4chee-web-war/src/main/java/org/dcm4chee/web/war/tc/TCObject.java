@@ -155,6 +155,10 @@ public class TCObject implements Serializable {
     	return id;
     }
     
+    public String getURL() {
+    	return TCCaseViewPage.urlForCase(iuid);
+    }
+    
     public String getClassUID()
     {
     	return cuid;

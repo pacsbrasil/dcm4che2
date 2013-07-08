@@ -38,7 +38,6 @@
 package org.dcm4chee.web.war.tc;
 
 import org.apache.wicket.markup.html.basic.MultiLineLabel;
-import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 
@@ -50,20 +49,17 @@ import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 @SuppressWarnings("serial")
 public abstract class TCDetailsDefaultTab extends TCDetailsTab {
 
-    private IModel<Boolean> trainingModeModel;
-    
-    public TCDetailsDefaultTab(final String id, IModel<Boolean> trainingModeModel) {
-        super(id);
+    public TCDetailsDefaultTab(final String id, 
+    		TCAttributeVisibilityStrategy attrVisibilityStrategy) {
+        super(id, attrVisibilityStrategy);
 
-        this.trainingModeModel = trainingModeModel;
-        
         add(new MultiLineLabel("details-text", new Model<String>() {
 
             private static final long serialVersionUID = 1L;
 
             @Override
             public String getObject() {
-                return getStringValue(getKey());
+                return getStringValue();
             }
         }));
     }
@@ -71,24 +67,30 @@ public abstract class TCDetailsDefaultTab extends TCDetailsTab {
     @Override
     public boolean enabled() {
         TCObject tc = getTCObject();
-        return tc != null && tc.getValue(getKey())!= null;
+        return tc != null && tc.getValue(getQueryKey())!= null;
     }
     
     @Override
     public boolean visible() {
-    	return TCUtilities.isKeyAvailable(trainingModeModel, getKey());
+    	return getAttributeVisibilityStrategy().isAttributeVisible(getAttribute());
     }
     
-    protected abstract TCQueryFilterKey getKey();
+    protected abstract TCAttribute getAttribute();
 
+    private TCQueryFilterKey getQueryKey() {
+    	return getAttribute().getQueryKey();
+    }
+    
     private TCObject getTCObject() {
         return (TCObject) getDefaultModelObject();
     }
 
-    private String getStringValue(TCQueryFilterKey key) {
+    private String getStringValue() {
         TCObject tc = getTCObject();
-
-        String s = tc != null ? tc.getValueAsString(key) : null;
+        TCQueryFilterKey queryKey = getQueryKey();
+        
+        String s = tc != null && queryKey!=null ? 
+        		tc.getValueAsString(getQueryKey()) : null;
 
         return s != null ? s : "-";
     }

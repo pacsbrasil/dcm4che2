@@ -45,6 +45,7 @@ import java.util.List;
 
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
+import org.apache.wicket.PageParameters;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.IAjaxCallDecorator;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
@@ -155,7 +156,16 @@ public class TCLinksView extends Panel
 	                		}
 	                		@Override
 	                		public void onClick(AjaxRequestTarget target) {
-	                            openLinkInDialog(target, link);
+	                			try {
+	                				if (!openLinkInDialog(target, link)) {
+	                					PageParameters params = new PageParameters();
+	                					params.put("uid", link.getLinkedCaseUID());
+	                					setResponsePage(new TCCaseViewPage(params));
+	                				}
+	                	    	}
+	                	    	catch (Exception e) {
+	                	    		log.error("Unable to open teaching-file link!", e);
+	                	    	}
 	                		}
 	                	}
 	                	.add(new Label("link-title", new Model<String>(link.getLinkedCase().getTitle())) {
@@ -511,23 +521,22 @@ public class TCLinksView extends Panel
     	return getParent() instanceof TCViewLinksTab;
     }
     
-    private void openLinkInDialog(AjaxRequestTarget target, TCLink link) {
-    	try {
-    		TCModel tc = link.getLinkedCaseModel();
-    		TCPanel mainPanel = TCUtilities.findMainPanel(this);
-    		TCViewDialog viewDialog = mainPanel.getViewDialog();
-    		if (viewDialog.isShown()) {
-    			viewDialog.getView().setCase(target, tc);
-    		}
-    		else {
-    			viewDialog.open(null, target, tc, 
-    					new Model<Boolean>(false), 
-    					mainPanel.getResultCaseProvider(), 
-    					false, null);
-    		}
+    private boolean openLinkInDialog(AjaxRequestTarget target, TCLink link) throws Exception {
+    	TCModel tc = link.getLinkedCaseModel();
+    	TCPanel mainPanel = TCUtilities.findMainPanel(this);
+    	TCViewDialog viewDialog = mainPanel!=null ? mainPanel.getViewDialog() : null;
+    	if (viewDialog!=null) {
+	    	if (viewDialog.isShown()) {
+	    		viewDialog.getView().setCase(target, tc);
+	    	}
+	    	else {
+	    		viewDialog.open(null, target, tc, 
+	    				new Model<Boolean>(false), 
+	    				mainPanel.getResultCaseProvider(), 
+	    				false, null);
+	    	}
+	    	return true;
     	}
-    	catch (Exception e) {
-    		log.error("Unable to open teaching-file link!", e);
-    	}
+    	return false;
     }
 }

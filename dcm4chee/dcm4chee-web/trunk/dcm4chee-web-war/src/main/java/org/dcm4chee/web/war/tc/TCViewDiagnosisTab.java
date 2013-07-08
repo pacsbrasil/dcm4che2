@@ -37,11 +37,11 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.web.war.tc;
 
-import org.apache.wicket.model.AbstractReadOnlyModel;
+import org.apache.wicket.behavior.AttributeAppender;
 import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.Model;
 import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue.YesNo;
-import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
 import org.dcm4chee.web.war.tc.TCObject.TextOrCode;
 import org.dcm4chee.web.war.tc.TCUtilities.SelfUpdatingCheckBox;
 import org.dcm4chee.web.war.tc.TCUtilities.SelfUpdatingTextArea;
@@ -58,20 +58,11 @@ public class TCViewDiagnosisTab extends AbstractEditableTCViewTab
 
     private SelfUpdatingCheckBox chkBox;
     private SelfUpdatingTextArea area;
-    private AbstractReadOnlyModel<Boolean> infoVisibilityModel;
-    
-    public TCViewDiagnosisTab(final String id, IModel<TCEditableObject> model,
-    		AbstractReadOnlyModel<Boolean> infoVisibilityModel) 
-    {
-        this(id, model, false, infoVisibilityModel);
-    }
         
     public TCViewDiagnosisTab(final String id, IModel<TCEditableObject> model, 
-    		boolean editing, AbstractReadOnlyModel<Boolean> infoVisibilityModel) {
-        super(id, model, editing);
-        
-        this.infoVisibilityModel = infoVisibilityModel;
-        
+    		TCAttributeVisibilityStrategy attrVisibilityStrategy) {
+        super(id, model, attrVisibilityStrategy);
+
         YesNo yesno = getTC().getDiagnosisConfirmed();
         this.chkBox = new SelfUpdatingCheckBox("tc-view-diagnosis-confirmed-chkbox", 
                 yesno!=null && yesno.equals(YesNo.Yes)) {
@@ -93,6 +84,10 @@ public class TCViewDiagnosisTab extends AbstractEditableTCViewTab
         };
         this.area.setMarkupId("tc-view-diagnosis-text");
         this.area.add(createTextInputCssClassModifier());
+        
+        if (!isEditing()) {
+            this.area.add(new AttributeAppender("readonly",true,new Model<String>("readonly"), " "));
+        }
         
         chkBox.setEnabled(isEditing());
         area.setEnabled(isEditing());
@@ -116,17 +111,12 @@ public class TCViewDiagnosisTab extends AbstractEditableTCViewTab
     
     @Override
     public boolean isTabVisible() {
-    	boolean defaultVisibility = super.isTabVisible();
-    	
-    	if (defaultVisibility) {
-	    	if (infoVisibilityModel!=null) {
-	    		return infoVisibilityModel.getObject() ||
-	    			!WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey(
-	    					TCQueryFilterKey.Diagnosis);
-	    	}
+    	if (super.isTabVisible()) {
+	    	return getAttributeVisibilityStrategy()
+	    			.isAttributeVisible(TCAttribute.Diagnosis);
     	}
     	
-    	return defaultVisibility;
+    	return false;
     }
     
     @Override

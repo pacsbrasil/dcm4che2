@@ -49,8 +49,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.dcm4chee.web.common.delegate.BaseCfgDelegate;
-import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 import org.dcm4chee.web.service.common.RetryIntervalls;
+import org.dcm4chee.web.war.tc.TCAttribute;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -345,33 +345,29 @@ public class WebCfgDelegate extends BaseCfgDelegate {
         return parsedMap;
     }
     
-    public List<TCQueryFilterKey> getTCTrainingModeHiddenKeys() {
-    	List<TCQueryFilterKey> keys = new ArrayList<TCQueryFilterKey>();
+    public List<TCAttribute> getTCRestrictedAttributes() {
+    	List<TCAttribute> attrs = new ArrayList<TCAttribute>();
     	List<String> list = getStringList("getTCTrainingModeHiddenAttributesList");
     	if (list!=null) {
     		for (String s : list) {
     			try {
-    				TCQueryFilterKey key = TCQueryFilterKey.valueOf(s);
-    				if (key!=null && !keys.contains(key)) {
-    					keys.add(key);
+    				TCAttribute attr = TCAttribute.valueOf(s);
+    				if (attr!=null && !attrs.contains(attr)) {
+    					attrs.add(attr);
     				}
     			}
     			catch (Exception e) {
-    				log.warn("Not recognized value '" + s + "' in 'TCTrainingModeHiddenAttributes'! Skipped value ...", e);
+    				log.warn("Not recognized value '" + s + "' in 'TCRestrictedAttributes'! Skipped value ...", e);
     			}
     		}
      	}
-    	return keys;
+    	return attrs;
     }
     
-    public boolean isTCTrainingModeHiddenKey(TCQueryFilterKey key) {
-		return isTCTrainingModeHiddenKey(key.name());
+    public boolean isTCRestrictedAttribute(TCAttribute attr) {
+    	List<String> list = getStringList("getTCRestrictedAttributesList");
+    	return list!=null && list.contains(attr.name());
 	}
-        
-    public boolean isTCTrainingModeHiddenKey(String key) {
-    	List<String> list = getStringList("getTCTrainingModeHiddenAttributesList");
-    	return list!=null && list.contains(key);
-    }
     
     public boolean isTCKeywordCatalogueExclusive(String key)
     {

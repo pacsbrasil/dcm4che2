@@ -14,31 +14,33 @@ function createTCViewDialog(settings) {
 }
 
 function updateTCViewDialog() {
-	updateTCViewDialogToUseQueryUI();
-	updateTCViewDialogLayout();
+	updateTCViewDialog(false);
 }
 
-function updateTCViewDialogToUseQueryUI() {
+function updateTCViewDialog(verticalTabs) {
+	updateTCViewDialogToUseQueryUI(verticalTabs);
+	updateTCViewDialogLayout(verticalTabs);
+}
+
+function updateTCViewDialogToUseQueryUI(verticalTabs) {
 	style($("#tc-view"));
 	
-	$('#tc-view-content').tabs({
-		show: function(event, ui) {
-			updateTCViewTabsLayout();
-			checkToLoadThumbnails();
-		},
-		activate: function( event, ui ) {
-			tabActivated(event, ui, $(this).attr('activation-callback-url'));
+	$('#tc-view-content, #tc-view-editable-content').each(function(index) {
+		if (verticalTabs) {
+			$(this).addClass('ui-tabs-vertical ui-helper-clearfix');
+			$(this).find('li').removeClass('ui-corner-top').addClass('ui-corner-left');
 		}
+		$(this).tabs({
+			show: function(event, ui) {
+				updateTCViewTabsLayout();
+				checkToLoadThumbnails();
+			},
+			activate: function( event, ui ) {
+				tabActivated(event, ui, $(this).attr('activation-callback-url'));
+			}
+		});
 	});
-	$('#tc-view-editable-content').tabs({
-		show: function(event, ui) {
-			updateTCViewTabsLayout();
-			checkToLoadThumbnails();
-		},
-		activate: function( event, ui ) {
-			tabActivated(event, ui, $(this).attr('activation-callback-url'));
-		}
-	});
+	
 	$('#tc-view-images-tab-container').parent().addClass("tc-view-images-tab-container-parent");
 	$('#tc-view button').each(function() {
 		if (!$(this).hasClass('tc-keyword-chooser-btn'))
@@ -80,18 +82,63 @@ function updateTCViewDialogLayout() {
 }
 
 function updateTCViewTabsLayout() {
-	//adapt height of individual tabs
-	$('#tc-view-content').find('div[id^="tabs"]').each(function(index) {
-		$(this).height(
-				$('#tc-view-content').height()-
-				$('#tc-view-content > ul').outerHeight()-
-				($(this).outerHeight()-$(this).height()));
-	});
-	$('#tc-view-editable-content').find('div[id^="tabs"]').each(function(index) {
-		$(this).height(
-				$('#tc-view-editable-content').height()-
-				$('#tc-view-editable-content > ul').outerHeight()-
-				($(this).outerHeight()-$(this).height()));
+	// layout content
+	$('#tc-view-content, #tc-view-editable-content').each(function(index) {
+		var vertical = $(this).hasClass('ui-tabs-vertical');
+		if (!vertical) {
+			var nav = $(this).find('.ui-tabs-nav').first();
+			var tabHeight = $(this).height() - $(nav).outerHeight(true);
+			var tabWidth = $(this).width();
+
+			$(this).find('.ui-tabs-panel').each(function(index) {
+				var diffHeight = $(this).outerHeight(true)-$(this).height();
+				var diffWidth = $(this).outerWidth(true)-$(this).width();
+				
+				$(this).height(tabHeight-diffHeight);
+				$(this).width(tabWidth-diffWidth);
+			});
+		}
+		
+		/*
+		var nav = $(this).find('.ui-tabs-nav').first();
+		var header = $(this).siblings('#tc-view-header').first();
+		var footer = $(this).siblings('#tc-view-footer').first();
+		var parentHeight = $(this).parent().height();
+		var parentWidth = $(this).parent().width();
+
+		var contentHeight = parentHeight;
+		var contentWidth = parentWidth;
+		if (header) {
+			contentHeight -= header.outerHeight(true);
+		}
+		if (footer) {
+			contentHeight -= footer.outerHeight(true);
+		}
+		
+		contentHeight -= ($(this).outerHeight(true)-$(this).height());
+		contentWidth -= ($(this).outerWidth(true)-$(this).width());
+
+		$(this).height(contentHeight);
+		$(this).width(contentWidth);
+		
+		var tabHeight = $(this).height();
+		var tabWidth = $(this).width();
+
+		if (vertical) {
+			$(nav).height(contentHeight);
+		}
+		else {
+			tabHeight -= $(nav).outerHeight(true);
+		}
+		
+		$(this).find('.ui-tabs-panel').each(function(index) {
+			var diffHeight = $(this).outerHeight(true)-$(this).height();
+			var diffWidth = $(this).outerWidth(true)-$(this).width();
+			
+			$(this).height(tabHeight-diffHeight);
+			$(this).width(tabWidth-diffWidth);
+		});
+		*/
 	});
 	
 	//adapt height of individual elements
@@ -100,21 +147,6 @@ function updateTCViewTabsLayout() {
 		$('#tc-view-bibliography-container').parent().innerHeight()-
 		$('#tc-view-bibliography-header').outerHeight() -
 		$('#tc-view-bibliography-hr').outerHeight());
-	
-	//layout bibliography elements
-	/*
-	$('#tc-view-bibliography-container').find('.tc-view-bibliography-list').each(function(index) {
-		//account for horizontal width of vertical scrollbar
-		$(this).outerWidth($(this).parent().innerWidth()-24);
-		
-		var textarea = $(this).children('textarea');
-		var btn = $(this).children('a');
-		
-		//textarea.outerWidth($(this).innerWidth());
-		btn.css('top',textarea.position().top+4);
-		btn.css('left',textarea.position().left+textarea.outerWidth()-btn.outerWidth()-4);
-	});
-	*/
 }
 
 function tabActivated(event, ui, callbackURL)

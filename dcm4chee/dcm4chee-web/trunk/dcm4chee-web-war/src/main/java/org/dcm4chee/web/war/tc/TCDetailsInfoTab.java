@@ -43,7 +43,6 @@ import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.basic.MultiLineLabel;
-import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 import org.dcm4chee.web.war.tc.keywords.TCKeywordCatalogueProvider;
@@ -53,24 +52,23 @@ import org.dcm4chee.web.war.tc.keywords.TCKeywordCatalogueProvider;
  * @version $Revision$ $Date$
  * @since May 27, 2011
  */
+@SuppressWarnings("serial")
 public class TCDetailsInfoTab extends TCDetailsTab {
-
-    private static final long serialVersionUID = 1L;
 
     private static final TCKeywordCatalogueProvider catProv = TCKeywordCatalogueProvider
             .getInstance();
 
-    @SuppressWarnings("serial")
-	public TCDetailsInfoTab(final String id, final IModel<Boolean> trainingModeModel) {
-        super(id);
+	public TCDetailsInfoTab(final String id, 
+			final TCAttributeVisibilityStrategy attrVisibilityStrategy) {
+        super(id, attrVisibilityStrategy);
 
         WebMarkupContainer titleWmc = new WebMarkupContainer(
                 "details-title-row");
         titleWmc.add(new Label("details-title", new Model<String>() {
             @Override
             public String getObject() {
-            	if (!TCUtilities.isKeyAvailable(trainingModeModel,
-            			TCQueryFilterKey.Title)) {
+            	if (!getAttributeVisibilityStrategy()
+            			.isAttributeVisible(TCAttribute.Title)) {
             		return TCUtilities.getLocalizedString("tc.case.text")+
             				" " + getTCObject().getId();
             	}
@@ -89,8 +87,8 @@ public class TCDetailsInfoTab extends TCDetailsTab {
                 new Model<String>() {
                     @Override
                     public String getObject() {
-                    	if (!TCUtilities.isKeyAvailable(trainingModeModel,
-                    			TCQueryFilterKey.Abstract)) {
+                    	if (!getAttributeVisibilityStrategy()
+                    			.isAttributeVisible(TCAttribute.Abstract)) {
                     		return TCUtilities.getLocalizedString("tc.obfuscation.text");
                     	}
                         return getStringValue(TCQueryFilterKey.Abstract);
@@ -99,10 +97,10 @@ public class TCDetailsInfoTab extends TCDetailsTab {
 
         WebMarkupContainer keywordWmc = new WebMarkupContainer(
                 "details-keyword-row") {
-        	private static final long serialVersionUID = 921119399664942983L;
 			@Override
             public boolean isVisible() {
-            	return TCUtilities.isKeyAvailable(trainingModeModel, TCQueryFilterKey.Keyword);
+            	return getAttributeVisibilityStrategy()
+            			.isAttributeVisible(TCAttribute.Keyword);
             }
         };
         keywordWmc.add(new Label("details-keyword", new Model<String>() {
@@ -125,21 +123,16 @@ public class TCDetailsInfoTab extends TCDetailsTab {
                 "details-anatomy-row") {
             @Override
             public boolean isVisible() {
-            	return TCUtilities.isKeyAvailable(trainingModeModel, TCQueryFilterKey.Anatomy);
+            	return getAttributeVisibilityStrategy()
+            			.isAttributeVisible(TCAttribute.Anatomy);
             }
         };
         anatomyWmc.add(new Label("details-anatomy", new Model<String>() {
-
-            private static final long serialVersionUID = 1L;
-
             @Override
             public String getObject() {
                 return getShortStringValue(TCQueryFilterKey.Anatomy);
             }
         }).add(new AbstractBehavior() {
-
-            private static final long serialVersionUID = 1L;
-
             @Override
             public void onComponentTag(Component c, ComponentTag tag) {
             	String s = getTooltipString(TCQueryFilterKey.Anatomy);
@@ -154,7 +147,8 @@ public class TCDetailsInfoTab extends TCDetailsTab {
                 "details-pathology-row") {
             @Override
             public boolean isVisible() {
-            	return TCUtilities.isKeyAvailable(trainingModeModel, TCQueryFilterKey.Pathology);
+            	return getAttributeVisibilityStrategy()
+            			.isAttributeVisible(TCAttribute.Pathology);
             }
         };
         pathologyWmc.add(new Label("details-pathology", new Model<String>() {
@@ -177,7 +171,8 @@ public class TCDetailsInfoTab extends TCDetailsTab {
                 "details-finding-row") {
             @Override
             public boolean isVisible() {
-            	return TCUtilities.isKeyAvailable(trainingModeModel, TCQueryFilterKey.Finding);
+            	return getAttributeVisibilityStrategy()
+            			.isAttributeVisible(TCAttribute.Finding);
             }
         };
         findingWmc.add(new MultiLineLabel("details-finding",
@@ -202,8 +197,8 @@ public class TCDetailsInfoTab extends TCDetailsTab {
             @Override
             public boolean isVisible() {
             	return catProv.hasCatalogue(TCQueryFilterKey.Diagnosis) && 
-                        TCUtilities.isKeyAvailable(trainingModeModel, 
-                        		TCQueryFilterKey.Diagnosis);
+            			getAttributeVisibilityStrategy()
+            			.isAttributeVisible(TCAttribute.Diagnosis);
             }
         };
         diagnosisWmc.add(new Label("details-diagnosis", new Model<String>() {
@@ -227,8 +222,8 @@ public class TCDetailsInfoTab extends TCDetailsTab {
             @Override
             public boolean isVisible() {
             	return catProv.hasCatalogue(TCQueryFilterKey.DifferentialDiagnosis) &&
-            			TCUtilities.isKeyAvailable(trainingModeModel, 
-            					TCQueryFilterKey.DifferentialDiagnosis);
+            			getAttributeVisibilityStrategy()
+            			.isAttributeVisible(TCAttribute.DifferentialDiagnosis);
             }
         };
         diffdiagnosisWmc.add(new Label("details-diffdiagnosis",
@@ -253,8 +248,8 @@ public class TCDetailsInfoTab extends TCDetailsTab {
             @Override
             public boolean isVisible() {
             	return catProv.hasCatalogue(TCQueryFilterKey.Diagnosis) &&
-                        TCUtilities.isKeyAvailable(trainingModeModel, 
-                        		TCQueryFilterKey.Diagnosis);
+            			getAttributeVisibilityStrategy()
+            			.isAttributeVisible(TCAttribute.Diagnosis);
             }
         };
         diagnosisConfirmedWmc.add(new Label("details-diagnosis-confirmed",
@@ -269,7 +264,8 @@ public class TCDetailsInfoTab extends TCDetailsTab {
                 "details-category-row") {
             @Override
             public boolean isVisible() {
-            	return TCUtilities.isKeyAvailable(trainingModeModel, TCQueryFilterKey.Category);
+            	return getAttributeVisibilityStrategy()
+            			.isAttributeVisible(TCAttribute.Category);
             }
         };
         categoryWmc.add(new Label("details-category", new Model<String>() {
@@ -292,7 +288,8 @@ public class TCDetailsInfoTab extends TCDetailsTab {
                 "details-level-row") {
             @Override
             public boolean isVisible() {
-            	return TCUtilities.isKeyAvailable(trainingModeModel, TCQueryFilterKey.Level);
+            	return getAttributeVisibilityStrategy()
+            			.isAttributeVisible(TCAttribute.Level);
             }
         };
         levelWmc.add(new Label("details-level", new Model<String>() {
@@ -315,7 +312,8 @@ public class TCDetailsInfoTab extends TCDetailsTab {
                 "details-modalities-row") {
             @Override
             public boolean isVisible() {
-            	return TCUtilities.isKeyAvailable(trainingModeModel, TCQueryFilterKey.AcquisitionModality);
+            	return getAttributeVisibilityStrategy()
+            			.isAttributeVisible(TCAttribute.AcquisitionModality);
             }
         };
         modalitiesWmc.add(new Label("details-modalities", new Model<String>() {
@@ -338,7 +336,8 @@ public class TCDetailsInfoTab extends TCDetailsTab {
                 "details-patient-sex-row") {
             @Override
             public boolean isVisible() {
-            	return TCUtilities.isKeyAvailable(trainingModeModel, TCQueryFilterKey.PatientSex);
+            	return getAttributeVisibilityStrategy()
+            			.isAttributeVisible(TCAttribute.PatientSex);
             }
         };
         patientSexWmc.add(new Label("details-patient-sex", new Model<String>() {
@@ -352,7 +351,8 @@ public class TCDetailsInfoTab extends TCDetailsTab {
                 "details-patient-age-row") {
             @Override
             public boolean isVisible() {
-            	return TCUtilities.isKeyAvailable(trainingModeModel, TCQueryFilterKey.PatientAge);
+            	return getAttributeVisibilityStrategy()
+            			.isAttributeVisible(TCAttribute.PatientAge);
             }
         };
         patientAgeWmc.add(new Label("details-patient-age", new Model<String>() {
@@ -367,7 +367,8 @@ public class TCDetailsInfoTab extends TCDetailsTab {
                 "details-patient-species-row") {
             @Override
             public boolean isVisible() {
-            	return TCUtilities.isKeyAvailable(trainingModeModel, TCQueryFilterKey.PatientSpecies);
+            	return getAttributeVisibilityStrategy()
+            			.isAttributeVisible(TCAttribute.PatientSpecies);
             }
         };
         patientSpeciesWmc.add(new Label("details-patient-species",

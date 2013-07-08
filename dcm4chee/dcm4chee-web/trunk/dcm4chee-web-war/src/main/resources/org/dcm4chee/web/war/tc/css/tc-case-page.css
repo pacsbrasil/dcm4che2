@@ -1,0 +1,35 @@
+.tc-case-page {
+	border:none !important;
+	background-image: none !important;
+}
+
+.tc-case-page .tc-view {
+	background: transparent;
+}
+
+.tc-case-page #tc-view-header {
+	background:-moz-linear-gradient(top,transparent,rgba(255,255,255,0.55)); /* Firefox */
+	background:-webkit-linear-gradient(top,transparent,rgba(255,255,255,0.55)); /* Safari, Chrome */
+	background:-o-linear-gradient(top,transparent,rgba(255,255,255,0.55)); /* Opera */
+	background:-ms-linear-gradient(top,transparent,rgba(255,255,255,0.55)); /* IE */
+	background:linear-gradient(top,transparent,rgba(255,255,255,0.55)); /* W3C Standard */
+}
+
+.tc-case-page .ui-tabs {
+	padding:0;
+	border-radius:0;
+	font-weight: normal;
+}
+
+.tc-case-page .document-item a {
+	color: #222;
+}
+
+.tc-case-page .ui-tabs-nav {
+	border-radius:0;
+	background:-moz-linear-gradient(center bottom,transparent,rgba(0,0,0,0.5)); /* Firefox */
+	background:-webkit-linear-gradient(center bottom,transparent,rgba(0,0,0,0.5)); /* Safari, Chrome */
+	background:-o-linear-gradient(center bottom,transparent,rgba(0,0,0,0.5)); /* Opera */
+	background:-ms-linear-gradient(center bottom,transparent,rgba(0,0,0,0.5)); /* IE */
+	background:linear-gradient(center bottom,transparent,rgba(0,0,0,0.5)); /* W3C Standard */
+}

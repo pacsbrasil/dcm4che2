@@ -40,7 +40,6 @@ package org.dcm4chee.web.war.tc;
 import java.text.MessageFormat;
 import java.util.List;
 
-import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.util.ListModel;
 import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
@@ -55,12 +54,9 @@ import org.dcm4chee.web.war.tc.imageview.TCImageViewPanel;
 @SuppressWarnings("serial")
 public class TCViewImagesTab extends AbstractTCViewTab 
 {
-    private AbstractReadOnlyModel<Boolean> infoVisibilityModel;
-    
     public TCViewImagesTab(final String id, IModel<? extends TCObject> model, 
-    		AbstractReadOnlyModel<Boolean> infoVisibilityModel) {
-        super(id, model);
-        this.infoVisibilityModel = infoVisibilityModel;
+    		TCAttributeVisibilityStrategy attrVisibilityStrategy) {
+        super(id, model, attrVisibilityStrategy);
         add(new TCImageViewPanel("tc-view-images-panel", 
                 new ImagesModel()).setOutputMarkupId(true));
     }
@@ -76,17 +72,14 @@ public class TCViewImagesTab extends AbstractTCViewTab
     
     @Override
     public boolean isTabVisible() {
-    	boolean defaultVisibility = super.isTabVisible() && 
-    			WebCfgDelegate.getInstance().isTCShowImagesInDialogEnabled();
-    	
-    	if (defaultVisibility) {
-	    	if (infoVisibilityModel!=null) {
-	    		return infoVisibilityModel.getObject() ||
-	    			!WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey("Images");
-	    	}
+    	if (super.isTabVisible()) {
+    		if (WebCfgDelegate.getInstance().isTCShowImagesInDialogEnabled()) {
+    			return getAttributeVisibilityStrategy()
+    					.isAttributeVisible(TCAttribute.Images);
+    		}
     	}
     	
-    	return defaultVisibility;
+    	return false;
     }
     
     @Override

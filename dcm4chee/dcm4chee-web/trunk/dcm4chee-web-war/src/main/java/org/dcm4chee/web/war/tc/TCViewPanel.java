@@ -58,15 +58,19 @@ public class TCViewPanel extends Panel
 
     private TCModel tcModel;
     
+    private TCAttributeVisibilityStrategy attrVisibilityStrategy;
+    
     private boolean sendImagesViewedLog = true;
-    private boolean showAllIfTrainingModeIsOn = false;
 
     
-	public TCViewPanel(final String id, TCModel tc, 
-    		final IModel<Boolean> trainingModeModel, final ITCCaseProvider caseProvider)
+	public TCViewPanel(final String id, TCModel tc,
+			final TCAttributeVisibilityStrategy attrVisibilityStrategy,
+			final ITCCaseProvider caseProvider)
     {
         super(id, new Model<TCEditableObject>());
 
+        this.attrVisibilityStrategy = attrVisibilityStrategy;
+        
         if (tc!=null) {
         	try {
 	        	tcModel = tc;
@@ -78,16 +82,6 @@ public class TCViewPanel extends Panel
         }
         
         initWebviewerLinkProvider();
-        
-        final AbstractReadOnlyModel<Boolean> infoVisibilityModel = new AbstractReadOnlyModel<Boolean>() {
-        	@Override
-        	public Boolean getObject() {
-        		if (!isEditable() && trainingModeModel.getObject()) {
-        			return showAllIfTrainingModeIsOn;
-        		}
-        		return true;
-        	}
-        };
 
         add(webviewerSelectionWindow = new ModalWindow("tc-view-webviewer-selection-window"));
         add(createWebviewerLink(tcModel));
@@ -206,7 +200,7 @@ public class TCViewPanel extends Panel
 	            (new ImageSizeBehaviour(24,16,"vertical-align: middle"))))
 	        .add(new TooltipBehaviour("tc.view.case.","nextrandom"))
 	        .setOutputMarkupId(true)
-	        .setVisible(!isEditable() && trainingModeModel.getObject())
+	        .setVisible(!isEditable() && attrVisibilityStrategy.isTrainingModeOn())
 	    );
             
         add(caseNavigator);
@@ -214,9 +208,7 @@ public class TCViewPanel extends Panel
 	            @Override
 	            public String getObject()
 	            {
-	        		if (!infoVisibilityModel.getObject() && 
-	        				WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey(
-	        						TCQueryFilterKey.Title)) {
+	        		if (!attrVisibilityStrategy.isAttributeVisible(TCAttribute.Title)) {
 	        			return TCUtilities.getLocalizedString("tc.case.text")+" " + getTC().getId();
 	        		}
 	        		return getTC().getTitle();
@@ -244,25 +236,25 @@ public class TCViewPanel extends Panel
         final Label linksTitleLabel = new Label("tc.view.links.tab.title");
         linksTitleLabel.setOutputMarkupId(true);
         
-        final TCViewForumTab forumTab = new TCViewForumTab("tc-view-forum", getModel(), isEditable(), infoVisibilityModel);
-        final TCViewOverviewTab overviewTab = new TCViewOverviewTab("tc-view-overview", getModel(), isEditable(), infoVisibilityModel);
-        final TCViewDiagnosisTab diagnosisTab = new TCViewDiagnosisTab("tc-view-diagnosis", getModel(), isEditable(), infoVisibilityModel);
-        final WebMarkupContainer imagesTab =  new TCViewImagesTab("tc-view-images", getModel(), infoVisibilityModel);
+        final TCViewForumTab forumTab = new TCViewForumTab("tc-view-forum", getModel(), attrVisibilityStrategy);
+        final TCViewOverviewTab overviewTab = new TCViewOverviewTab("tc-view-overview", getModel(), attrVisibilityStrategy);
+        final TCViewDiagnosisTab diagnosisTab = new TCViewDiagnosisTab("tc-view-diagnosis", getModel(), attrVisibilityStrategy);
+        final WebMarkupContainer imagesTab =  new TCViewImagesTab("tc-view-images", getModel(), attrVisibilityStrategy);
         
         final TCViewGenericTextTab diffDiagnosisTab = new TCViewGenericTextTab("tc-view-diffDiagnosis", getModel(), 
-        		isEditable(), infoVisibilityModel) {
+        		attrVisibilityStrategy) {
             @Override
             public String getTabTitle()
             {
                 return getString("tc.view.diffDiagnosis.tab.title");
             }
             @Override
-            protected TCQueryFilterKey getKey() {
-                return TCQueryFilterKey.DifferentialDiagnosis;
+            protected TCAttribute getAttribute() {
+                return TCAttribute.DifferentialDiagnosis;
             }
         };
         final TCViewGenericTextTab findingTab = new TCViewGenericTextTab("tc-view-finding", getModel(), 
-        		isEditable(), infoVisibilityModel) {
+        		attrVisibilityStrategy) {
             @Override
             public String getTabTitle()
             {
@@ -271,56 +263,58 @@ public class TCViewPanel extends Panel
             @Override
             public boolean isTabVisible()
             {
-            	if (!TCKeywordCatalogueProvider.getInstance().hasCatalogue(getKey()))
+            	TCQueryFilterKey queryKey = getAttribute().getQueryKey();
+            	if (queryKey!=null && !TCKeywordCatalogueProvider.getInstance()
+            			.hasCatalogue(queryKey))
             	{
             		return super.isTabVisible();
             	}
             	return false;
             }
             @Override
-            protected TCQueryFilterKey getKey() {
-                return TCQueryFilterKey.Finding;
+            protected TCAttribute getAttribute() {
+                return TCAttribute.Finding;
             }
         };
         final TCViewGenericTextTab historyTab = new TCViewGenericTextTab("tc-view-history", getModel(), 
-        		isEditable(), infoVisibilityModel) {
+        		attrVisibilityStrategy) {
             @Override
             public String getTabTitle()
             {
                 return getString("tc.view.history.tab.title");
             }
             @Override
-            protected TCQueryFilterKey getKey() {
-                return TCQueryFilterKey.History;
+            protected TCAttribute getAttribute() {
+                return TCAttribute.History;
             }
         };
         final TCViewGenericTextTab discussionTab = new TCViewGenericTextTab("tc-view-discussion", getModel(), 
-        		isEditable(), infoVisibilityModel) {
+        		attrVisibilityStrategy) {
             @Override
             public String getTabTitle()
             {
                 return getString("tc.view.discussion.tab.title");
             }
             @Override
-            protected TCQueryFilterKey getKey() {
-                return TCQueryFilterKey.Discussion;
+            protected TCAttribute getAttribute() {
+                return TCAttribute.Discussion;
             }
         };
         final TCViewGenericTextTab organSystemTab = new TCViewGenericTextTab("tc-view-organSystem", getModel(), 
-        		isEditable(), infoVisibilityModel) {
+        		attrVisibilityStrategy) {
             @Override
             public String getTabTitle()
             {
                 return getString("tc.view.organSystem.tab.title");
             }
             @Override
-            protected TCQueryFilterKey getKey() {
-                return TCQueryFilterKey.OrganSystem;
+            protected TCAttribute getAttribute() {
+                return TCAttribute.OrganSystem;
             }
         };
                
         final TCViewBibliographyTab biblioTab = new TCViewBibliographyTab("tc-view-bibliography", getModel(), 
-        		isEditable(), infoVisibilityModel) {
+        		attrVisibilityStrategy) {
         	@Override
             protected void tabTitleChanged(AjaxRequestTarget target)
             {
@@ -340,7 +334,7 @@ public class TCViewPanel extends Panel
         });
         
         final TCViewDocumentsTab documentsTab = new TCViewDocumentsTab("tc-view-documents", getModel(), 
-        		isEditable(), infoVisibilityModel) {
+        		attrVisibilityStrategy) {
         	@Override
             protected void tabTitleChanged(AjaxRequestTarget target)
             {
@@ -360,7 +354,7 @@ public class TCViewPanel extends Panel
         });
         
         final TCViewLinksTab linksTab = new TCViewLinksTab("tc-view-links", getModel(), 
-        		isEditable(), infoVisibilityModel) {
+        		attrVisibilityStrategy) {
         	@Override
             protected void tabTitleChanged(AjaxRequestTarget target)
             {
@@ -399,10 +393,13 @@ public class TCViewPanel extends Panel
                 tag.put("activation-callback-url", tabActivationBehavior.getCallbackUrl());
             }
         };
+
         content.setOutputMarkupId(true);
         content.setMarkupId(isEditable() ? 
                 "tc-view-editable-content" : "tc-view-content");
-                
+        content.add(new TCUtilities.TCClassAppender( isEditable() ?
+       			"tc-view-editable-content" : "tc-view-content"));
+        
         content.add(new Label("tc.view.overview.tab.title", new AbstractReadOnlyModel<String>() {
             @Override
             public String getObject()
@@ -518,7 +515,8 @@ public class TCViewPanel extends Panel
         add(new AjaxLink<Void>("tc-solve-btn") {
 			@Override
         	public void onClick(AjaxRequestTarget target) {
-        		showAllIfTrainingModeIsOn=true;
+        		attrVisibilityStrategy.setShowAllIfTrainingModeIsOn(true);
+        		
         		target.addComponent(this);
         		target.addComponent(titleText);
         		target.addComponent(content);
@@ -533,11 +531,11 @@ public class TCViewPanel extends Panel
         	}
 			@Override
 			public boolean isEnabled() {
-				return !showAllIfTrainingModeIsOn;
+				return !attrVisibilityStrategy.getShowAllIfTrainingModeIsOn();
 			}
 			@Override
 			public boolean isVisible() {
-				return !isEditable() && trainingModeModel.getObject();
+				return !isEditable() && attrVisibilityStrategy.isTrainingModeOn();
 			}
 			@Override
 			protected void onComponentTag(ComponentTag tag) {
@@ -638,7 +636,7 @@ public class TCViewPanel extends Panel
     			TCAuditLog.logTFViewed(getTC());
     		}
     		
-    		showAllIfTrainingModeIsOn = false;
+    		this.attrVisibilityStrategy.setShowAllIfTrainingModeIsOn(false);
     		
     		this.tcModel = tc;
 	    	setDefaultModelObject(TCEditableObject.create(tc));
@@ -724,17 +722,25 @@ public class TCViewPanel extends Panel
     	}
     	return null;
     }
-    
+
     public abstract static class AbstractTCViewTab extends Panel
     {
-        public AbstractTCViewTab(final String id, IModel<? extends TCObject> model)
+    	private TCAttributeVisibilityStrategy attrVisibilityStrategy;
+    	
+        public AbstractTCViewTab(final String id, IModel<? extends TCObject> model,
+        		TCAttributeVisibilityStrategy attrVisibilityStrategy)
         {
             super(id, model);
+            this.attrVisibilityStrategy = attrVisibilityStrategy;
         }
         
         public TCObject getTC()
         {
             return (TCObject) super.getDefaultModelObject();
+        }
+        
+        public TCAttributeVisibilityStrategy getAttributeVisibilityStrategy() {
+        	return this.attrVisibilityStrategy;
         }
         
         public boolean isEditable()
@@ -786,18 +792,11 @@ public class TCViewPanel extends Panel
     public abstract static class AbstractEditableTCViewTab extends
         AbstractTCViewTab
     {
-        private boolean editing;
-        
-        public AbstractEditableTCViewTab(final String id, IModel<TCEditableObject> model, boolean editing)
+        public AbstractEditableTCViewTab(final String id, 
+        		IModel<TCEditableObject> model,
+        		TCAttributeVisibilityStrategy attrVisibilityStrategy)
         {
-            super(id, model);
-            
-            this.editing = editing;
-        }
-        
-        public AbstractEditableTCViewTab(final String id, IModel<TCEditableObject> model)
-        {
-            this(id, model, false);
+            super(id, model, attrVisibilityStrategy);
         }
         
         @Override
@@ -815,7 +814,7 @@ public class TCViewPanel extends Panel
         @Override
         public final boolean isEditing()
         {
-            return editing;
+            return getAttributeVisibilityStrategy().isEditModeOn();
         }
         
         public final void save()

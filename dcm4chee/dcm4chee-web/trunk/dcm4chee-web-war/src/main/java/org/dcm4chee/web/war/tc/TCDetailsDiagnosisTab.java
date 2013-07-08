@@ -39,7 +39,6 @@ package org.dcm4chee.web.war.tc;
 
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.basic.MultiLineLabel;
-import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue.YesNo;
@@ -52,12 +51,9 @@ import org.dcm4chee.web.dao.tc.TCQueryFilterValue.YesNo;
 @SuppressWarnings("serial")
 public class TCDetailsDiagnosisTab extends TCDetailsTab {
 
-    private IModel<Boolean> trainingModeModel;
-
-    public TCDetailsDiagnosisTab(final String id, IModel<Boolean> trainingModeModel) {
-        super(id);
-        
-        this.trainingModeModel = trainingModeModel;
+    public TCDetailsDiagnosisTab(final String id, 
+    		TCAttributeVisibilityStrategy attrVisibilityStrategy) {
+        super(id, attrVisibilityStrategy);
 
         add(new MultiLineLabel("details-diagnosis", new Model<String>() {
 
@@ -108,8 +104,8 @@ public class TCDetailsDiagnosisTab extends TCDetailsTab {
     
     @Override
     public boolean isVisible() {
-    	return TCUtilities.isKeyAvailable(trainingModeModel, 
-    			TCQueryFilterKey.Diagnosis);
+    	return getAttributeVisibilityStrategy().isAttributeVisible(
+    			TCAttribute.Diagnosis);
     }
     
     private TCObject getTCObject() {

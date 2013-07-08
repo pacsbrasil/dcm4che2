@@ -40,9 +40,7 @@ package org.dcm4chee.web.war.tc;
 import java.text.MessageFormat;
 import java.util.List;
 
-import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
-import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
 import org.dcm4chee.web.war.tc.TCUtilities.TCClassAppender;
 import org.dcm4chee.web.war.tc.TCUtilities.TCStyleAppender;
 import org.dcm4chee.web.war.tc.TCViewPanel.AbstractEditableTCViewTab;
@@ -55,20 +53,12 @@ import org.dcm4chee.web.war.tc.TCViewPanel.AbstractEditableTCViewTab;
 @SuppressWarnings("serial")
 public abstract class TCViewLinksTab extends AbstractEditableTCViewTab 
 {
-	private AbstractReadOnlyModel<Boolean> infoVisibilityModel;
 	
-    public TCViewLinksTab(final String id, IModel<TCEditableObject> model,
-    		AbstractReadOnlyModel<Boolean> infoVisibilityModel) 
-    {
-        this(id, model, false, infoVisibilityModel);
-    }
-
 	public TCViewLinksTab(final String id, IModel<TCEditableObject> model, 
-    		boolean editing, AbstractReadOnlyModel<Boolean> infoVisibilityModel) {
-        super(id, model, editing);
-        this.infoVisibilityModel = infoVisibilityModel;
-        TCLinksView view = new TCLinksView("tc-view-links-content", model, editing);
-        if (!editing) {
+			TCAttributeVisibilityStrategy attrVisibilityStrategy) {
+        super(id, model, attrVisibilityStrategy);
+        TCLinksView view = new TCLinksView("tc-view-links-content", model, isEditing());
+        if (!isEditing()) {
         	view.add(new TCClassAppender("ui-border-box"));
         	view.add(new TCStyleAppender("padding:0 20px"));
         }
@@ -90,16 +80,12 @@ public abstract class TCViewLinksTab extends AbstractEditableTCViewTab
     
     @Override
     public boolean isTabVisible() {
-    	boolean defaultVisibility = super.isTabVisible();
-    	
-    	if (defaultVisibility) {
-	    	if (infoVisibilityModel!=null) {
-	    		return infoVisibilityModel.getObject() ||
-	    			!WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey("Links");
-	    	}
+    	if (super.isTabVisible()) {
+	    	return getAttributeVisibilityStrategy()
+	    			.isAttributeVisible(TCAttribute.Links);
     	}
     	
-    	return defaultVisibility;
+    	return false;
     }
     
     @Override

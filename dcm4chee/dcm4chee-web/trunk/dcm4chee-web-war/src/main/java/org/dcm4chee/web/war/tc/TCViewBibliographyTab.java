@@ -60,8 +60,6 @@ import org.apache.wicket.model.util.ListModel;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
-import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
-import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
 import org.dcm4chee.web.war.tc.TCUtilities.SelfUpdatingTextArea;
 import org.dcm4chee.web.war.tc.TCViewPanel.AbstractEditableTCViewTab;
 import org.slf4j.Logger;
@@ -83,20 +81,11 @@ public class TCViewBibliographyTab extends AbstractEditableTCViewTab
     private WebMarkupContainer listContainer;
     private ListView<String> list;
     private Component tabTitleComponent;
-    private AbstractReadOnlyModel<Boolean> infoVisibilityModel;
-    
-    public TCViewBibliographyTab(final String id, IModel<TCEditableObject> model,
-    		AbstractReadOnlyModel<Boolean> infoVisibilityModel) 
-    {
-        this(id, model, false, infoVisibilityModel);
-    }
-        
+
     public TCViewBibliographyTab(final String id, IModel<TCEditableObject> model, 
-    		boolean editing, AbstractReadOnlyModel<Boolean> infoVisibilityModel) {
-        super(id, model, editing);
-        
-        this.infoVisibilityModel = infoVisibilityModel;
-        
+    		TCAttributeVisibilityStrategy attrVisibilityStrategy) {
+        super(id, model, attrVisibilityStrategy);
+
         list = new ListView<String>("tc-view-bibliography-list",new ListModelWrapper()) 
         {
             private static final long serialVersionUID = 1L;
@@ -231,18 +220,12 @@ public class TCViewBibliographyTab extends AbstractEditableTCViewTab
     
     @Override
     public boolean isTabVisible() {
-    	boolean defaultVisibility = super.isTabVisible();
-    	
-    	if (defaultVisibility) {
-	    	if (infoVisibilityModel!=null) {
-	    		boolean visibilityModel = infoVisibilityModel.getObject();
-	    		boolean hiddenKey = WebCfgDelegate.getInstance().isTCTrainingModeHiddenKey(
-    					TCQueryFilterKey.BibliographicReference);
-	    		return visibilityModel || !hiddenKey;
-	    	}
+    	if (super.isTabVisible()) {
+	    	return getAttributeVisibilityStrategy()
+	    			.isAttributeVisible(TCAttribute.BibliographicReference);
     	}
     	
-    	return defaultVisibility;
+    	return false;
     }
     
     @Override

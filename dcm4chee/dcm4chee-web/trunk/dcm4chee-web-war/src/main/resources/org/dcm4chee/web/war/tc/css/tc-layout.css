@@ -54,7 +54,19 @@
 	-webkit-box-sizing: border-box; /* Safari/Chrome, other Webkit */
 	-ms-box-sizing: border-box;
 	box-sizing: border-box; /* Opera/IE8+ */
-} 
+}
+
+.ui-tabs-vertical { }
+
+.ui-tabs-vertical .ui-tabs-nav { padding: .2em .1em .2em .2em; float: left; width: 12em; }
+
+.ui-tabs-vertical .ui-tabs-nav li { clear: left; width: 100%; border-bottom-width: 1px !important; border-right-width: 0 !important; margin: 0 -1px .2em 0; }
+
+.ui-tabs-vertical .ui-tabs-nav li a { display:block; }
+
+.ui-tabs-vertical .ui-tabs-nav li.ui-tabs-active { padding-bottom: 0; padding-right: .1em; border-right-width: 1px; border-right-width: 1px; }
+
+.ui-tabs-vertical .ui-tabs-panel { margin-left: 13.75em; }
 
 
 /******************************************************  
@@ -446,49 +458,72 @@ div.details-tabs div.tab-panel span.table-property-key
  * layout of VIEW elements 
  *****************************************************/
 
-div.tc-view
+.tc-view
 {
 	height: 100%;
 	width: 100%;
+	position: relative;
+	overflow: hidden;
 }
 
-#tc-view-header
+.tc-view-header
 {
-	position: absolute;
-	left: 1em;
-	right: 1em;
-	top: 2.5em;
-	height: 5em;
+	height: 60px;
 	line-height: 4em; /* vertically center elements */
-}
-
-#tc-view-content
-{
+	overflow: hidden;
 	position: absolute;
-	left: 1em;
-	right: 1em;
-	top: 7em;
-	bottom: 1.2em;
+	top: 0;
+	left: 0;
+	right: 0;
+}
+
+.tc-view-content
+{
 	border: medium none;
+	overflow: hidden;
+	position: absolute;
+	top: 60px;
+	bottom: 0;
+	left:0;
+	right:0;
 }
 
-#tc-view-editable-content
+.tc-view-editable-content
 {
-    position: absolute;
-    left: 1em;
-    right: 1em;
-    top: 6.5em;
-    bottom: 5.5em;
+	border: medium none;
+	overflow: hidden;
+	position: absolute;
+	top: 60px;
+	bottom: 4em;
+	left:0;
+	right:0;
 }
 
-#tc-view-footer
+.tc-view-footer
 {
     position: absolute;
-    left: 1em;
-    right: 1em;
-    bottom: 1.2em;
+    left: 0;
+    right: 0;
+    bottom: 0;
     height: 4em;
     line-height: 4em; /* vertically center elements */
+}
+
+.tc-view .ui-tabs-vertical .ui-tabs-nav {
+	width: 12em;
+	position: absolute;
+	top: 0;
+	left: 0;
+	bottom: 0;
+}
+
+.tc-view .ui-tabs-vertical .ui-tabs-panel {
+	position: absolute;
+	left: 13.5em;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	margin-left: 0;
 }
 
 div.tc-view-title
@@ -672,6 +707,7 @@ div.tc-view-bibliography-options
 	float: left;
 	margin-top: 0.3em;
 	width: 7.25em;
+	font-weight: bold;
 }
 
 .tc-view-overview-row-key-left-column
@@ -680,7 +716,7 @@ div.tc-view-bibliography-options
 
 .tc-view-overview-row-key-right-column
 {
-	width: 10.5em;
+	width: 11em;
 }
 
 .tc-view-overview-row-value
@@ -697,7 +733,7 @@ div.tc-view-bibliography-options
 
 .tc-view-overview-row-value-right-column
 {
-	margin-left: 10.75em;
+	margin-left: 11.25em;
 }
 
 .tc-view-overview-row-value:after 

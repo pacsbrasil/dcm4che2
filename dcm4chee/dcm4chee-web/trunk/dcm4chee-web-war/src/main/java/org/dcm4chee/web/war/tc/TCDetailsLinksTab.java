@@ -40,7 +40,6 @@ package org.dcm4chee.web.war.tc;
 import java.util.List;
 
 import org.apache.wicket.model.AbstractReadOnlyModel;
-import org.apache.wicket.model.IModel;
 
 /**
  * @author Bernhard Ableitinger <bernhard.ableitinger@agfa.com>
@@ -50,13 +49,10 @@ import org.apache.wicket.model.IModel;
 @SuppressWarnings("serial")
 public class TCDetailsLinksTab extends TCDetailsTab {
 	
-    private IModel<Boolean> trainingModeModel;
-	
-    public TCDetailsLinksTab(final String id, IModel<Boolean> trainingModeModel) {
-        super(id);
-         
-        this.trainingModeModel = trainingModeModel;
-        
+    public TCDetailsLinksTab(final String id, 
+    		TCAttributeVisibilityStrategy attrVisibilityStrategy) {
+        super(id, attrVisibilityStrategy);
+
         add(new TCLinksView("tc-details-links", new AbstractReadOnlyModel<TCObject>() {
         	public TCObject getObject() {
         		return getTCObject();
@@ -71,7 +67,8 @@ public class TCDetailsLinksTab extends TCDetailsTab {
     
     @Override
     public boolean visible() {
-    	return TCUtilities.isKeyAvailable(trainingModeModel, "Links");
+    	return getAttributeVisibilityStrategy().isAttributeVisible(
+    			TCAttribute.Links);
     }
 
     private TCObject getTCObject() {

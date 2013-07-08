@@ -176,6 +176,10 @@ public class TCPopupManager implements Serializable
         }
     }
     
+    public static interface ITCPopupManagerProvider {
+    	public TCPopupManager getPopupManager();
+    }
+    
     public static abstract class AbstractTCPopup extends WebMarkupContainer
     {
         TCPopupManager popupManager;
@@ -235,9 +239,10 @@ public class TCPopupManager implements Serializable
 
         public void show(AjaxRequestTarget target, TCPopupPosition position)
         {
-            if (!getPopupManager().isPopupShown(this))
+        	TCPopupManager manager = getPopupManager();
+            if (manager!=null && !manager.isPopupShown(this))
             {
-                List<AbstractTCPopup> popups = getPopupManager().getPopupsShown();
+                List<AbstractTCPopup> popups = manager.getPopupsShown();
                 for (AbstractTCPopup popup : popups)
                 {
                     if (popup.isHideOnShowOtherEnabled())
@@ -250,7 +255,7 @@ public class TCPopupManager implements Serializable
                 
                 showPopup(position, target);
                 
-                getPopupManager().popupShown(this);
+                manager.popupShown(this);
                 
                 afterShowing(target);
             }
@@ -260,7 +265,10 @@ public class TCPopupManager implements Serializable
         {       
             beforeHiding(target);
                     
-            getPopupManager().popupHidden(this);
+            TCPopupManager manager = getPopupManager();
+            if (manager!=null) {
+            	manager.popupHidden(this);
+            }
             
             hidePopup(target);
             
@@ -296,7 +304,10 @@ public class TCPopupManager implements Serializable
         {
             if (popupManager==null)
             {
-                popupManager = findParent(TCPanel.class).getPopupManager();
+            	ITCPopupManagerProvider prov = findParent(ITCPopupManagerProvider.class);
+            	if (prov!=null) {
+            		popupManager = prov.getPopupManager();
+            	}
             }
             return popupManager;
         }
@@ -359,10 +370,13 @@ public class TCPopupManager implements Serializable
             
             if (isHideOnOutsideClickEnabled())
             {
-                CharSequence callbackUrl = getPopupManager()
-                    .getGlobalHideOnOutsideClickHandler().getCallbackUrl();
-                sbuf.append(",")
-                .append("'").append(callbackUrl).append("'");
+            	TCPopupManager manager = getPopupManager();
+            	if (manager!=null) {
+	                CharSequence callbackUrl = manager
+	                    .getGlobalHideOnOutsideClickHandler().getCallbackUrl();
+	                sbuf.append(",")
+	                .append("'").append(callbackUrl).append("'");
+            	}
             }
             
             sbuf.append(");\n");
@@ -397,18 +411,20 @@ public class TCPopupManager implements Serializable
         {
             StringBuffer sbuf = new StringBuffer();
             
-            sbuf.
-            append("hidePopup(")
+            sbuf.append("hidePopup(")
             .append("'").append(getPopupComponent().getMarkupId()).append("'");
-            
+
             if (isHideOnOutsideClickEnabled())
             {
-                CharSequence callbackUrl = getPopupManager()
-                    .getGlobalHideOnOutsideClickHandler().getCallbackUrl();
-                sbuf.append(",")
-                .append("'").append(callbackUrl).append("'");
+            	TCPopupManager manager = getPopupManager();
+            	if (manager!=null) {
+	            	CharSequence callbackUrl = manager
+	            			.getGlobalHideOnOutsideClickHandler().getCallbackUrl();
+	            	sbuf.append(",")
+	            	.append("'").append(callbackUrl).append("'");
+            	}
             }
-            
+
             sbuf.append(")");
             
             return sbuf.toString();
