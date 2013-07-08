@@ -770,22 +770,23 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
-      getMethod="getTCTrainingModeHiddenAttributes"
-      setMethod="setTCTrainingModeHiddenAttributes">
+      getMethod="getTCRestrictedAttributes"
+      setMethod="setTCRestrictedAttributes">
       <description><![CDATA[
-        List of teaching-file attributes which should be first be unavailable or hidden
-        if training-mode is active.<br/>
+        List of teaching-file attributes which are unavailable/hidden
+        if training-mode is on OR the authenticated user doesn't has
+        the permission to view restricted attributes.<br/>
         <br/>
         Possible values/attributes are: Title, Abstract, AcquisitionModality,
         Anatomy, AuthorAffiliation, AuthorContact, AuthorName, Category, Diagnosis,
-        DifferentialDiagnosis, Discussion, Finding, History, Level, OrganSystem,
+        DifferentialDiagnosis, Remarks, Discussion, Finding, History, Level, OrganSystem,
         Pathology, PatientAge, PatientSex, PatientSpecies, BibliographicReference,
         Documents, Links, Images. 
-        A value of NONE means, that none of the attributes are hidden/invisible in 
-        training-mode.
+        A value of NONE means, that ALL attributes are available/visible to anybody, 
+        regardless of training mode or permission.
         ]]>
       </description>
-      <name>TCTrainingModeHiddenAttributes</name>
+      <name>TCRestrictedAttributes</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="
@@ -794,6 +795,7 @@
            Anatomy;
            Diagnosis;
            DifferentialDiagnosis;
+           Remarks;
            Discussion;
            Finding;
            OrganSystem;
@@ -1226,8 +1228,8 @@
       <return-type>java.util.Map</return-type>
    </operation>
    <operation impact="ACTION">
-      <description>Get list of hidden attributes/keys when training-mode is on</description>
-      <name>getTCTrainingModeHiddenAttributesList</name>
+      <description>Get list of hidden attributes when training-mode is on or user doesn't has the permission to view restricted attributes</description>
+      <name>getTCRestrictedAttributesList</name>
       <return-type>java.util.List</return-type>
    </operation>
    <operation impact="ACTION">

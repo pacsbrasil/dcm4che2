@@ -147,7 +147,7 @@ public class WebCfgService extends ServiceMBeanSupport implements
     private Map<String, String> tcKeywordCatalogues = new LinkedHashMap<String, String>();
     private Map<String, String> tcKeywordCataloguesExclusive = new LinkedHashMap<String, String>();
     private List<String> tcRestrictedSrcAETs = new ArrayList<String>();
-    private List<String> tcTrainingModeHiddenAttributes = new ArrayList<String>();
+    private List<String> tcRestrictedAttributes = new ArrayList<String>();
     private boolean tcEditOnDoubleClick;
     private boolean tcMultipleKeywordSearch;
     private boolean tcMultipleKeywordORConcat;
@@ -427,37 +427,37 @@ public class WebCfgService extends ServiceMBeanSupport implements
         this.tcKeywordCataloguesExclusive = parseKeywordCatalogues(s, true);
     }
     
-    public List<String> getTCTrainingModeHiddenAttributesList() {
-    	if (tcTrainingModeHiddenAttributes!=null) {
-    		return tcTrainingModeHiddenAttributes;
+    public List<String> getTCRestrictedAttributesList() {
+    	if (tcRestrictedAttributes!=null) {
+    		return tcRestrictedAttributes;
     	}
     	return Collections.emptyList();
     }
     
-    public String getTCTrainingModeHiddenAttributes() {
-    	if (tcTrainingModeHiddenAttributes==null || 
-    			tcTrainingModeHiddenAttributes.isEmpty()) {
+    public String getTCRestrictedAttributes() {
+    	if (tcRestrictedAttributes==null || 
+    			tcRestrictedAttributes.isEmpty()) {
     		return NONE;
     	}
     	else {
     		StringBuilder sbuilder = new StringBuilder();
-    		sbuilder.append(tcTrainingModeHiddenAttributes.get(0));
-    		for (int i=1; i<tcTrainingModeHiddenAttributes.size(); i++) {
+    		sbuilder.append(tcRestrictedAttributes.get(0));
+    		for (int i=1; i<tcRestrictedAttributes.size(); i++) {
     			sbuilder.append(NEWLINE).append(
-    					tcTrainingModeHiddenAttributes.get(i));
+    					tcRestrictedAttributes.get(i));
     		}
     		return sbuilder.toString();
     	}
     }
     
-    public void setTCTrainingModeHiddenAttributes(String s) {
-    	if (tcTrainingModeHiddenAttributes!=null) {
-    		tcTrainingModeHiddenAttributes.clear();
+    public void setTCRestrictedAttributes(String s) {
+    	if (tcRestrictedAttributes!=null) {
+    		tcRestrictedAttributes.clear();
     	}
         if (s!= null && !NONE.equals(s.trim()))
         {
 	        for (StringTokenizer st = new StringTokenizer(s, "\t\r\n;") ; st.hasMoreTokens() ;) {
-	            tcTrainingModeHiddenAttributes.add(
+	            tcRestrictedAttributes.add(
 	            		st.nextToken().trim());
 	        }
         }
