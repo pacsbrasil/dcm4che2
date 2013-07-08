@@ -38,6 +38,8 @@
 
 package org.dcm4chee.web.war.tc;
 
+import java.text.MessageFormat;
+
 import org.apache.wicket.PageParameters;
 import org.apache.wicket.RequestCycle;
 import org.apache.wicket.ResourceReference;
@@ -143,16 +145,19 @@ public class TCCaseViewPage extends SecureSessionCheckPage
 					}));
 		        }
 		        catch (Exception e) {
-		        	add(new Label("tc-case", new Model<String>("Case can't be loaded!")));
+		        	add(new Label("tc-case", new Model<String>(
+		        			TCUtilities.getLocalizedString("tc.casepage.error.text"))));
 		        	log.error(null, e);
 		        }
             }
             else {
-            	add(new Label("tc-case", new Model<String>("Case not found: " + uid)));
+            	add(new Label("tc-case", new Model<String>(MessageFormat.format(
+            			TCUtilities.getLocalizedString("tc.casepage.casenotfound.text"),uid))));
             }
         }
         else {
-        	add(new Label("tc-case", new Model<String>("Case not specified in request")));
+        	add(new Label("tc-case", new Model<String>(
+        			TCUtilities.getLocalizedString("tc.casepage.casenotspecified.text"))));
         }
     }
     
