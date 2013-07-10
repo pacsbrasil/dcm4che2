@@ -1145,8 +1145,11 @@
          <value value="1000"/>
       </descriptors>
    </attribute>
-
+   &defaultAttributes;
+   
    <!-- Operations -->
+   &defaultOperations;
+   
    <operation impact="ACTION">
       <description><![CDATA[ <dl><dt>Check the type of given SOP Class UID.<dt/>
       			<dd>0...Image</dd>
