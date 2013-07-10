@@ -1037,12 +1037,12 @@ public class StudyListPage extends Panel {
                 
                 try {
                 	getDelegate().moveToTrash(selected);
-                	setStatus(new StringResourceModel("folder.message.deleteDone", StudyListPage.this,null));
                     if (selected.hasPatients()) {
                         viewport.getPatients().clear();
                         query(target);
                     } else
                         selected.refreshView(true);
+                    close(target);
                 } catch (RuntimeMBeanException e) {
                 	log.error("moveToTrash failed: ", e);
                 	if (e.getCause() instanceof EJBException)
@@ -1304,7 +1304,7 @@ public class StudyListPage extends Panel {
         form.add(confirmLinkMpps
             .setInitialHeight(150)
             .setInitialWidth(410));
-        
+
         confirmLinkMppsStudy = new ConfirmationWindow<StudyModel>("confirmLinkStudy") {
             
             private static final long serialVersionUID = 1L;

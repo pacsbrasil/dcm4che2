@@ -554,12 +554,12 @@ public class TrashListPage extends Panel {
                 "confirmRestore") {
 
             private static final long serialVersionUID = 1L;
-
-            @Override
-            public void onOk(AjaxRequestTarget target) {
-                setRemark(null);
-                target.addComponent(form);
-            }
+// TODO:
+//            @Override
+//            public void onOk(AjaxRequestTarget target) {
+//                setRemark(null);
+//                target.addComponent(form);
+//            }
 
             @Override
             public void close(AjaxRequestTarget target) {
@@ -625,14 +625,13 @@ public class TrashListPage extends Panel {
                                     TrashListPage.this, null));
                         StoreBridgeDelegate.getInstance().importFile(fio);
                         removeRestoredEntries();
-                        setStatus(new StringResourceModel(
-                                "trash.message.restoreDone",
-                                TrashListPage.this, null));
+                        setRemark(null);
                         if (selected.hasPatients()) {
                             viewport.getPatients().clear();
                             queryStudies();
                         } else
                             selected.refreshView(true);
+                        close(target);
                     } else {
                         setStatus(new StringResourceModel(
                                 "trash.message.restoreNotPossible",

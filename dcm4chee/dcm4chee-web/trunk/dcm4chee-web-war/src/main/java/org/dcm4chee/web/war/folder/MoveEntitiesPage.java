@@ -76,7 +76,6 @@ import org.dcm4chee.archive.entity.StudyPermission;
 import org.dcm4chee.archive.util.JNDIUtils;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
-import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.exceptions.SelectionException;
 import org.dcm4chee.web.common.model.MultiResourceModel;
@@ -728,8 +727,7 @@ public class MoveEntitiesPage extends SecureSessionCheckPage {
                             if (nrOfMovedInstances > 0) {
                                 updateModels();
                                 if (emptySourceParents.size() == 0) {
-                                    infoMsgId = "move.message.moveDone";
-                                    okBtn.setVisible(true);
+									window.close(target);
                                 } else {
                                     infoMsgId = "move.message.removeEmpty";
                                     yesBtn.setVisible(true);
