@@ -260,7 +260,7 @@ public abstract class ConfirmationWindow<T> extends ModalWindow {
             final MaskingAjaxCallBehavior macb = new MaskingAjaxCallBehavior();
             add(macb);
             
-            add(new Label("warnImg"));
+            add(new Label("warnImg").setVisible(false));
             
             add((msgLabel = new Label("msg", new AbstractReadOnlyModel<Object>() {
 
