@@ -45,6 +45,7 @@ import org.apache.wicket.PageMap;
 import org.apache.wicket.ajax.AjaxEventBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
+import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.link.AbstractLink;
 import org.apache.wicket.markup.html.link.ExternalLink;
@@ -82,7 +83,8 @@ public class Webviewer  {
     	return getLink(model, providers, studyPermissionHelper, tooltip, modalWindow, null);
     }
     	
-    public static AbstractLink getLink(final AbstractDicomModel model, final WebviewerLinkProvider[] providers,
+    @SuppressWarnings("serial")
+	public static AbstractLink getLink(final AbstractDicomModel model, final WebviewerLinkProvider[] providers,
             final StudyPermissionHelper studyPermissionHelper, TooltipBehaviour tooltip, ModalWindow modalWindow,
             final WebviewerLinkClickedCallback callback) {
         WebviewerLinkProvider p = null;
@@ -109,11 +111,22 @@ public class Webviewer  {
                         PopupSettings.RESIZABLE|PopupSettings.SCROLLBARS));
                 if (callback!=null) {
                 	link.add(new AjaxEventBehavior("onclick") {
-						private static final long serialVersionUID = -3551733660906853373L;
 						@Override
 						public void onEvent(AjaxRequestTarget target) {
                 			callback.linkClicked(target);
                 		}
+						// just for the case, if the link is rendered as a <button> element
+						@Override
+						protected void onComponentTag(ComponentTag tag) {
+							String current = tag.getAttribute("onclick");
+							
+							super.onComponentTag(tag);
+							
+							if (current!=null) {
+								tag.put("onclick", new StringBuilder(tag.getAttribute("onclick"))
+									.append(";").append(current));
+							}
+						}
                 	});
                 }
             }
