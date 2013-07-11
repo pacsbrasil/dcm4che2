@@ -241,4 +241,6 @@ public class ImageManager {
             new ResourceReference(ImageManager.class, "tc/image-square.png");
     public static final ResourceReference IMAGE_TC_FORUM =
             new ResourceReference(ImageManager.class, "tc/forum.png");
+    public static final ResourceReference IMAGE_TC_EXTERNAL =
+    		new ResourceReference(ImageManager.class, "tc/external.png");
 }

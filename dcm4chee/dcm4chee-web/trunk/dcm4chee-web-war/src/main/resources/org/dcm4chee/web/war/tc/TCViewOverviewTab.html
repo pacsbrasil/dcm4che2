@@ -23,7 +23,12 @@
             </div>
             <div wicket:id="tc-view-overview-url-row" class="tc-view-overview-row">
                 <div wicket:id="tc-view-overview-url-label" 
-                	class="tc-view-overview-row-key tc-view-overview-row-key-left-column"/>
+                	class="tc-view-overview-row-key tc-view-overview-row-key-left-column">
+                	<a wicket:id="tc-view-url-link" target="_blank" style="text-decoration:none; font-weight:normal; color:blue;">
+    					<span wicket:id="tc-view-url-link-title"/>
+    					<img wicket:id="tc-view-url-link-follow-image" style="width:12px;height:12px"/>
+    				</a>
+                </div>
                 <div class="tc-view-overview-row-value tc-view-overview-row-value-left-column">
                     <textarea wicket:id="tc-view-overview-url-text" style="width:98%" class="ui-textarea">
                     </textarea>

@@ -53,6 +53,7 @@ import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.TextArea;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.image.Image;
+import org.apache.wicket.markup.html.link.ExternalLink;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.model.AbstractReadOnlyModel;
@@ -74,6 +75,7 @@ import org.dcm4chee.web.war.tc.TCObject.TextOrCode;
 import org.dcm4chee.web.war.tc.TCUtilities.NullDropDownItem;
 import org.dcm4chee.web.war.tc.TCUtilities.SelfUpdatingTextArea;
 import org.dcm4chee.web.war.tc.TCUtilities.SelfUpdatingTextField;
+import org.dcm4chee.web.war.tc.TCUtilities.TCToolTipAppender;
 import org.dcm4chee.web.war.tc.TCViewPanel.AbstractEditableTCViewTab;
 import org.dcm4chee.web.war.tc.keywords.TCKeywordCatalogueProvider;
 import org.dcm4chee.web.war.tc.widgets.TCComboBox;
@@ -158,8 +160,14 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         
         // URL
         final WebMarkupContainer urlRow = new WebMarkupContainer("tc-view-overview-url-row");
-        urlRow.add(new Label("tc-view-overview-url-label", 
-                new InternalStringResourceModel("tc.url.text")));
+        urlRow.add(new WebMarkupContainer("tc-view-overview-url-label")
+        	.add(
+        		new ExternalLink("tc-view-url-link", getTC().getURL())
+        		.add(new Label("tc-view-url-link-title",new InternalStringResourceModel("tc.url.text")))
+        		.add(new Image("tc-view-url-link-follow-image", ImageManager.IMAGE_TC_EXTERNAL))
+        		.add(new TCToolTipAppender("tc.case.url.text"))
+        	)
+	    );
         urlRow.add(new TextArea<String>("tc-view-overview-url-text",
         		new Model<String>() {
 		        	@Override

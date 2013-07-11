@@ -40,6 +40,7 @@ package org.dcm4chee.web.war.tc;
 
 import java.text.MessageFormat;
 
+import org.apache.wicket.Component;
 import org.apache.wicket.PageParameters;
 import org.apache.wicket.RequestCycle;
 import org.apache.wicket.ResourceReference;
@@ -48,6 +49,7 @@ import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.behavior.HeaderContributor;
 import org.apache.wicket.markup.html.IHeaderContributor;
 import org.apache.wicket.markup.html.IHeaderResponse;
+import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.model.Model;
@@ -101,6 +103,8 @@ public class TCCaseViewPage extends SecureSessionCheckPage
         
         add((popupManager=new TCPopupManager()).getGlobalHideOnOutsideClickHandler());
         
+        add(new Label("tc-casepage-title", TCUtilities.getLocalizedString("tc.casepage.title")));
+        
         String uid = params.getString("uid");
         if (uid!=null) {
             TCQueryLocal dao = (TCQueryLocal) JNDIUtils
@@ -127,7 +131,10 @@ public class TCCaseViewPage extends SecureSessionCheckPage
 		        			return !attr.isRestricted();
 		        		}
 		        	}, null);
+		        	
 			        add( panel );
+			        
+			        add(getErrorComponent(null));
 			        
 			        logo.setVisible(true);
 			        
@@ -145,19 +152,22 @@ public class TCCaseViewPage extends SecureSessionCheckPage
 					}));
 		        }
 		        catch (Exception e) {
-		        	add(new Label("tc-case", new Model<String>(
-		        			TCUtilities.getLocalizedString("tc.casepage.error.text"))));
+		        	add(new WebMarkupContainer("tc-case").setVisible(false));
+		        	add(getErrorComponent(TCUtilities.getLocalizedString(
+		        			"tc.casepage.error.text")));
 		        	log.error(null, e);
 		        }
             }
             else {
-            	add(new Label("tc-case", new Model<String>(MessageFormat.format(
-            			TCUtilities.getLocalizedString("tc.casepage.casenotfound.text"),uid))));
+            	add(new WebMarkupContainer("tc-case").setVisible(false));
+            	add(getErrorComponent(MessageFormat.format(
+            			TCUtilities.getLocalizedString("tc.casepage.casenotfound.text"),uid)));
             }
         }
         else {
-        	add(new Label("tc-case", new Model<String>(
-        			TCUtilities.getLocalizedString("tc.casepage.casenotspecified.text"))));
+        	add(new WebMarkupContainer("tc-case").setVisible(false));
+        	add(getErrorComponent(TCUtilities.getLocalizedString(
+        			"tc.casepage.casenotspecified.text")));
         }
     }
     
@@ -172,5 +182,16 @@ public class TCCaseViewPage extends SecureSessionCheckPage
     	return RequestUtils.toAbsolutePath(
     			RequestCycle.get().urlFor(
     					TCCaseViewPage.class, params).toString());
+    }
+    
+    @SuppressWarnings("serial")
+	private Component getErrorComponent(final String errorMsg) {
+    	return new WebMarkupContainer("tc-casepage-error") {
+    		@Override
+    		public boolean isVisible() {
+    			return errorMsg!=null;
+    		}
+    	}
+    	.add(new Label("tc-casepage-error-text", new Model<String>(errorMsg)));
     }
 }
