@@ -74,6 +74,7 @@ import org.apache.wicket.markup.html.navigation.paging.PagingNavigator;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.markup.html.resources.CompressedResourceReference;
 import org.apache.wicket.markup.repeater.Item;
+import org.apache.wicket.markup.repeater.ReuseIfModelsEqualStrategy;
 import org.apache.wicket.markup.repeater.data.DataView;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
@@ -533,7 +534,7 @@ public class TCResultPanel extends Panel {
                 });
             }
         };
-        //dataView.setItemReuseStrategy(new ReuseIfModelsEqualStrategy());
+        dataView.setItemReuseStrategy(new ReuseIfModelsEqualStrategy());
         dataView.setItemsPerPage(WebCfgDelegate.getInstance()
                 .getDefaultFolderPagesize());
         dataView.setOutputMarkupId(true);
@@ -857,7 +858,18 @@ public class TCResultPanel extends Panel {
 
         @Override
         public IModel<TCModel> model(TCModel object) {
-            return new Model<TCModel>(object);
+            return new Model<TCModel>(object) {
+            	@Override
+            	public boolean equals(Object m) {
+            		if (m instanceof IModel) {
+            			Object o = ((IModel<?>)m).getObject();
+            			if (o instanceof TCModel) {
+            				return getObject().equals(o);
+            			}
+            		}
+            		return super.equals(m);
+            	}
+            };
         }
 
         public int getCurrentIndex(TCModel tcModel) {
