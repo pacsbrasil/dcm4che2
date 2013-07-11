@@ -163,7 +163,8 @@ public class HL7SendService extends ServiceMBeanSupport implements
     private JMSDelegate jmsDelegate = new JMSDelegate(this);
     
     protected TemplatesDelegate templates = new TemplatesDelegate(this);
-
+    
+    Socket s = null;
 
     public String getCharsetName() {
         try {
@@ -305,6 +306,11 @@ public class HL7SendService extends ServiceMBeanSupport implements
         server.removeNotificationListener(hl7ServerName, this,
                 HL7ServerService.NOTIF_FILTER, null);
         jmsDelegate.stopListening(queueName);
+        if (s != null && s.isConnected() ) {
+        	try {
+        	    s.close();
+        	} catch ( Exception ignore ) {}
+        }
     }
 
     public void handleNotification(Notification notif, Object handback) {
@@ -412,35 +418,95 @@ public class HL7SendService extends ServiceMBeanSupport implements
         }
     }
 
-    public Document invoke(byte[] message, String receiver) throws Exception {
+    private boolean shouldConnect(AEDTO remoteAE) {
+        if (s == null || !s.isConnected()) {
+            return true;
+        } else {
+            String remoteHost = s.getInetAddress().getHostName();
+            int remotePort = s.getPort();
+            // If the host and port are the same, re-use the existing connection
+            // otherwise, close and connect to new host/port
+            if (remotePort == remoteAE.getPort()
+                    && remoteHost.equals(remoteAE.getHostName())) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Reusing same connection to " + remoteHost + ":"
+                            + remotePort);
+                }
+                return false;
+            } else {
+                if (log.isDebugEnabled()) {
+                    log.debug("New connection to " + remoteAE.getHostName()
+                            + ":" + remoteAE.getPort()
+                            + ", old connection was " + remoteHost + ":"
+                            + remotePort);
+                }
+                if (soCloseDelay > 0) {
+                    try {
+                        Thread.sleep(soCloseDelay);
+                    } catch (InterruptedException ignore) {
+                    }
+
+                    try {
+                        s.close();
+                    } catch (Exception ignore) {
+                    }
+                }
+                return true;
+            }
+        }
+    }
+
+    private Document invokeInternal(byte[] message, String receiver)
+            throws Exception {
+        MLLPDriver mllpDriver = new MLLPDriver(s.getInputStream(),
+                s.getOutputStream(), true);
+        writeMessage(message, receiver, mllpDriver.getOutputStream());
+
+        mllpDriver.turn();
+        if (acTimeout > 0) {
+            s.setSoTimeout(acTimeout);
+        }
+        if (!mllpDriver.hasMoreInput()) {
+            throw new IOException("Receiver " + receiver + " closed socket "
+                    + s + " during waiting on response.");
+        }
+        return readMessage(mllpDriver.getInputStream());
+    }
+
+    public synchronized Document invoke(byte[] message, String receiver)
+            throws Exception {
         AEDTO localAE = new AEDTO();
         localAE.setTitle(receiver);
         localAE.setHostName("127.0.0.1");
         localAE.setPort(getLocalHL7Port());
-        AEDTO remoteAE = LOCAL_HL7_AET.equals(receiver) 
-                ? localAE : aeMgt().findByAET(receiver);
-        Socket s = tlsConfig.createSocket(localAE, remoteAE);
+        AEDTO remoteAE = LOCAL_HL7_AET.equals(receiver) ? localAE : aeMgt()
+                .findByAET(receiver);
+        boolean reUsingConnection = false;
+        if (shouldConnect(remoteAE)) {
+            s = tlsConfig.createSocket(localAE, remoteAE);
+        } else {
+            reUsingConnection = true;
+        }
+
         try {
-            MLLPDriver mllpDriver = new MLLPDriver(s.getInputStream(), s
-                    .getOutputStream(), true);
-            writeMessage(message, receiver, mllpDriver.getOutputStream());
-            mllpDriver.turn();
-            if (acTimeout > 0) {
-                s.setSoTimeout(acTimeout);
+            return invokeInternal(message, receiver);
+        } catch (Exception e) {
+            if (!reUsingConnection) {
+                throw e;
             }
-            if (!mllpDriver.hasMoreInput()) {
-                throw new IOException("Receiver " + receiver
-                        + " closed socket " + s
-                        + " during waiting on response.");
+            // In the case that we are re-using the connection, the server
+            // can timeout, but s.isConnected() still returns true.
+            // Reconnect.
+            try {
+                s.close();
+            } catch (Exception ignore) {
             }
-            return readMessage(mllpDriver.getInputStream());
-        } finally {
-            if (soCloseDelay > 0)
-                try {
-                    Thread.sleep(soCloseDelay);
-                } catch (InterruptedException ignore) {
-                }
-            s.close();
+            if (log.isDebugEnabled()) {
+                log.debug("Reconnecting to " + remoteAE.getHostName() + ":"
+                        + remoteAE.getPort());
+            }
+            s = tlsConfig.createSocket(localAE, remoteAE);
+            return invokeInternal(message, receiver);
         }
     }
 
@@ -448,7 +514,7 @@ public class HL7SendService extends ServiceMBeanSupport implements
         Document rsp = invoke(message, receiver);
         checkResponse(rsp);
     }
-
+    
     private void checkResponse(Document rsp) throws HL7Exception {
         MSH msh = new MSH(rsp);
         if ("ACK".equals(msh.messageType)) {
