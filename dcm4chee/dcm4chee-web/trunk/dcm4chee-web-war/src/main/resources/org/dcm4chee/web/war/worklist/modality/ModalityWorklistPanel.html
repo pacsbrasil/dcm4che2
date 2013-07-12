@@ -18,7 +18,6 @@
 				<table rules="groups" class="search-table" style="margin-top: 20px;">
 					<thead>
 						<tr>
-							<th class="search-table"></th>
 							<th class="search-table">
 								<wicket:message key="mw.search.title" />
 							</th>
@@ -32,7 +31,6 @@
 						</tr>
 					</thead>
 					<tr wicket:id="searchLabels" class="search-table">
-						<td></td>
 						<td>
 							<div wicket:id="patientName.label" class="search-header">Patient Name</div>
 						</td>
@@ -48,7 +46,6 @@
 						<td></td>
 					</tr>
 					<tr wicket:id="searchFields" class="search-table">
-						<td></td>
 						<td>
 							<div wicket:id="patientName" id="patientName" />
 						</td>
@@ -74,15 +71,13 @@
 						<td></td>
 					</tr>
 					<tr wicket:id="searchFuzzy" class="search-table">
-					    <td></td>
-	                    <td style="text-align: left;" colspan="8">
+	                    <td style="text-align: left;" colspan="9">
 	                        <input type="checkbox" id="fuzzyPN" wicket:id="fuzzyPN" />
 	                        <label for="fuzzyPN" wicket:id="fuzzyPN.label" style="padding-right: 5px;">Fuzzy</label>
 	                    </td>
 	                    <td></td>
 					</tr>
 					<tr wicket:id="searchDropdowns" class="search-table">
-						<td></td>
 						<td>
 							<div wicket:id="modality.label" class="search-header">Modality</div>
 					      	<select wicket:id="modality" />			
@@ -103,7 +98,6 @@
 						<td></td>
 					</tr>
 		             <tr wicket:id="extendedFilter" class="search-table-extended">
-			            <td></td>
 			            <td>
 			                <div wicket:id="birthDate.label" class="search-header">Birth Date</div>
 							<div wicket:id="birthDateMin.label">from</div>
@@ -122,7 +116,6 @@
 						<td></td>
 					</tr>
 				    <tr class="search-table-footer" wicket:id="searchFooter">
-						<td></td>
 						<td>
 				            <a wicket:id="showExtendedFilter">
 				            	<img wicket:id="showExtendedFilterImg" alt="(+)" />

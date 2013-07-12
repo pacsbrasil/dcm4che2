@@ -521,6 +521,39 @@ public class StudyListPage extends Panel {
 
         form.addLabeledCheckBox("exactModalitiesInStudy", null);        
         
+        AjaxFallbackLink<?> link = new AjaxFallbackLink<Object>("showExtendedFilter") {
+
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                filter.setExtendedQuery(!filter.isExtendedQuery());
+                target.addComponent(form);
+            }
+        };
+        link.add((new Image("showExtendedFilterImg", new AbstractReadOnlyModel<ResourceReference>() {
+
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public ResourceReference getObject() {
+                    return filter.isExtendedQuery() ? ImageManager.IMAGE_COMMON_COLLAPSE : 
+                        ImageManager.IMAGE_COMMON_EXPAND;
+                }
+        })
+        .add(new TooltipBehaviour("folder.search.", "showExtendedFilterImg", new AbstractReadOnlyModel<Boolean>() {
+
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public Boolean getObject() {
+                return filter.isExtendedQuery();
+            }
+        })))
+        .add(new ImageSizeBehaviour()));
+        form.addComponent(link);      
+        form.addComponent( new Label("showExtendedFilter.label", new ResourceModel("folder.search.showExtendedFilter.label")));
+
         final WebMarkupContainer extendedFilter = new WebMarkupContainer("extendedFilter") {
 
             private static final long serialVersionUID = 1L;
@@ -568,38 +601,6 @@ public class StudyListPage extends Panel {
         
         searchTableComponents.add(form.createAjaxParent("searchFooter"));
         
-        AjaxFallbackLink<?> link = new AjaxFallbackLink<Object>("showExtendedFilter") {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public void onClick(AjaxRequestTarget target) {
-                filter.setExtendedQuery(!filter.isExtendedQuery());
-                target.addComponent(form);
-            }
-        };
-        link.add((new Image("showExtendedFilterImg", new AbstractReadOnlyModel<ResourceReference>() {
-
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                public ResourceReference getObject() {
-                    return filter.isExtendedQuery() ? ImageManager.IMAGE_COMMON_COLLAPSE : 
-                        ImageManager.IMAGE_COMMON_EXPAND;
-                }
-        })
-        .add(new TooltipBehaviour("folder.search.", "showExtendedFilterImg", new AbstractReadOnlyModel<Boolean>() {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public Boolean getObject() {
-                return filter.isExtendedQuery();
-            }
-        })))
-        .add(new ImageSizeBehaviour()));
-        form.addComponent(link);      
-        form.addComponent( new Label("showExtendedFilter.label", new ResourceModel("folder.search.showExtendedFilter.label")));
     }
 
     private void addQueryOptions(final BaseForm form) {
