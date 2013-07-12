@@ -19,13 +19,26 @@
        </configuration>
     </plugin>
    </plugins>
-  </build>
-
-  <distributionManagement>
-   <repository>
+   </build>
+   <dependencies>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.6.1</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>1.6.1</version>
+            <scope>test</scope>
+        </dependency>
+   </dependencies>
+   <distributionManagement>
+    <repository>
      <id>dcm4che</id>
      <name>Dcm4che maven2</name>
      <url>scp://www.dcm4che.org:443/home/maven2</url>
-   </repository>
-  </distributionManagement>
+    </repository>
+   </distributionManagement>
 </project>

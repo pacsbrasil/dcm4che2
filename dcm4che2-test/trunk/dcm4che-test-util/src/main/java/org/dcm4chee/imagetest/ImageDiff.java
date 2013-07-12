@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 
@@ -16,6 +18,8 @@ import javax.imageio.ImageIO;
  * 
  */
 public class ImageDiff {
+   private static Logger log = LoggerFactory.getLogger(ImageDiff.class);
+
 	public static boolean writeImage = true;
 
 	public static boolean writeDiff = true;
@@ -89,11 +93,11 @@ public class ImageDiff {
 	private void writeImage(BufferedImage i2, String fileBase) throws IOException {
 		File f = new File(fileBase+".png");
 		if( maxDiff <= allowedDiff ) {
-			System.out.println("Not writing image - difference "+ maxDiff+"<="+ allowedDiff);
+			log.debug("Not writing image - difference "+ maxDiff+"<="+ allowedDiff);
 			if( f.exists() ) f.delete();
 			return;
 		}
-		System.out.println("Writing image "+fileBase+".png - difference "+ maxDiff+">"+ allowedDiff);
+		log.warn("Writing image "+fileBase+".png - difference "+ maxDiff+">"+ allowedDiff);
 		ImageIO.write(i2,"png", new File(fileBase+".png"));
 	}
 
