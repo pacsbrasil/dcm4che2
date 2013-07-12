@@ -4,7 +4,7 @@
 
   <groupId>org.dcm4che.test</groupId>
   <artifactId>dcm4che2-test</artifactId>
-  <version>2.5-SNAPSHOT</version>
+  <version>2.6-SNAPSHOT</version>
   <name>DCM4CHE Test Data and Libraries</name>
   <packaging>pom</packaging>
 
@@ -13,7 +13,7 @@
   </modules>
 
    <scm>
-      <developerConnection>scm:svn:https://dcm4che.svn.sourceforge.net/svnroot/dcm4che/dcm4che2-test/tags/dcm4che2-test-2.3</developerConnection>
+      <developerConnection>scm:svn:https://dcm4che.svn.sourceforge.net/svnroot/dcm4che/dcm4che2-test/tags/dcm4che2-test-2.6</developerConnection>
    </scm>
   
   <distributionManagement>
