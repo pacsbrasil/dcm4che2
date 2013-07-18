@@ -98,14 +98,11 @@ public class FileSystemPanel extends Panel {
 
     private static Logger log = LoggerFactory.getLogger(FileSystemPanel.class);
 
-    private static final ResourceReference DashboardCSS = new CompressedResourceReference(DashboardPanel.class, "dashboard-style.css");
     private static final ResourceReference CSS = new CompressedResourceReference(FileSystemPanel.class, "filesystem-style.css");
     
     public FileSystemPanel(String id) {
         super(id);
         
-        if (FileSystemPanel.DashboardCSS != null)
-            add(CSSPackageResource.getHeaderContribution(FileSystemPanel.DashboardCSS));
         if (FileSystemPanel.CSS != null)
             add(CSSPackageResource.getHeaderContribution(FileSystemPanel.CSS));
     }

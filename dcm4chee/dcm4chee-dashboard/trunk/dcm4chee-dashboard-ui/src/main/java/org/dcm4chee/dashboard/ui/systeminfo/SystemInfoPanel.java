@@ -98,19 +98,14 @@ public class SystemInfoPanel extends Panel {
     
     private static Logger log = LoggerFactory.getLogger(SystemInfoPanel.class);
 
-    private static final ResourceReference DashboardCSS = new CompressedResourceReference(DashboardPanel.class, "dashboard-style.css");
-
     public SystemInfoPanel(String id) {
         super(id);
-        
-        if (SystemInfoPanel.DashboardCSS != null)
-            add(CSSPackageResource.getHeaderContribution(SystemInfoPanel.DashboardCSS));
     }
     
     @Override
     public void onBeforeRender() {
         super.onBeforeRender();
-        
+
         try {
             Class<?> memoryPoolMXBean = Thread.currentThread().getContextClassLoader()
                 .loadClass("java.lang.management.MemoryPoolMXBean");

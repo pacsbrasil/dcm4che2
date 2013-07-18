@@ -97,8 +97,6 @@ public class CreateOrEditReportPage extends SecureSessionCheckPage {
     
     private static Logger log = LoggerFactory.getLogger(CreateOrEditReportPage.class);
 
-    private static final ResourceReference DashboardCSS = new CompressedResourceReference(DashboardPanel.class, "dashboard-style.css");
-
     protected ModalWindow window;
     private ReportModel report;
     
@@ -109,8 +107,6 @@ public class CreateOrEditReportPage extends SecureSessionCheckPage {
 
     public CreateOrEditReportPage(final ModalWindow window, final ReportModel report) {
         super();
-        if (CreateOrEditReportPage.DashboardCSS != null)
-            add(CSSPackageResource.getHeaderContribution(CreateOrEditReportPage.DashboardCSS));
 
         this.report = (report == null) ? new ReportModel() : report;
         if (this.report.getGroupUuid() == null) {

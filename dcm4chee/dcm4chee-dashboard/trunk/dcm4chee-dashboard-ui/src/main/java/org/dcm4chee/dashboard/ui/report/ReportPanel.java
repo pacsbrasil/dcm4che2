@@ -90,16 +90,11 @@ public class ReportPanel extends Panel {
     
     private static Logger log = LoggerFactory.getLogger(ReportPanel.class);
 
-    private static final ResourceReference DashboardCSS = new CompressedResourceReference(DashboardPanel.class, "dashboard-style.css");
-
     private ModalWindow createGroupWindow;
     private ModalWindow modalWindow;
     
     public ReportPanel(String id) {
         super(id);
-
-        if (ReportPanel.DashboardCSS != null)
-            add(CSSPackageResource.getHeaderContribution(ReportPanel.DashboardCSS));
 
         add(createGroupWindow = new ModalWindow("create-group-window")
             .setPageCreator(new ModalWindow.PageCreator() {

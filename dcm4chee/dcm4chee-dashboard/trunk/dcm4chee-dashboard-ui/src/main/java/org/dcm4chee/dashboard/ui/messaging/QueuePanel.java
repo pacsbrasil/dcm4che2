@@ -112,17 +112,12 @@ public class QueuePanel extends Panel {
     
     private static Logger log = LoggerFactory.getLogger(QueuePanel.class);
 
-    private static final ResourceReference DashboardCSS = new CompressedResourceReference(DashboardPanel.class, "dashboard-style.css");
-    
     public static final String CONNECTION_FACTORY = "java:ConnectionFactory";
 
     private Map<String,List<QueueDepthTupel>> queueDepthConfig = new HashMap<String,List<QueueDepthTupel>>();
     
     public QueuePanel(String id) {
         super(id);
-        
-        if (QueuePanel.DashboardCSS != null)
-            add(CSSPackageResource.getHeaderContribution(QueuePanel.DashboardCSS));
         
         try {
             DashboardDelegator dashboardDelegator = DashboardDelegator.getInstance((((BaseWicketApplication) getApplication()).getInitParameter("DashboardServiceName")));

@@ -38,11 +38,20 @@
 
 package org.dcm4chee.dashboard.ui;
 
+import org.apache.wicket.ResourceReference;
+import org.apache.wicket.Session;
+import org.apache.wicket.behavior.HeaderContributor;
+import org.apache.wicket.markup.html.IHeaderContributor;
+import org.apache.wicket.markup.html.IHeaderResponse;
+import org.apache.wicket.markup.html.resources.CompressedResourceReference;
+import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.Model;
 import org.dcm4chee.dashboard.ui.filesystem.FileSystemPanel;
 import org.dcm4chee.dashboard.ui.messaging.QueuePanel;
 import org.dcm4chee.dashboard.ui.report.ReportPanel;
 import org.dcm4chee.dashboard.ui.systeminfo.SystemInfoPanel;
 import org.dcm4chee.web.common.secure.SecureAjaxTabbedPanel;
+import org.dcm4chee.web.common.secure.SecureSessionCheckPage;
 
 /**
  * @author Robert David <robert.david@agfa.com>
@@ -53,15 +62,47 @@ public class DashboardPanel extends SecureAjaxTabbedPanel {
     
     private static final long serialVersionUID = 1L;
 
+    private static final ResourceReference DashboardCSS = new CompressedResourceReference(DashboardPanel.class, "dashboard-style.css");
+    public static final ResourceReference DashboardCSS_R = new CompressedResourceReference(DashboardPanel.class, "dashboard-style-r.css");
+
     public DashboardPanel(String id) {
         super(id);
-        
+            
         addModule(FileSystemPanel.class, null);
         addModule(ReportPanel.class, null);
         addModule(SystemInfoPanel.class, null);
         addModule(QueuePanel.class, null);
+        
+        add(getBaseCSSHeaderContributor());
     }
     
+    public IModel<ResourceReference> getBaseCSSModel() {
+
+    	IModel<ResourceReference> cssModel = Session.get().getMetaData(SecureSessionCheckPage.BASE_CSS_MODEL_MKEY);
+        if (cssModel != null) {
+        	if (cssModel.getObject().getName().equals("base-style.css"))
+        		return new Model<ResourceReference>(DashboardPanel.DashboardCSS);
+        	else if (cssModel.getObject().getName().equals("base-style-r.css"))
+        		return new Model<ResourceReference>(DashboardPanel.DashboardCSS_R);
+        	else
+        		return cssModel;
+        }
+        return null;
+		
+    }
+
+    public HeaderContributor getBaseCSSHeaderContributor() {
+
+        return new HeaderContributor(new IHeaderContributor() {
+        	
+        	private static final long serialVersionUID = 1L;
+
+        	public void renderHead(IHeaderResponse response) {
+        		response.renderCSSReference(getBaseCSSModel().getObject());
+        	}
+        });
+    }
+
     public static String getModuleName() {
         return "dashboard";
     }
