@@ -127,20 +127,26 @@ public abstract class PatientUpdateBean implements SessionBean {
             throws CreateException, FinderException,
                     PatientAlreadyExistsException {
         LOG.info("Change PID for " + correct.getString(Tags.PatientName)
-                + " from " + prior.getString(Tags.PatientID)
-                + " to " + correct.getString(Tags.PatientID));
+                + " from " + toPidAndIssuer(prior)
+                + " to " + toPidAndIssuer(correct));
         try {
             patHome.selectByPatientId(correct);
             String prompt = "Patient with PID "
-                + correct.getString(Tags.PatientID) + "^^^"
-                + correct.getString(Tags.IssuerOfPatientID, "")
-                + " already exists";
+                + toPidAndIssuer(correct) + " already exists";
             LOG.warn(prompt);
             throw new PatientAlreadyExistsException(prompt);
         } catch (ObjectNotFoundException e) {}
-        PatientLocal correctPat = patHome.create(correct);
-        PatientLocal priorPat= updateOrCreate(prior);
-        merge(correctPat, priorPat);
+        try {
+            PatientLocal priorPat = patHome.selectByPatientId(prior);
+            Dataset newAttrs = priorPat.getAttributes(true);
+            newAttrs.putLO(Tags.PatientID, correct.getString(Tags.PatientID));
+            newAttrs.putLO(Tags.IssuerOfPatientID, correct.getString(Tags.IssuerOfPatientID));
+            PatientLocal correctPat = patHome.create(newAttrs);
+            merge(correctPat, priorPat);
+        }
+        catch (ObjectNotFoundException x) {
+            LOG.warn("Prior patient of ChangePatientIdentifierList request not found! Ignored!");
+        }
     }
 
     /**
@@ -322,5 +328,9 @@ public abstract class PatientUpdateBean implements SessionBean {
         } catch (ObjectNotFoundException e) {
             patHome.create(ds);
         }
+    }
+    
+    private String toPidAndIssuer(Dataset ds) {
+        return ds.getString(Tags.PatientID)+"^^^"+ds.getString(Tags.IssuerOfPatientID, "");
     }
 }
