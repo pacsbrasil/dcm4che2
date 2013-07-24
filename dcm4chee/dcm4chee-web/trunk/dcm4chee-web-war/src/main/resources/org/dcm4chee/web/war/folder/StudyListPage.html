@@ -30,10 +30,11 @@
 			<table rules="groups" class="search-table" style="margin-top: 20px; " cellspacing="0px">
 				<thead>
 					<tr class="search-table">
-						<th class="search-table">
-							<wicket:message key="folder.search.title" />
+						<th class="search-table" colspan="9">
+							<button wicket:id="bigSearchBtn" style="text-align: left; width:100%;background: transparent;color:white;font-weight: bold;border-color:black;border-width:3px;border-radius: 6px;">
+								<span wicket:id="bigSearchText" />
+							</button>
 						</th>
-						<th class="search-table" colspan="8"/>
 						<th class="search-table" style="text-align: right;">
 							<a wicket:id="searchToggle">
 								<img wicket:id="searchToggleImg" />

@@ -336,6 +336,31 @@ public class StudyListPage extends Panel {
         final StudyListFilter filter = viewport.getFilter();
         add(form = new BaseForm("form", new CompoundPropertyModel<Object>(filter)));
         form.setResourceIdPrefix("folder.");
+        form.add(new IndicatingAjaxButton("bigSearchBtn") {
+            private static final long serialVersionUID = 1L;
+            
+            @Override
+            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
+                if (showSearch) {
+                    if (!viewport.getFilter().isFiltered()) {
+                        viewport.setResetOnSearch(true);
+                        confirmSearch.confirm(target, new StringResourceModel("folder.message.confirmSearch", this, null), form);
+                    } else {
+                            if (countForWarning(target))
+                                    confirmSearch.confirm(target, new StringResourceModel("folder.message.warnSearch", this, null), form);
+                            else
+                                    doSearch(target, form, true);
+                    }
+                }
+            }
+            
+            @Override
+            public void onError(AjaxRequestTarget target, Form<?> form) {
+                BaseForm.addInvalidComponentsToAjaxRequestTarget(target, form);
+            }
+        }.add(new Label("bigSearchText", new ResourceModel("folder.searchFooter.searchBtn.text"))
+            ).setOutputMarkupId(true)
+        );
         form.add(new AjaxFallbackLink<Object>("searchToggle") {
 
             private static final long serialVersionUID = 1L;
@@ -928,14 +953,15 @@ public class StudyListPage extends Panel {
 
 	private void addViewPort(final WebMarkupContainer parent) {
     	
-    	parent.add(new Link<Object>("prev") {
+    	parent.add(new AjaxLink<Object>("prev") {
 
             private static final long serialVersionUID = 1L;
 
             @Override
-            public void onClick() {
+            public void onClick(final AjaxRequestTarget target) {
                 viewport.setOffset(Math.max(0, viewport.getOffset() - pagesize.getObject()));
-                query(null);               
+                query(target);
+                target.addComponent(form);
             }
             
             @Override
@@ -948,14 +974,15 @@ public class StudyListPage extends Panel {
         .add(new TooltipBehaviour("folder.search.")))
         );
 
-    	parent.add(new Link<Object>("next") {
+    	parent.add(new AjaxLink<Object>("next") {
 
             private static final long serialVersionUID = 1L;
 
             @Override
-            public void onClick() {
+            public void onClick(final AjaxRequestTarget target) {
                 viewport.setOffset(viewport.getOffset() + pagesize.getObject());
-                query(null);
+                query(target);
+                target.addComponent(form);
             }
 
             @Override
