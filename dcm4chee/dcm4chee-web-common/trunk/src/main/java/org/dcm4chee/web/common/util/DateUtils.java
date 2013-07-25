@@ -39,6 +39,8 @@
 package org.dcm4chee.web.common.util;
 
 import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 
 import org.apache.wicket.Component;
 import org.joda.time.format.DateTimeFormat;
@@ -156,5 +158,21 @@ public class DateUtils {
         }
     }
 
+    public static Date[] fromOffsetToCurrentDateRange(String offset) {
+        if (offset == null || "NONE".equals(offset))
+            return null;
+        int offs = Integer.parseInt(offset);
+        GregorianCalendar cal = new GregorianCalendar();
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        long start = cal.getTimeInMillis() - (long)offs * 86400000l;
+        cal.set(Calendar.HOUR_OF_DAY, 23);
+        cal.set(Calendar.MINUTE, 59);
+        cal.set(Calendar.SECOND, 59);
+        cal.set(Calendar.MILLISECOND, 999);
+        return new Date[]{new Date(start), cal.getTime()};
+    }
 
 }
