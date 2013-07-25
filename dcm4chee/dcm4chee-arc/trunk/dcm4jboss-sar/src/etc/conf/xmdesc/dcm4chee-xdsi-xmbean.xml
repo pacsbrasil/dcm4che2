@@ -381,6 +381,8 @@
       		You can disable PIX Query by setting this value with '=' as first character.<br/>
       		'=' : use the source patient ID and issuer.<br/>
       		'=?&lt;Domain&gt;' : use patientID from source and &lt;Domain&gt; as issuer. <br/>
+      		'=?[&lt;issuer&gt;]&lt;Domain&gt;' : Dedicated issuer replacement: Only patientID's with given 
+      		&lt;issuer&gt; will be exported as &lt;patId&gt;&#94;&#94;&#94&lt;domain&gt;. <br/>
       		'=&lt;patient&gt;' : use &lt;patient&gt; for patientID and issuer (patid&#94;&#94;&#94;issuer). 
       ]]></description>
       <name>AffinityDomain</name>

@@ -791,6 +791,14 @@ public class XDSIService extends ServiceMBeanSupport implements NotificationList
         return affinityDomain;
     }
     public void setAffinityDomain(String domain) {
+        if (domain.length() > 2 && domain.charAt(0) == '=' && domain.charAt(1) == '?') {
+            int pos = domain.indexOf('[', 2);
+            int pos2 = domain.indexOf(']', 2);
+            if (pos > 2 || pos == -1 && pos2 != -1 ||
+                pos == 2 && (pos2 < 3 || domain.length() < pos2 + 5) ) {
+                throw new IllegalArgumentException("Wrong format for dedicated issuer replacement! Format: '=?[<issuer>]<AffinityDomain>");
+            }
+        }
         affinityDomain = domain;
     }
 
@@ -1163,6 +1171,9 @@ public class XDSIService extends ServiceMBeanSupport implements NotificationList
     }
     public boolean sendSOAP(Dataset kos, Properties mdProps) throws SQLException {
         log.debug("Manifest Key Selection Object:");log.debug(kos);
+        String affPatID = getAffinityDomainPatientID(kos);
+        if (affPatID == null)
+            return false;
         if ( mdProps == null ) mdProps = this.metadataProps;
         XDSIDocument mainDoc;
         boolean hasInstances = hasManifestInstances(kos);
@@ -1182,7 +1193,7 @@ public class XDSIService extends ServiceMBeanSupport implements NotificationList
             }
             mainDoc = new XDSIDatasetDocument(kos, "application/dicom", DOCUMENT_ID);
         }
-        mdProps.setProperty(XAD_PATIENT_ID, getAffinityDomainPatientID(kos));
+        mdProps.setProperty(XAD_PATIENT_ID, affPatID);
         mdProps.setProperty(SRC_PATIENT_ID, getSourcePatientID(kos));
         String user = mdProps.getProperty("user");
         XDSIDocument[] docs;
@@ -1345,13 +1356,16 @@ public class XDSIService extends ServiceMBeanSupport implements NotificationList
         log.debug("export PDF to XDS Instance UID:"+iuid);
         Dataset ds = queryInstance(iuid);
         if ( ds == null ) return false;
+        String affPatID = getAffinityDomainPatientID(ds);
+        if (affPatID == null)
+            return false;
         String pdfUID = UIDGenerator.getInstance().createUID();
         log.info("Document UID of exported PDF:"+pdfUID);
         ds.putUI(Tags.SOPInstanceUID,pdfUID);
         if ( mdProps == null ) mdProps = this.metadataProps;
         String user = mdProps.getProperty("user");
         mdProps.setProperty("mimetype", "application/pdf");
-        mdProps.setProperty(XAD_PATIENT_ID, getAffinityDomainPatientID(ds));
+        mdProps.setProperty(XAD_PATIENT_ID, affPatID);
         mdProps.setProperty(SRC_PATIENT_ID, getSourcePatientID(ds));
         XDSIDocument[] docs = new XDSIURLDocument[]
                                                   {new XDSIURLDocument(new URL(ridURL+iuid),"application/pdf",PDF_DOCUMENT_ID,pdfUID)};
@@ -1366,8 +1380,11 @@ public class XDSIService extends ServiceMBeanSupport implements NotificationList
     public boolean createFolder( Properties mdProps ) {
         String patDsIUID = mdProps.getProperty("folder.patDatasetIUID");
         Dataset ds = queryInstance(patDsIUID);
+        String affPatID = getAffinityDomainPatientID(ds);
+        if (affPatID == null)
+            return false;
         log.info("create XDS Folder for patient:"+ds.getString(Tags.PatientID));
-        mdProps.setProperty(XAD_PATIENT_ID, getAffinityDomainPatientID(ds));
+        mdProps.setProperty(XAD_PATIENT_ID, affPatID);
         mdProps.setProperty(SRC_PATIENT_ID, getSourcePatientID(ds));
         log.info("XAD patient:"+mdProps.getProperty(XAD_PATIENT_ID));
         XDSMetadata md = new XDSMetadata(null, mdProps, null);
@@ -1485,8 +1502,21 @@ public class XDSIService extends ServiceMBeanSupport implements NotificationList
                 return patID+issuer;
             } else if (affinityDomain.charAt(1)=='?') {
                 log.info("PIX Query disabled: replace issuer with affinity domain! ");
-                log.debug("patID changed! ("+patID+"^^^"+issuer+" -> "+patID+"^^^"+affinityDomain.substring(2)+")");
-                return patID+"^^^"+affinityDomain.substring(2);
+                String newIssuer;
+                if (affinityDomain.charAt(2) == '[') {
+                    int pos = affinityDomain.indexOf(']', 3);
+                    String rplcIssuer = affinityDomain.substring(3, pos);
+                    if (rplcIssuer.equals(issuer)) {
+                        newIssuer = affinityDomain.substring(++pos);
+                    } else {
+                        log.info("PatientID not valid for XDS-I export! Wrong Issuer! patID:"+patID+"^^^"+issuer+" should have issuer "+rplcIssuer+")");
+                        return null;
+                    }
+                } else {
+                    newIssuer = affinityDomain.substring(2);
+                }
+                log.debug("patID changed! ("+patID+"^^^"+issuer+" -> "+patID+"^^^"+newIssuer.substring(2)+")");
+                return patID+"^^^"+newIssuer;
             } else {
                 log.info("PIX Query disabled: replace configured patient ID! :"+affinityDomain.substring(1));
                 return affinityDomain.substring(1);
