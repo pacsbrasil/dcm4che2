@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.dcm4chee.web.common.delegate.BaseCfgDelegate;
+import org.dcm4chee.web.common.util.DateUtils;
 import org.dcm4chee.web.service.common.RetryIntervalls;
 import org.dcm4chee.web.war.tc.TCAttribute;
 import org.slf4j.Logger;
@@ -407,23 +408,9 @@ public class WebCfgDelegate extends BaseCfgDelegate {
     public Date[] getPresetStudyDateRange() {
         try {
             String s = (String) server.getAttribute(serviceObjectName, "PresetStudyDate");
-            if (s == null || "NONE".equals(s)) {
-                return null;
-            }
-            int offset = Integer.parseInt(s);
-            GregorianCalendar cal = new GregorianCalendar();
-            cal.set(Calendar.HOUR_OF_DAY, 0);
-            cal.set(Calendar.MINUTE, 0);
-            cal.set(Calendar.SECOND, 0);
-            cal.set(Calendar.MILLISECOND, 0);
-            long start = cal.getTimeInMillis() - (long)offset * 86400000l;
-            cal.set(Calendar.HOUR_OF_DAY, 23);
-            cal.set(Calendar.MINUTE, 59);
-            cal.set(Calendar.SECOND, 59);
-            cal.set(Calendar.MILLISECOND, 999);
-            return new Date[]{new Date(start), cal.getTime()};
+            return DateUtils.fromOffsetToCurrentDateRange(s);
         } catch (Exception x) {
-            log.warn("Cant get DefaultFolderPagesize attribute! return 10 as default!", x);
+            log.warn("Cant get PresetStudyDateRange attribute! return null as default!", x);
             return null;
         }
     }

@@ -170,6 +170,7 @@ import org.dcm4chee.web.common.model.MultiResourceModel;
 import org.dcm4chee.web.common.secure.SecureSession;
 import org.dcm4chee.web.common.secure.SecurityBehavior;
 import org.dcm4chee.web.common.util.Auditlog;
+import org.dcm4chee.web.common.util.DateUtils;
 import org.dcm4chee.web.common.util.FileUtils;
 import org.dcm4chee.web.common.validators.UIDValidator;
 import org.dcm4chee.web.common.webview.link.WebviewerLinkProvider;
@@ -2957,13 +2958,17 @@ public class StudyListPage extends Panel {
 
     private Date[] toDateRange(String s) {
         Date[] d = new Date[2];
-        if (s != null && s.length() > 2) {
-            try {
-                DateRange dr = VR.DT.toDateRange(s.getBytes());
-                d[0] = dr.getStart();
-                d[1] = dr.getEnd();
-            } catch (Exception x) {
-                log.warn("Wrong date range format:"+s+" Must be [yyyy[MM[dd[hh[mm[ss]]]]]][-yyyy[MM[dd[hh[mm[ss]]]]]]");
+        if (s != null) {
+            if (s.length() > 3) {
+                try {
+                    DateRange dr = VR.DT.toDateRange(s.getBytes());
+                    d[0] = dr.getStart();
+                    d[1] = dr.getEnd();
+                } catch (Exception x) {
+                    log.warn("Wrong date range format:"+s+" Must be [yyyy[MM[dd[hh[mm[ss]]]]]][-yyyy[MM[dd[hh[mm[ss]]]]]]");
+                }
+            } else {
+                d = DateUtils.fromOffsetToCurrentDateRange(s);
             }
         }
         return d;
