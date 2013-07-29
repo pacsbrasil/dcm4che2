@@ -58,7 +58,7 @@ import org.hibernate.annotations.Parameter;
  * @version $Revision$ $Date$
  * @since Jan 23, 2007
  */
-@Entity
+@Entity(name = "org.dcm4chee.arr.entities.Code")
 @Table(name = "code", uniqueConstraints = { 
         @UniqueConstraint(columnNames = { "code_value", "code_designator" }) })
 public class Code implements Serializable {
