@@ -55,7 +55,7 @@ import org.dcm4che2.data.VR;
  * @version $Revision$ $Date$
  * @since Feb 28, 2008
  */
-@Entity
+@Entity(name = "org.dcm4chee.archive.entity.Code")
 @Table(name = "code")
 public class Code extends BaseEntity implements Serializable {
 
