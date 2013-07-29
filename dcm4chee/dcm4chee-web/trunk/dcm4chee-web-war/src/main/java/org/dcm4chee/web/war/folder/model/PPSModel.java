@@ -119,24 +119,9 @@ public class PPSModel extends AbstractEditableDicomModel implements Serializable
     }
 
     public String getAccessionNumber() {
-        if (dataset == null)
-            return null;
-        String accNo = dataset.getString(new int[] { 
+        return (dataset == null) ? null : dataset.getString(new int[] { 
                         Tag.ScheduledStepAttributesSequence, 0,
                         Tag.AccessionNumber });
-        if (accNo == null) {
-            DicomElement ssaSq = dataset.get(Tag.ScheduledStepAttributesSequence);
-            if (ssaSq != null && ssaSq.countItems() > 1) {
-                for (int i = 1, len = ssaSq.countItems() ; i < len ; i++) {
-                    accNo = ssaSq.getDicomObject(i).getString(Tag.AccessionNumber);
-                    if (accNo != null) {
-                        log.warn("ScheduledStepAttributesSequence contains item(s) without Accession Number! Found Accession Number in item "+i);
-                        return accNo;
-                    }
-                }
-            }
-        }
-        return accNo;
     }
 
     public String getSpsid() {
