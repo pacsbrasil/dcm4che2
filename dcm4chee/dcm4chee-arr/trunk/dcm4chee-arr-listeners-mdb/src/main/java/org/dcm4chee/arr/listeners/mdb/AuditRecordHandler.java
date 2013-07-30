@@ -244,7 +244,7 @@ class AuditRecordHandler extends DefaultHandler {
     @SuppressWarnings("unchecked")
 	private Code findCode(String value, String designator) {
         List<Code> queryResult = em.createQuery(
-                "FROM Code c WHERE "
+                "FROM org.dcm4chee.arr.entities.Code c WHERE "
                         + "c.value = :value AND c.designator = :designator")
                 .setParameter("value", value)
                 .setParameter("designator", designator)
