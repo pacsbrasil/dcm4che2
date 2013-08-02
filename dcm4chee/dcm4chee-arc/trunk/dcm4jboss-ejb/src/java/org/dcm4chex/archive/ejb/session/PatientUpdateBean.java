@@ -61,6 +61,7 @@ import org.dcm4che.dict.Tags;
 import org.dcm4chex.archive.common.PatientMatching;
 import org.dcm4chex.archive.common.SPSStatus;
 import org.dcm4chex.archive.ejb.entity.AttrUtils;
+import org.dcm4chex.archive.ejb.interfaces.PatientUpdateLocal;
 import org.dcm4chex.archive.ejb.interfaces.SeriesLocal;
 import org.dcm4chex.archive.ejb.interfaces.MWLItemLocal;
 import org.dcm4chex.archive.ejb.interfaces.PatientLocal;
@@ -96,10 +97,12 @@ public abstract class PatientUpdateBean implements SessionBean {
 
     private static final Logger LOG = Logger.getLogger(PatientUpdateBean.class);
 
+    private SessionContext sessionCtx;
     private PatientLocalHome patHome;
 
-    public void setSessionContext(SessionContext arg0) throws EJBException,
+    public void setSessionContext(SessionContext ctx) throws EJBException,
             RemoteException {
+        sessionCtx = ctx;
         Context jndiCtx = null;
         try {
             jndiCtx = new InitialContext();
@@ -269,7 +272,7 @@ public abstract class PatientUpdateBean implements SessionBean {
        } catch (ObjectNotFoundException e) {
             PatientLocal pat;
             try {
-                pat = patHome.create(ds);
+                pat = ((PatientUpdateLocal) sessionCtx.getEJBLocalObject()).createPatient(ds);
             } catch (CreateException ce) {
                 // Check if patient record was inserted by concurrent thread
                 // with unique index on (pat_id, pat_id_issuer)
@@ -309,6 +312,14 @@ public abstract class PatientUpdateBean implements SessionBean {
             AttrUtils.fetchModifiedAttributes(ds, origModAttrs, modified);
         }
         return pat;
+    }
+
+    /**
+     * @ejb.interface-method
+     * @ejb.transaction type="RequiresNew"
+     */
+    public PatientLocal createPatient(Dataset ds) throws CreateException {
+        return patHome.create(ds);
     }
 
     /**
