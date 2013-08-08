@@ -38,13 +38,20 @@
 
 package org.dcm4chee.web.common.markup;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Iterator;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.wicket.Component;
 import org.apache.wicket.behavior.IBehavior;
+import org.apache.wicket.datetime.DateConverter;
 import org.apache.wicket.datetime.StyleDateConverter;
 import org.apache.wicket.datetime.markup.html.form.DateTextField;
 import org.apache.wicket.extensions.yui.calendar.DatePicker;
@@ -52,7 +59,9 @@ import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.form.FormComponentPanel;
 import org.apache.wicket.markup.html.form.AbstractTextComponent.ITextFormatProvider;
 import org.apache.wicket.model.IModel;
+import org.apache.wicket.util.convert.IConverter;
 import org.dcm4chee.web.common.util.DateUtils;
+import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
@@ -84,24 +93,20 @@ public class SimpleDateTimeField extends FormComponentPanel<Date> implements ITe
 
                     @Override
                     protected DateTimeFormatter getFormat() {
-                        String pattern = DateUtils.getDatePattern(getComponent());
-                        return DateTimeFormat.forPattern(pattern).withLocale(getLocale())
-                                        .withPivotYear(2000);
-                    }
-                    @Override
-                    public Date convertToObject(String value, Locale locale) {
-                        if (value != null && value.length()==1 && Character.isDigit(value.charAt(0))) {
-                            long t = System.currentTimeMillis() - 86400000*(value.charAt(0)-0x30);
-                            return new Date(t);
-                        }
-                        return super.convertToObject(value, locale);
-                    }
+                    	return DateTimeFormat.forPattern(DateUtils.getDatePattern(dateField));
+                    }                    
             });
         dateField.add(new DatePicker() {
+        	
             private static final long serialVersionUID = 1L;
+            
             protected boolean enableMonthYearSelection() {
                     return true;
             }
+        
+	    	protected String getDatePattern() {
+				return DateUtils.getDatePattern(dateField);
+	    	}       
         });
         add(dateField);
         timeField = new TimeField("timeField", new TimeModel(this)) {
