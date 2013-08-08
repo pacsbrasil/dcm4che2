@@ -69,8 +69,12 @@ public class TCViewForumTab extends AbstractEditableTCViewTab
         			lastURL = null;
         			if (uid!=null) {
         				try {
-	         				lastURL = TCForumIntegration.JForum.getPostsPageURL(o);
-	           				lastUID = uid;
+        					TCForumIntegration impl = TCForumIntegration.get(
+        							WebCfgDelegate.getInstance().getTCForumIntegrationType());
+        					if (impl!=null) {
+		         				lastURL = TCForumIntegration.JForum.getPostsPageURL(o);
+		           				lastUID = uid;
+        					}
         				}
         				catch (Exception e) {
         					log.error(null, e);
