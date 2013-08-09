@@ -42,11 +42,15 @@ import javax.security.auth.Subject;
 
 import org.apache.wicket.Page;
 import org.apache.wicket.Request;
+import org.apache.wicket.RequestCycle;
 import org.apache.wicket.Response;
+import org.apache.wicket.protocol.http.WebRequest;
+import org.apache.wicket.protocol.http.WebRequestCycle;
 import org.apache.wicket.request.target.coding.QueryStringUrlCodingStrategy;
 import org.apache.wicket.security.authentication.LoginException;
 import org.apache.wicket.util.time.Duration;
 import org.dcm4chee.web.common.base.BaseWicketApplication;
+import org.dcm4chee.web.common.base.InternalErrorPage;
 import org.dcm4chee.web.common.login.LoginContextSecurityHelper;
 import org.dcm4chee.web.common.login.SSOLoginContext;
 import org.dcm4chee.web.war.tc.TCCaseViewPage;
@@ -93,5 +97,17 @@ public class WicketApplication extends BaseWicketApplication {
         super.init();
         mountBookmarkablePage("/imageview", TCImageViewPage.class);
         mount(new QueryStringUrlCodingStrategy("/caseview", TCCaseViewPage.class));
+    }
+    
+    @Override
+    public RequestCycle newRequestCycle(Request request, Response response) {
+    	
+    	return new WebRequestCycle(WicketApplication.this, (WebRequest) request, response) {
+
+	    	@Override
+	    	public Page onRuntimeException(Page page, RuntimeException e) {
+	    		return new InternalErrorPage(e, page);
+	    	}
+    	};
     }
 }
