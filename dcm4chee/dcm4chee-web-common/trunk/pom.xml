@@ -51,27 +51,18 @@
             <groupId>org.apache.wicket</groupId>
             <artifactId>wicket</artifactId>
             <version>${wicket.version}</version>
-<!--
-            <version>${wicket.version}_patched</version>
--->
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.wicket</groupId>
             <artifactId>wicket-extensions</artifactId>
             <version>${wicket.version}</version>
-<!--
-            <version>${wicket.version}_patched</version>
--->
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.wicket</groupId>
             <artifactId>wicket-datetime</artifactId>
             <version>${wicket.version}</version>
-<!--
-            <version>${wicket.version}_patched</version>
--->
             <scope>provided</scope>
         </dependency>
         <dependency>
