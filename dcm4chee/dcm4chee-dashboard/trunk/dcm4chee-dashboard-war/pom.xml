@@ -36,7 +36,7 @@
         <dependency>
             <groupId>org.apache.wicket</groupId>
             <artifactId>wicket</artifactId>
-            <version>${wicket.version}_patched</version>
+            <version>${wicket.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
