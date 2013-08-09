@@ -78,7 +78,7 @@ public class UpdateAttributesService extends ServiceMBeanSupport {
     private int maximalNumberOfSeriesToUpdateByOneTask;
     private ObjectName queryRetrieveScpServiceName;
     private int fetchSize;
-    private Long lastModified;
+    private long[] lastModified = new long[]{0};
 
     public final ObjectName getQueryRetrieveScpServiceName() {
         return queryRetrieveScpServiceName;
@@ -164,9 +164,9 @@ public class UpdateAttributesService extends ServiceMBeanSupport {
 
     public void reloadAttributeFilter() {
         synchronized (lastModified) {
-            if (lastModified < AttributeFilter.lastModified()) {
+            if (lastModified[0] < AttributeFilter.lastModified()) {
                 AttributeFilter.reload();
-                lastModified = AttributeFilter.lastModified();
+                lastModified[0] = AttributeFilter.lastModified();
             }
         }
     }
