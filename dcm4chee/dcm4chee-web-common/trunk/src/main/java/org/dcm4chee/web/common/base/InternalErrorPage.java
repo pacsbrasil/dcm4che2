@@ -63,24 +63,24 @@ public class InternalErrorPage extends BaseWicketPage {
         super();
         this.throwable = throwable;
         this.page = page;
+        
+System.out.println("throwable: " + throwable.getClass() + " " + throwable.getMessage());
+System.out.println("page: " + page);
     }
 
     @Override
     protected void onBeforeRender() {
         super.onBeforeRender();
         
-        add(new Label("exception-message", new ResourceModel("application.internal_error.throwable").wrapOnAssignment(this).getObject() + (this.throwable == null ? "" : throwable.getLocalizedMessage())));
-        add(new Label("exception-page", new ResourceModel("application.internal_error.page").wrapOnAssignment(this).getObject() + (this.page == null ? "" : Page.class.toString())));
-        add( new AjaxFallbackLink<Object>("home") {
+        addOrReplace(new Label("exception-message", new ResourceModel("application.internal_error.throwable").wrapOnAssignment(this).getObject() + (this.throwable == null ? "" : throwable.getLocalizedMessage())));
+        addOrReplace(new Label("exception-page", new ResourceModel("application.internal_error.page").wrapOnAssignment(this).getObject() + (this.page == null ? "" : Page.class.toString())));
+        addOrReplace( new AjaxFallbackLink<Object>("home") {
 
             private static final long serialVersionUID = 1L;
 
             @Override
             public void onClick(AjaxRequestTarget target) {
-                if (page.getId().equals("0"))
-                    setResponsePage(getApplication().getHomePage());
-                else
-                    ModalWindow.closeCurrent(target);
+            	setResponsePage(getApplication().getHomePage());
             }
         }.add(new Label("homeLabel", new ResourceModel("application.home"))));
     }

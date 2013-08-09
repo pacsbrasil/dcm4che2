@@ -141,10 +141,12 @@ public class ModuleSelectorPanel extends SecureAjaxTabbedPanel {
                     if (cssCookie)
                         break;
                 } else if (c.getName().equals("WEB3_CSS")) {
-                    for (ResourceReference rsrc : getBaseCssResources()) {
-                        if (rsrc.getName().equals(c.getValue()))
-                            baseCssModel.setObject(rsrc);
-                    }
+                	if (baseCssModel != null) { 
+	                    for (ResourceReference rsrc : getBaseCssResources()) {
+	                        if (rsrc.getName().equals(c.getValue()))
+	                            baseCssModel.setObject(rsrc);
+	                    }
+                	}
                     cssCookie = true;
                     if (found)
                         break;
