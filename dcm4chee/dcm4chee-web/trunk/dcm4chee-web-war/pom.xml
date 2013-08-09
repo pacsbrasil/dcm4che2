@@ -111,22 +111,22 @@
         <dependency>
             <groupId>org.apache.wicket</groupId>
             <artifactId>wicket</artifactId>
-            <version>${wicket.version}_patched</version>
+            <version>${wicket.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.wicket</groupId>
             <artifactId>wicket-extensions</artifactId>
-            <version>${wicket.version}_patched</version>
+            <version>${wicket.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.wicket</groupId>
             <artifactId>wicket-datetime</artifactId>
-            <version>${wicket.version}_patched</version>
+            <version>${wicket.version}</version>
         </dependency>
-		<dependency><!-- needed to include joda-time-1.6.jar with patched wicket-datetime version-->
+		<dependency>
 			<groupId>joda-time</groupId>
 			<artifactId>joda-time</artifactId>
-            <version>1.6</version>
+            <version>1.6.2</version>
 		</dependency>
         <dependency>
             <groupId>org.apache.wicket</groupId>

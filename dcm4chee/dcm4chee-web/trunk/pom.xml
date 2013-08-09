@@ -11,7 +11,7 @@
     <description>Web Application for DCM4CHEE Archive</description>
     <properties>
         <project.version>3.0.4-SNAPSHOT</project.version>
-        <wicket.version>1.4.7</wicket.version>
+        <wicket.version>1.4.22</wicket.version>
     </properties>
     <build>
         <defaultGoal>package</defaultGoal>
