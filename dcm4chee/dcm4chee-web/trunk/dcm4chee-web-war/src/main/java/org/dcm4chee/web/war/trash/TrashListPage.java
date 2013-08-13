@@ -554,12 +554,6 @@ public class TrashListPage extends Panel {
                 "confirmRestore") {
 
             private static final long serialVersionUID = 1L;
-// TODO:
-//            @Override
-//            public void onOk(AjaxRequestTarget target) {
-//                setRemark(null);
-//                target.addComponent(form);
-//            }
 
             @Override
             public void close(AjaxRequestTarget target) {
@@ -758,11 +752,6 @@ public class TrashListPage extends Panel {
             private static final long serialVersionUID = 1L;
 
             @Override
-            public void onOk(AjaxRequestTarget target) {
-                target.addComponent(form);
-            }
-
-            @Override
             public void close(AjaxRequestTarget target) {
                 target.addComponent(form);
                 super.close(target);
@@ -788,6 +777,7 @@ public class TrashListPage extends Panel {
                         else 
                             selected.refreshView(true);
                         queryStudies();
+                        close(target);
                     } else
                         setStatus(new StringResourceModel(
                                 "trash.message.deleteFailed",
