@@ -203,16 +203,16 @@ public abstract class StorageBean implements SessionBean {
      */
     public org.dcm4che.data.Dataset store(org.dcm4che.data.Dataset ds,
             long fspk, java.lang.String fileid, long size, byte[] md5, int fileStatus,
-            boolean updateStudyAccessTime, boolean clearExternalRetrieveAET, PatientMatching matching) throws DcmServiceException, NonUniquePatientIDException {
+            boolean updateStudyAccessTime, boolean clearExternalRetrieveAET, boolean dontChangeReceivedStatus, PatientMatching matching) throws DcmServiceException, NonUniquePatientIDException {
     	return store(ds, fspk, fileid, size, md5, fileStatus, updateStudyAccessTime, 
-    	        clearExternalRetrieveAET, matching, true);
+    	        clearExternalRetrieveAET, dontChangeReceivedStatus, matching, true);
     }
     /**
      * @ejb.interface-method
      */
     public org.dcm4che.data.Dataset store(org.dcm4che.data.Dataset ds,
             long fspk, java.lang.String fileid, long size, byte[] md5, int fileStatus,
-            boolean updateStudyAccessTime, boolean clearExternalRetrieveAET, PatientMatching matching,
+            boolean updateStudyAccessTime, boolean clearExternalRetrieveAET, boolean dontChangeReceivedStatus, PatientMatching matching,
             boolean canRollback) throws DcmServiceException, NonUniquePatientIDException {
         FileMetaInfo fmi = ds.getFileMetaInfo();
         final String iuid = fmi.getMediaStorageSOPInstanceUID();
@@ -259,8 +259,10 @@ public abstract class StorageBean implements SessionBean {
             }
             if (fileStatus == FileStatus.ARCHIVED)
                 instance.setArchived(true);
-            instance.setInstanceStatus(RECEIVED);
-            instance.getSeries().setSeriesStatus(RECEIVED);
+            if (!dontChangeReceivedStatus) {
+                instance.setInstanceStatus(RECEIVED);
+                instance.getSeries().setSeriesStatus(RECEIVED);
+            }
             log.info("inserted records for instance[uid=" + iuid + "]");
             return coercedElements;
         } catch (Exception e) {

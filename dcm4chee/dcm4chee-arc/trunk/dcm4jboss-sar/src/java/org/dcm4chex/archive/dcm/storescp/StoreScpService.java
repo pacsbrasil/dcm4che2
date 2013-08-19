@@ -577,6 +577,14 @@ public class StoreScpService extends AbstractScpService {
         scp.setStoreDuplicateIfDiffMD5(storeDuplicate);
     }
 
+    public String getAllowDuplicateForBetterAvailabilityForAET() {
+        return scp.getAllowDuplicateForBetterAvailabilityForAET();
+    }
+
+    public void setAllowDuplicateForBetterAvailabilityForAET(String aet) {
+        scp.setAllowDuplicateForBetterAvailabilityForAET(aet);
+    }
+
     public boolean isDontStoreDuplicateIfFromExternalRetrieveAET() {
         return scp.isDontStoreDuplicateIfFromExternalRetrieveAET();
     }
@@ -913,7 +921,7 @@ public class StoreScpService extends AbstractScpService {
             ds.setFileMetaInfo(fmi);
             String filePath = fileDTO.getFilePath();
             scp.updateDB(store, ds, fileDTO.getFileSystemPk(), filePath, fileDTO.getFileSize(),
-                    fileDTO.getFileMd5(), fileDTO.getFileStatus(), true, false);
+                    fileDTO.getFileMd5(), fileDTO.getFileStatus(), true, false, false);
         } else {
             log.info("Import of file "+fileDTO+" ignored! Duplicate already exists!");
             if (deleteFileIfDuplicateExists) {

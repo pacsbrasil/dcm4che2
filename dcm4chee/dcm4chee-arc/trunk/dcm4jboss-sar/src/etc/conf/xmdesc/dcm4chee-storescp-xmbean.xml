@@ -583,6 +583,19 @@ not matching demographic fields.]]>
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getAllowDuplicateForBetterAvailabilityForAET"
+      setMethod="setAllowDuplicateForBetterAvailabilityForAET">
+      <description><![CDATA[If a Called AET is specified, duplicate objects will be stored if the 
+      		availability of the new file is better (lower) than of other existing files.<br />
+      		Use NONE to disable this feature.]]>
+      </description>
+      <name>AllowDuplicateForBetterAvailabilityForAET</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="isDontStoreDuplicateIfFromExternalRetrieveAET"
       setMethod="setDontStoreDuplicateIfFromExternalRetrieveAET">
       <description><![CDATA[Dont store a duplicate object if the object is sent from external retrieve AET.

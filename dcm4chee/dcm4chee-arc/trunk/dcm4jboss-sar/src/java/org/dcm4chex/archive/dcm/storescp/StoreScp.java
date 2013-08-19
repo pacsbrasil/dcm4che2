@@ -111,6 +111,7 @@ import org.dcm4chex.archive.ejb.interfaces.Storage;
 import org.dcm4chex.archive.ejb.interfaces.StorageHome;
 import org.dcm4chex.archive.ejb.interfaces.StudyPermissionDTO;
 import org.dcm4chex.archive.ejb.jdbc.QueryFilesCmd;
+import org.dcm4chex.archive.ejb.session.StorageBean;
 import org.dcm4chex.archive.exceptions.NonUniquePatientIDException;
 import org.dcm4chex.archive.mbean.HttpUserInfo;
 import org.dcm4chex.archive.perf.PerfCounterEnum;
@@ -127,6 +128,8 @@ import org.jboss.logging.Logger;
  * @since 03.08.2003
  */
 public class StoreScp extends DcmServiceBase implements AssociationListener {
+
+    private static final String NONE = "NONE";
 
     private static final String ALL = "ALL";
 
@@ -184,6 +187,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     private boolean dontStoreDuplicateIfFromExternalRetrieveAET = true;
 
     private boolean storeDuplicateIfDiffHost = true;
+
+    private String allowDuplicateForBetterAvailabilityForAET; 
 
     private long updateDatabaseRetryInterval = 0L;
 
@@ -405,6 +410,14 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         this.storeDuplicateIfDiffMD5 = storeDuplicate;
     }
 
+    public String getAllowDuplicateForBetterAvailabilityForAET() {
+        return allowDuplicateForBetterAvailabilityForAET == null ? NONE : allowDuplicateForBetterAvailabilityForAET;
+    }
+
+    public void setAllowDuplicateForBetterAvailabilityForAET(String aet) {
+        this.allowDuplicateForBetterAvailabilityForAET = NONE.equals(aet) ? null : aet;
+    }
+
     public boolean isDontStoreDuplicateIfFromExternalRetrieveAET() {
         return dontStoreDuplicateIfFromExternalRetrieveAET;
     }
@@ -520,6 +533,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             String originalCallingAET = service.getOriginalCallingAET(ds, callingAET);
             String calledAET = assoc.getCalledAET();
             String iuid = checkSOPInstanceUID(rqCmd, ds, originalCallingAET);
+            boolean[] dontChangeReceivedStatus = new boolean[]{false};
             checkAppendPermission(assoc, ds);
             if (!checkOnlyWellKnownInstances(assoc, iuid, originalCallingAET)) {
                 log.info("StoreSCP only accepts well known instances from AE "+ originalCallingAET+
@@ -527,8 +541,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 return;
             }
             List duplicates = new QueryFilesCmd(iuid).getFileDTOs();
-            if (!(duplicates.isEmpty() || storeDuplicateIfDiffMD5 || storeDuplicateIfDiffHost
-                    && !containsLocal(duplicates))) {
+            if (!(duplicates.isEmpty() || storeDuplicateIfDiffMD5 || allowDuplicateForBetterAvailabilityForAET != null ||
+                    storeDuplicateIfDiffHost && !containsLocal(duplicates))) {
                 log.info("Received Instance[uid=" + iuid
                         + "] already exists - ignored");
                 return;
@@ -673,7 +687,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 perfMon.stop(activeAssoc, rq,
                         PerfCounterEnum.C_STORE_SCP_OBJ_STORE);
             }
-            if (md5sum != null && ignoreDuplicate(duplicates, md5sum, callingAET)) {
+            if (md5sum != null && ignoreDuplicate(duplicates, md5sum, callingAET, calledAET, fsDTO.getAvailability(), dontChangeReceivedStatus)) {
                 log.info("Received Instance[uid=" + iuid
                         + "] already exists - ignored");
                 if (!dcm4cheeURIReferenced) {
@@ -730,14 +744,14 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             Dataset coercedElements;
             try {
                 coercedElements = updateDB(store, ds, fspk, filePath, fileLength, md5sum,
-                        0, newSeries || fsSwitched, clearExternalRetrieveAET);
+                        0, newSeries || fsSwitched, clearExternalRetrieveAET, dontChangeReceivedStatus[0]);
             } catch (NonUniquePatientIDException e) {
                 service.coercePatientID(ds);
                 coerced.putLO(Tags.PatientID, ds.getString(Tags.PatientID));
                 coerced.putLO(Tags.IssuerOfPatientID,
                         ds.getString(Tags.IssuerOfPatientID));
                 coercedElements = updateDB(store, ds, fspk, filePath, fileLength, md5sum, 
-                        0, newSeries || fsSwitched, clearExternalRetrieveAET);
+                        0, newSeries || fsSwitched, clearExternalRetrieveAET, dontChangeReceivedStatus[0]);
             }
             if(newSeries) {
                seriesStored = initSeriesStored(ds, originalCallingAET, retrieveAET);
@@ -1062,20 +1076,28 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         return false;
     }
 
-    private boolean ignoreDuplicate(List duplicates, byte[] md5sum, String callingAET) {
+    private boolean ignoreDuplicate(List duplicates, byte[] md5sum, String callingAET, String calledAET, int availability, boolean[] dontChangeReceivedStatus) {
+        boolean result = false;
         for (int i = 0, n = duplicates.size(); i < n; ++i) {
             FileDTO dto = (FileDTO) duplicates.get(i);
             if (dontStoreDuplicateIfFromExternalRetrieveAET && callingAET.equals(dto.getExternalRetrieveAET()))
                 return true;
             if (storeDuplicateIfDiffMD5 && !Arrays.equals(md5sum, dto.getFileMd5()))
                 continue;
-            if (storeDuplicateIfDiffHost
-                    && !service.isFileSystemGroupLocalAccessable(
-                            dto.getFileSystemGroupID()))
+            if (storeDuplicateIfDiffHost && !service.isFileSystemGroupLocalAccessable(dto.getFileSystemGroupID()))
                 continue;
+            if (calledAET.equals(allowDuplicateForBetterAvailabilityForAET)) {
+                if (!result && availability >= dto.getAvailability()) {
+                    result = true;
+                    dontChangeReceivedStatus[0] = false;
+                } else {
+                    dontChangeReceivedStatus[0] = true;
+                }
+                continue;
+            }
             return true;
         }
-        return false;
+        return result;
     }
     
     private boolean hasDifferentMd5(List duplicates, byte[] md5sum) {
@@ -1104,7 +1126,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
 
     protected Dataset updateDB(Storage storage, Dataset ds, long fspk,
             String filePath, long fileLength, byte[] md5, int fileStatus,
-            boolean updateStudyAccessTime, boolean clearExternalRetrieveAET)
+            boolean updateStudyAccessTime, boolean clearExternalRetrieveAET, boolean dontChangeReceivedStatus)
             throws DcmServiceException, NonUniquePatientIDException {
         int retry = 0;
         for (;;) {
@@ -1112,12 +1134,12 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 if (serializeDBUpdate) {
                     synchronized (storage) {
                         return storage.store(ds, fspk, filePath, fileLength,
-                                md5, fileStatus, updateStudyAccessTime, clearExternalRetrieveAET,
+                                md5, fileStatus, updateStudyAccessTime, clearExternalRetrieveAET, dontChangeReceivedStatus,
                                 service.patientMatching());
                     }
                 } else {
                     return storage.store(ds, fspk, filePath, fileLength,
-                            md5, fileStatus, updateStudyAccessTime, clearExternalRetrieveAET,
+                            md5, fileStatus, updateStudyAccessTime, clearExternalRetrieveAET, dontChangeReceivedStatus,
                             service.patientMatching());
                 }
             } catch (NonUniquePatientIDException e) {
