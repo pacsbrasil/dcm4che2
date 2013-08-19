@@ -534,7 +534,7 @@ public class TCResultPanel extends Panel {
                 });
             }
         };
-        dataView.setItemReuseStrategy(new ReuseIfModelsEqualStrategy());
+        //dataView.setItemReuseStrategy(new ReuseIfModelsEqualStrategy());
         dataView.setItemsPerPage(WebCfgDelegate.getInstance()
                 .getDefaultFolderPagesize());
         dataView.setOutputMarkupId(true);

@@ -142,8 +142,9 @@ public class TCPanel extends Panel implements ITCPopupManagerProvider {
             			@Override
             			public void dialogClosed(AjaxRequestTarget target, boolean changesSaved) {
             				if (changesSaved) {
-					            //trigger new search and select new SR
-            					//searchPanel.redoSearch(target, viewDialog.getView().getTC().getInstanceUID());
+					            // trigger new search and select new SR
+            					// need this in order to immediately 'see' the changes
+            					searchPanel.redoSearch(target, viewDialog.getView().getTC().getInstanceUID());
             				}
             			}
             		}
@@ -163,7 +164,7 @@ public class TCPanel extends Panel implements ITCPopupManagerProvider {
                 resultPanel.clearSelected();
                 listModel.update(filter);
 
-                return new Component[] { detailsPanel, resultPanel };
+                return new Component[] { resultPanel, detailsPanel };
             }
             
             @Override
