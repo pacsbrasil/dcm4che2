@@ -1042,7 +1042,7 @@ public class ExportPage extends SecureSessionCheckPage implements CloseRequestSu
                 }
                 log.info("Move Request Done. close assoc! calledAET:{}",as.getCalledAET());
                 try {
-                    as.release(true);
+                    as.release(false);
                 } catch (InterruptedException e) {
                     log.error("Association release failed! AET:{}", as.getCalledAET());
                 }
