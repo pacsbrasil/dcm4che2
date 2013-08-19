@@ -38,6 +38,7 @@
 package org.dcm4chee.web.war.tc;
 
 import java.io.Serializable;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -71,6 +72,8 @@ import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
+import org.apache.wicket.util.convert.IConverter;
+import org.apache.wicket.util.convert.converters.DateConverter;
 import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.markup.BaseForm;
@@ -79,7 +82,6 @@ import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue;
 import org.dcm4chee.web.war.common.AutoSelectInputTextBehaviour;
 import org.dcm4chee.web.war.tc.TCUtilities.NullDropDownItem;
-import org.dcm4chee.web.war.tc.TCUtilities.TCClassAppender;
 import org.dcm4chee.web.war.tc.widgets.TCAjaxComboBox;
 import org.dcm4chee.web.war.tc.widgets.TCMaskingAjaxDecorator;
 import org.slf4j.Logger;
@@ -592,7 +594,10 @@ public abstract class TCSearchPanel extends Panel {
     	public void setUntilDate(Date date) {
     		untilDate = date==null ? now : date;
     	}
-    	public String getFromString(Locale locale) {
+    	public String getFromString() {
+    		return dfDefault.format(fromDate);
+    	}
+    	public String getLocalizedFromString(Locale locale) {
 			String lang = locale.getLanguage();
 			if (Locale.GERMAN.getLanguage().equalsIgnoreCase(lang)) {
 	    		return dfDE.format(fromDate);
@@ -601,7 +606,10 @@ public abstract class TCSearchPanel extends Panel {
 	    		return dfDefault.format(fromDate);
 			}
     	}
-    	public String getUntilString(Locale locale) {
+    	public String getUntilString() {
+    		return dfDefault.format(untilDate);
+    	}
+    	public String getLocalizedUntilString(Locale locale) {
 			String lang = locale.getLanguage();
 			if (Locale.GERMAN.getLanguage().equalsIgnoreCase(lang)) {
 	    		return dfDE.format(untilDate);
@@ -612,9 +620,9 @@ public abstract class TCSearchPanel extends Panel {
     	}
     	public String getFromUntilString(Locale locale) {
 			StringBuilder s = new StringBuilder();
-			s.append(getFromString(locale));
+			s.append(getLocalizedFromString(locale));
 			s.append("-");
-			s.append(getUntilString(locale));
+			s.append(getLocalizedUntilString(locale));
     		return s.toString();
     	}
     	@Override
@@ -648,6 +656,12 @@ public abstract class TCSearchPanel extends Panel {
     	}
     	
     	@Override
+    	public void show(AjaxRequestTarget target) {
+    		fragment.initDatePicker(target);
+    		super.show(target);
+    	}
+    	
+    	@Override
     	public String getCssClassName()
     	{
     		return super.getCssClassName() + " tc-dialog";
@@ -655,19 +669,57 @@ public abstract class TCSearchPanel extends Panel {
 
     	private class DateSpanContentFragment extends Fragment
     	{
-    		private Model<String> fromModel = new Model<String>(
-    				item.getFromString(getSession().getLocale()));
-    		private Model<String> untilModel = new Model<String>(
-    				item.getUntilString(getSession().getLocale()));
+			private DateConverter converter = new DateConverter() {
+				@Override
+				public DateFormat getDateFormat(Locale locale)
+				{
+					if (locale == null) {
+						locale = Locale.getDefault();
+					}
+
+					String lang = locale.getLanguage();
+					if (Locale.GERMAN.getLanguage().equalsIgnoreCase(lang)) {
+			    		return dfDE;
+					}
+
+			    	return dfDefault;
+				}
+			};
+			
+    		private Model<Date> fromModel = new Model<Date>(item.getFromDate());
+    		private Model<Date> untilModel = new Model<Date>(item.getUntilDate());
+    		
+    		private TextField<Date> fromField = new TextField<Date>(
+					"date-input-dialog-from-input", fromModel, Date.class) {
+				@Override
+				public IConverter getConverter(Class<?> type) {
+					if (type!=null) {
+						if (type.equals(Date.class)) {
+							return converter;
+						}
+					}
+					return super.getConverter(type);
+				}
+			};
+			
+    		private TextField<Date> untilField = new TextField<Date>(
+					"date-input-dialog-until-input", untilModel, Date.class) {
+				@Override
+				public IConverter getConverter(Class<?> type) {
+					if (type!=null) {
+						if (type.equals(Date.class)) {
+							return converter;
+						}
+					}
+					return super.getConverter(type);
+				}
+			};
+
     		
 			public DateSpanContentFragment(final String id)
     		{
     			super(id, "date-input-dialog-content", TCSearchPanel.this);
-    			
-    			final TextField<String> fromField = new TextField<String>(
-    					"date-input-dialog-from-input", fromModel);
-    			final TextField<String> untilField = new TextField<String>(
-    					"date-input-dialog-until-input", untilModel);
+
     			fromField.setOutputMarkupId(true);
     			untilField.setOutputMarkupId(true);
     			
@@ -691,36 +743,21 @@ public abstract class TCSearchPanel extends Panel {
     			);
     			
     			add(form);
-    			
-    			TCUtilities.addOnDomReadyJavascript(this, 
-    					getInitDatePickerJavascript(fromField.getMarkupId(true)));
-    			TCUtilities.addOnDomReadyJavascript(this, 
-    					getInitDatePickerJavascript(untilField.getMarkupId(true)));
+
     			TCUtilities.addInitUIOnDomReadyJavascript(form);
     		}
 			
 			public Date getFromDate() {
-				return getDateForDatePickerFormat(fromModel.getObject());
+				return fromModel.getObject();
 			}
 			
 			public Date getUntilDate() {
-				return getDateForDatePickerFormat(untilModel.getObject());
+				return untilModel.getObject();
 			}
 			
-			private Date getDateForDatePickerFormat(String formattedDate) {
-				try {
-					String lang = getSession().getLocale().getLanguage();
-					if (Locale.GERMAN.getLanguage().equalsIgnoreCase(lang)) {
-						return dfDE.parse(formattedDate);
-					}
-					else {
-						return dfDefault.parse(formattedDate);
-					}
-				}
-				catch (Exception e) {
-					log.error(null, e);
-					return new Date();
-				}
+			public void initDatePicker(AjaxRequestTarget target) {
+    			target.appendJavascript(getInitDatePickerJavascript(fromField.getMarkupId(true)));
+    			target.appendJavascript(getInitDatePickerJavascript(untilField.getMarkupId(true)));
 			}
 			
 			private String getDatePickerFormatOfCurrentLocale() {
