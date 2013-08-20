@@ -568,12 +568,15 @@ public class DcmEcho {
             } catch (IOException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
+                System.exit(2);
             } catch (InterruptedException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
+                System.exit(2);
             } catch (ConfigurationException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
+                System.exit(2);
             }
         }
     }
