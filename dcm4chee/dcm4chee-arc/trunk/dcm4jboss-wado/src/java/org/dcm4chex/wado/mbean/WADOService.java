@@ -264,6 +264,10 @@ public class WADOService extends AbstractCacheService {
     public String getImageSopCuids() throws Exception{
         return map2string(support.getImageSopCuids());
     }
+    
+    public void reconfigure() {
+        support.reconfigure();
+    }
 
     /**
      * Returns a String with all defined SOP Class UIDs that are used to find

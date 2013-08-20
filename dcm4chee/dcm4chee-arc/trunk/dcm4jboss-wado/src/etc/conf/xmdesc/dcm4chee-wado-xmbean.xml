@@ -555,5 +555,10 @@ configured <i>DeleterThreshold</i>.]]>
       <return-type>void</return-type>
    </operation>
 
+   <operation impact="ACTION">
+      <description>Reconfigure WADO Service. Update list of image SOPClass UID's from StoreSCP service'</description>
+      <name>reconfigure</name>
+      <return-type>void</return-type>
+   </operation>
    
 </mbean>

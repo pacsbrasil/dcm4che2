@@ -1925,6 +1925,10 @@ public class WADOSupport implements NotificationListener {
         }
         return imageSopCuids;
     }
+    
+    public void reconfigure() {
+        imageSopCuids = null;
+    }
 
     /**
      * @return Returns the sopCuids.
