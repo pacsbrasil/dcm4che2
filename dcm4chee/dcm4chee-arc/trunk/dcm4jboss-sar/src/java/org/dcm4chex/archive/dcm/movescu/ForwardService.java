@@ -71,36 +71,32 @@ public class ForwardService extends ServiceMBeanSupport {
     private static final NotificationFilterSupport patientUpdatedFilter =
             new NotificationFilterSupport();
 
-    private final NotificationListener seriesStoredListener =
-            new NotificationListener() {
+    protected void handleSeriesStoredNotification(Notification notif, Object handback) {
+        SeriesStored seriesStored = (SeriesStored) notif.getUserData();
+        Map<String, String[]> param = new HashMap<String, String[]>();
+        param.put("calling", new String[] { seriesStored.getSourceAET() });
+        String[] destAETs = forwardingRules
+                .getForwardDestinationsFor(param);
+        for (int i = 0; i < destAETs.length; i++) {
+            final String destAET = ForwardingRules.toAET(destAETs[i]);
+            final long scheduledTime = ForwardingRules
+                    .toScheduledTime(destAETs[i]);
+            scheduleMove(seriesStored.getRetrieveAET(), destAET,
+                    forwardPriority, null,
+                    seriesStored.getStudyInstanceUID(),
+                    seriesStored.getSeriesInstanceUID(),
+                    sopIUIDsOrNull(seriesStored),
+                    scheduledTime);
+        }
+    }
+
+    private final NotificationListener seriesStoredListener = new NotificationListener() {
         public void handleNotification(Notification notif, Object handback) {
-            SeriesStored seriesStored = (SeriesStored) notif.getUserData();
-            log.info("handle SeriesStored:"+seriesStored);
-            if (seriesStored.getRetrieveAET() == null && ignoreNotLocalRetrievable) {
-                log.warn("Ignore SeriesStored notification! Reason: Series is not locally retrievable.");
-                return;
-            }
-            Map<String, String[]> param = new HashMap<String, String[]>();
-            param.put("calling", new String[] { seriesStored.getSourceAET() });
-            param.put("extRetrieveAET", new String[] { seriesStored.getExtRetrieveAET() });
-            param.put("archived", new String[] { String.valueOf(seriesStored.isArchived()) });
-            String[] destAETs = forwardingRules
-                    .getForwardDestinationsFor(param);
-            for (int i = 0; i < destAETs.length; i++) {
-                String destAET = destAETs[i];
-                scheduleMove(seriesStored.getRetrieveAET(),
-                        ForwardingRules.toAET(destAET),
-                        ForwardingRules.toPriority(destAET, forwardPriority),
-                        null,
-                        seriesStored.getStudyInstanceUID(),
-                        seriesStored.getSeriesInstanceUID(),
-                        sopIUIDsOrNull(seriesStored),
-                        ForwardingRules.toScheduledTime(destAET));
-            }
+            handleSeriesStoredNotification(notif,handback);
         }
     };
 
-    private String[] sopIUIDsOrNull(SeriesStored seriesStored) {
+    protected String[] sopIUIDsOrNull(SeriesStored seriesStored) {
         int numI = seriesStored.getNumberOfInstances();
         if (numI > 1 && !isForwardOnInstanceLevelFromAET(
                         seriesStored.getSourceAET())) {
@@ -152,10 +148,11 @@ public class ForwardService extends ServiceMBeanSupport {
 
     private String[] forwardModifiedToAETs = EMPTY;
 
-    private int forwardPriority = 0;
+    protected int forwardPriority = 0;
 
-    private ForwardingRules forwardingRules = new ForwardingRules("");
-    
+    protected ForwardingRules forwardingRules = new ForwardingRules("");
+
+
     private boolean ignoreNotLocalRetrievable;
 
     public final String getForwardingRules() {
