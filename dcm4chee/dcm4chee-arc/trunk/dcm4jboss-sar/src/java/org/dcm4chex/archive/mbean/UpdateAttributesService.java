@@ -201,16 +201,28 @@ public class UpdateAttributesService extends ServiceMBeanSupport {
         reloadAttributeFilter();
         return updateSeries(seriesIuid, updateAttributes());
     }
-
-    protected int updateSeries(String seriesIuid,
-            UpdateAttributes updateAttributes) throws Exception {
+    protected int updateSeries(String seriesIuid, UpdateAttributes updateAttributes) throws Exception {
         Dataset keys = DcmObjectFactory.getInstance().newDataset();
         keys.putUI(Tags.SeriesInstanceUID, seriesIuid);
         RetrieveCmd cmd = RetrieveCmd.createSeriesRetrieve(keys);
         cmd.setFetchSize(fetchSize);
         FileInfo[][] fileInfos = cmd.getFileInfos();
+        return updateFiles(fileInfos, updateAttributes);
+    }
+    
+    public int updateInstance(String sopIuid) throws Exception {
+        reloadAttributeFilter();
+        Dataset keys = DcmObjectFactory.getInstance().newDataset();
+        keys.putUI(Tags.SOPInstanceUID, sopIuid);
+        RetrieveCmd cmd = RetrieveCmd.createInstanceRetrieve(keys);
+        cmd.setFetchSize(fetchSize);
+        FileInfo[][] fileInfos = cmd.getFileInfos();
+        return updateFiles(fileInfos, updateAttributes());
+    }
+
+    protected int updateFiles(FileInfo[][] fileInfos, UpdateAttributes updateAttributes) throws Exception {
         int count = 0;
-        Dataset series = null;
+        Dataset ds = null;
         for (int i = 0; i < fileInfos.length; i++) {
             try {
                 log.debug("Update Attributes of fileinfo:"+fileInfos[i][0]);
@@ -220,7 +232,7 @@ public class UpdateAttributesService extends ServiceMBeanSupport {
                 correctUID(inst, Tags.StudyInstanceUID, fileInfos[i][0].studyIUID);
                 if (inst != null) {
                     updateAttributes.updateInstanceAttributes(inst);
-                    series = inst;
+                    ds = inst;
                     ++count;
                 }
             } catch (Exception e) {
@@ -228,9 +240,10 @@ public class UpdateAttributesService extends ServiceMBeanSupport {
                 log.debug("Exception in UpdateSeries:", e);
             }
         }
-        if (series != null) {
+        if (ds != null) {
+            String seriesIuid = ds.getString(Tags.SeriesInstanceUID);
             try {
-                updateAttributes.updatePatientStudySeriesAttributes(series);
+                updateAttributes.updatePatientStudySeriesAttributes(ds);
             } catch (Exception e) {
                 log.error("Failed to update series[uid= " + seriesIuid + "]");
                 return 0;

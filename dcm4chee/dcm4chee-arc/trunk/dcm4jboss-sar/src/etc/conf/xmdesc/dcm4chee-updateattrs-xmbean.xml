@@ -162,6 +162,18 @@
       <return-type>int</return-type>
    </operation>
    <operation impact="ACTION">
+      <description>
+       Update attributes of instance with specified Series Instance UID. 
+       Returns number of updated Instances.
+      </description>
+      <name>updateInstance</name>
+      <parameter>
+        <name>uid</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>int</return-type>
+   </operation>
+   <operation impact="ACTION">
       <description><![CDATA[
        Reload Attribute Filter configuration from
        <i>conf/dcm4chee-attribute-filter.xml</i>. Implicit invoked by

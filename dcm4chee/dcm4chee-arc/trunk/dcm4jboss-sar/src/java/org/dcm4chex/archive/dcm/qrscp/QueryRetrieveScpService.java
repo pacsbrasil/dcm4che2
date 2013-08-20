@@ -1743,6 +1743,8 @@ public class QueryRetrieveScpService extends AbstractScpService {
             } else {
                 FileDTO localFileDTO = getLocalFileDTO(fileDTOs);
                 if (localFileDTO != null) {
+                    if (localFileDTO.getDirectoryPath().startsWith(autoUpdateAttributesFromFS))
+                        updateInstanceAttributes(sopIUID);
                     if (studyIUID != null && studyIUID.length() != 0) {
                         updateStudyAccessTime(studyIUID,
                                 localFileDTO.getDirectoryPath());
@@ -1872,6 +1874,16 @@ public class QueryRetrieveScpService extends AbstractScpService {
             }
         } catch (Exception e) {
             log.debug("Failed to auto update attributes for series " + seriesIuids, e);
+        }
+    }
+    
+    private void updateInstanceAttributes(String sopIUID) {
+        try {
+            server.invoke(updateAttributesServiceName, "updateInstance", 
+                    new Object[]{sopIUID}, 
+                    new String[]{String.class.getName()});
+        } catch (Exception e) {
+            log.error("Failed to update Attributes for Instance "+sopIUID, e);
         }
     }
 
