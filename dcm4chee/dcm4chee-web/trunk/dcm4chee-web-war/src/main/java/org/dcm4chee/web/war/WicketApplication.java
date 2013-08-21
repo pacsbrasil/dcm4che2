@@ -44,6 +44,9 @@ import org.apache.wicket.Page;
 import org.apache.wicket.Request;
 import org.apache.wicket.RequestCycle;
 import org.apache.wicket.Response;
+import org.apache.wicket.RestartResponseAtInterceptPageException;
+import org.apache.wicket.authorization.AuthorizationException;
+import org.apache.wicket.protocol.http.PageExpiredException;
 import org.apache.wicket.protocol.http.WebRequest;
 import org.apache.wicket.protocol.http.WebRequestCycle;
 import org.apache.wicket.request.target.coding.QueryStringUrlCodingStrategy;
@@ -101,12 +104,13 @@ public class WicketApplication extends BaseWicketApplication {
     
     @Override
     public RequestCycle newRequestCycle(Request request, Response response) {
-    	
+
     	return new WebRequestCycle(WicketApplication.this, (WebRequest) request, response) {
 
 	    	@Override
 	    	public Page onRuntimeException(Page page, RuntimeException e) {
-	    		return new InternalErrorPage(e, page);
+	            return ((e instanceof AuthorizationException) || (e instanceof PageExpiredException)) ?
+	    		null : new InternalErrorPage(e, page);
 	    	}
     	};
     }
