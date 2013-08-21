@@ -6,7 +6,7 @@ import static java.util.Arrays.copyOfRange;
 import java.util.Iterator;
 
 public class DynamicQueryBuilder {
-	private final static int DEFAULT_IN_LIST_SIZE = 200;
+	final static int DEFAULT_IN_LIST_SIZE = 200;
 
 	public static class DynamicQuery {
 		private final String jbossQl;
@@ -43,7 +43,7 @@ public class DynamicQueryBuilder {
 
 				DynamicQuery inClause = new DynamicQuery(getJbossQl(
 						staticJbossQlPrefix, startIndex, increment), getArgs(
-						args, i, increment));
+						args, i, increment + i));
 
 				i += increment;
 
@@ -57,8 +57,8 @@ public class DynamicQueryBuilder {
 		};
 	}
 
-	private Object[] getArgs(final Object[] args, int startIndex, int size) {
-		return copyOfRange(args, startIndex, size);
+	private Object[] getArgs(final Object[] args, int startIndex, int endIndex) {
+		return copyOfRange(args, startIndex, endIndex);
 	}
 
 	private String getJbossQl(String sql, int startIndex, int size) {
