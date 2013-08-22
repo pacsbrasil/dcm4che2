@@ -72,7 +72,18 @@ public abstract class TCAjaxComboBox<T extends Serializable> extends TCComboBox<
     	/* don't include AJAX based component in default form processing */
     }
 	
-	protected abstract T convertValue(String value) throws Exception;
+	protected T convertValue(String value) throws Exception {
+    	if (value!=null) {
+    		IChoiceRenderer<? super T> renderer = getChoiceRenderer();
+    		List<? extends T> options = getChoices();
+    		for (T option : options) {
+    			if (value.equals(renderer.getDisplayValue(option).toString())) {
+    				return option;
+    			}
+    		}
+    	}
+    	return null;
+	}
 	
 	protected boolean shallCommitValue(T oldValue, T newValue, AjaxRequestTarget target) {
 		 return !TCUtilities.equals(oldValue, newValue);

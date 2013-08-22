@@ -297,7 +297,7 @@ public class TCViewPanel extends Panel
             }
             @Override
             protected TCAttribute getAttribute() {
-                return TCAttribute.Discussion;
+                return TCAttribute.Remarks;
             }
         };
         final TCViewGenericTextTab organSystemTab = new TCViewGenericTextTab("tc-view-organSystem", getModel(), 

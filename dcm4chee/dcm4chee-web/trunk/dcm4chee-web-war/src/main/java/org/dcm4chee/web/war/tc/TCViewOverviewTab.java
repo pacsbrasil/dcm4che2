@@ -426,6 +426,7 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
 			@Override
             protected void onComponentTag(ComponentTag tag)
             {
+				super.onComponentTag(tag);
             	tag.put("title", getStringValue(TCQueryFilterKey.Anatomy)); //$NON-NLS-1$
             }
 			@Override
@@ -468,6 +469,7 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
 			@Override
             protected void onComponentTag(ComponentTag tag)
             {
+				super.onComponentTag(tag);
             	tag.put("title", getStringValue(TCQueryFilterKey.Pathology)); //$NON-NLS-1$
             }
 			@Override
@@ -711,6 +713,7 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
 			@Override
             protected void onComponentTag(ComponentTag tag)
             {
+				super.onComponentTag(tag);
             	tag.put("title", getStringValue(TCQueryFilterKey.Finding)); //$NON-NLS-1$
             }
 			@Override
@@ -752,6 +755,7 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
 			@Override
             protected void onComponentTag(ComponentTag tag)
             {
+				super.onComponentTag(tag);
             	tag.put("title", getStringValue(TCQueryFilterKey.Diagnosis)); //$NON-NLS-1$
             }
 			@Override
@@ -826,6 +830,7 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
 			@Override
             protected void onComponentTag(ComponentTag tag)
             {
+				super.onComponentTag(tag);
             	tag.put("title", getStringValue(TCQueryFilterKey.DifferentialDiagnosis)); //$NON-NLS-1$
             }
 			@Override
@@ -844,7 +849,7 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         		return getTC().getReferencedImages()!=null ? 
         				Integer.toString(getTC().getReferencedImages().size()) : "0";
         	}
-        }).add(readonlyModifier));
+        }).add(new AttributeAppender("readonly",true,new Model<String>("readonly"), " ")));
 
         add(titleRow);
         add(abstractRow);

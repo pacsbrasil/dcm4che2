@@ -62,6 +62,7 @@ public class TCComboBox<T extends Serializable> extends DropDownChoice<T> implem
     @Override
 	protected final void onSelectionChanged(final T newSelection)
 	{
+    	setModelObject(newSelection);
     	valueChanged(newSelection);
 	}
 

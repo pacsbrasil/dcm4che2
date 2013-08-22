@@ -47,7 +47,7 @@ import org.dcm4chee.web.war.tc.keywords.TCKeywordCatalogue;
 import org.dcm4chee.web.war.tc.keywords.TCKeywordCatalogueProvider;
 import org.dcm4chee.web.war.tc.keywords.TCKeywordInput;
 import org.dcm4chee.web.war.tc.keywords.TCKeywordTextInput;
-import org.dcm4chee.web.war.tc.widgets.TCComboBox;
+import org.dcm4chee.web.war.tc.widgets.TCAjaxComboBox;
 import org.dcm4chee.web.war.tc.widgets.TCEditableComboBox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -252,29 +252,10 @@ public class TCUtilities
         return choice;
     }
     
-    public static <T extends Enum<T>> TCComboBox<T> createEnumComboBox(
-            final String id, T selectedValue, List<T> options,
-            boolean localizeValues, final String localizePrefix) {
-        return createEnumComboBox(id, selectedValue, options, localizeValues, 
-                localizePrefix, NullDropDownItem.NotValid);
-    }
-    
-    public static <T extends Enum<T>> TCComboBox<T> createEnumComboBox(
-            final String id, T selectedValue, List<T> options,
-            boolean localizeValues, final String localizePrefix, final NullDropDownItem nullItem) {
-        return createEnumComboBox(id, selectedValue, options, localizeValues, localizePrefix, nullItem, null);
-    }
-    
-    public static <T extends Enum<T>> TCComboBox<T> createEnumComboBox(
-            final String id, T selectedValue, List<T> options,
-            boolean localizeValues, final String localizePrefix, final NullDropDownItem nullItem, final TCChangeListener<T> l) {
-    	return createEnumComboBox(id, new Model<T>(selectedValue), options, localizeValues, localizePrefix, nullItem, l);
-    }
-    
-    public static <T extends Enum<T>> TCComboBox<T> createEnumComboBox(
-            final String id, IModel<T> selectedValue, List<T> options,
-            boolean localizeValues, final String localizePrefix, final NullDropDownItem nullItem, final TCChangeListener<T> l) {
-        TCComboBox<T> cbox = new TCComboBox<T>(id, options, selectedValue, null) {
+    public static <T extends Enum<T>> TCAjaxComboBox<T> createEnumComboBox(
+            final String id, final IModel<T> selectedValue, final List<T> options,
+            final boolean localizeValues, final String localizePrefix, final NullDropDownItem nullItem, final TCChangeListener<T> l) {
+    	TCAjaxComboBox<T> cbox = new TCAjaxComboBox<T>(id, options, selectedValue, null) {
             private static final long serialVersionUID = 1L;
             @Override
             protected String getNullValidKey() {
@@ -299,9 +280,7 @@ public class TCUtilities
 
         if (localizeValues) {
             cbox.setChoiceRenderer(new EnumChoiceRenderer<T>(cbox) {
-
                 private static final long serialVersionUID = 1L;
-
                 @Override
                 protected String resourceKey(T object) {
                     String key = localizePrefix != null ? localizePrefix + "."
