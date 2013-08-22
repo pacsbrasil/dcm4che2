@@ -15,9 +15,13 @@ import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.IChoiceRenderer;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+@SuppressWarnings("serial")
 public class TCEditableComboBox extends DropDownChoice<Serializable> implements IHeaderContributor {
-	private static final long serialVersionUID = 4036772216132377000L;
+
+	private static final Logger log = LoggerFactory.getLogger(TCEditableComboBox.class);
 	
 	private static final String CALLBACK_URL_KEY = "wicket-callback-url";
 	private static final String EDITABLE_KEY = "editable";
@@ -84,6 +88,14 @@ public class TCEditableComboBox extends DropDownChoice<Serializable> implements 
 		@Override
     	public void respond(AjaxRequestTarget target) {
     		String value = RequestCycle.get().getRequest().getParameter("selectedValue");
+    		if (value!=null) {
+    			try {
+    				value = new String(value.getBytes("ISO-8859-1"), "UTF-8");
+    			}
+    			catch (Exception e) {
+    				log.error(null, e);
+    			}
+    		}
     		TCEditableComboBox.this.setDefaultModelObject(value);
     		valueChanged(value);
     	}
