@@ -658,6 +658,8 @@ public abstract class TCSearchPanel extends Panel {
     	@Override
     	public void show(AjaxRequestTarget target) {
     		fragment.initDatePicker(target);
+    		setTitle(TCUtilities.getLocalizedString(
+    				"tc.search.datespan.dialog.title"));
     		super.show(target);
     	}
     	
@@ -725,11 +727,17 @@ public abstract class TCSearchPanel extends Panel {
     			
     			Form<Void> form = new Form<Void>("date-input-dialog-inner-form");
     			form.setOutputMarkupId(true);
-    			form.add(new Label("date-input-dialog-from-label", 
-    					TCUtilities.getLocalizedString("tc.search.fromdate.text")));
+    			form.add(new Label("date-input-dialog-from-label", new Model<String>() {
+    				public String getObject() {
+    					return TCUtilities.getLocalizedString("tc.search.fromdate.text");
+    				}
+    			}));
     			form.add(fromField);
-    			form.add(new Label("date-input-dialog-until-label", 
-    					TCUtilities.getLocalizedString("tc.search.untildate.text")));
+    			form.add(new Label("date-input-dialog-until-label", new Model<String>() {
+    				public String getObject() {
+    					return TCUtilities.getLocalizedString("tc.search.untildate.text");
+    				}
+    			}));
     			form.add(untilField);
     			form.add(new AjaxSubmitLink("date-input-dialog-ok-btn") {
 						@Override
@@ -793,6 +801,7 @@ public abstract class TCSearchPanel extends Panel {
     			js.append("showButtonPanel: true,");
     			js.append("changeMonth: true,");
     			js.append("changeYear: true,");
+    			js.append("yearRange: '-20:+0',");
     			js.append("dateFormat: '").append(getDatePickerFormatOfCurrentLocale()).append("',");
     			js.append("})");
     			js.append(".next('button').text('').button({icons:{primary : 'ui-icon-calendar'}, text: false}).addClass('ui-combobox-toggle');");
