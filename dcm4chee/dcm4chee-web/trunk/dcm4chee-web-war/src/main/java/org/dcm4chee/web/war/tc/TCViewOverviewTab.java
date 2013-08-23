@@ -69,6 +69,7 @@ import org.dcm4chee.web.dao.tc.TCQueryFilterValue;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue.Category;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue.Level;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue.PatientSex;
+import org.dcm4chee.web.dao.tc.TCQueryFilterValue.PatientSpecies;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue.YesNo;
 import org.dcm4chee.web.war.tc.TCInput.ValueChangeListener;
 import org.dcm4chee.web.war.tc.TCObject.TextOrCode;
@@ -641,12 +642,20 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
                 "tc-view-overview-patientrace-select", new Model<String>() {
                 	@Override
                 	public String getObject() {
-                		return getTC().getValueAsString(
-                				TCQueryFilterKey.PatientSpecies);
+                		return getTC().getValueAsLocalizedString(
+                				TCQueryFilterKey.PatientSpecies, TCViewOverviewTab.this);
                 	}
                 	@Override
                 	public void setObject(String value) {
-                		getTC().setValue(TCQueryFilterKey.PatientSpecies, value);
+                		String committedValue = value;
+                		String tmp = null;
+                		for (PatientSpecies species : PatientSpecies.values()) {
+                			tmp = getString("tc.patient.species."+species.name().toLowerCase());
+                			if (tmp!=null && tmp.equalsIgnoreCase(value)) {
+                				committedValue = species.name();
+                			}
+                		}
+                		getTC().setValue(TCQueryFilterKey.PatientSpecies, committedValue);
                 	}
                 },
                 Arrays.asList(TCQueryFilterValue.PatientSpecies.values()), true,

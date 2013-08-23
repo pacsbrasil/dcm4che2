@@ -24,6 +24,7 @@ import org.dcm4chee.web.dao.tc.TCQueryFilterValue.AcquisitionModality;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue.Category;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue.Level;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue.PatientSex;
+import org.dcm4chee.web.dao.tc.TCQueryFilterValue.PatientSpecies;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue.YesNo;
 import org.dcm4chee.web.war.folder.delegate.TarRetrieveDelegate;
 import org.dcm4chee.web.war.tc.TCDocumentObject.MimeType;
@@ -432,7 +433,12 @@ public class TCEditableObject extends TCObject {
             } else if (TCQueryFilterKey.PatientSex.equals(key)) {
                 setPatientSex(convertValue(value, PatientSex.class));
             } else if (TCQueryFilterKey.PatientSpecies.equals(key)) {
-                setPatientSpecies(convertValue(value, String.class));
+            	if (value instanceof PatientSpecies) {
+            		setPatientSpecies(((PatientSpecies)value).name());
+            	}
+            	else {
+            		setPatientSpecies(convertValue(value, String.class));
+            	}
             } else if (TCQueryFilterKey.Title.equals(key)) {
                 setTitle(convertValue(value, String.class));
             }

@@ -515,7 +515,9 @@ public class TCObject implements Serializable {
         	{
         		try {
 		        	PatientSpecies v = s!=null ? PatientSpecies.valueOf(s) : null;
-	        		s = c.getString("tc.patient.species."+v.name().toLowerCase());
+		        	if (v!=null) {
+		        		s = c.getString("tc.patient.species."+v.name().toLowerCase());
+		        	}
         		}
         		catch (Exception e){
         		}

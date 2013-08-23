@@ -201,7 +201,7 @@ $.widget( "ui.combobox", {
 					item: ui.item.option
 				});
 			},
-			close: function( event, ui) {
+			change: function( event, ui) {
 				if (wicketCallbackURL) {
 					var url = wicketCallbackURL;
 					if (url.indexOf('?')==-1) {
@@ -214,11 +214,28 @@ $.widget( "ui.combobox", {
 					url += 'selectedValue=' + $(input).val();
 					
 					wicketAjaxGet(url,function(){},function(){});
+					
+					//if ( !ui.item )
+					//  return removeIfInvalid( this );
 				}
 			},
-			change: function( event, ui ) {
-				//if ( !ui.item )
-				//  return removeIfInvalid( this );
+			close: function( event, ui ) {
+				if (wicketCallbackURL) {
+					var url = wicketCallbackURL;
+					if (url.indexOf('?')==-1) {
+						url += '?';
+					}
+					else {
+						url += '&';
+					}
+
+					url += 'selectedValue=' + $(input).val();
+					
+					wicketAjaxGet(url,function(){},function(){});
+					
+					//if ( !ui.item )
+					//  return removeIfInvalid( this );
+				}
 			}
 		})
 		.addClass( "ui-widget ui-widget-content ui-corner-left" );
