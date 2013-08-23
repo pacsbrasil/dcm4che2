@@ -103,7 +103,7 @@ public class TCDetailsDiagnosisTab extends TCDetailsTab {
     }
     
     @Override
-    public boolean isVisible() {
+    public boolean visible() {
     	return getAttributeVisibilityStrategy().isAttributeVisible(
     			TCAttribute.Diagnosis);
     }
