@@ -450,7 +450,7 @@ public class FileDataSource implements DataSource {
                 }
                 if (simpleFrameList == null) {
                     parser.parseHeader();
-                    while (parser.getReadTag() == Tags.Item) {
+                    while (!parser.hasSeenEOF() && parser.getReadTag() == Tags.Item) {
                         itemlen = parser.getReadLength();
                         copyItem(patchJpegLS, dis, ds, out, enc, itemlen);
                         parser.parseHeader();

@@ -1239,7 +1239,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     ds.writeHeader(bos, encParam, Tags.PixelData, VRs.OB, -1);
                     if (decParam.encapsulated) {
                         parser.parseHeader();
-                        while (parser.getReadTag() == Tags.Item) {
+                        while (!parser.hasSeenEOF() && parser.getReadTag() == Tags.Item) {
                             len = parser.getReadLength();
                             ds.writeHeader(bos, encParam, Tags.Item, VRs.NONE,
                                     len);
