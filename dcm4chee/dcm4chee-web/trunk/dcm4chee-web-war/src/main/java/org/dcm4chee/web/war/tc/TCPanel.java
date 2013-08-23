@@ -144,7 +144,12 @@ public class TCPanel extends Panel implements ITCPopupManagerProvider {
             				if (changesSaved) {
 					            // trigger new search and select new SR
             					// need this in order to immediately 'see' the changes
-            					searchPanel.redoSearch(target, viewDialog.getView().getTC().getInstanceUID());
+            					//searchPanel.redoSearch(target, viewDialog.getView().getTC().getInstanceUID());
+            					TCModel newTC = listModel.updateByIUID(tc.getSOPInstanceUID());
+            	                resultPanel.clearSelected();
+            					resultPanel.selectTC(newTC, null);
+            					target.addComponent(resultPanel);
+            					target.addComponent(detailsPanel);
             				}
             			}
             		}

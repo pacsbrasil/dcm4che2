@@ -534,7 +534,7 @@ public class TCResultPanel extends Panel {
                 });
             }
         };
-        //dataView.setItemReuseStrategy(new ReuseIfModelsEqualStrategy());
+        dataView.setItemReuseStrategy(new ReuseIfModelsEqualStrategy());
         dataView.setItemsPerPage(WebCfgDelegate.getInstance()
                 .getDefaultFolderPagesize());
         dataView.setOutputMarkupId(true);
@@ -772,6 +772,33 @@ public class TCResultPanel extends Panel {
             }
         }
         
+        public TCModel updateByIUID(String iuid) {
+            List<TCModel> list = getObject();
+            if (list!=null)
+            {
+            	TCModel old = null;
+            	
+                for (TCModel tc : list) {
+                    if (iuid.equals(tc.getSOPInstanceUID())) {
+                        old = tc;
+                        break;
+                    }
+                }
+                
+                if (old!=null) {
+                	TCModel tc = null;
+                	Instance i = dao.findInstanceByUID(iuid);
+                	if (i!=null) {
+                		int index = list.indexOf(old);
+                		list.add(index+1, tc=new TCModel(i));
+                		list.remove(index);
+                		return tc;
+                	}
+                }
+            }
+            return null;
+        }
+        
         public TCModel findByIUID(String iuid)
         {
             List<TCModel> list = getObject();
@@ -862,10 +889,7 @@ public class TCResultPanel extends Panel {
             	@Override
             	public boolean equals(Object m) {
             		if (m instanceof IModel) {
-            			Object o = ((IModel<?>)m).getObject();
-            			if (o instanceof TCModel) {
-            				return getObject().equals(o);
-            			}
+           				return getObject()==((IModel<?>)m).getObject();
             		}
             		return super.equals(m);
             	}
