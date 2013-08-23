@@ -557,9 +557,13 @@ public class TCEditableObject extends TCObject {
         // of image/document references accordingly.
         if ( (docsRemoved!=null && docsRemoved.size()>0) ||
         	  (docsAdded!=null && docsAdded.size()>0) ) {
-        	// get sequence
+        	// get/set sequence
         	DicomElement refs = this.ds.get(Tag.CurrentRequestedProcedureEvidenceSequence);
-
+        	if (refs!=null) {
+        		ds.add(refs);
+        		refs = ds.get(Tag.CurrentRequestedProcedureEvidenceSequence);
+        	}
+        	
         	DicomObject seriesItem = null;
         	
         	// add new document references

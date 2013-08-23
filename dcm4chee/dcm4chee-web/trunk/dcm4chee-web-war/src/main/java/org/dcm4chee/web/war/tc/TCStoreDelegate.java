@@ -169,10 +169,10 @@ public class TCStoreDelegate extends BaseMBeanDelegate
     	public String getModifyingSystem() {
     		try {
     			return (String) server.getAttribute(serviceObjectName, 
-    					"getModifyingSystem");
+    					"ModifyingSystem");
     		}
     		catch (Exception e) {
-    			log.error("Unable to determine modifying system! Using default...", e);
+    			log.warn("Unable to determine modifying system! Using default...", e);
     			return "DCM4CHEE-WEB";
     		}
     	}

@@ -389,10 +389,15 @@ public class TCObject implements Serializable {
     public TCDocumentObject getReferencedDocumentObject(TCReferencedInstance ref) {
     	if (ref.isDocument()) {
     		try {
-    			return TCDocumentObject.create(ref);
+    			TCDocumentObject doc = TCDocumentObject.create(ref);
+    			if (doc==null) {
+        			log.warn("Unable to find a referenced document object (SOP instance UID: " + 
+        						ref.getInstanceUID() + ")!");
+    			}
     		}
     		catch (Exception e) {
-    			log.error("Unable to create/parse referenced document!", e); //$NON-NLS-1$
+    			log.error("Unable to create/parse a referenced document object (SOP instance UID: " +
+    					ref.getInstanceUID() + ")!");
     		}
     	}
     	return null;

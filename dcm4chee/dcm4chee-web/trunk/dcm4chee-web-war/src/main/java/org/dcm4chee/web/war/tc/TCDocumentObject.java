@@ -66,9 +66,15 @@ public abstract class TCDocumentObject implements Serializable {
 
     public static TCDocumentObject create(TCReferencedInstance ref) throws Exception {
 
-        DicomObject attrs = ((TCQueryLocal) JNDIUtils.lookup(
+    	Instance instance = ((TCQueryLocal) JNDIUtils.lookup(
         		TCQueryLocal.JNDI_NAME)).findInstanceByUID(
-        		ref.getInstanceUID()).getAttributes(false);
+        		ref.getInstanceUID());
+    	
+    	if (instance==null) {
+    		return null;
+    	}
+    	
+        DicomObject attrs = instance.getAttributes(false);
         
         MimeType mimeType = null;
         String mimeTypeStr = attrs.getString(Tag.MIMETypeOfEncapsulatedDocument);
