@@ -53,6 +53,7 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.resource.loader.PackageStringResourceLoader;
+import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
 
 /**
  * @author Bernhard Ableitinger <bernhard.ableitinger@agfa.com>
@@ -158,6 +159,14 @@ public class TCDetailsPanel extends Panel {
 		            @Override
 		            public TCAttribute getAttribute() {
 		                return TCAttribute.Discussion;
+		            }
+		            @Override
+		            public boolean visible() {
+		            	if (TCForumIntegration.get(WebCfgDelegate
+		            			.getInstance().getTCForumIntegrationType())==null) {
+		            		return false;
+		            	}
+		            	return super.visible();
 		            }
 		        }).setDefaultModel(tabModel)
 		);
