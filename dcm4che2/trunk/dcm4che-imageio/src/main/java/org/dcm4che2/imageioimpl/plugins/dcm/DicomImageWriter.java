@@ -258,7 +258,7 @@ public class DicomImageWriter extends ImageWriter {
             int size = frames * width * height * bytes * samples;
             VR vr = VR.OB;
             if( bytes>1 ) vr = VR.OW;
-            dos.writeHeader(Tag.PixelData, vr, size);
+            dos.writeHeader(Tag.PixelData, vr, (size+1) & ~1);
         }
         dos.flush();
         ((ImageOutputStream) output).flush();
@@ -288,10 +288,12 @@ public class DicomImageWriter extends ImageWriter {
             throws IOException {
 
         if (encapsulated) {
-            dos.writeHeader(Tag.Item, null, data.length);
+            dos.writeHeader(Tag.Item, null, (data.length+1) % ~1);
         }
 
         dos.write(data);
+        if ((data.length & 1) != 0)
+            dos.write(0);
         // The flush allows any memory buffer to be cleared.
         dos.flush();
         ((ImageOutputStream) output).flush();
