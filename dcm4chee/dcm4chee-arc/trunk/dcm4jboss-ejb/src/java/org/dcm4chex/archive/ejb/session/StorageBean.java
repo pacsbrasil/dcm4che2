@@ -567,7 +567,7 @@ public abstract class StorageBean implements SessionBean {
                 try {
                     return patHome.selectPatient(ds, matching, true);
                 } catch (NonUniquePatientException nupe) {
-                    pat.remove();
+                    ((StorageLocal)sessionCtx.getEJBLocalObject()).deletePatient(pat);
                     pat = patHome.selectPatient(ds, matching, true);
                 } catch (ObjectNotFoundException onfe2) {
                     // Just inserted Patient not found because of missing value
@@ -597,7 +597,13 @@ public abstract class StorageBean implements SessionBean {
     public PatientLocal createPatient(Dataset ds) throws CreateException {
         return patHome.create(ds);
     }
-
+    /**
+     * @ejb.interface-method
+     * @ejb.transaction type="RequiresNew"
+     */
+    public void deletePatient( PatientLocal pat ) throws javax.ejb.RemoveException {
+        patHome.remove(pat);
+    }
     private void coercePatientIdentity(PatientLocal patient, Dataset ds,
             Dataset coercedElements) throws DcmServiceException, CreateException {
         patient.coerceAttributes(ds, coercedElements);
