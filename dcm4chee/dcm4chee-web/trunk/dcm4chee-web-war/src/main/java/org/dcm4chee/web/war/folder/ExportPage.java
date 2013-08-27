@@ -342,7 +342,7 @@ public class ExportPage extends SecureSessionCheckPage implements CloseRequestSu
                 if (closeRequest) {
                     removeProgressProvider(getExportResults().remove(resultId), true);
                     getPage().getPageMap().remove(ExportPage.this);
-                    target.appendJavascript("javascript:self.close()");
+                    target.appendJavascript("javascript:window.close()");
                     isClosed = true;
                 } else {
                     ExportResult result = getExportResults().get(resultId);
@@ -356,7 +356,7 @@ public class ExportPage extends SecureSessionCheckPage implements CloseRequestSu
                             if (closeOnFinished && result.failedRequests.isEmpty()) {
                                 removeProgressProvider(getExportResults().remove(resultId), false);
                                 getPage().getPageMap().remove(ExportPage.this);
-                                target.appendJavascript("javascript:self.close()");
+                                target.appendJavascript("javascript:window.close()");
                             }
                         }
                         result.isRendered = true;
