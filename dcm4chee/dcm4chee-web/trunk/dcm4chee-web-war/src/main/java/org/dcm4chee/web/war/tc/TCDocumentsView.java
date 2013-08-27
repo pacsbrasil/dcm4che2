@@ -250,13 +250,14 @@ public class TCDocumentsView extends Panel
 		            final FileUpload upload = uploadField.getFileUpload();
 		            if (upload != null)
 		            {
+		            	String contentType = null, fileName = null;
 		            	final long totalBytes = upload.getSize();		            	
 		                try {
 		                	if (totalBytes>0) {
 		                		if (totalBytes<=maxUploadSize) {
 				                	getEditableTC().addReferencedDocument(
-				                			MimeType.get(upload.getContentType()), 
-				                			upload.getClientFileName(), 
+				                			MimeType.get(contentType = upload.getContentType()), 
+				                			fileName = upload.getClientFileName(), 
 				                			upload.getInputStream(), 
 				                			uploadDescription.getModelObject());
 		                		}
@@ -268,7 +269,8 @@ public class TCDocumentsView extends Panel
 		                	target.addComponent(items);
 		                }
 		                catch (Exception e) {              	
-		                	log.error("Unable to upload teaching-file referenced document!", e);
+		                	log.error("Unable to upload teaching-file referenced document (content-type='"+
+		                			contentType+"', file-name='" + fileName + "')!", e);
 		                }
 		                finally {
 		                	upload.closeStreams();
