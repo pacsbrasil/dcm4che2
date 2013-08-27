@@ -20,7 +20,7 @@ if not "%ECHO%" == ""  echo %ECHO%
 if "%OS%" == "Windows_NT"  setlocal
 
 set MAIN_CLASS=org.dcm4che2.tool.dcm2jpg.Dcm2Jpg
-set MAIN_JAR=dcm4che-tool-dcm2jpg-2.0.28-SNAPSHOT.jar
+set MAIN_JAR=dcm4che-tool-dcm2jpg-2.0.28.jar
 
 set DIRNAME=.\
 if "%OS%" == "Windows_NT" set DIRNAME=%~dp0%
@@ -55,10 +55,10 @@ set JAVA=%JAVA_HOME%\bin\java
 
 set CP=%DCM4CHE_HOME%\etc\
 set CP=%CP%;%DCM4CHE_HOME%\lib\%MAIN_JAR%
-set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-core-2.0.28-SNAPSHOT.jar
-set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-image-2.0.28-SNAPSHOT.jar
-set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-imageio-2.0.28-SNAPSHOT.jar
-set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-imageio-rle-2.0.28-SNAPSHOT.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-core-2.0.28.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-image-2.0.28.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-imageio-2.0.28.jar
+set CP=%CP%;%DCM4CHE_HOME%\lib\dcm4che-imageio-rle-2.0.28.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-log4j12-1.6.1.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\slf4j-api-1.6.1.jar
 set CP=%CP%;%DCM4CHE_HOME%\lib\log4j-1.2.16.jar
