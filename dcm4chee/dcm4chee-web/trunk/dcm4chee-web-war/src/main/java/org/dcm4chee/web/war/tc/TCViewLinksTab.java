@@ -57,7 +57,7 @@ public abstract class TCViewLinksTab extends AbstractEditableTCViewTab
 	public TCViewLinksTab(final String id, IModel<TCEditableObject> model, 
 			TCAttributeVisibilityStrategy attrVisibilityStrategy) {
         super(id, model, attrVisibilityStrategy);
-        TCLinksView view = new TCLinksView("tc-view-links-content", model, isEditing());
+        TCLinksView view = new TCLinksView("tc-view-links-content", model, attrVisibilityStrategy,isEditing());
         if (!isEditing()) {
         	view.add(new TCClassAppender("ui-border-box"));
         	view.add(new TCStyleAppender("padding:0 20px"));

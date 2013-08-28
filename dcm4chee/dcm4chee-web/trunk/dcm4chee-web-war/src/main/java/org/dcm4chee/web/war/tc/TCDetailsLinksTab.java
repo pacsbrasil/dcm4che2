@@ -57,7 +57,7 @@ public class TCDetailsLinksTab extends TCDetailsTab {
         	public TCObject getObject() {
         		return getTCObject();
         	}
-        }, false));
+        }, attrVisibilityStrategy, false));
     }
     
     @Override

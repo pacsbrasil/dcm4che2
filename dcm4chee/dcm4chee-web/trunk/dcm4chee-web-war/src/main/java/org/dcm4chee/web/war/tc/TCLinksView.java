@@ -110,7 +110,9 @@ public class TCLinksView extends Panel
     private Component linkBtn;
         
     public TCLinksView(final String id, 
-    		IModel<? extends TCObject> model, final boolean editing) {
+    		IModel<? extends TCObject> model, 
+    		final TCAttributeVisibilityStrategy attrVisibility,
+    		final boolean editing) {
         super(id, model);
 
         this.editing = editing;
@@ -168,7 +170,17 @@ public class TCLinksView extends Panel
 	                	    	}
 	                		}
 	                	}
-	                	.add(new Label("link-title", new Model<String>(link.getLinkedCase().getTitle())) {
+	                	.add(new Label("link-title", new AbstractReadOnlyModel<String>() {
+		                		@Override
+		                		public String getObject() {
+		                        	if (!attrVisibility.isAttributeVisible(TCAttribute.Title)) {
+		                        		return TCUtilities.getLocalizedString("tc.case.text")+
+		                        				" " + link.getLinkedCase().getId();
+		                        	}
+		                        	return link.getLinkedCase().getTitle();
+		                		}
+	                		})
+	                	{
 	                		@Override
 	                		protected void onComponentTag(ComponentTag tag) {
 	                			super.onComponentTag(tag);
@@ -204,8 +216,15 @@ public class TCLinksView extends Panel
                 	);
                 	
                 	//abstract
-                	item.add(new TCMultiLineLabel("link-abstract", 
-                			link.getLinkedCase().getAbstr(), new AutoClampSettings(40))
+                	item.add(new TCMultiLineLabel("link-abstract", new AbstractReadOnlyModel<String>() {
+	                		@Override
+	                		public String getObject() {
+	                			if (!attrVisibility.isAttributeVisible(TCAttribute.Abstract)) {
+	                				return TCUtilities.getLocalizedString("tc.obfuscation.text");
+	                			}
+	                			return link.getLinkedCase().getAbstr();
+	                		}
+                		}, new AutoClampSettings(40))
                 		.setEscapeModelStrings(false)
                 	);
                 	
