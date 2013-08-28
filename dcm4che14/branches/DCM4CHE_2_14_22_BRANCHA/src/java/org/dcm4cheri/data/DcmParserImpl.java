@@ -305,7 +305,8 @@ final class DcmParserImpl implements org.dcm4che.data.DcmParser {
                         : FileFormat.ACRNEMA_STREAM);
             }
         }
-        throw new DcmParseException("Unknown Format");
+        throw new DcmParseException(String.format("Unknown Format: tag = %s, VR = %s, BigEndian = %s", 
+        		new String[] { Integer.toHexString(tag), VRs.toString(vr), String.valueOf(bigEndian)}));
     }
     
     private FileFormat detectMglibFileFormat(byte[] b) throws IOException {
