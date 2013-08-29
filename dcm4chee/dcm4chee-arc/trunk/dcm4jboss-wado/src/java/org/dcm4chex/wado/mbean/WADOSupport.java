@@ -65,6 +65,7 @@ import java.nio.ByteOrder;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -159,6 +160,12 @@ public class WADOSupport implements NotificationListener {
 
     public static final String CONTENT_TYPE_MPEG = "video/mpeg";
 
+    public static final List<String> CONTENT_TYPES = Arrays.asList(
+            CONTENT_TYPE_JPEG, CONTENT_TYPE_PNG, CONTENT_TYPE_PNG16,
+            CONTENT_TYPE_DICOM, CONTENT_TYPE_DICOM_XML,
+            CONTENT_TYPE_HTML, CONTENT_TYPE_XHTML, CONTENT_TYPE_XML, CONTENT_TYPE_PLAIN,
+            CONTENT_TYPE_MPEG);
+    
     private static final String SUBJECT_CONTEXT_KEY = "javax.security.auth.Subject.container";
     
     private static final String[] COMPRESSED_TRANSFER_SYNTAXES = {

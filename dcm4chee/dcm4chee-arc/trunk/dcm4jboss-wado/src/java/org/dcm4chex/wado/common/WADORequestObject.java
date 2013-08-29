@@ -62,6 +62,7 @@ public interface WADORequestObject extends BasicRequestObject {
     public static final int INVALID_REGION = -7;
     public static final int INVALID_WINDOW_LEVEL = -8;
     public static final int INVALID_IMAGE_QUALITY = -9;
+    public static final int INVALID_UID = -10;
 
     /**
      * Returns the studyUID parameter of the http request.

@@ -48,8 +48,10 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
+import org.dcm4che.dict.UIDs;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.wado.common.WADORequestObject;
+import org.dcm4chex.wado.mbean.WADOSupport;
 
 /**
  * @author franz.willer
@@ -112,7 +114,7 @@ public class WADORequestObjectImpl extends BasicRequestObjectImpl implements
 
     private String imageQuality;
 
-    private List contentTypes;
+    private List<String> contentTypes;
     
     private Dataset objectInfo;
 
@@ -218,7 +220,7 @@ public class WADORequestObjectImpl extends BasicRequestObjectImpl implements
      * 
      * @return A list of requested content types
      */
-    public List getContentTypes() {
+    public List<String> getContentTypes() {
         return contentTypes;
     }
 
@@ -283,6 +285,9 @@ public class WADORequestObjectImpl extends BasicRequestObjectImpl implements
             setErrorMsg("Not a WADO URL!");
             return INVALID_WADO_URL;
         }
+        if (!checkUIDs()) {
+            return INVALID_UID;
+        }
         if (rows != null) {
             try {
                 Integer.parseInt(rows);
@@ -333,7 +338,16 @@ public class WADORequestObjectImpl extends BasicRequestObjectImpl implements
                 return INVALID_IMAGE_QUALITY;
             }
         }
-
+        
+        if (contentTypes != null) {
+            for (String ct : contentTypes) {
+                if (!WADOSupport.CONTENT_TYPES.contains(ct)) {
+                    setErrorMsg("Invalid contentType "+ct+"! Must be one of "+WADOSupport.CONTENT_TYPES);
+                    return INVALID_CONTENT_TYPE;
+                }
+            }
+        }
+        
         setErrorMsg(null);
         return OK;
     }
@@ -422,6 +436,27 @@ public class WADORequestObjectImpl extends BasicRequestObjectImpl implements
             throw new IllegalArgumentException(
                     ERROR_INVALID_IMAGE_QUALITY_VALUE);
     }
+    
+    private boolean checkUIDs() {
+        // studyUID and seriesUID are not used in query! So check UID only if length > 1 to allow short URLs
+        if (studyUID.length() > 1 && !UIDs.isValid(studyUID)) { 
+            this.setErrorMsg("Invalid studyUID parameter!");
+            return false;
+        }
+        if (seriesUID.length() > 1 && !UIDs.isValid(seriesUID)) {
+            this.setErrorMsg("Invalid seriesUID parameter!");
+            return false;
+        }
+        if (!UIDs.isValid(instanceUID)) {
+            this.setErrorMsg("Invalid objetcUID parameter!");
+            return false;
+        }
+        if (transferSyntax != null && !UIDs.isValid(transferSyntax)) {
+            this.setErrorMsg("Invalid transferSyntax parameter! Not a valid UID");
+            return false;
+        }
+        return true;
+    }
 
     /**
      * Seperate the given String with delim character and return a List of the
@@ -433,11 +468,11 @@ public class WADORequestObjectImpl extends BasicRequestObjectImpl implements
      *                The delimiter charecter.
      * @return A List with the seperated items
      */
-    private List _string2List(String s, String delim) {
+    private List<String> _string2List(String s, String delim) {
         if (s == null)
             return null;
         StringTokenizer st = new StringTokenizer(s, delim);
-        List l = new ArrayList();
+        List<String> l = new ArrayList<String>();
         while (st.hasMoreTokens()) {
             l.add(st.nextToken().trim());
         }
