@@ -41,7 +41,6 @@ package org.dcm4chex.archive.ejb.entity;
 
 import java.lang.reflect.Method;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
@@ -79,7 +78,6 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 import org.dcm4chex.archive.exceptions.ConfigurationException;
 import org.dcm4chex.archive.util.AETs;
 import org.dcm4chex.archive.util.Convert;
-import org.dcm4chex.archive.util.DynamicQueryBuilder;
 
 /**
  * @author Gunter Zeilinger <gunterze@gmail.com>
@@ -113,10 +111,6 @@ import org.dcm4chex.archive.util.DynamicQueryBuilder;
  *             transaction-type="Supports"
  * @jboss.query signature="java.util.Collection findWithNoPpsIuidFromSrcAETReceivedLastOfStudyBefore(java.lang.String srcAET, java.sql.Timestamp receivedBefore)"
  *              strategy="on-find"
- *              eager-load-group="*"
- * 
- * @jboss.query signature="java.util.Collection ejbSelectGeneric(java.lang.String jbossQl, java.lang.Object[] args)"
- *              dynamic="true" strategy="on-load" page-size="20"
  *              eager-load-group="*"
  * 
  * @jboss.query signature="int ejbSelectNumberOfSeriesRelatedInstancesOnMediaWithStatus(java.lang.Long pk, int status)"
@@ -160,16 +154,6 @@ public abstract class SeriesBean implements EntityBean {
     private MPPSLocalHome mppsHome;
     private SeriesRequestLocalHome reqHome;
 //    private FileSystemLocalHome fsHome;
-
-    private final DynamicQueryBuilder dynamicQueryBuilder;
-
-    public SeriesBean() {
-		this(new DynamicQueryBuilder());
-	}
-
-	public SeriesBean(DynamicQueryBuilder dynamicQueryBuilder) {
-		this.dynamicQueryBuilder = dynamicQueryBuilder;
-	}
 
     public void setEntityContext(EntityContext ctx) {
         ejbctx = ctx;
@@ -697,12 +681,6 @@ public abstract class SeriesBean implements EntityBean {
     }
 
     /**
-     * @ejb.select query="" transaction-type="Supports"
-     */
-    public abstract Collection ejbSelectGeneric(String jbossQl, Object[] args)
-            throws FinderException;
-
-    /**
      * @ejb.interface-method
      */
     public boolean updateRetrieveAETs() {
@@ -1071,36 +1049,4 @@ public abstract class SeriesBean implements EntityBean {
     public Collection getAllFiles() throws FinderException {      
         return ejbSelectAllFiles(getPk());
     }    
-        
-    /**
-     * @ejb.home-method
-     */
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public Collection ejbHomeListByIUIDs(String[] iuids) throws FinderException {
-        if (iuids == null || iuids.length < 1)
-            return new ArrayList();
-        
-        log.debug("List by IUIDs:" + iuids.length);
-        long t0 = System.currentTimeMillis();
-        Iterator<DynamicQueryBuilder.DynamicQuery> dynamicQueries = dynamicQueryBuilder.getDynamicQueries("SELECT OBJECT(s) FROM Series s WHERE s.seriesIuid", iuids, 1);
-        
-        DynamicQueryBuilder.DynamicQuery dynamicQuery = dynamicQueries.next();
-        Collection c = execute(dynamicQuery);
-
-        while (dynamicQueries.hasNext()) {
-        	c.addAll(execute(dynamicQueries.next()));
-        }
-        
-        log.debug("Total time:" + (System.currentTimeMillis() - t0));
-        
-        return c;
-    }
-
-	@SuppressWarnings("rawtypes")
-	private Collection execute(DynamicQueryBuilder.DynamicQuery dynamicQuery)
-			throws FinderException {
-		log.debug("Execute JBossQL: " + dynamicQuery.getJbossQl());
-		
-        return ejbSelectGeneric(dynamicQuery.getJbossQl(), dynamicQuery.getArgs());
-	}
 }
