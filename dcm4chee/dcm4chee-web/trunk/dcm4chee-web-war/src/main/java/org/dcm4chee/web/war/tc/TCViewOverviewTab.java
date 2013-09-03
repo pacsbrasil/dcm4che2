@@ -362,7 +362,7 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
 		        				.isAttributeVisible(TCAttribute.Keyword)) {
 		        			return TCUtilities.getLocalizedString("tc.obfuscation.text");
 		        		}
-		        		return getStringValue(TCQueryFilterKey.Keyword);
+		        		return getShortStringValue(TCQueryFilterKey.Keyword);
 		        	}
 		        	@Override
 		            public void setObject(String text) {
