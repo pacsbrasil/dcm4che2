@@ -128,7 +128,7 @@ public final class QueryXdsPublishCmd {
             }
             if (pos2 < sql.length())
                 sb.append(sql.substring(pos2));
-            if (nativeQry)
+            if (!nativeQry)
                 sb.append(MAIN_SQL_RIGHT);
             log.debug("Prepared SQL:"+sb);
             return sb.toString();
