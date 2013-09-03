@@ -47,6 +47,7 @@ import java.util.List;
 
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
@@ -142,13 +143,23 @@ public class StudyListBean implements StudyListLocal {
         }
         return patientList;
     }
+    
+    public MPPS findMPPS(String mppsUID) {
+        Query query = em.createQuery("SELECT m FROM MPPS m WHERE m.sopInstanceUID = :uid");
+        query.setParameter("uid", mppsUID);
+        try {
+            return (MPPS)query.getSingleResult();
+        } catch (NoResultException x) {
+            return null;
+        }
+    }
 
     public boolean hasUnlinkedSeries(long studyPk) {
-        Query query = em.createQuery("SELECT COUNT(s) FROM Series s WHERE s.study.pk = :pk AND s.modalityPerformedProcedureStep IS NULL)");
+        Query query = em.createQuery("SELECT COUNT(s) FROM Series s WHERE s.study.pk = :pk AND s.modalityPerformedProcedureStep IS NULL");
         query.setParameter("pk", studyPk);
         int count = ((Number) query.getSingleResult()).intValue();
         if (count == 0) {
-            query = em.createQuery("SELECT COUNT(s) FROM Series s WHERE s.study.pk = :pk AND s.modalityPerformedProcedureStep.accessionNumber IS NULL)");
+            query = em.createQuery("SELECT COUNT(s) FROM Series s WHERE s.study.pk = :pk AND s.modalityPerformedProcedureStep.accessionNumber IS NULL");
             query.setParameter("pk", studyPk);
             count = ((Number) query.getSingleResult()).intValue();
         }

@@ -46,6 +46,10 @@ import org.dcm4che2.net.Association;
 import org.dcm4che2.net.DimseRSPHandler;
 import org.dcm4che2.net.TransferCapability;
 import org.dcm4che2.net.pdu.PresentationContext;
+
+import org.dcm4chee.archive.entity.MPPS;
+import org.dcm4chee.archive.util.JNDIUtils;
+import org.dcm4chee.web.dao.folder.StudyListLocal;
 import org.dcm4chee.web.service.common.AbstractScuService;
 
 /**
@@ -70,7 +74,7 @@ public class MppsForwardService extends AbstractScuService {
         Tag.PerformedProcedureStepEndTime, Tag.PerformedProcedureStepStatus, 
         Tag.PerformedSeriesSequence };
 
-    public String sendMPPS(boolean create, DicomObject mpps, String aet) throws Exception {
+    public String sendMPPS(DicomObject mpps, String aet) throws Exception {
 
     	Association as = null;
     	final StringBuffer result = new StringBuffer();
@@ -118,5 +122,15 @@ public class MppsForwardService extends AbstractScuService {
             }
         }
     }
+    
+    public String forwardMPPS(String mppsUID, String aet) throws Exception {
+        StudyListLocal dao = (StudyListLocal) JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
+        MPPS mpps = dao.findMPPS(mppsUID);
+        if (mpps != null) {
+            return sendMPPS(mpps.getAttributes(), aet);
+        }
+        return ("MPPS with InstanceUID "+mppsUID+" not found!");
+    }
+
 }
 

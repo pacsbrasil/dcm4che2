@@ -67,6 +67,7 @@ public interface StudyListLocal {
     List<Patient> findPatients(StudyListFilter filter, int max, int index, List<String> roles);
     List<Patient> findUnconnectedMPPS(StudyListFilter filter, int max, int index);
     List<MPPS> findUnconnectedMPPSofPatient(long patPk);
+    MPPS findMPPS(String mppsUID);
     
     int countStudiesOfPatient(long pk, List<String> roles);
     

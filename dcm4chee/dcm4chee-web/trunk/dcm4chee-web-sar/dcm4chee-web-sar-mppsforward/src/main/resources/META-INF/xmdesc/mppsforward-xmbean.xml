@@ -40,14 +40,25 @@
       		]]> </description>
       <name>sendMPPS</name>
       <parameter>
-        <description>Specifies if a create should be performed before the set</description>
-        <name>create</name>
-        <type>boolean</type>
-      </parameter>
-      <parameter>
         <description>IAN DicomObject which references the MPPS to forward</description>
         <name>mpps</name>
         <type>org.dcm4che2.data.DicomObject</type>
+      </parameter>
+      <parameter>
+        <description>Application Entity Title</description>
+        <name>aet</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <return-type>java.lang.String</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description><![CDATA[ forward MPPS with given InstanceUID to given Application Entity.
+      		]]> </description>
+      <name>forwardMPPS</name>
+      <parameter>
+        <description>IAN DicomObject which references the MPPS to forward</description>
+        <name>mppsUID</name>
+        <type>java.lang.String</type>
       </parameter>
       <parameter>
         <description>Application Entity Title</description>
