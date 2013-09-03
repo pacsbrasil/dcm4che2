@@ -44,27 +44,15 @@ public class AuditRecordRepositoryFacade {
 			if (cookies == null) 
 				return null;           
 			StringBuffer cookieValue = new StringBuffer();
-			for (Cookie cookie : Arrays.asList(cookies)) {
-				cookieValue
-					.append(cookie.getName())
-					.append("=")
-					.append(cookie.getValue())
-					.append("; ");
+			for (int i = cookies.length ; i > 0 ; ) {
+				cookieValue.append(cookies[--i].getName()).append("=").append(cookies[i].getValue());
+				if (i != 0)
+				    cookieValue.append("; ");
 			}
-			if (cookieValue.length() > 0)
-				cookieValue.delete(cookieValue.length()-2, cookieValue.length()-1);
 			urlConnection.setRequestProperty("Cookie", cookieValue.toString());
 			urlConnection.connect();
 			in = urlConnection.getInputStream();
-			Reader reader = new InputStreamReader(in);
-			char[] buffer = new char[1];
-			StringBuffer returnValue = new StringBuffer();
-			while ((reader.read(buffer)) >= 0)
-				returnValue.append(buffer);
-			reader.close();
-
-			return returnValue.length() > 0 ?  
-				transform(returnValue.toString()) : null;
+			return transform(in);
 		} catch (Exception e) {
 			log.error(getClass().getName() + ": ", e);
 			return null;
@@ -99,7 +87,7 @@ public class AuditRecordRepositoryFacade {
 					+ " with parameter " + queryParameter);
 	}
 
-	private String transform(String input) {
+	private String transform(InputStream in) {
 		try {
 			StreamResult result = new StreamResult(new StringWriter());
 			TransformerFactory.newInstance()
@@ -112,7 +100,7 @@ public class AuditRecordRepositoryFacade {
 		       								"/WEB-INF/Auditing_en.xsl")
 		       			.openStream()))
 		       		.transform(
-		       				new SAXSource(new InputSource(new StringReader(input))), 
+		       				new SAXSource(new InputSource(in)), 
 		       				result);
 		       String entries = result.getWriter().toString();
 		       result.getWriter().close();

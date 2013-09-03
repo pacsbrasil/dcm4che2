@@ -1,5 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <html xsl:version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns="http://www.w3.org/1999/xhtml">
 	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 	</head>
 	<body style="font-family:Arial;font-size:12pt;background-color:#444444">
 		<xsl:variable name="thColor" select="'333333'"/>
