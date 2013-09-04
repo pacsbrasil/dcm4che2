@@ -39,6 +39,12 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
+			<groupId>dcm4che.dcm4chee</groupId>
+			<artifactId>dcm4chee-web-ejb</artifactId>
+			<version>${project.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 			<version>1.5.0</version>
