@@ -194,7 +194,12 @@ public class TCLinksView extends Panel
 	                		.add(new AttributeAppender("style",true,
 	                				new Model<String>("display:none"),";"))
 	                	)
-	                	.add(new TCToolTipAppender("tc.case.open.text"))
+	                	.add(new TCToolTipAppender("tc.case.open.text") {
+	                		@Override
+	                		public boolean isEnabled(Component c) {
+	                			return !editing;
+	                		}
+	                	})
 	                );
                 	                	
                 	//image link
