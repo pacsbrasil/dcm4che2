@@ -1,7 +1,6 @@
 package org.dcm4chee.web.webview.weasis;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 public class EncryptUtils {
     private static final char START = '~';
@@ -82,8 +81,19 @@ public class EncryptUtils {
             }
         }
         if (cutMessage > 0) {
-            newmsg = Arrays.copyOfRange(newmsg, 0, cutMessage);
+            newmsg = copyOfRange(newmsg, 0, cutMessage);
         }
         return new String(newmsg);
+    }
+
+    // This method has been introduced in Arrays class of JAVA 6. Copy it to be compliant with Java 1.5
+    public static char[] copyOfRange(char[] original, int from, int to) {
+        int newLength = to - from;
+        if (newLength < 0) {
+            throw new IllegalArgumentException(from + " > " + to);
+        }
+        char[] copy = new char[newLength];
+        System.arraycopy(original, from, copy, 0, Math.min(original.length - from, newLength));
+        return copy;
     }
 }
