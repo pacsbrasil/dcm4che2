@@ -41,6 +41,7 @@ package org.dcm4chee.web.common.markup;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Locale;
 
 import org.apache.wicket.Component;
 import org.apache.wicket.behavior.IBehavior;
@@ -85,7 +86,15 @@ public class SimpleDateTimeField extends FormComponentPanel<Date> implements ITe
                     protected DateTimeFormatter getFormat() {
                     	return DateTimeFormat.forPattern(DateUtils.getDatePattern(dateField));
                     }                    
-            });
+                    @Override
+                    public Date convertToObject(String value, Locale locale) {
+                        if (value != null && value.length()==1 && Character.isDigit(value.charAt(0))) {
+                            long t = System.currentTimeMillis() - 86400000*(value.charAt(0)-0x30);
+                            return new Date(t);
+                        }
+                        return super.convertToObject(value, locale);
+                    }
+           });
         dateField.add(new DatePicker() {
         	
             private static final long serialVersionUID = 1L;
