@@ -73,8 +73,8 @@ public interface DicomEditLocal {
     
     List<MPPS> deletePps(long[] pks);
     
-    EntityTree moveStudiesToPatient(long al[], long l);
-    EntityTree moveStudyToPatient(String s, String s1, String s2);
+    EntityTree moveStudiesToPatient(long al[], long l, boolean useIOCM);
+    EntityTree moveStudyToPatient(String s, String s1, String s2, boolean useIOCM);
 
     DicomObject getCompositeObjectforSeries(String seriesIuid);
     DicomObject getCompositeObjectforSeries(long pk);

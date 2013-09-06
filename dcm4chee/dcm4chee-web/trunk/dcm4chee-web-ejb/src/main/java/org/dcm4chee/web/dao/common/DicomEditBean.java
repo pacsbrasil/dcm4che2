@@ -79,6 +79,7 @@ import org.dcm4chee.archive.entity.PublishedStudy;
 import org.dcm4chee.archive.entity.Series;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.archive.entity.StudyOnFileSystem;
+import org.dcm4chee.web.dao.util.IOCMUtil;
 import org.dcm4chee.web.dao.util.QueryUtil;
 import org.dcm4chee.web.dao.util.UpdateDerivedFieldsUtil;
 import org.dcm4chee.web.dao.vo.EntityTree;
@@ -610,21 +611,22 @@ public class DicomEditBean implements DicomEditLocal {
     }
     
     @SuppressWarnings("unchecked")
-    public EntityTree moveStudiesToPatient(long pks[], long pk) {
+    public EntityTree moveStudiesToPatient(long pks[], long pk, boolean useIOCM) {
         Query qP = em.createQuery("SELECT OBJECT(p) FROM Patient p WHERE pk = :pk").setParameter("pk", Long.valueOf(pk));
         Query qS = QueryUtil.getQueryForPks(em, "SELECT OBJECT(s) FROM Study s WHERE pk ", pks);
-        return moveStudiesToPatient(qS.getResultList(), (Patient)qP.getSingleResult());
+        return moveStudiesToPatient(qS.getResultList(), (Patient)qP.getSingleResult(), useIOCM);
     }
 
     @SuppressWarnings("unchecked")
-    public EntityTree moveStudyToPatient(String iuid, String patId, String issuer) {
+    public EntityTree moveStudyToPatient(String iuid, String patId, String issuer, boolean useIOCM) {
         Query qS = em.createQuery("SELECT OBJECT(s) FROM Study s WHERE studyInstanceUID = :iuid").setParameter("iuid", iuid.trim());
         Query qP = QueryUtil.getPatientQuery(em, patId, issuer);
-        return moveStudiesToPatient(qS.getResultList(), (Patient)qP.getSingleResult());
+        return moveStudiesToPatient(qS.getResultList(), (Patient)qP.getSingleResult(), useIOCM);
     }
 
-    private EntityTree moveStudiesToPatient(List<Study> studies, Patient patient) {
+    private EntityTree moveStudiesToPatient(List<Study> studies, Patient patient, boolean useIOCM) {
         EntityTree tree = new EntityTree();
+        tree.setContainsChangedEntities(useIOCM);
         for(Study s : studies) {
             tree.addStudy(s);
             s.setPatient(patient);
@@ -638,11 +640,24 @@ public class DicomEditBean implements DicomEditLocal {
                         em.merge(mpps);
                     }
                 }
-            } 
+                if (useIOCM) {
+                    series.setAttributes(IOCMUtil.changeUID(tree, series.getAttributes(false), 
+                            Tag.SeriesInstanceUID));
+                    em.merge(series);
+                    for (Instance instance : series.getInstances()) {
+                        instance.setAttributes(IOCMUtil.addReplacementAttrs(
+                           IOCMUtil.changeUID(tree, instance.getAttributes(false), Tag.SOPInstanceUID)));
+                        em.merge(instance);
+                    }
+                }
+            }
+        }
+        if (useIOCM) {
+            IOCMUtil.updateUIDrefs(tree, em);
         }
         return tree;
     }
-    
+
     public DicomObject getCompositeObjectforSeries(String iuid) {
         Query q = em.createQuery("SELECT OBJECT(s) FROM Series s WHERE seriesInstanceUID = :iuid")
             .setParameter("iuid", iuid.trim());

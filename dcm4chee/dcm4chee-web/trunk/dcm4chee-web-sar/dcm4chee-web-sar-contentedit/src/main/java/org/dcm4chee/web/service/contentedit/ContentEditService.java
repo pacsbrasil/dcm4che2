@@ -42,7 +42,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -64,6 +63,7 @@ import org.dcm4che2.audit.message.AuditEvent;
 import org.dcm4che2.data.BasicDicomObject;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.ElementDictionary;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.UID;
 import org.dcm4che2.data.VR;
@@ -71,6 +71,7 @@ import org.dcm4che2.util.StringUtils;
 import org.dcm4che2.util.UIDUtils;
 import org.dcm4chee.archive.common.Availability;
 import org.dcm4chee.archive.common.PrivateTag;
+import org.dcm4chee.archive.conf.AttributeFilter;
 import org.dcm4chee.archive.entity.Code;
 import org.dcm4chee.archive.entity.File;
 import org.dcm4chee.archive.entity.Instance;
@@ -86,12 +87,16 @@ import org.dcm4chee.web.dao.common.DicomEditLocal;
 import org.dcm4chee.web.dao.folder.MppsToMwlLinkLocal;
 import org.dcm4chee.web.dao.trash.TrashListLocal;
 import org.dcm4chee.web.dao.util.CoercionUtil;
+import org.dcm4chee.web.dao.util.IOCMUtil;
 import org.dcm4chee.web.dao.vo.EntityTree;
 import org.dcm4chee.web.dao.vo.MppsToMwlLinkResult;
 import org.dcm4chee.web.service.common.DicomActionNotification;
 import org.dcm4chee.web.service.common.FileImportOrder;
 import org.dcm4chee.web.service.common.XSLTUtils;
 import org.dcm4chee.web.service.common.delegate.TemplatesDelegate;
+import org.dcm4chee.web.service.contentedit.iocm.ChangeRequestOrder;
+import org.dcm4chee.web.service.contentedit.iocm.ChangeRequestOrder.ChangedInstance;
+import org.dcm4chee.web.service.contentedit.iocm.IOCMSupport;
 import org.jboss.system.ServiceMBeanSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -114,13 +119,9 @@ public class ContentEditService extends ServiceMBeanSupport {
         Tag.ReferencedPerformedProcedureStepSequence, 
         Tag.PerformedProcedureStepStartDate, Tag.PerformedProcedureStepStartTime};
 
-    private Code rejectNoteCode = new Code();
-
     private DicomEditLocal dicomEdit;
     private MppsToMwlLinkLocal mpps2mwl;
 
-    private boolean forceNewRejNoteStudyIUID;
-    
     private ObjectName rejNoteServiceName;
     private ObjectName ianScuServiceName;
     private ObjectName moveScuServiceName;
@@ -132,7 +133,14 @@ public class ContentEditService extends ServiceMBeanSupport {
     private boolean sendIANonMppsLinked;
     private boolean processRejNote;
     private boolean dcm14Stylesheet;
-    
+
+    private boolean useIOCM;
+    private IOCMSupport iocm = new IOCMSupport();
+    private int[] iocmRequiredInstanceAttributes = new int[]{
+            Tag.ContentSequence, Tag.ReferencedInstanceSequence, Tag.ReferencedImageSequence, 
+            Tag.ReferencedStudySequence, Tag.ReferencedSeriesSequence, Tag.ContributingEquipmentSequence
+    };
+
     private String addMwlAttrsToMppsXsl;
     
     public boolean isUpdateMwlStatus() {
@@ -164,11 +172,38 @@ public class ContentEditService extends ServiceMBeanSupport {
     }
     
     public String getRejectionNoteCode() {
-        return rejectNoteCode.toString()+"\r\n";
+        return iocm.getRejectNoteCode().toString()+"\r\n";
     }
 
     public void setRejectionNoteCode(String code) {
-        rejectNoteCode = new Code(code);
+        iocm.setRejectNoteCode(new Code(code));
+    }
+    
+    public String getContributingEquipment() {
+        return StringUtils.join(IOCMUtil.getContributingEquipment(), '|');
+    }
+
+    public void setContributingEquipment(String s) {
+        IOCMUtil.setContributingEquipment(StringUtils.split(s, '|'));
+    }
+
+    public boolean isUseIOCM() {
+        return useIOCM;
+    }
+
+    public void setUseIOCM(boolean useIOCM) {
+        if (useIOCM)
+            checkAttributeFilterForIOCM();
+        this.useIOCM = useIOCM;
+    }
+
+    private void checkAttributeFilterForIOCM() {
+        AttributeFilter filter = AttributeFilter.getInstanceAttributeFilter(null);
+        for (int i = 0 ; i < iocmRequiredInstanceAttributes.length ; i++) {
+            if (!filter.hasTag(iocmRequiredInstanceAttributes[i]))
+                throw new IllegalStateException("InstanceAttributeFilter does not contain "+
+                        ElementDictionary.getDictionary().nameOf(iocmRequiredInstanceAttributes[i]));
+        }
     }
 
     public boolean isProcessIAN() {
@@ -210,14 +245,6 @@ public class ContentEditService extends ServiceMBeanSupport {
 
     public void setSendIANonMppsLinked(boolean sendIANonMppsLinked) {
         this.sendIANonMppsLinked = sendIANonMppsLinked;
-    }
-
-    public boolean isForceNewRejNoteStudyIUID() {
-        return forceNewRejNoteStudyIUID;
-    }
-
-    public void setForceNewRejNoteStudyIUID(boolean forceNewRejNoteStudyIUID) {
-        this.forceNewRejNoteStudyIUID = forceNewRejNoteStudyIUID;
     }
 
     public String getModifyingSystem() {
@@ -427,20 +454,34 @@ public class ContentEditService extends ServiceMBeanSupport {
         if ( studyPks == null || studyPks.length < 1) {
             return 0;
         }
-        EntityTree entityTree = lookupDicomEditLocal().moveStudiesToPatient(studyPks, patPk);
+        EntityTree entityTree = lookupDicomEditLocal().moveStudiesToPatient(studyPks, patPk, useIOCM);
         if (!entityTree.isEmpty()) {
-            DicomObject kos = getRejectionNotes(entityTree)[0];
-            Auditlog.logInstancesAccessed(AuditEvent.ActionCode.UPDATE, true, kos, true, "Study moved to patient. Series of Study:");
-            scheduleMoveStudyToPatient(entityTree);
+            propagateMoveStudiesToPatient(entityTree);
         }
         return entityTree.getAllInstances().size();
     }
+    
+    public void reloadAttributeFilter() {
+        AttributeFilter.reload();
+    }
 
-    private void scheduleMoveStudyToPatient(EntityTree entityTree) {
+    private void propagateMoveStudiesToPatient(EntityTree entityTree) throws InstanceNotFoundException, MBeanException, ReflectionException {
+        if (useIOCM) {
+            processRejectionNotes(entityTree, true, "Study moved to patient");
+        } else {
+            DicomObject kos = iocm.getRejectionNotes(entityTree)[0];
+            Auditlog.logInstancesAccessed(AuditEvent.ActionCode.UPDATE, true, kos, true, "Study moved to patient. Series of Study:");
+        }
+        scheduleMoveStudiesToPatient(entityTree);
+    }
+    private void scheduleMoveStudiesToPatient(EntityTree entityTree) {
+        ArrayList<Study> studies = new ArrayList<Study>();
+        for (Map<Study, Map<Series, Set<Instance>>> s : entityTree.getEntityTreeMap().values()) {
+            studies.addAll(s.keySet());
+        }
         try {
             DicomObject obj = new BasicDicomObject();
             obj.putString(Tag.QueryRetrieveLevel, VR.CS, "PATIENT");
-            Set<Study> studies = entityTree.getEntityTreeMap().values().iterator().next().keySet();
             String[] suids = new String[studies.size()];
             int i = 0;
             for (Study study : studies) {
@@ -448,16 +489,29 @@ public class ContentEditService extends ServiceMBeanSupport {
             }
             studies.iterator().next().getPatient().getAttributes().copyTo(obj);
             obj.putStrings(Tag.StudyInstanceUID, VR.UI, suids);
-            log.info("Schedule PATIENT level Attributes Modification Notification (Move Study To Patient)");
             server.invoke(qrServiceName, "clearCachedSeriesAttrs", 
                     new Object[]{}, new String[]{});
-            server.invoke(attrModScuServiceName, "scheduleModification", 
+            if (!useIOCM) {
+                log.info("Schedule PATIENT level Attributes Modification Notification (Move Study To Patient)");
+                server.invoke(attrModScuServiceName, "scheduleModification", 
                     new Object[]{obj}, new String[]{DicomObject.class.getName()});
+            } else {
+                String calledAETs = (String) server.getAttribute(rejNoteServiceName, "CalledAETitles");
+                if (NONE.equals(calledAETs)) {
+                    log.info("IOCM: No CalledAETitles configured in RecectionNote SCU service! Ignore forward.");
+                } else {
+                    Study study = entityTree.getEntityTreeMap().values().iterator().next().keySet().iterator().next();
+                    Map<Series, Set<Instance>> mapSeries = entityTree.getEntityTreeMap().values().iterator().next().values().iterator().next();
+                    DicomObject fwdIan = this.makeIAN(study, mapSeries, Availability.ONLINE);
+                    scheduleForward(fwdIan, StringUtils.split(calledAETs, '\\'));
+                }
+
+            }
             if (forwardModifiedToAETs != null) {
                 for (int j = 0 ; j < suids.length ; j++ ) {
                     obj.putString(Tag.StudyInstanceUID, VR.UI, suids[j]);
                     DicomObject fwdIan = lookupDicomEditLocal().getIanForForwardModifiedObject(obj, "STUDY");
-                    scheduleForward(fwdIan);
+                    scheduleForward(fwdIan, forwardModifiedToAETs);
                 }
             }
         } catch (Exception e) {
@@ -465,11 +519,9 @@ public class ContentEditService extends ServiceMBeanSupport {
         }
     }
     public int moveStudyToPatient(String studyIUID, String patId, String issuer) throws InstanceNotFoundException, MBeanException, ReflectionException {
-        EntityTree entityTree = lookupDicomEditLocal().moveStudyToPatient(studyIUID, patId, issuer);
+        EntityTree entityTree = lookupDicomEditLocal().moveStudyToPatient(studyIUID, patId, issuer, useIOCM);
         if (!entityTree.isEmpty()) {
-            DicomObject kos = getRejectionNotes(entityTree)[0];
-            Auditlog.logInstancesAccessed(AuditEvent.ActionCode.UPDATE, true, kos, true, "Studies moved to patient:");
-            scheduleMoveStudyToPatient(entityTree);
+            propagateMoveStudiesToPatient(entityTree);
         }
         return entityTree.getAllInstances().size();
     }
@@ -501,16 +553,16 @@ public class ContentEditService extends ServiceMBeanSupport {
             return result != 0 ? result : movedEntities.getAllInstances().size();
         }
     }
-
-    private int doMove(EntityTree entityTree, DicomObject targetAttrs, int[] excludeTags, EntityTree movedEntities) {
+    private ChangeRequestOrder prepareMoveChangeRequest(EntityTree entityTree, DicomObject targetAttrs, boolean studyIsTarget) {
         DicomObject headerAttrs, seriesAttrs = null;
-        DicomEditLocal dicomEdit = lookupDicomEditLocal();
-        boolean studyIsTarget = !targetAttrs.containsValue(Tag.SeriesInstanceUID);
-        int result = 0;
+        String studyIUID, seriesIUID;
+        ChangeRequestOrder crOrder = new ChangeRequestOrder();
         try {
             for ( Map<Study, Map<Series, Set<Instance>>> studies : entityTree.getEntityTreeMap().values() ) {
                 for (Map.Entry<Study, Map<Series, Set<Instance>>> entry : studies.entrySet() ) {
+                    studyIUID = entry.getKey().getStudyInstanceUID();
                     for (Map.Entry<Series, Set<Instance>> seriesEntry : entry.getValue().entrySet()) {
+                        seriesIUID = seriesEntry.getKey().getSeriesInstanceUID();
                         if (studyIsTarget) {
                             seriesAttrs = seriesEntry.getKey().getAttributes(false);
                             seriesAttrs.putString(Tag.SeriesInstanceUID, VR.UI, UIDUtils.createUID());
@@ -527,26 +579,47 @@ public class ContentEditService extends ServiceMBeanSupport {
                             }
                             i.getAttributes(false).copyTo(headerAttrs);
                             headerAttrs.putString(Tag.SOPInstanceUID, VR.UI, UIDUtils.createUID());
-                            DicomObject importHeader = headerAttrs.exclude(excludeTags);
-                            FileImportOrder order = new FileImportOrder();
-                            for ( File f :  i.getFiles()) {
-                                //ensure invalid filename in case source entities can't be removed and must be deleted manually
-                                dicomEdit.markFilePath(f.getPk(), ".moved", false);
-                                order.addFile(f, importHeader);
-                            }
-                            try {
-                                importFiles(order);
-                                movedEntities.addInstance(i);
-                            } catch (Exception x) {
-                                log.error("Failed to import instance:"+i);
-                                for ( File f :  i.getFiles()) {
-                                    dicomEdit.markFilePath(f.getPk(), ".moved", true);
-                                }
-                                throw x;
-                            }
+                            crOrder.addChangedInstance(studyIUID, seriesIUID, i, headerAttrs);
                         }
                     }
                 }
+            }
+        } catch (Exception x) {
+            log.error("prepareMoveChangeRequest failed!", x);
+        }
+        return crOrder;
+    }
+
+    private int doMove(EntityTree entityTree, DicomObject targetAttrs, int[] excludeTags, EntityTree movedEntities) {
+        DicomEditLocal dicomEdit = lookupDicomEditLocal();
+        boolean studyIsTarget = !targetAttrs.containsValue(Tag.SeriesInstanceUID);
+        ChangeRequestOrder crOrder = prepareMoveChangeRequest(entityTree, targetAttrs, studyIsTarget);
+        if (useIOCM)
+            iocm.updateUIDs(crOrder);
+        int result = 0;
+        try {
+            for ( ChangedInstance i : crOrder.getInstances().values()) {
+                FileImportOrder order = new FileImportOrder();
+                DicomObject attrs = i.getChangedHeader();
+                if (useIOCM)
+                    IOCMUtil.addReplacementAttrs(attrs);
+                for ( File f :  i.getFiles()) {
+                    //ensure invalid filename in case source entities can't be removed and must be deleted manually
+                    dicomEdit.markFilePath(f.getPk(), ".moved", false);
+                    DicomObject importHeader = attrs.exclude(excludeTags);
+                    order.addFile(f, importHeader);
+                }
+                try {
+                    importFiles(order);
+                    movedEntities.addInstance(i.getInstance());
+                } catch (Exception x) {
+                    log.error("Failed to import instance:"+i);
+                    for ( File f :  i.getFiles()) {
+                        dicomEdit.markFilePath(f.getPk(), ".moved", true);
+                    }
+                    throw x;
+                }
+                
             }
         } catch (Exception x) {
             result = movedEntities.isEmpty() ? -4 : -1;
@@ -612,7 +685,7 @@ public class ContentEditService extends ServiceMBeanSupport {
     private void doAfterLinkMppsToMwl(MppsToMwlLinkResult result) throws InstanceNotFoundException, MBeanException, ReflectionException {
         log.debug("MppsToMwlLinkResult:{}",result);
         logMppsLinkRecord(result);
-        Map<String,DicomObject> fwdIANs = updateSeriesAttributes(result);
+        EntityTree tree = updateSeriesAttributes(result);
         if (this.addMwlAttrsToMppsXsl != null) {
             addMwlAttrs2Mpps(result);
         }
@@ -626,20 +699,38 @@ public class ContentEditService extends ServiceMBeanSupport {
             int i = 0;
             for ( Study s : result.getStudiesToMove()) {
                 studyPks[i++] = s.getPk();
+                tree.removeStudy(s);
             }
             this.moveStudiesToPatient(studyPks, pat.getPk());
         }
         log.debug("forwardModifiedToAETs:{}", forwardModifiedToAETs);
+        ArrayList<DicomObject> fwdIANs = this.getIANs(tree, null);
         log.debug("fwdIANs:{}", fwdIANs);
+        if (useIOCM) {
+            try {
+                processRejectionNotes(tree, true, "MPPS linked to worklist");
+                String calledAETs = (String) server.getAttribute(rejNoteServiceName, "CalledAETitles");
+                if (NONE.equals(calledAETs)) {
+                    log.info("IOCM: No CalledAETitles configured in RecectionNote SCU service! Ignore forward.");
+                } else {
+                    Study study = tree.getEntityTreeMap().values().iterator().next().keySet().iterator().next();
+                    Map<Series, Set<Instance>> mapSeries = tree.getEntityTreeMap().values().iterator().next().values().iterator().next();
+                    DicomObject fwdIan = this.makeIAN(study, mapSeries, Availability.ONLINE);
+                    scheduleForward(fwdIan, StringUtils.split(calledAETs, '\\'));
+                }
+            } catch (Exception x) {
+                log.error("Propagate changes of linking MPPS to MWL via IOCM failed!", x);
+            }
+        }
         if (this.forwardModifiedToAETs != null && fwdIANs != null) {
-            for (Iterator<DicomObject> it = fwdIANs.values().iterator() ; it.hasNext() ;) {
-                this.scheduleForward(it.next());
+            for (DicomObject ian : fwdIANs) {
+                this.scheduleForward(ian, forwardModifiedToAETs);
             }
         }
         if (sendIANonMppsLinked) {
             log.info("Send IAN after linking MPPS to MWL! IANs:"+fwdIANs.size());
             try {
-                this.sendIANs(fwdIANs.values());
+                this.sendIANs(fwdIANs);
             } catch (Exception x) {
                 log.warn("Send IAN after linking MPPS to MWL failed!", x);
             }
@@ -677,9 +768,9 @@ public class ContentEditService extends ServiceMBeanSupport {
             log.error("Attribute coercion failed! Can not add MWL attributes to MPPS Linked notification!", e);
         }
     }
-    public boolean unlinkMpps(long pk) {
-        MPPS mpps = lookupMppsToMwlLinkLocal().unlinkMpps(pk, updateMwlStatus, modifyingSystem, modifyReason);
-        if (mpps != null) {
+    public boolean unlinkMpps(long[] pk) {
+        MppsToMwlLinkResult result = lookupMppsToMwlLinkLocal().unlinkMpps(pk, updateMwlStatus, modifyingSystem, modifyReason, useIOCM);
+        for (MPPS mpps : result.getMppss()) {
             DicomObject mppsAttrs = mpps.getAttributes();
             DicomObject patAttrs = mpps.getPatient().getAttributes();
             StringBuilder sb = new StringBuilder();
@@ -690,15 +781,33 @@ public class ContentEditService extends ServiceMBeanSupport {
             }
             Auditlog.logProcedureRecord(AuditEvent.ActionCode.UPDATE, true, patAttrs, ssaSQ.getDicomObject().getString(Tag.StudyInstanceUID),
                     mpps.getAccessionNumber(), sb.substring(0,sb.length()-2));
-            MppsToMwlLinkResult result = new MppsToMwlLinkResult();
-            result.addMppsAttributes(mpps);
-            this.sendJMXNotification(result);
             if (this.forwardModifiedToAETs != null) {
                 this.scheduleForwardByMpps(mpps.getAttributes());
             }
-            return true;
         }
-        return false;
+        if (result.getMppss().size() > 0) {
+            if (useIOCM) {
+                try {
+                    EntityTree tree = result.getEntityTree();
+                    processRejectionNotes(tree, true, "MPPS linked to worklist");
+                    String calledAETs = (String) server.getAttribute(rejNoteServiceName, "CalledAETitles");
+                    if (NONE.equals(calledAETs)) {
+                        log.info("IOCM: No CalledAETitles configured in RecectionNote SCU service! Ignore forward.");
+                    } else {
+                        Study study = tree.getEntityTreeMap().values().iterator().next().keySet().iterator().next();
+                        Map<Series, Set<Instance>> mapSeries = tree.getEntityTreeMap().values().iterator().next().values().iterator().next();
+                        DicomObject fwdIan = this.makeIAN(study, mapSeries, Availability.ONLINE);
+                        scheduleForward(fwdIan, StringUtils.split(calledAETs, '\\'));
+                    }
+                } catch (Exception x) {
+                    log.error("Propagate changes of linking MPPS to MWL via IOCM failed!", x);
+                }
+            }
+            this.sendJMXNotification(result);
+            return true;
+        } else {
+            return false;
+        }
     }
     
     private void scheduleForwardByMpps(DicomObject mpps) {
@@ -730,15 +839,10 @@ public class ContentEditService extends ServiceMBeanSupport {
         return this.lookupDicomEditLocal().removeForeignPpsInfo(studyPk);
     }
     
-    private Map<String,DicomObject> updateSeriesAttributes(MppsToMwlLinkResult result) throws InstanceNotFoundException, MBeanException, ReflectionException {
+    private EntityTree updateSeriesAttributes(MppsToMwlLinkResult result) throws InstanceNotFoundException, MBeanException, ReflectionException {
         DicomObject coerce = getCoercionAttrs(result.getMwl().getAttributes());
         if ( coerce != null && !coerce.isEmpty()) {
-            String[] mppsIuids = new String[result.getMppss().size()];
-            int i = 0;
-            for (MPPS m : result.getMppss()) {
-                mppsIuids[i++] = m.getSopInstanceUID();
-            }
-            return this.lookupMppsToMwlLinkLocal().updateSeriesAndStudyAttributes(mppsIuids, coerce);
+            return this.lookupMppsToMwlLinkLocal().updateSeriesAndStudyAttributes(result, coerce, useIOCM);
         } else {
             log.warn("No Coercion attributes to update Study and Series Attributes after linking MPPS to MWL! coerce:"+coerce);
             return null;
@@ -772,77 +876,10 @@ public class ContentEditService extends ServiceMBeanSupport {
         return out;
     }
     
-    private DicomObject[] getRejectionNotes(EntityTree entityTree) {
-        Map<Patient, Map<Study, Map<Series, Set<Instance>>>> entityTreeMap = entityTree.getEntityTreeMap();
-        DicomObject[] rejNotes = new DicomObject[entityTreeMap.size()];
-        int i = 0;
-        for ( Map<Study, Map<Series, Set<Instance>>> studies : entityTreeMap.values()) {
-            rejNotes[i] = studies.isEmpty() ? null : toRejectionNote(studies);
-            log.debug("Rejection Note! KOS:{}", rejNotes[i++]);
-        }
-        return rejNotes;
-    }
     
-    private DicomObject toRejectionNote(Map<Study, Map<Series, Set<Instance>>> entityTree) {
-        String suid = forceNewRejNoteStudyIUID ? UIDUtils.createUID() : 
-            entityTree.keySet().iterator().next().getStudyInstanceUID(); 
-        DicomObject kos = newKeyObject(suid);
-        DicomElement crpeSeq = kos.putSequence(Tag.CurrentRequestedProcedureEvidenceSequence);
-        entityTree.keySet().iterator().next().getPatient().getAttributes().copyTo(kos);
-        for (Map.Entry<Study, Map<Series, Set<Instance>>> entry : entityTree.entrySet() ) {
-            addProcedureEvidenceSequenceItem(crpeSeq, entry.getKey(), entry.getValue());
-        }
-        return kos;
-    }
-    
-    private DicomObject newKeyObject(String studyIUID) {
-        DicomObject kos = new BasicDicomObject();
-        kos.putString(Tag.StudyInstanceUID,VR.UI, studyIUID);
-        kos.putString(Tag.SeriesInstanceUID,VR.UI, UIDUtils.createUID());
-        kos.putString(Tag.SOPInstanceUID,VR.UI, UIDUtils.createUID());
-        kos.putString(Tag.SOPClassUID,VR.UI, UID.KeyObjectSelectionDocumentStorage);
-        kos.putString(Tag.Modality, VR.CS, "KO");
-        kos.putInt(Tag.InstanceNumber, VR.IS, 1);
-        kos.putDate(Tag.ContentDate, VR.DA, new Date());
-        kos.putDate(Tag.ContentTime, VR.TM, new Date());
-        DicomElement cncSeq = kos.putSequence(Tag.ConceptNameCodeSequence);
-        cncSeq.addDicomObject(rejectNoteCode.toCodeItem());
-        kos.putString(Tag.ValueType, VR.CS, "CONTAINER");
-        DicomElement tmplSeq = kos.putSequence(Tag.ContentTemplateSequence);
-        DicomObject tmplItem = new BasicDicomObject();
-        tmplItem.putString(Tag.TemplateIdentifier, VR.CS, "2010");
-        tmplItem.putString(Tag.MappingResource, VR.CS, "DCMR");
-        tmplSeq.addDicomObject(tmplItem);
-        kos.putSequence(Tag.ReferencedPerformedProcedureStepSequence);
-        kos.putString(Tag.SeriesDescription, VR.LO, "Rejection Note");
-        return kos;
-    }
-        
-    private void addProcedureEvidenceSequenceItem(DicomElement crpeSeq, Study study, Map<Series, Set<Instance>> series) {
-        DicomObject item = new BasicDicomObject();
-        crpeSeq.addDicomObject(item);
-        item.putString(Tag.StudyInstanceUID, VR.UI, study.getStudyInstanceUID());
-        DicomElement refSeriesSeq = item.putSequence(Tag.ReferencedSeriesSequence);
-        DicomElement refSopSeq;
-        DicomObject refSeriesSeqItem, refSopSeqItem;
-        for ( Map.Entry<Series, Set<Instance>> instances : series.entrySet()) {
-            refSeriesSeqItem = new BasicDicomObject();
-            refSeriesSeq.addDicomObject(refSeriesSeqItem);
-            refSeriesSeqItem.putString(Tag.SeriesInstanceUID, VR.UI, instances.getKey().getSeriesInstanceUID());
-            refSeriesSeqItem.putString(refSeriesSeqItem.resolveTag(PrivateTag.CallingAET, PrivateTag.CreatorID, true), 
-                    VR.AE, instances.getKey().getSourceAET());
-            refSopSeq = refSeriesSeqItem.putSequence(Tag.ReferencedSOPSequence);
-            for ( Instance inst : instances.getValue()) {
-                refSopSeqItem = new BasicDicomObject();
-                refSopSeq.addDicomObject(refSopSeqItem);
-                refSopSeqItem.putString(Tag.ReferencedSOPInstanceUID, VR.UI, inst.getSOPInstanceUID());
-                refSopSeqItem.putString(Tag.ReferencedSOPClassUID, VR.UI, inst.getSOPClassUID());
-            }
-        }
-    }
     
     private DicomObject makeIAN(Study study, Map<Series, Set<Instance>> mapSeries, Availability availability) {
-        log.debug("makeIAN: studyIUID:" + study.getStudyInstanceUID());
+        log.debug("makeIAN: studyIUID:{}", study.getStudyInstanceUID());
         Patient pat = study.getPatient();
         DicomObject ian = new BasicDicomObject();
         ian.putString(Tag.StudyInstanceUID, VR.UI, study.getStudyInstanceUID());
@@ -950,7 +987,7 @@ public class ContentEditService extends ServiceMBeanSupport {
     
     private DicomObject[] processRejectionNotes(EntityTree entityTree, boolean study, String auditDetails) 
                 throws InstanceNotFoundException, MBeanException, ReflectionException {
-        DicomObject[] rejNotes = getRejectionNotes(entityTree);
+        DicomObject[] rejNotes = iocm.getRejectionNotes(entityTree);
         for (DicomObject kos : rejNotes) {
             if (kos == null)
                 continue;
@@ -1030,7 +1067,7 @@ public class ContentEditService extends ServiceMBeanSupport {
                 if (studyIUIDs.length > 0) {
                     obj.putString(Tag.StudyInstanceUID, VR.UI, studyIUIDs[0]);
                     DicomObject fwdIan = lookupDicomEditLocal().getIanForForwardModifiedObject(obj, "STUDY");
-                    scheduleForward(fwdIan);
+                    scheduleForward(fwdIan, forwardModifiedToAETs);
                 } else {
                     log.info("Patient has no Study! Forward of modified patient ignored!");
                 }
@@ -1047,7 +1084,7 @@ public class ContentEditService extends ServiceMBeanSupport {
                 }
                 if (forwardModifiedToAETs != null) {
                     DicomObject fwdIan = lookupDicomEditLocal().getIanForForwardModifiedObject(obj, qrLevel);
-                    scheduleForward(fwdIan);
+                    scheduleForward(fwdIan, forwardModifiedToAETs);
                 }
             } else {
                 log.debug("No further action after Dicom Edit defined for level "+qrLevel+"!");
@@ -1055,19 +1092,19 @@ public class ContentEditService extends ServiceMBeanSupport {
         }        
     }
 
-    private void scheduleForward(DicomObject fwdIan) {
-        log.debug("fwdIan:{}",fwdIan);
+    private void scheduleForward(DicomObject fwdIan, String[] aets) {
+        log.debug("fwdIan:{}", fwdIan);
         if (fwdIan == null) {
             log.warn("Forward of modified Object ignored! Reason: No ONLINE or NEARLINE instance found!");
         } else {
-            for (int i = 0 ; i < forwardModifiedToAETs.length ; i++) {
+            for (int i = 0 ; i < aets.length ; i++) {
                 try {
-                    log.info("Scheduling forward of modified object to {}", forwardModifiedToAETs[i]);
+                    log.info("Scheduling forward of modified object to {}", aets[i]);
                     server.invoke(moveScuServiceName, "scheduleMoveInstances", 
-                            new Object[]{fwdIan, forwardModifiedToAETs[i], null}, 
+                            new Object[]{fwdIan, aets[i], null}, 
                             new String[]{DicomObject.class.getName(), STRING, Integer.class.getName()});
                 } catch (Exception e) {
-                    log.error("Scheduling forward of modified object to "+forwardModifiedToAETs[i]+" failed!", e);
+                    log.error("Scheduling forward of modified object to "+aets[i]+" failed!", e);
                 }
             }
         }

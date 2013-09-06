@@ -45,6 +45,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.dcm4che2.util.UIDUtils;
 import org.dcm4chee.archive.entity.Instance;
 import org.dcm4chee.archive.entity.MPPS;
 import org.dcm4chee.archive.entity.MWLItem;
@@ -67,6 +68,9 @@ public class EntityTree implements Serializable {
     private Map<Patient, Map<Study, Map<Series, Set<Instance>>>> entityTreeMap = 
         new HashMap<Patient, Map<Study, Map<Series, Set<Instance>>>>();
     private Set<MWLItem> mwlItems = new HashSet<MWLItem>();
+    private Map<String, String> old2newUidMap = new HashMap<String, String>();
+    private Map<String, String> new2oldUidMap = new HashMap<String, String>();
+    private boolean containsChangedEntities;
     
     public Set<MWLItem> getMwlItems() {
         return mwlItems;
@@ -155,10 +159,23 @@ public class EntityTree implements Serializable {
         Set<Instance> instances;
         for (Series series : study.getSeries()) {
             instances = series.getInstances();
+            MPPS mpps = series.getModalityPerformedProcedureStep();
+            if (mpps != null)
+                mpps.getPatient();
             mapSeries.put(series, instances);
             allInstances.addAll(series.getInstances());
             if (instances != null)
                 allInstances.addAll(instances);
+        }
+    }
+    
+    public boolean removeStudy(Study study) {
+        Map<Study, Map<Series, Set<Instance>>> mapStudies = entityTreeMap.get(study.getPatient());
+        if (mapStudies != null) {
+            return mapStudies.remove(study) != null;
+        } else {
+            log.warn("Patient of study to remove not in entityTreeMap!");
+            return false;
         }
     }
     
@@ -183,5 +200,29 @@ public class EntityTree implements Serializable {
         return entityTreeMap;
     }
     
+    public boolean isContainsChangedEntities() {
+        return containsChangedEntities;
+    }
+    public void setContainsChangedEntities(boolean b) {
+        this.containsChangedEntities = b;
+    }
+    
+    public String getChangedUID(String oldUID) {
+        String newUID = old2newUidMap.get(oldUID);
+        if (newUID == null) {
+            newUID = UIDUtils.createUID();
+            old2newUidMap.put(oldUID, newUID);
+            new2oldUidMap.put(newUID, oldUID);
+        }
+        return newUID;
+    }
+    
+    public Map<String,String> getUIDMap() {
+        return this.containsChangedEntities ? new2oldUidMap : old2newUidMap;
+    }
+    
+    public Map<String,String> getOld2NewUIDMap() {
+        return this.old2newUidMap;
+    }
 }
 

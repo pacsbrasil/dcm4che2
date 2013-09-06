@@ -39,13 +39,13 @@
 package org.dcm4chee.web.dao.folder;
 
 import java.util.List;
-import java.util.Map;
 
 import javax.ejb.Local;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4chee.archive.entity.MPPS;
 import org.dcm4chee.archive.entity.Patient;
+import org.dcm4chee.web.dao.vo.EntityTree;
 import org.dcm4chee.web.dao.vo.MppsToMwlLinkResult;
 
 /**
@@ -61,8 +61,8 @@ public interface MppsToMwlLinkLocal {
     MppsToMwlLinkResult linkMppsToMwl(String mppsIUID, String rpId, String spsId, boolean updateMwlStatus, String modifyingSystem, String reason);
     MppsToMwlLinkResult linkMppsToMwl(long[] mppsPks, long mwlPk, boolean updateMwlStatus, String modifyingSystem, String reason);
     MppsToMwlLinkResult linkMppsToMwl(long[] mppsPks, DicomObject mwlAttrs, Patient mwlPat, String modifyingSystem, String reason);
-    MPPS unlinkMpps(long pk, boolean updateMwlStatus, String modifyingSystem, String modifyReason);
-    Map<String, DicomObject> updateSeriesAndStudyAttributes(String[] mppsIuids, DicomObject coerce);
+    MppsToMwlLinkResult unlinkMpps(long[] mppsPks, boolean updateMwlStatus, String modifyingSystem, String modifyReason, boolean useIOCM);
+    EntityTree updateSeriesAndStudyAttributes(MppsToMwlLinkResult linkResult, DicomObject coerce, boolean useIOCM);
     void updateMPPSAttributes(MPPS mpps, DicomObject attrs);
     List<Patient> selectOrCreatePatient(DicomObject mwlAttrs);
 }

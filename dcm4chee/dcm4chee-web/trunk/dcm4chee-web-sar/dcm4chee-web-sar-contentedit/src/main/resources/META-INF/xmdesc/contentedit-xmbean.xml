@@ -43,17 +43,6 @@
    </attribute>
 
    <attribute access="read-write"
-      getMethod="isForceNewRejNoteStudyIUID"
-      setMethod="setForceNewRejNoteStudyIUID">
-      <description>Force new StudyInstanceUID for Rejection Note Key Object Selection object.
-      </description>
-      <name>ForceNewStudyIUIDforRejectionNote</name>
-      <type>boolean</type>
-      <descriptors>
-         <value value="true" />
-      </descriptors>
-   </attribute>
-   <attribute access="read-write"
       getMethod="isProcessRejNote"
       setMethod="setProcessRejNote">
       <description>Enable/Disable sending Rejection Note.
@@ -62,6 +51,32 @@
       <type>boolean</type>
       <descriptors>
          <value value="true" />
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
+      getMethod="isUseIOCM"
+      setMethod="setUseIOCM">
+      <description><![CDATA[Enable IOCM for propagation of changes for Study, Series and Instance level.<br />
+      	If enabled, changes are sent via RejectionNote and changed Instances instead of private Attribute Modification SOP class.<br />
+		      	
+      ]]></description>
+      <name>UseIOCM</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false" />
+      </descriptors>
+   </attribute>
+
+   <attribute access="read-write"
+      getMethod="getContributingEquipment"
+      setMethod="setContributingEquipment">
+      <description><![CDATA[ContributingEquipment used in Referenced Instance Sequence for IOCM. 
+      	Format:&lt;InstitutionName&gt;|&lt;StationName&gt;|&lt;Manufacturer&gt;
+      ]]></description>
+      <name>ContributingEquipment</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value='InstitutionName|StationName|Manufacturer' />
       </descriptors>
    </attribute>
    <attribute access="read-write"
@@ -671,8 +686,8 @@
       <name>unlinkMpps</name>
       <parameter>
         <description>MPPS primary key</description>
-        <name>mppsPk</name>
-        <type>long</type>
+        <name>mppsPks</name>
+        <type>[J</type>
       </parameter>
       <return-type>boolean</return-type>
    </operation>
@@ -766,4 +781,9 @@
       <return-type>void</return-type>
    </operation>
 
+   <operation impact="ACTION">
+      <description>Reload AttributeFilter.</description>
+      <name>reloadAttributeFilter</name>
+      <return-type>void</return-type>
+   </operation>
 </mbean>

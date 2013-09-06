@@ -38,8 +38,8 @@
 
 package org.dcm4chee.web.dao.folder;
 
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -65,7 +65,9 @@ import org.dcm4chee.archive.entity.RequestAttributes;
 import org.dcm4chee.archive.entity.Series;
 import org.dcm4chee.archive.entity.Study;
 import org.dcm4chee.web.dao.util.CoercionUtil;
+import org.dcm4chee.web.dao.util.IOCMUtil;
 import org.dcm4chee.web.dao.util.QueryUtil;
+import org.dcm4chee.web.dao.vo.EntityTree;
 import org.dcm4chee.web.dao.vo.MppsToMwlLinkResult;
 import org.jboss.annotation.ejb.LocalBinding;
 import org.slf4j.Logger;
@@ -242,89 +244,114 @@ public class MppsToMwlLinkBean implements MppsToMwlLinkLocal {
         }
     }
 
-    public MPPS unlinkMpps(long pk, boolean updateMwlStatus, String modifyingSystem, String modifyReason) {
-        MPPS mpps = em.find(MPPS.class, pk);
-        MPPS mppsSav = new MPPS();
-        mppsSav.setAttributes(mpps.getAttributes());
-        mpps.getPatient().getPatientID();
-        mppsSav.setPatient(mpps.getPatient());
-        DicomObject mppsAttrs = mpps.getAttributes();
-        DicomElement ssaSQ = mppsAttrs.get(Tag.ScheduledStepAttributesSequence);
-        String rpId, spsId;
-        DicomObject item = null;
-        DicomObject mwlAttrs;
-        MWLItem mwlItem = null;
-        HashSet<String> rpspsIDs = new HashSet<String>(ssaSQ.countItems());
-        Query qMwl = em.createQuery("select object(m) from MWLItem m where requestedProcedureID = :rpId and scheduledProcedureStepID = :spsId");
-        for ( int i = 0, len = ssaSQ.countItems() ; i < len ; i++) {
-            item = ssaSQ.getDicomObject(i);
-            rpId = item.getString(Tag.RequestedProcedureID);
-            spsId = item.getString(Tag.ScheduledProcedureStepID);
-            if (spsId != null) {
-                rpspsIDs.add(rpId+"_"+spsId);
-                if (updateMwlStatus) {
-                    try {
-                        qMwl.setParameter("rpId", rpId).setParameter("spsId", spsId);
-                        mwlItem = (MWLItem)qMwl.getSingleResult();
-                        mwlAttrs = mwlItem.getAttributes();
-                        mwlAttrs.get(Tag.ScheduledProcedureStepSequence).getDicomObject()
-                            .putString(Tag.ScheduledProcedureStepStatus, VR.CS, "SCHEDULED");
-                        mwlItem.setAttributes(mwlAttrs);
-                        em.merge(mwlItem);
-                    } catch (Exception ignore) {
-                        log.warn("Can't update MWLItem status to SCHEDULED! MWL:"+mwlItem, ignore);
-                    }
-                }
-            }
-        }
-        String studyIUID = item.getString(Tag.StudyInstanceUID);
-        item.clear();
-        item.putString(Tag.StudyInstanceUID, VR.UI, studyIUID);
-        item.putString(Tag.ScheduledProcedureStepID, VR.SH, null);
-        item.putString(Tag.AccessionNumber, VR.SH, null);
-        item.putSequence(Tag.ReferencedStudySequence);
-        item.putString(Tag.RequestedProcedureID, VR.SH, null);
-        item.putString(Tag.ScheduledProcedureStepDescription, VR.LO, null);
-        item.putSequence(Tag.ScheduledProtocolCodeSequence);
-        mppsAttrs.putSequence(Tag.ScheduledStepAttributesSequence).addDicomObject(item);
-        mpps.setAttributes(mppsAttrs);
-        em.merge(mpps);
-        if (rpspsIDs.size() > 0) {
-            DicomObject seriesAttrs, rqAttrSqItem;
-            DicomElement reqAttrSQ;
-            DicomElement newReqAttrSQ;
-            Series s = null;
-            for ( Iterator<Series> iter = mpps.getSeries().iterator() ; iter.hasNext() ; ) {
-                s = iter.next();
-                seriesAttrs = s.getAttributes(true);
-                reqAttrSQ = seriesAttrs.get(Tag.RequestAttributesSequence);
-                if (reqAttrSQ != null) {
-                    newReqAttrSQ = seriesAttrs.putSequence(Tag.RequestAttributesSequence);
-                    for (int i = 0, len = reqAttrSQ.countItems() ; i < len ; i++) {
-                        rqAttrSqItem = reqAttrSQ.getDicomObject(i);
-                        rpId = rqAttrSqItem.getString(Tag.RequestedProcedureID); 
-                        spsId = rqAttrSqItem.getString(Tag.ScheduledProcedureStepID);
-                        if (!rpspsIDs.contains(rpId+"_"+spsId)) {
-                            newReqAttrSQ.addDicomObject(rqAttrSqItem);
+    public MppsToMwlLinkResult unlinkMpps(long[] mppsPks, boolean updateMwlStatus, String modifyingSystem, String modifyReason, boolean useIOCM) {
+        MppsToMwlLinkResult result = new MppsToMwlLinkResult();
+        EntityTree tree = new EntityTree();
+        tree.setContainsChangedEntities(true);
+        result.setEntityTree(tree);
+        List<MPPS> mppsList = new ArrayList<MPPS>(mppsPks.length);
+        for (Long pk : mppsPks) {
+            MPPS mpps = em.find(MPPS.class, pk);
+            MPPS mppsSav = new MPPS();
+            mppsSav.setAttributes(mpps.getAttributes());
+            result.addMppsAttributes(mppsSav);
+            mpps.getPatient().getPatientID();
+            mppsSav.setPatient(mpps.getPatient());
+            mppsSav.setSeries(mpps.getSeries());
+            DicomObject mppsAttrs = mpps.getAttributes();
+            DicomElement ssaSQ = mppsAttrs.get(Tag.ScheduledStepAttributesSequence);
+            String rpId, spsId;
+            DicomObject item = null;
+            DicomObject mwlAttrs;
+            MWLItem mwlItem = null;
+            HashSet<String> rpspsIDs = new HashSet<String>(ssaSQ.countItems());
+            Query qMwl = em.createQuery("select object(m) from MWLItem m where requestedProcedureID = :rpId and scheduledProcedureStepID = :spsId");
+            for ( int i = 0, len = ssaSQ.countItems() ; i < len ; i++) {
+                item = ssaSQ.getDicomObject(i);
+                rpId = item.getString(Tag.RequestedProcedureID);
+                spsId = item.getString(Tag.ScheduledProcedureStepID);
+                if (spsId != null) {
+                    rpspsIDs.add(rpId+"_"+spsId);
+                    if (updateMwlStatus) {
+                        try {
+                            qMwl.setParameter("rpId", rpId).setParameter("spsId", spsId);
+                            mwlItem = (MWLItem)qMwl.getSingleResult();
+                            mwlAttrs = mwlItem.getAttributes();
+                            mwlAttrs.get(Tag.ScheduledProcedureStepSequence).getDicomObject()
+                                .putString(Tag.ScheduledProcedureStepStatus, VR.CS, "SCHEDULED");
+                            mwlItem.setAttributes(mwlAttrs);
+                            em.merge(mwlItem);
+                        } catch (Exception ignore) {
+                            log.warn("Can't update MWLItem status to SCHEDULED! MWL:"+mwlItem, ignore);
                         }
                     }
-                    if (newReqAttrSQ.isEmpty())
-                        seriesAttrs.remove(Tag.RequestAttributesSequence);
                 }
-                seriesAttrs.putString(Tag.AccessionNumber, VR.SH, null);
-                s.setAttributes(seriesAttrs);
-                updateRequestAttributes(s, seriesAttrs.get(Tag.RequestAttributesSequence), null);
-                em.merge(s);
             }
-            if (s != null) {
-                Study study = s.getStudy();
-                DicomObject studyAttrs = study.getAttributes(false);
-                studyAttrs.putString(Tag.AccessionNumber, VR.SH, null);
-                study.setAttributes(studyAttrs);
-                em.merge(study);
+            String studyIUID = item.getString(Tag.StudyInstanceUID);
+            item.clear();
+            item.putString(Tag.StudyInstanceUID, VR.UI, studyIUID);
+            item.putString(Tag.ScheduledProcedureStepID, VR.SH, null);
+            item.putString(Tag.AccessionNumber, VR.SH, null);
+            item.putSequence(Tag.ReferencedStudySequence);
+            item.putString(Tag.RequestedProcedureID, VR.SH, null);
+            item.putString(Tag.ScheduledProcedureStepDescription, VR.LO, null);
+            item.putSequence(Tag.ScheduledProtocolCodeSequence);
+            mppsAttrs.putSequence(Tag.ScheduledStepAttributesSequence).addDicomObject(item);
+            mpps.setAttributes(mppsAttrs);
+            if (rpspsIDs.size() > 0) {
+                DicomObject seriesAttrs, rqAttrSqItem;
+                DicomElement reqAttrSQ;
+                DicomElement newReqAttrSQ;
+                Series s = null;
+                for ( Iterator<Series> iter = mpps.getSeries().iterator() ; iter.hasNext() ; ) {
+                    s = iter.next();
+                    seriesAttrs = s.getAttributes(true);
+                    reqAttrSQ = seriesAttrs.get(Tag.RequestAttributesSequence);
+                    if (reqAttrSQ != null) {
+                        newReqAttrSQ = seriesAttrs.putSequence(Tag.RequestAttributesSequence);
+                        for (int i = 0, len = reqAttrSQ.countItems() ; i < len ; i++) {
+                            rqAttrSqItem = reqAttrSQ.getDicomObject(i);
+                            rpId = rqAttrSqItem.getString(Tag.RequestedProcedureID); 
+                            spsId = rqAttrSqItem.getString(Tag.ScheduledProcedureStepID);
+                            if (!rpspsIDs.contains(rpId+"_"+spsId)) {
+                                newReqAttrSQ.addDicomObject(rqAttrSqItem);
+                            }
+                        }
+                        if (newReqAttrSQ.isEmpty())
+                            seriesAttrs.remove(Tag.RequestAttributesSequence);
+                    }
+                    seriesAttrs.putString(Tag.AccessionNumber, VR.SH, null);
+                    if (useIOCM) {
+                        IOCMUtil.changeUID(tree, seriesAttrs, Tag.SeriesInstanceUID);
+                        DicomObject iAttrs;
+                        tree.addSeries(s);
+                        for (Instance i : s.getInstances()) {
+                            iAttrs = i.getAttributes(false);
+                            IOCMUtil.changeUID(tree, iAttrs, Tag.SOPInstanceUID);
+                            i.setAttributes(iAttrs);
+                            em.merge(i);
+                        }
+                    }
+                    s.setAttributes(seriesAttrs);
+                    updateRequestAttributes(s, seriesAttrs.get(Tag.RequestAttributesSequence), null);
+                    em.merge(s);
+                }
+                if (useIOCM)
+                    IOCMUtil.updateUIDrefs(tree, em);
+                if (s != null) {
+                    Study study = s.getStudy();
+                    DicomObject studyAttrs = study.getAttributes(false);
+                    studyAttrs.putString(Tag.AccessionNumber, VR.SH, null);
+                    study.setAttributes(studyAttrs);
+                    em.merge(study);
+                }
             }
         }
-        return mppsSav;
+        if (useIOCM) {
+            IOCMUtil.updateUIDrefs(tree, em);
+            IOCMUtil.updateUIDrefs(mppsList, tree, em);
+        }
+        return result;
     }
     
     private void updateRequestAttributes(Series s, DicomElement newReqAttrSq, String studyAccNo) {
@@ -377,29 +404,43 @@ public class MppsToMwlLinkBean implements MppsToMwlLinkLocal {
             s.setRequestAttributes(reqAttrs);
         }
     }
-
     @SuppressWarnings("unchecked")
-    public Map<String,DicomObject> updateSeriesAndStudyAttributes(String[] mppsIuids, DicomObject coerce) {
+    public EntityTree updateSeriesAndStudyAttributes(MppsToMwlLinkResult linkResult, DicomObject coerce, boolean useIOCM) {
         StringBuilder sb = new StringBuilder("SELECT object(s) FROM Series s WHERE performedProcedureStepInstanceUID");
+        String[] mppsIuids = new String[linkResult.getMppss().size()];
+        int i = 0;
+        for (MPPS m : linkResult.getMppss()) {
+            mppsIuids[i++] = m.getSopInstanceUID();
+        }
         QueryUtil.appendIN(sb, mppsIuids.length);
         Query qS = em.createQuery(sb.toString());
         QueryUtil.setParametersForIN(qS, mppsIuids);
         List<Series> seriess = (List<Series>) qS.getResultList();
         log.info("Coerce Series and Study attributes after linking mpps to mwl: nr of series:"+seriess.size());
-        Map<String,DicomObject> result = new HashMap<String, DicomObject>();
+        EntityTree tree = new EntityTree();
+        tree.setContainsChangedEntities(useIOCM);
         if (seriess.size() > 0) {
             DicomObject seriesAndStudyAttrs = null;
             Study study = null;
             for (Series s : seriess) {
                 seriesAndStudyAttrs = s.getAttributes(true);
                 study = s.getStudy();
-                addToResult(result, s, study);
+                tree.addStudy(study);
                 study.getAttributes(true).copyTo(seriesAndStudyAttrs);
                 seriesAndStudyAttrs.remove(Tag.RequestAttributesSequence);
                 log.debug("Coerce SeriesAndStudy: orig:"+seriesAndStudyAttrs);
                 log.debug("Coerce SeriesAndStudy: coerce:"+coerce);
                 CoercionUtil.coerceAttributes(seriesAndStudyAttrs, coerce, null);
                 log.debug("Set coerced SeriesAndStudy: "+seriesAndStudyAttrs);
+                if (useIOCM) {
+                    for (Instance instance : s.getInstances()) {
+                        DicomObject iAttrs = instance.getAttributes(false);
+                        IOCMUtil.changeUID(tree, iAttrs, Tag.SOPInstanceUID);
+                        instance.setAttributes(IOCMUtil.addReplacementAttrs(iAttrs));
+                        em.merge(instance);
+                    }
+                    IOCMUtil.changeUID(tree, seriesAndStudyAttrs, Tag.SeriesInstanceUID);
+                }
                 s.setAttributes(seriesAndStudyAttrs);
                 updateRequestAttributes(s, seriesAndStudyAttrs.get(Tag.RequestAttributesSequence),
                         seriesAndStudyAttrs.getString(Tag.AccessionNumber));
@@ -410,7 +451,11 @@ public class MppsToMwlLinkBean implements MppsToMwlLinkLocal {
             em.merge(study);
             log.debug("new Study Attrs: "+study.getAttributes(true));
         }
-        return result;
+        if (useIOCM) {
+            IOCMUtil.updateUIDrefs(tree, em);
+            IOCMUtil.updateUIDrefs(linkResult.getMppss(), tree, em);
+        }
+        return tree;
     }
 
     public void updateMPPSAttributes(MPPS mpps, DicomObject attrs) {

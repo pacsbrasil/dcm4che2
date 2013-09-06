@@ -60,6 +60,8 @@ public class MppsToMwlLinkResult implements Serializable {
     private MWLItem mwl;
     private List<MPPS> mppss = new ArrayList<MPPS>();
     private Set<Study> studiesToMove = new HashSet<Study>();
+    private EntityTree entityTree;
+    
     public void setMwl(MWLItem mwl) {
         this.mwl = mwl;
     }
@@ -84,6 +86,14 @@ public class MppsToMwlLinkResult implements Serializable {
         return this.studiesToMove;
     }
     
+    public EntityTree getEntityTree() {
+        return entityTree;
+    }
+
+    public void setEntityTree(EntityTree entityTree) {
+        this.entityTree = entityTree;
+    }
+
     public boolean isUnlinkResult() {
         return mwl == null;
     }
