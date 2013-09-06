@@ -65,6 +65,10 @@ public class FileUtils {
     public static File toFile(String unixPath) {
         return resolve(new File(unixPath.replace('/', File.separatorChar)));
     }
+    public static File toFile(String dirPath, String filePath) {
+        return resolve(new File(dirPath.replace('/', File.separatorChar), 
+                filePath.replace('/', File.separatorChar)));
+    }
 
     public static String toHex(int val) {
         char[] ch8 = new char[8];
