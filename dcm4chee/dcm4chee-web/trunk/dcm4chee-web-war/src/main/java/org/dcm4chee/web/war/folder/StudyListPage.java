@@ -1611,26 +1611,13 @@ public class StudyListPage extends Panel {
                 boolean woMwl = filter.isPpsWithoutMwl();
                 boolean woPps = filter.isWithoutPps();
                 if (woMwl || woPps) {
+                    m.expand();
                     if (!hidePPSModel.getObject()) {
-                        m.expand();
-                        PPSModel pps;
-                        for (Iterator<PPSModel> it = m.getPPSs().iterator() ; it.hasNext() ; ) {
-                            pps = it.next();
-                            if (pps.getDataset() == null) {
-                                if (woPps) {
-                                    pps.getNumberOfSeries();
-                                    pps.getNumberOfInstances();
-                                    pps.collapse();
-                                } else
-                                    it.remove();
-                            } else if (woMwl && pps.getAccessionNumber()==null) {
-                                pps.collapse();
-                            } else {
-                                it.remove();
-                            }
+                        for (PPSModel pps : m.getPPSs()) {
+                            pps.collapse();
                         }
                     } else {
-                        checkHasUnlinkedSeries(study, m);
+                        m.collapse();
                     }
                 } else if (StudyPermissionHelper.get().isEasyLink()) {
                     checkHasUnlinkedSeries(study, m);
