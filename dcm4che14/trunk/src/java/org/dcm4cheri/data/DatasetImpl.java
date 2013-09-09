@@ -82,8 +82,7 @@ final class DatasetImpl extends BaseDatasetImpl
     }       
 
     public String getPrivateCreatorID() {
-        return privateCreatorID != null ? privateCreatorID
-                : parent != null ? parent.getPrivateCreatorID() : null;
+        return privateCreatorID;
     }
     
     public SpecificCharacterSet getSpecificCharacterSet() {
