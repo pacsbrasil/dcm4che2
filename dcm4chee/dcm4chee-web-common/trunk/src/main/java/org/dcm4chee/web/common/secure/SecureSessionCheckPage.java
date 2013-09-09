@@ -60,6 +60,7 @@ import org.dcm4chee.web.common.base.BaseWicketPage;
  */
 public class SecureSessionCheckPage extends SecureWebPage {
 
+    public static final String SYSTEM_PROPERTY_READINGROOM = "org.dcm4chee.web.readingroom";
     public static final ResourceReference BASE_CSS = new CompressedResourceReference(BaseWicketPage.class, "base-style.css");
     public static final ResourceReference BASE_CSS_R = new CompressedResourceReference(BaseWicketPage.class, "base-style-r.css");
     
@@ -86,7 +87,8 @@ public class SecureSessionCheckPage extends SecureWebPage {
     public IModel<ResourceReference> getBaseCSSModel() {
         IModel<ResourceReference> cssModel = Session.get().getMetaData(BASE_CSS_MODEL_MKEY);
         if (cssModel == null) {
-            cssModel = new Model<ResourceReference>(BASE_CSS);
+            cssModel = new Model<ResourceReference>(Boolean.parseBoolean(System.getProperty(SYSTEM_PROPERTY_READINGROOM)) ? 
+                    BASE_CSS_R : BASE_CSS);
             Session.get().setMetaData(BASE_CSS_MODEL_MKEY, cssModel);
         }
         return cssModel;
