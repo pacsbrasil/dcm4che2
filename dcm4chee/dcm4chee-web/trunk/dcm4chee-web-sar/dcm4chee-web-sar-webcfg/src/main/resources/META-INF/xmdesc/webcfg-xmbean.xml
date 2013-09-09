@@ -868,6 +868,19 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isReadingRoom"
+      setMethod="setReadingRoom">
+      <description><![CDATA[
+      If true, use 'Reading Room' as default style which is used if browser/user open web the first time.<br/>
+      Afterwards, style changes are stored in session cookie for subsequent page requests.
+      ]]></description>
+      <name>ReadingRoom</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getMoveScuServiceName"
       setMethod="setMoveScuServiceName">
       <description>Used internally. Do NOT modify.

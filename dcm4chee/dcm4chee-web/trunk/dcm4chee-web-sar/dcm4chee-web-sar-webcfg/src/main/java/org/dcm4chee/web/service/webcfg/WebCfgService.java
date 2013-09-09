@@ -111,7 +111,8 @@ public class WebCfgService extends ServiceMBeanSupport implements
 
     public static final String[] LEVEL_STRINGS = { "Patient", "Study", "PPS",
             "Series", "Instance" };
-
+    private static final String SYSTEM_PROPERTY_READINGROOM = "org.dcm4chee.web.readingroom";
+    
     private String dicomSecurityServletUrl;
     private String wadoBaseURL;
     private String ridBaseURL;
@@ -1492,5 +1493,12 @@ public class WebCfgService extends ServiceMBeanSupport implements
 
     public void setSearchWarningThreshold(int size) {
         this.searchWarningThreshold = size;
+    }
+    
+    public boolean isReadingRoom() {
+        return Boolean.parseBoolean(System.getProperty(SYSTEM_PROPERTY_READINGROOM));
+    }
+    public void setReadingRoom(boolean b) {
+        System.setProperty(SYSTEM_PROPERTY_READINGROOM, Boolean.toString(b));
     }
 }
