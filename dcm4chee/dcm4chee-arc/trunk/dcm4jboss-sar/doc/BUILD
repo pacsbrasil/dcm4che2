@@ -16,6 +16,8 @@ to download and install:
 
 - Java CIFS Client Library 1.3.17 [http://jcifs.samba.org/src/]
 
+- CAStorSDK Caringo CAStor SDKm 1.3.1 [repo1.maven.org/maven2/com/caringo/client/CAStorSDK/1.3.1-CS40/CAStorSDK-1.3.1-CS40.jar]
+
 - Jakarta Cactus 1.8.1 [http://jakarta.apache.org/cactus/]
 (only needed to build test suite for dcm4jboss-ejb - not need to build
 application)
@@ -88,6 +90,7 @@ jboss.home=${user.home}/jboss-4.2.3.GA
 fop.home=${user.home}/fop-0.95
 jsch.home=${user.home}/jsch-0.1.49
 jcifs.home=${user.home}/jcifs-1.3.17
+castor.home=${user.home}/castor-1.3.1
 cactus.home=${user.home}/cactus-1.8.1-bin
 m2.repos=${user.home}/.m2/repository.
 

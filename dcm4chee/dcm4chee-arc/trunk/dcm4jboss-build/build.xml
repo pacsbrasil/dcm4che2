@@ -52,6 +52,7 @@
 	
   <property name="jsch.home" value="${user.home}/jsch-0.1.49"/>
   <property name="jcifs.home" value="${user.home}/jcifs-1.3.17"/>
+  <property name="castor.home" value="${user.home}/castor-1.3.1"/>
 	
 	
   <target name="clean">
@@ -285,6 +286,9 @@
           <include name="*.jar"/>
         </zipfileset>
         <zipfileset dir="${jcifs.home}" prefix="${dist.db.config}/lib">
+          <include name="*.jar"/>
+        </zipfileset>
+        <zipfileset dir="${castor.home}" prefix="${dist.db.config}/lib">
           <include name="*.jar"/>
         </zipfileset>
       <zipfileset dir="${dcm4chee-web3.ear}"
