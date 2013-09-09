@@ -303,7 +303,7 @@ public class ExportPage extends SecureSessionCheckPage implements CloseRequestSu
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 removeProgressProvider(getExportResults().remove(resultId), true);
                 getPage().getPageMap().remove(ExportPage.this);
-                target.appendJavascript("javascript:window.close()");
+                target.appendJavascript("javascript:top.window.close()");
                 target.addComponent(form);
             }
         }.add(new Label("closeText", new ResourceModel("export.closeBtn.text"))
