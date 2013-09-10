@@ -127,7 +127,9 @@ public class MppsForwardService extends AbstractScuService {
         StudyListLocal dao = (StudyListLocal) JNDIUtils.lookup(StudyListLocal.JNDI_NAME);
         MPPS mpps = dao.findMPPS(mppsUID);
         if (mpps != null) {
-            return sendMPPS(mpps.getAttributes(), aet);
+            DicomObject attrs = mpps.getAttributes();
+            mpps.getPatient().getAttributes().copyTo(attrs);
+            return sendMPPS(attrs, aet);
         }
         return ("MPPS with InstanceUID "+mppsUID+" not found!");
     }
