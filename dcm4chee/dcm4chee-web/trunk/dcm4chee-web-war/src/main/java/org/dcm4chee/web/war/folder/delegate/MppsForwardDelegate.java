@@ -67,17 +67,10 @@ public class MppsForwardDelegate extends BaseMBeanDelegate {
     	DicomObject ppsData = ppsModel.getDataset();
     	ppsModel.getParent().getParent().getDataset().copyTo(ppsData);
 
-    	return (String)  
-			server.invoke(serviceObjectName, "sendMPPS", 
-	                new Object[] { 
-						ppsData.contains(Tag.ScheduledStepAttributesSequence),
-						ppsData, 
-						aet}, 
-	                new String[] { 
-						boolean.class.getName(), 
-						DicomObject.class.getName(), 
-						String.class.getName()}
-					);
+    	return (String) server.invoke(serviceObjectName, "sendMPPS", 
+	                new Object[] {ppsData, aet}, 
+	                new String[] {DicomObject.class.getName(), String.class.getName()}
+			);
     }
 
     @Override
