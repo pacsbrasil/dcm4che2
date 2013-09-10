@@ -199,3 +199,7 @@ div.imageSelectWindow table.folded-table tr.series { background-color: #54B291; 
 div.imageSelectWindow table.folded-table td.imageSelect{ background-color: #111111; color: #aaaaaa; }
 
 .longText { max-width: 300px; overflow: hidden; white-space: nowrap; }
+
+.export_succeed {color: black; background: none #77bb77 !important;}
+.export_running {color:black;}
+.export_failed {color: black;}
