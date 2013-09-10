@@ -252,6 +252,7 @@ public class MppsToMwlLinkBean implements MppsToMwlLinkLocal {
         List<MPPS> mppsList = new ArrayList<MPPS>(mppsPks.length);
         for (Long pk : mppsPks) {
             MPPS mpps = em.find(MPPS.class, pk);
+            mppsList.add(mpps);
             MPPS mppsSav = new MPPS();
             mppsSav.setAttributes(mpps.getAttributes());
             result.addMppsAttributes(mppsSav);
