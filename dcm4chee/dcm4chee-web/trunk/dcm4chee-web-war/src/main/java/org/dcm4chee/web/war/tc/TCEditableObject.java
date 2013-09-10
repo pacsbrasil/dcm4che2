@@ -4,7 +4,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -43,7 +45,7 @@ public class TCEditableObject extends TCObject {
     
     private Map<TCReferencedInstance, TCDocumentObject> docsAdded;
     private List<TCReferencedInstance> docsRemoved;
-    
+    private List<TCLink> linksRemoved;
     
     private TCEditableObject(String id, DicomObject ds)
     {
@@ -449,24 +451,41 @@ public class TCEditableObject extends TCObject {
         }
     }
     
-    public boolean save() throws Exception {
+    public SaveResult save() throws Exception {
     	return save(true);
     }
     
-    private boolean save(boolean saveLinkedCases) throws Exception {
+    private SaveResult save(boolean saveLinkedCases) throws Exception {
     	if (modified) {
+    		List<String> otherCaseUIDs = null;
+    		
 	        //we may need to update cross linked cases as well
     		if (saveLinkedCases) {
+    			List<TCLink> linksToSave = new ArrayList<TCLink>(3);
+    			
+    			// save added crosslinks
 	    		if (links!=null) {
-	    			for (TCLink link : links) {
-	    				TCEditableObject linkedCase = link.getLinkedCase();
-	    				if (linkedCase!=null) {
-	    					if (linkedCase.isModified()) {
-	    						linkedCase.save(false);
-	    					}
-	    				}
-	    			}
+	    			linksToSave.addAll( links );
 	    		}
+	    		
+	    		// save removed crosslinks
+	    		if (linksRemoved!=null) {
+	    			linksToSave.addAll( linksRemoved );
+	    		}
+	    		
+    			for (TCLink link : linksToSave) {
+    				TCEditableObject linkedCase = link.getLinkedCase();
+    				if (linkedCase!=null) {
+    					if (linkedCase.isModified()) {
+    						if (linkedCase.save(false).saved()) {
+    							if (otherCaseUIDs==null) {
+    								otherCaseUIDs = new ArrayList<String>(3);
+    							}
+    							otherCaseUIDs.add(linkedCase.getInstanceUID());
+    						}
+    					}
+    				}
+    			}
     		}
 
 	        //save new added (yet unsaved) referenced documents
@@ -496,10 +515,11 @@ public class TCEditableObject extends TCObject {
 	    	if (TCStoreDelegate.getInstance().modifyImmediately(
 	    			toModificationDataset())) {
     			modified = false;
-    			return true;
+    			
+    			return new SaveResult(true, getInstanceUID(), otherCaseUIDs);
     		}
     	}
-    	return false;
+    	return new SaveResult(false, getInstanceUID(), null);
     }
     
     @Override
@@ -525,6 +545,16 @@ public class TCEditableObject extends TCObject {
     	}
     	if (!links.contains(link)) {
     		if (links.add(link)) {
+    			if (linksRemoved!=null) {
+    				for (Iterator<TCLink> it = linksRemoved.iterator(); it.hasNext();) {
+    					if (it.next().equals(link)) {
+    						it.remove();
+    					}
+    				}
+    				if (linksRemoved.isEmpty()) {
+    					linksRemoved = null;
+    				}
+    			}
     			modified = true;
     			return true;
     		}
@@ -538,6 +568,10 @@ public class TCEditableObject extends TCObject {
     			if (links.isEmpty()) {
     				links = null;
     			}
+    			if (linksRemoved==null) {
+    				linksRemoved = new ArrayList<TCLink>(3);
+    			}
+    			linksRemoved.add(link);
     			modified = true;
 				return true;
     		}
@@ -1028,6 +1062,34 @@ public class TCEditableObject extends TCObject {
         }
 
         return null;
+    }
+    
+    
+    public static class SaveResult {
+    	private boolean saved;
+    	private String caseUID;
+    	private List<String> otherCaseUIDs;
+    	
+    	public SaveResult(boolean saved, String caseUID, List<String> otherCaseUIDs) {
+    		this.saved = saved;
+    		this.caseUID = caseUID;
+    		this.otherCaseUIDs = otherCaseUIDs;
+    	}
+    	
+    	public boolean saved() {
+    		return saved;
+    	}
+    	
+    	public String getCaseUID() {
+    		return caseUID;
+    	}
+    	
+    	public List<String> getOtherCaseUIDs() {
+    		if (otherCaseUIDs!=null) {
+    			return Collections.unmodifiableList(otherCaseUIDs);
+    		}
+    		return Collections.emptyList();
+    	}
     }
     
 }

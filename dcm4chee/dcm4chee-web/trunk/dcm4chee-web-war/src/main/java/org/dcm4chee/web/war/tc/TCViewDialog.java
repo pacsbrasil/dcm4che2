@@ -9,6 +9,7 @@ import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.model.AbstractReadOnlyModel;
 import org.apache.wicket.model.IModel;
+import org.dcm4chee.web.war.tc.TCEditableObject.SaveResult;
 import org.dcm4chee.web.war.tc.TCResultPanel.ITCCaseProvider;
 
 @SuppressWarnings("serial")
@@ -151,16 +152,14 @@ public class TCViewDialog extends ModalWindow {
     	
     	TCEditableObject tc = getTC();
     	
-    	boolean changesSaved = false;
+    	SaveResult result = null;
     	
     	if (tc!=null) {
 		    if (saveChanges)
 		    {
 		        try
 		        {
-		            if (tc.save()) {
-			            changesSaved = true;
-		            }
+		            result = tc.save();
 		        }
 		        catch (Exception e)
 		        {
@@ -168,7 +167,7 @@ public class TCViewDialog extends ModalWindow {
 		        }
 		    }
 	
-		    if (changesSaved) {
+		    if (result!=null && result.saved()) {
 		    	TCAuditLog.logTFEdited(tc);
 		    }
 		    else {
@@ -177,12 +176,12 @@ public class TCViewDialog extends ModalWindow {
     	}
     	
     	if (closeCallback!=null) {
-    		closeCallback.dialogClosed(target, changesSaved);
+    		closeCallback.dialogClosed(target, tc, result);
     	}
     }
     
     
 	public static interface ITCViewDialogCloseCallback extends Serializable {
-		void dialogClosed(AjaxRequestTarget target, boolean changesSaved);
+		void dialogClosed(AjaxRequestTarget target, TCEditableObject tc, SaveResult result);
 	}
 }

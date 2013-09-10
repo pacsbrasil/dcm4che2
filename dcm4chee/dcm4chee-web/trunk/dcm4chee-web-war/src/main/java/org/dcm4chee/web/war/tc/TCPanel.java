@@ -37,6 +37,8 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chee.web.war.tc;
 
+import java.util.List;
+
 import org.apache.wicket.Component;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -57,6 +59,7 @@ import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.ajax.MaskingAjaxCallBehavior;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.dao.tc.TCQueryFilter;
+import org.dcm4chee.web.war.tc.TCEditableObject.SaveResult;
 import org.dcm4chee.web.war.tc.TCPopupManager.ITCPopupManagerProvider;
 import org.dcm4chee.web.war.tc.TCResultPanel.ITCCaseProvider;
 import org.dcm4chee.web.war.tc.TCResultPanel.TCListModel;
@@ -135,17 +138,26 @@ public class TCPanel extends Panel implements ITCPopupManagerProvider {
             }
             
             @Override
-            protected void openTC(final TCModel tc, final boolean edit, AjaxRequestTarget target)
+            protected void openTC(final TCModel tcModel, final boolean edit, AjaxRequestTarget target)
             {
-            	viewDialog.open(null, target, tc, trainingModeModel, resultPanel.getCaseProvider(), edit, 
+            	viewDialog.open(null, target, tcModel, trainingModeModel, resultPanel.getCaseProvider(), edit, 
             		new ITCViewDialogCloseCallback() {
             			@Override
-            			public void dialogClosed(AjaxRequestTarget target, boolean changesSaved) {
-            				if (changesSaved) {
+            			public void dialogClosed(AjaxRequestTarget target, TCEditableObject tc, SaveResult result) {
+            				if (result!=null && result.saved()) {
 					            // trigger new search and select new SR
             					// need this in order to immediately 'see' the changes
-            					//searchPanel.redoSearch(target, viewDialog.getView().getTC().getInstanceUID());
-            					TCModel newTC = listModel.updateByIUID(tc.getSOPInstanceUID());
+            					TCModel newTC = listModel.updateByIUID(result.getCaseUID());
+
+            					// in fact, we also need to update linked cases as well
+            					List<String> otherUIDs = result.getOtherCaseUIDs();
+            					if (otherUIDs!=null) {
+            						for (String uid : otherUIDs)
+            						{
+            							listModel.updateByIUID(uid);
+            						}
+            					}
+            					
             	                resultPanel.clearSelected();
             					resultPanel.selectTC(newTC, null);
             					target.addComponent(resultPanel);
