@@ -706,7 +706,7 @@ abstract class BaseDatasetImpl extends DcmObjectImpl implements Dataset {
        || pmi.equals("PALETTE COLOR")) {
            ColorModelFactory cmFactory = ColorModelFactory.getInstance();
            bi = new ImageTypeSpecifier(cmFactory.getColorModel(cmFactory
-               .makeParam(this)), new PixelInterleavedSampleModel(
+               .makeParam(this, frame)), new PixelInterleavedSampleModel(
                dataBufType, 1, 1, 1, 1, new int[] { 0}))
                .createBufferedImage(width, height);
        }

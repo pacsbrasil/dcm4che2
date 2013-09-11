@@ -54,9 +54,9 @@ public abstract class ColorModelFactory {
          "dcm4che.image.ColorModelFactory");
    }
    
-   public abstract ColorModelParam makeParam(Dataset ds);
+   public abstract ColorModelParam makeParam(Dataset ds, int imageIndex);
    
-   public abstract ColorModelParam makeParam(Dataset ds, byte[] pv2dll);
+   public abstract ColorModelParam makeParam(Dataset ds, int imageIndex, byte[] pv2dll);
    
    public abstract ColorModel getColorModel(ColorModelParam param);
 }

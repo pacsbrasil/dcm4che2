@@ -75,11 +75,11 @@ public class ColorModelFactoryImpl extends ColorModelFactory {
       return cm;
    }
    
-   public ColorModelParam makeParam(Dataset ds) {
-      return makeParam(ds, null);
+   public ColorModelParam makeParam(Dataset ds, int frameIndex) {
+      return makeParam(ds, frameIndex, null);
    }
    
-   public ColorModelParam makeParam(Dataset ds, byte[] pv2dll) {
+   public ColorModelParam makeParam(Dataset ds, int frameIndex, byte[] pv2dll) {
       String pmi =
          ds.getString(Tags.PhotometricInterpretation, "MONOCHROME2");
       if ("PALETTE COLOR".equals(pmi)) {
@@ -90,7 +90,7 @@ public class ColorModelFactoryImpl extends ColorModelFactory {
          throw new UnsupportedOperationException("pmi: " + pmi);
       }
       String pLUTShape = ds.getString(Tags.PresentationLUTShape);
-      return new MonochromeParam(ds,
+      return new MonochromeParam(ds, frameIndex,
          pLUTShape == null ? mono1 : "INVERSE".equals(pLUTShape),
          pv2dll == null ? P2D_IDENTITY : pv2dll);
    }

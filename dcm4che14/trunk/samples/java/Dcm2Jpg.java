@@ -36,9 +36,14 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+import org.dcm4che.dict.Tags;
 import org.dcm4che.imageio.plugins.DcmImageReadParam;
+import org.dcm4che.imageio.plugins.DcmMetadata;
 
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.IndexColorModel;
 import java.io.*;
 import java.util.*;
 import javax.imageio.ImageIO;
@@ -64,7 +69,7 @@ public class Dcm2Jpg {
       ImageInputStream iis = ImageIO.createImageInputStream(src);
       BufferedImage bi;
       try {
-          dicomReader.setInput(iis, false);
+         dicomReader.setInput(iis, false);
          bi = dicomReader.read(0, param);
          if (bi == null) {
             System.out.println("\nError: " + src + " - couldn't read!");
@@ -74,6 +79,19 @@ public class Dcm2Jpg {
          try { iis.close(); } catch (IOException ignore) {}
       }
       dest.delete();
+      String pmi = ((DcmMetadata) dicomReader.getStreamMetadata())
+              .getDataset().getString(Tags.PhotometricInterpretation);
+      if (pmi.startsWith("MONOCHROME")) {
+          BufferedImage tmp = new BufferedImage(bi.getWidth(),
+                  bi.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
+          Graphics2D g = tmp.createGraphics();
+          try {
+              g.drawImage(bi, 0, 0, null);
+          } finally {
+              g.dispose();
+          }
+          bi = tmp;
+      }
       ImageOutputStream out = ImageIO.createImageOutputStream(dest);
       try {
           jpegWriter.setOutput(out);

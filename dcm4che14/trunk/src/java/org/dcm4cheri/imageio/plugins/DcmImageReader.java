@@ -375,11 +375,11 @@ public class DcmImageReader extends ImageReader {
         readMetadata();
         checkIndex(imageIndex);
         return Collections.singletonList(
-                getImageTypeSpecifier(param != null ? param.getPValToDDL()
+                getImageTypeSpecifier(imageIndex, param != null ? param.getPValToDDL()
                         : null)).iterator();
     }
 
-    private ImageTypeSpecifier getImageTypeSpecifier(byte[] pv2dll) {
+    private ImageTypeSpecifier getImageTypeSpecifier(int imageIndex, byte[] pv2dll) {
         if (this.samplesPerPixel == 3) {
             if (!ybr2rgb) {
                 if (pmi.startsWith("YBR_FULL"))
@@ -391,8 +391,10 @@ public class DcmImageReader extends ImageReader {
             return this.planes != 0 ? RGB_PLANE : RGB_PIXEL;
         }
         return new ImageTypeSpecifier(cmFactory
-                .getColorModel(this.cmParam = cmFactory.makeParam(theDataset,
-                        pv2dll)), new PixelInterleavedSampleModel(
+                .getColorModel(
+                        this.cmParam = cmFactory.makeParam(
+                                theDataset, imageIndex, pv2dll)),
+                        new PixelInterleavedSampleModel(
                 this.dataType, 1, 1, 1, 1, new int[] { 0 }));
     }
 

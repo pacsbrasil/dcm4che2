@@ -113,7 +113,7 @@ class ImageBox extends JPanel {
         
         String pmi = dataset.getString(Tags.PhotometricInterpretation, null);
         if ("MONOCHROME1".equals(pmi) || "MONOCHROME2".equals(pmi)) {
-            cmParam = cmFactory.makeParam(dataset);
+            cmParam = cmFactory.makeParam(dataset, 0);
             int bits = dataset.getInt(Tags.BitsStored, 8);
             int size = 1 << bits;
             int signed = dataset.getInt(Tags.PixelRepresentation, 0);
@@ -215,7 +215,7 @@ class ImageBox extends JPanel {
         add(zoomSlider, BorderLayout.EAST);
         
         if ("MONOCHROME1".equals(pmi) || "MONOCHROME2".equals(pmi)) {
-            cmParam = cmFactory.makeParam(dataset);
+            cmParam = cmFactory.makeParam(dataset, 0);
             int bits = dataset.getInt(Tags.BitsStored, 8);
             int size = 1 << bits;
             int signed = dataset.getInt(Tags.PixelRepresentation, 0);

@@ -89,6 +89,7 @@ final class MonochromeParam extends BasicColorModelParam  {
    
    /** Creates a new instance of MonochromeParam
     * @param ds is the dicom data set header
+ * @param frameIndex 
     * @param inverse1 is true if the is MONOCHROME1 
     * @param pv2dll is the p-value to digital driving level LUT
     * 	This had better either match the number of pixel values, OR
@@ -96,19 +97,26 @@ final class MonochromeParam extends BasicColorModelParam  {
     *   otherwise match the number of pixel values (that is, a 256 element
     *   table works just fine for 12 bit data)
     */
-   public MonochromeParam(Dataset ds, boolean inverse1, byte[] pv2dll) {
+   public MonochromeParam(Dataset ds, int frameIndex, boolean inverse1, byte[] pv2dll) {
       super(ds);
+      Dataset sharedFctGroups = ds.getItem(Tags.SharedFunctionalGroupsSeq); 
+      Dataset frameFctGroups = ds.getItem(Tags.PerFrameFunctionalGroupsSeq, frameIndex);
+      Dataset mlutGroup = selectFctGroup(ds, sharedFctGroups, frameFctGroups,
+              Tags.PixelValueTransformationSeq);
+      Dataset vlutGroup = ds.containsValue(Tags.WindowCenter)
+              ? ds
+              : selectFctGroup(ds, sharedFctGroups, frameFctGroups, Tags.FrameVOILUTSeq);
       this.inverse = inverse1 ? -1 : 0;
-      this.slope = correctSlope(Float.parseFloat(ds.getString(Tags.RescaleSlope, "1.0")));
-      this.intercept = Float.parseFloat(ds.getString(Tags.RescaleIntercept, "0.0"));
-      this.center = toFloats(ds.getStrings(Tags.WindowCenter));
-      this.width = toFloats(ds.getStrings(Tags.WindowWidth));
+      this.slope = correctSlope(Float.parseFloat(mlutGroup.getString(Tags.RescaleSlope, "1.0")));
+      this.intercept = Float.parseFloat(mlutGroup.getString(Tags.RescaleIntercept, "0.0"));
+      this.center = toFloats(vlutGroup.getStrings(Tags.WindowCenter));
+      this.width = toFloats(vlutGroup.getStrings(Tags.WindowWidth));
       for (int i = 0; i < width.length; ++i) {
          if (width[i] <= 0.f) {
             width[i] = (max - min) / slope;
          }
       }
-      this.voilut = center.length == 0 ? ds.getItem(Tags.VOILUTSeq) : null;
+      this.voilut = center.length == 0 ? vlutGroup.getItem(Tags.VOILUTSeq) : null;
       this.pv2dll = pv2dll;
       this.pvBits = inBits(pv2dll.length);
       // Exclude all high-bit data (overlays typically)
@@ -117,9 +125,21 @@ final class MonochromeParam extends BasicColorModelParam  {
          slope, intercept, center, width, pv2dll);      
    }
    
-   private static int hashcode(int dataType, int inverse, int min, int max,
-      float slope, float intercept, float[] center, float[] width,
-      byte[] pv2dll)
+    private Dataset selectFctGroup(Dataset ds, Dataset sharedFctGroups,
+            Dataset frameFctGroups, int tag) {
+        if (frameFctGroups == null)
+            return ds;
+
+        Dataset fctGroup = frameFctGroups.getItem(tag);
+        if (fctGroup == null && sharedFctGroups != null)
+            fctGroup = sharedFctGroups.getItem(tag);
+
+        return fctGroup != null ? fctGroup : ds;
+    }
+
+    private static int hashcode(int dataType, int inverse, int min, int max,
+          float slope, float intercept, float[] center, float[] width,
+          byte[] pv2dll)
    {
       StringBuffer sb = new StringBuffer();
       sb.append(dataType).append(inverse).append(min).append(max)
