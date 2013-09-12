@@ -17,7 +17,7 @@ import org.apache.wicket.model.Model;
  */
 public class TCImageViewThumbnailPanel extends Panel {
 
-    private static final TCWadoImageSize thumbnailSize = TCWadoImageSize.createSizeInstance(64, 64);
+    private static final TCWadoImageSize thumbnailSize = TCWadoImageSize.createSizeInstance(-1, 64);
     
     private IModel<TCImageViewImage> instanceModel = new Model<TCImageViewImage>();
 
