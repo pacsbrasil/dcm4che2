@@ -491,7 +491,6 @@ div.details-tabs div.tab-panel span.table-property-key
 .tc-view-editable-content
 {
 	border: medium none;
-	overflow: hidden;
 	position: absolute;
 	top: 60px;
 	bottom: 4em;
