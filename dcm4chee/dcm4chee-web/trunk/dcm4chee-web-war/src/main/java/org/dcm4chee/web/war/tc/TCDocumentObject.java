@@ -1018,7 +1018,9 @@ public abstract class TCDocumentObject implements Serializable {
     	ApplicationMSWordXDoc(DocumentType.MSWORD, 
     			"application/vnd.openxmlformats-officedocument.wordprocessingml.document","docx"),
     	ApplicationMSWordXTemp(DocumentType.MSWORD, 
-    			"application/vnd.openxmlformats-officedocument.wordprocessingml.template","doct"),
+    			"application/vnd.openxmlformats-officedocument.wordprocessingml.template","dotx"),
+    	ApplicationMSWordXTemp2(DocumentType.MSWORD, 
+    	    	"application/vnd.ms-word.template.12","dotx"),
     	ApplicationMSPowerpoint2(DocumentType.MSPOWERPOINT, 
     	        "application/vnd.ms-powerpoint", "ppt", "pps", "pot"),	
     	ApplicationMSPowerpoint(DocumentType.MSPOWERPOINT, 
@@ -1027,6 +1029,8 @@ public abstract class TCDocumentObject implements Serializable {
     			"application/vnd.openxmlformats-officedocument.presentationml.presentation","pptx"),
     	ApplicationMSPowerpointXTemp(DocumentType.MSPOWERPOINT, 
     			"application/vnd.openxmlformats-officedocument.presentationml.template","potx"),
+    	ApplicationMSPowerpointXTemp2(DocumentType.MSPOWERPOINT, 
+    			"application/vnd.ms-powerpoint.template.12","potx"),
     	ApplicationMSPowerpointXShow(DocumentType.MSPOWERPOINT, 
     			"application/vnd.openxmlformats-officedocument.presentationml.slideshow","ppsx"),
     	ApplicationMSExcel2(DocumentType.MSEXCEL, 
@@ -1091,7 +1095,7 @@ public abstract class TCDocumentObject implements Serializable {
     	
     	public static MimeType get(String mimeType) {
     		for (MimeType type : values()) {
-    			if (type.getMimeTypeString().equalsIgnoreCase(mimeType)) {
+    			if (type.getMimeTypeString().startsWith(mimeType)) {
     				return type;
     			}
     		}
