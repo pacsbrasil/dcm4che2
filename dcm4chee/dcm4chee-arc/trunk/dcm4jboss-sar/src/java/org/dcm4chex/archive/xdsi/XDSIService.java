@@ -91,8 +91,12 @@ import javax.xml.soap.SOAPEnvelope;
 import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPMessage;
 import javax.xml.transform.Source;
+import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.sax.SAXResult;
+import javax.xml.transform.sax.SAXTransformerFactory;
+import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
 import org.apache.log4j.Logger;
@@ -126,15 +130,19 @@ import org.dcm4chex.archive.ejb.jdbc.QueryXdsPublishCmd;
 import org.dcm4chex.archive.ejb.jdbc.QueryXdsPublishCmd.PublishStudy;
 import org.dcm4chex.archive.mbean.HttpUserInfo;
 import org.dcm4chex.archive.mbean.SchedulerDelegate;
+import org.dcm4chex.archive.mbean.TemplatesDelegate;
 import org.dcm4chex.archive.util.DateTimeFormat;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileUtils;
+import org.dcm4chex.archive.util.XSLTUtils;
 import org.jboss.system.ServiceMBeanSupport;
 import org.jboss.system.server.ServerImplMBean;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 
 //import com.sun.xml.messaging.saaj.util.JAXMStreamSource;
@@ -192,6 +200,7 @@ public class XDSIService extends ServiceMBeanSupport implements NotificationList
     private File healthCareFacilityCodeListFile;
     private File autoPublishPropertyFile;
     private File autoPublishStudyDeletedPDFFile;
+    private File autoPublishXSLFile;
 
     private List authorRoles = new ArrayList();
     private List confidentialityCodes;
@@ -239,6 +248,7 @@ public class XDSIService extends ServiceMBeanSupport implements NotificationList
     private QueryXdsPublishCmd checkStudyDeletedCmd;
     private int fetchSize;
     private final SchedulerDelegate scheduler = new SchedulerDelegate(this);
+    private TemplatesDelegate templates = new TemplatesDelegate(this);
 
     private final NotificationListener autoPublishListener = new NotificationListener() {
         public void handleNotification(Notification notif, Object handback) {
@@ -525,7 +535,14 @@ public class XDSIService extends ServiceMBeanSupport implements NotificationList
         scheduler.setSchedulerServiceName(schedulerServiceName);
     }
 
+    public final ObjectName getTemplatesServiceName() {
+        return templates.getTemplatesServiceName();
+    }
 
+    public final void setTemplatesServiceName(ObjectName serviceName) {
+        templates.setTemplatesServiceName(serviceName);
+    }
+    
     public boolean isHttpCfgServiceAvailable() {
         if (httpCfgServiceAvailable==null) {
             if ( xdsHttpCfgServiceName != null ) {
@@ -775,6 +792,16 @@ public class XDSIService extends ServiceMBeanSupport implements NotificationList
             autoPublishStudyDeletedPDFFile = null;
         } else {
             autoPublishStudyDeletedPDFFile = new File(file.replace('/', File.separatorChar));
+        }
+    }
+    public String getAutoPublishXSLFile() {
+        return autoPublishXSLFile == null ? "NONE" : autoPublishXSLFile.getPath();
+    }
+    public void setAutoPublishXSLFile(String file) throws IOException {
+        if ( file == null || file.trim().length() < 1 || file.equalsIgnoreCase("NONE")) {
+            autoPublishXSLFile = null;
+        } else {
+            autoPublishXSLFile = new File(file.replace('/', File.separatorChar));
         }
     }
 
@@ -1182,6 +1209,7 @@ public class XDSIService extends ServiceMBeanSupport implements NotificationList
                 log.info("Ignore publishing of empty study!");
                 return false;
             }
+            mdProps.setProperty("submissionSetTitle", "Study deleted");
             log.info("Publish a 'study deleted' PDF document for empty study to replace manifest!");
             kos.putUI(Tags.SOPInstanceUID, UIDGenerator.getInstance().createUID());
             mainDoc = getStudyDeletedDocument(mdProps, kos);
@@ -1757,7 +1785,7 @@ public class XDSIService extends ServiceMBeanSupport implements NotificationList
                 log.debug("Created manifest KOS:");
                 log.debug(manifest);
                 try {
-                    sendSOAP(manifest, getAutoPublishMetadataProperties(null));
+                    sendSOAP(manifest, getAutoPublishMetadataProperties(manifest, null));
                 } catch (SQLException x) {
                     log.error("XDS-I Autopublish failed! Reason:", x);
                 }
@@ -1798,26 +1826,56 @@ public class XDSIService extends ServiceMBeanSupport implements NotificationList
         return rootInfo;
     }
 
-    private Properties getAutoPublishMetadataProperties(String rplcDocEntryUID) {
-        Properties props = new Properties();
+    private Properties getAutoPublishMetadataProperties(Dataset manifest, String rplcDocEntryUID) {
+        final Properties props = new Properties();
+        if (autoPublishPropertyFile != null ) {
         BufferedInputStream bis = null;
-        try {
-            if (autoPublishPropertyFile == null ) return props;
-            File propFile = FileUtils.resolve(this.autoPublishPropertyFile);
-            bis= new BufferedInputStream( new FileInputStream( propFile ));
-            props.load(bis);
-            if ( sourceID != null ) {
-                props.setProperty(SOURCE_ID, sourceID);
-            }
-        } catch (IOException x) {
-            log.error("Cant read Metadata Properties for AutoPublish!",x);
-        } finally {
-            if (bis != null) {
-                try {
-                    bis.close();
-                } catch (IOException ignore) {}
+            try {
+                File propFile = FileUtils.resolve(this.autoPublishPropertyFile);
+                bis= new BufferedInputStream( new FileInputStream( propFile ));
+                props.load(bis);
+                if ( sourceID != null ) {
+                    new Properties().setProperty(SOURCE_ID, sourceID);
+                }
+            } catch (IOException x) {
+                log.error("Cant read Metadata Properties for AutoPublish!",x);
+            } finally {
+                if (bis != null) {
+                    try {
+                        bis.close();
+                    } catch (IOException ignore) {}
+                }
             }
         }
+        log.info("++++++ autoPublishXSLFile:"+autoPublishXSLFile);
+        log.info("++++++ manifest:"+manifest);
+        if (autoPublishXSLFile != null && manifest != null && !manifest.isEmpty()) {
+            try {
+                File xslFile = FileUtils.resolve(autoPublishXSLFile);
+                Templates tpl = templates.getTemplates(xslFile);
+                Dataset manifestInfo = this.getContentManager().getXDSManifestInfo(manifest);
+                log.info("XDS-I transform series info to metadata properties:");
+                log.debug(manifestInfo);
+                XSLTUtils.logDataset(manifestInfo, "xds", "manifestInfo");
+                TransformerHandler th = ((SAXTransformerFactory)TransformerFactory.newInstance()).newTransformerHandler(tpl);
+                th.setResult(new SAXResult(new DefaultHandler(){
+
+                    public void startElement(String uri, String localName,
+                             String qName, Attributes attrs) {
+                         if (qName.equals("property")) {
+                             log.info("++++++ setProperty("+attrs.getValue("name")+", "+attrs.getValue("value")+")");
+                             props.setProperty(attrs.getValue("name"), attrs.getValue("value"));
+                         }
+                     }
+                 }));
+                log.info("++++++ update setProperty by xslt");
+                manifestInfo.writeDataset2(th, null, null, 64, null);
+            } catch (Exception e) {
+                log.error("Get metadata properties from seriesInfo failed:", e);
+            }
+
+        }
+
         if (rplcDocEntryUID != null)
             props.setProperty(RPLC_DOC_ENTRY_UID, rplcDocEntryUID);
         return props;
@@ -1902,7 +1960,7 @@ public class XDSIService extends ServiceMBeanSupport implements NotificationList
             manifest = study.getStudyPk() != null ?
                 getKeyObject(study.getStudyPk(), getAutoPublishRootInfo(), null) :
                 DcmObjectFactory.getInstance().newDataset();
-            if (sendSOAP(manifest, getAutoPublishMetadataProperties(study.getDocumentEntryUID()))) {
+            if (sendSOAP(manifest, getAutoPublishMetadataProperties(manifest, study.getDocumentEntryUID()))) {
                 return checkXDSDocument(study, manifest.getString(Tags.SOPInstanceUID));
             }
         } catch (Exception x) {

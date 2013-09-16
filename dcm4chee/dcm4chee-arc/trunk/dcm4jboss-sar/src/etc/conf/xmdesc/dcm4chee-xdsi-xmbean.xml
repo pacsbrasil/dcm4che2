@@ -173,6 +173,17 @@
          <value value="conf/dcm4chee-xdsi/nist/metadata.conf"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write" getMethod="getAutoPublishXSLFile" setMethod="setAutoPublishXSLFile">
+      <description>XSL File for AutoPublish to get metadata from manifest info (Dataset with patient, study and series attributes).
+            Use NONE to disable this XSLT processing. 
+      		A relative path name is resolved relative to dcm4chee_home/server/default/.
+      </description>
+      <name>AutoPublishXSLFile</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="NONE"/>
+      </descriptors>
+   </attribute>
    <attribute access="read-write" getMethod="getAutoPublishStudyDeletedPDFFile" setMethod="setAutoPublishStudyDeletedPDFFile">
       <description><![CDATA[PDF File or 'TEXT' to mark a published study as deleted.<br />
       		A relative path name is resolved relative to dcm4chee_home/server/default/.<br />
@@ -536,6 +547,14 @@
       <description>Used internally. Do NOT modify.
       </description>
       <name>SchedulerServiceName</name>
+      <type>javax.management.ObjectName</type>
+   </attribute>
+   <attribute access="read-write" 
+      getMethod="getTemplatesServiceName"
+      setMethod="setTemplatesServiceName">
+      <description>Used internally. Do NOT modify.
+      </description>
+      <name>TemplatesServiceName</name>
       <type>javax.management.ObjectName</type>
    </attribute>
 

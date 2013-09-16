@@ -826,6 +826,27 @@ public abstract class ContentManagerBean implements SessionBean {
         return ds;
     }
     
+    /**
+     * @throws FinderException 
+     * @ejb.interface-method
+     * @ejb.transaction type="Required"
+     */
+    public Dataset getXDSManifestInfo(Dataset manifest) throws FinderException {
+        DcmElement crpeSQ = manifest.get(Tags.CurrentRequestedProcedureEvidenceSeq);
+        if (crpeSQ != null && crpeSQ.hasItems()) {
+            DcmElement sq = crpeSQ.getItem().get(Tags.RefSeriesSeq);
+            if (sq != null && sq.hasItems()) {
+                String seriesIUID = sq.getItem().getString(Tags.SeriesInstanceUID);
+                SeriesLocal series = seriesHome.findBySeriesIuid(seriesIUID);
+                Dataset info = series.getAttributes(true);
+                info.putAll(series.getStudy().getAttributes(true));
+                info.putAll(series.getStudy().getPatient().getAttributes(true));
+                return info;
+            }
+        }
+        return null;
+    }
+    
 	public class InstanceNumberComparator implements Comparator {
 
 		public InstanceNumberComparator() {

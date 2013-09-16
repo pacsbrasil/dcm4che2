@@ -158,6 +158,16 @@ public class XDSMetadata {
      */
     private void initProperties(Properties props) {
         if ( props == null ) return;
+        String docTitle = mdValues.getProperty("docTitle");
+        if ( docTitle == null ) {
+           Dataset cnDS = manifest != null ? manifest.getItem(Tags.ConceptNameCodeSeq) : null;
+           docTitle = cnDS != null ? cnDS.getString(Tags.CodeMeaning) : "TITLE?";
+           mdValues.setProperty("docTitle", docTitle);
+        }
+        String submTitle = mdValues.getProperty("submissionSetTitle");
+        mdValues.setProperty("submissionSetTitle", 
+                (manifest != null || submTitle == null) ? docTitle : submTitle);
+        
         try {
             setXSLT( props.getProperty("XSLT_URL"));
         } catch (MalformedURLException x) {
@@ -236,17 +246,13 @@ public class XDSMetadata {
             
             addClassification("Folder", UUID.XDSFolder);
         }
-        String title;
         if ( this.manifest != null ) {
             for ( int i = 0 ; i < docs.length ; i++ ) {
                 addExtrinsicObject(docs[i]);
             }
-            Dataset cnDS = manifest.getItem(Tags.ConceptNameCodeSeq);
-            title = cnDS != null ? cnDS.getString(Tags.CodeMeaning) : mdValues.getProperty("docTitle","Title?");
-        } else {
-            title = mdValues.getProperty("submissionSetTitle","TITLE");
         }
-        addSubmissionRegistryPackage(SUBMISSION_SET, title);
+        
+        addSubmissionRegistryPackage(SUBMISSION_SET, mdValues.getProperty("submissionSetTitle"));
         int fldrDocIdx = 0;
         String folderDocAssocID;
         if ( newFolder ) {
@@ -392,13 +398,11 @@ public class XDSMetadata {
     private void addExtrinsicObject(XDSIDocument doc) throws SAXException {
         AttributesImpl attr = new AttributesImpl();
         attr.addAttribute("", "id", "id", "", doc.getDocumentID());
-        //String mime = mdValues.getProperty("mimetype","application/dicom");
         String mime = doc.getMimeType();
         attr.addAttribute("", ATTR_MIMETYPE, ATTR_MIMETYPE, "", mime);		
         attr.addAttribute("", ATTR_OBJECTTYPE, ATTR_OBJECTTYPE, "", UUID.XDSDocumentEntry);		
         th.startElement("", TAG_EXTRINSICOBJECT, TAG_EXTRINSICOBJECT, attr );
-        Dataset cnDS = manifest.getItem(Tags.ConceptNameCodeSeq);
-        String title = cnDS != null ? cnDS.getString(Tags.CodeMeaning) : mdValues.getProperty("docTitle","Title?");
+        String title = mdValues.getProperty("docTitle","Title?");
         addLocalized(TAG_NAME, EMPTY_ATTRIBUTES, title);
         addLocalized("Description", EMPTY_ATTRIBUTES, mdValues.getProperty("description",null));
         addExtrinsicEntries(doc);
