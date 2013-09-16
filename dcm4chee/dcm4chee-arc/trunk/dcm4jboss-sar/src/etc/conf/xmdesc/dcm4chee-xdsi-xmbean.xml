@@ -66,103 +66,9 @@
       <name>MetadataPropertyFile</name>
       <type>java.lang.String</type>
       <descriptors>
-         <value value="conf/dcm4chee-xdsi/nist/metadata.conf"/>
+         <value value="conf/dcm4chee-xdsi/metadata.conf"/>
       </descriptors>
    </attribute>
-   <attribute access="read-write" getMethod="getDocTitleCodeListFile" setMethod="setDocTitleCodeListFile">
-      <description>File containing Codes for Document Title (for KOS object and therefore xds metadata 'title').
-      		Format: [designator&#94;]codevalue&#94;meaning 
-      		A relative path name is resolved relative to dcm4chee_home/server/default/.
-      </description>
-      <name>DocTitleCodeListFile</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="conf/dcm4chee-xdsi/nist/docTitleCodes.txt"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write" getMethod="getEventCodeListFile" setMethod="setEventCodeListFile">
-      <description>File containing Codes for eventCodeList.
-      		Format: [designator&#94;]codevalue&#94;meaning 
-      		A relative path name is resolved relative to dcm4chee_home/server/default/.
-      </description>
-      <name>EventCodeListFile</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="conf/dcm4chee-xdsi/nist/eventCodes.txt"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write" getMethod="getClassCodeListFile" setMethod="setClassCodeListFile">
-      <description>File containing Codes for ClassCode.
-      		Format: [designator&#94;]codevalue&#94;meaning 
-      		A relative path name is resolved relative to dcm4chee_home/server/default/.
-      </description>
-      <name>ClassCodeListFile</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="conf/dcm4chee-xdsi/nist/classCodes.txt"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write" getMethod="getContentTypeCodeListFile" setMethod="setContentTypeCodeListFile">
-      <description>File containing codes for Content Type Codes.
-      		Format: [designator&#94;]codevalue&#94;meaning 
-      		A relative path name is resolved relative to dcm4chee_home/server/default/.
-      </description>
-      <name>ContentTypeCodes</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="conf/dcm4chee-xdsi/nist/contentTypeCodes.txt"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write" getMethod="getHealthCareFacilityCodeListFile" setMethod="setHealthCareFacilityCodeListFile">
-      <description>File containing codes for Healthcare Facility Type Codes.
-      		Format: [designator&#94;]codevalue&#94;meaning 
-      		A relative path name is resolved relative to dcm4chee_home/server/default/.
-      </description>
-      <name>HealthCareFacilityTypeCode</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="conf/dcm4chee-xdsi/nist/healthCareFacilityTypeCodes.txt"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write" getMethod="getConfidentialityCodes" setMethod="setConfidentialityCodes">
-      <description>Code list for confidentialityCode.
-      		Format: [designator&#94;]codevalue&#94;meaning 
-      		Use either newline or semicolon to seperate codes
-      </description>
-      <name>ConfidentialityCodes</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="cc1&#94;confidentialityCode"/>
-      </descriptors>
-   </attribute>
-   
-   <attribute access="read-write" getMethod="getAuthorPersonMapping" setMethod="setAuthorPersonMapping">
-      <description><![CDATA[Set either a fix authorPerson or a user to authorPerson mapping.
-					<br/>
-	 				Mapping format: &lt;user&gt;=&lt;authorPerson&gt;<br/>
-	 				Use either newline or semicolon to seperate mappings.
-	 				<br/>
-	 				If '=' is ommited, a fix (global) authorPerson is set]]>
-      </description>
-      <name>AuthorPersonMapping</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="DCM4CHEE&#94;&#94;&#94;XDSITEST"/>
-      </descriptors>
-   </attribute>
-   <attribute access="read-write" getMethod="getAuthorRoles" setMethod="setAuthorRoles">
-      <description><![CDATA[List of author roles (with display name).<br/>
-      				Format: &lt;role&gt;&#94;&lt;displayName&gt;<br/>
-      				Use either newline or semicolon to seperate codes.
-      				]]>
-      </description>
-      <name>AuthorRoles</name>
-      <type>java.lang.String</type>
-      <descriptors>
-         <value value="stdRole&#94;Standard Role;adminRole&#94;Admin Role"/>
-      </descriptors>
-   </attribute>
-
    <attribute access="read-write" getMethod="getAutoPublishPropertyFile" setMethod="setAutoPublishPropertyFile">
       <description>Metadata Property File for AutoPublish. 
       		A relative path name is resolved relative to dcm4chee_home/server/default/.
@@ -558,6 +464,100 @@
       <type>javax.management.ObjectName</type>
    </attribute>
 
+   <attribute access="read-write" getMethod="getDocTitleCodeListFile" setMethod="setDocTitleCodeListFile">
+      <description>File containing Codes for Document Title for web2 XDS-I export(for KOS object and therefore xds metadata 'title').
+      		Format: [designator&#94;]codevalue&#94;meaning 
+      		A relative path name is resolved relative to dcm4chee_home/server/default/.
+      </description>
+      <name>DocTitleCodeListFile</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="conf/dcm4chee-xdsi/web2/docTitleCodes.txt"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write" getMethod="getEventCodeListFile" setMethod="setEventCodeListFile">
+      <description>File containing Codes for eventCodeList for web2 XDS-I export.
+      		Format: [designator&#94;]codevalue&#94;meaning 
+      		A relative path name is resolved relative to dcm4chee_home/server/default/.
+      </description>
+      <name>EventCodeListFile</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="conf/dcm4chee-xdsi/web2/eventCodes.txt"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write" getMethod="getClassCodeListFile" setMethod="setClassCodeListFile">
+      <description>File containing Codes for ClassCode for web2 XDS-I export.
+      		Format: [designator&#94;]codevalue&#94;meaning 
+      		A relative path name is resolved relative to dcm4chee_home/server/default/.
+      </description>
+      <name>ClassCodeListFile</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="conf/dcm4chee-xdsi/web2/classCodes.txt"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write" getMethod="getContentTypeCodeListFile" setMethod="setContentTypeCodeListFile">
+      <description>File containing codes for Content Type Codes for web2 XDS-I export.
+      		Format: [designator&#94;]codevalue&#94;meaning 
+      		A relative path name is resolved relative to dcm4chee_home/server/default/.
+      </description>
+      <name>ContentTypeCodes</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="conf/dcm4chee-xdsi/web2/contentTypeCodes.txt"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write" getMethod="getHealthCareFacilityCodeListFile" setMethod="setHealthCareFacilityCodeListFile">
+      <description>File containing codes for Healthcare Facility Type Codes for web2 XDS-I export.
+      		Format: [designator&#94;]codevalue&#94;meaning 
+      		A relative path name is resolved relative to dcm4chee_home/server/default/.
+      </description>
+      <name>HealthCareFacilityTypeCode</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="conf/dcm4chee-xdsi/web2/healthCareFacilityTypeCodes.txt"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write" getMethod="getConfidentialityCodes" setMethod="setConfidentialityCodes">
+      <description>Code list for confidentialityCode for web2 XDS-I export.
+      		Format: [designator&#94;]codevalue&#94;meaning 
+      		Use either newline or semicolon to seperate codes
+      </description>
+      <name>ConfidentialityCodes</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="cc1&#94;confidentialityCode"/>
+      </descriptors>
+   </attribute>
+   
+   <attribute access="read-write" getMethod="getAuthorPersonMapping" setMethod="setAuthorPersonMapping">
+      <description><![CDATA[Set either a fix authorPerson or a user to authorPerson mapping for web2 XDS-I export.
+					<br/>
+	 				Mapping format: &lt;user&gt;=&lt;authorPerson&gt;<br/>
+	 				Use either newline or semicolon to seperate mappings.
+	 				<br/>
+	 				If '=' is ommited, a fix (global) authorPerson is set]]>
+      </description>
+      <name>AuthorPersonMapping</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="DCM4CHEE&#94;&#94;&#94;XDSITEST"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write" getMethod="getAuthorRoles" setMethod="setAuthorRoles">
+      <description><![CDATA[List of author roles (with display name) for web2 XDS-I export.<br/>
+      				Format: &lt;role&gt;&#94;&lt;displayName&gt;<br/>
+      				Use either newline or semicolon to seperate codes.
+      				]]>
+      </description>
+      <name>AuthorRoles</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="stdRole&#94;Standard Role;adminRole&#94;Admin Role"/>
+      </descriptors>
+   </attribute>
+
    &defaultAttributes;
 
    <!-- Operations -->
@@ -684,42 +684,42 @@
      <return-type>java.util.Properties</return-type>
 	</operation>
    <operation impact="INFO">
-     <description>get list of roles.</description>
+     <description>get list of roles used by web2 XDS-I export.</description>
      <name>listAuthorRoles</name>
      <return-type>java.util.List</return-type>
 	</operation>
    <operation impact="INFO">
-     <description>get list of document titles.</description>
+     <description>get list of document titles used by web2 XDS-I export.</description>
      <name>listDocTitleCodes</name>
      <return-type>java.util.List</return-type>
 	</operation>
    <operation impact="INFO">
-     <description>get list of Event Type Codes.</description>
+     <description>get list of Event Type Codes used by web2 XDS-I export.</description>
      <name>listEventCodes</name>
      <return-type>java.util.List</return-type>
 	</operation>
    <operation impact="INFO">
-     <description>get list of Class Codes.</description>
+     <description>get list of Class Codes used by web2 XDS-I export.</description>
      <name>listClassCodes</name>
      <return-type>java.util.List</return-type>
 	</operation>
    <operation impact="INFO">
-     <description>get list of Content Type Codes.</description>
+     <description>get list of Content Type Codes used by web2 XDS-I export.</description>
      <name>listContentTypeCodes</name>
      <return-type>java.util.List</return-type>
 	</operation>
    <operation impact="INFO">
-     <description>get list of Healthcare Facility Type Codes.</description>
+     <description>get list of Healthcare Facility Type Codes used by web2 XDS-I export.</description>
      <name>listHealthCareFacilityTypeCodes</name>
      <return-type>java.util.List</return-type>
 	</operation>
    <operation impact="INFO">
-     <description>get list of Confidentiality Codes.</description>
+     <description>get list of Confidentiality Codes used by web2 XDS-I export.</description>
      <name>listConfidentialityCodes</name>
      <return-type>java.util.List</return-type>
 	</operation>
 	   <operation impact="INFO">
-     <description>clear CodeFileCache.</description>
+     <description>clear CodeFileCache (only used by web2 XDS-I export).</description>
      <name>clearCodeFileCache</name>
      <return-type>void</return-type>
 	</operation>
