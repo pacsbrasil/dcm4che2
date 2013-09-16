@@ -145,7 +145,7 @@ public class StudyListBean implements StudyListLocal {
     }
     
     public MPPS findMPPS(String mppsUID) {
-        Query query = em.createQuery("SELECT m FROM MPPS m WHERE m.sopInstanceUID = :uid");
+        Query query = em.createQuery("SELECT m FROM MPPS m LEFT JOIN FETCH m.patient WHERE m.sopInstanceUID = :uid");
         query.setParameter("uid", mppsUID);
         try {
             return (MPPS)query.getSingleResult();
