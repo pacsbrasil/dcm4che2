@@ -6,17 +6,18 @@
   The output contain a <property name="name" value="value" /> element for each property.
   
   Known properties: 
-  docTitle:                              Title  (<Name> element in ExtrinsicObject)
+  docTitle:                   Title (<Name> element in ExtrinsicObject, 
+                                 if not set, use code meaning of concept name code sequence of manifest)
   submissionSetTitle:         Title (<Name> element in SubmissionSet RegistryPackage). 
-                                                if not set: a) CodeMeaning of ConceptNameCode Sequence of manifest, b) value of 'docTitle' property
-  
-  comments                          Comments (<Description> element in SubmissionSet RegistryPackage)
-  description:                        Description (<Description> element in ExtrinsicObject)
-  languageCode:                 Slot languageCode in ExtrinsicObject
-  srcPatientID:                      Source Patient ID (Slot sourcePatientId and PID-3 value in Slot sourcePatientInfo)
+                              Note: only used if no manifest is exported (e.g create folder) 
+                              
+  comments                    Comments (<Description> element in SubmissionSet RegistryPackage)
+  description:                Description (<Description> element in ExtrinsicObject)
+  languageCode:               Slot languageCode in ExtrinsicObject
+  srcPatientID:               Source Patient ID (Slot sourcePatientId and PID-3 value in Slot sourcePatientInfo)
   
   submissionTime              default is current time
-  uniqueId                             Submissinset UniqueId (default: new generated UID)
+  uniqueId                    Submissinset UniqueId (default: new generated UID)
   sourceId
   
   authorPerson
@@ -25,14 +26,14 @@
   authorRole  
   authorRoleDisplayName 
   
-  folder.uniqueId:                 UID of new Folder
-  folder.name:                      Name of Folder (<Name> element in Folder RegistryPackage)
-  folder.comments              (Description element in Folder RegistryPackage
-  xdsfolder.uniqueId           XDSFolder.uniqueId (Default: generated)
+  folder.uniqueId:            UID of new Folder
+  folder.name:                Name of Folder (<Name> element in Folder RegistryPackage)
+  folder.comments             (Description element in Folder RegistryPackage
+  xdsfolder.uniqueId          XDSFolder.uniqueId (Default: generated)
   folderCode
   folderCodeDN
   folderCodeCodingSchemeOID
-  folder_assoc.uniqueId:   List of uniqueIds of existing folder seperated by '|'
+  folder_assoc.uniqueId:      List of uniqueIds of existing folder separated by '|'
   
   Codes:
   classCode
@@ -67,7 +68,7 @@
   eventCodeList (Format: codeValue^codeMeaning^codeDesignator[|codeValue^codeMeaning^codeDesignator[|..]]
   eventCodeListCodingSchemeOID (default codeDesignator, used if codeDesignator in eventCodeList is missing)
   
-  XSLT_URL:                        Optional URL to a XSL stylesheet for processinf XDS metadata.
+  XSLT_URL:                   Optional URL to a XSL stylesheet for processinf XDS metadata.
 -->
 
   <xsl:template match="/">
