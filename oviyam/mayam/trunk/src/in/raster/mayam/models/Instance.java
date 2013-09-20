@@ -48,6 +48,7 @@ package in.raster.mayam.models;
 public class Instance {
 
     private String sop_iuid;
+    private String sopClassUid;
     private String instance_no;
     private String filepath;
     private boolean multiframe = false;
@@ -63,6 +64,15 @@ public class Instance {
         instance_no = "";
         filepath = "";
         currentFrameNum = 0;
+    }
+
+    public Instance(String fileUrl, String sopUid, String instanceNo, boolean isEnacpsulatedDoc, String sopClassUid, boolean isMultiframe) {
+        this.filepath = fileUrl;
+        this.sop_iuid = sopUid;
+        this.instance_no = instanceNo;
+        this.encapsulatedPDF = isEnacpsulatedDoc;
+        this.sopClassUid = sopClassUid;
+        this.multiframe = isMultiframe;
     }
 
     /**
@@ -161,5 +171,13 @@ public class Instance {
 
     public void setEncapsulatedPDF(boolean encapsulatedPDF) {
         this.encapsulatedPDF = encapsulatedPDF;
+    }
+
+    public String getSopClassUid() {
+        return sopClassUid;
+    }
+
+    public void setSopClassUid(String sopClassUid) {
+        this.sopClassUid = sopClassUid;
     }
 }

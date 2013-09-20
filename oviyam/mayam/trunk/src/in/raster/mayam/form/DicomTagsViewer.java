@@ -43,7 +43,6 @@ import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.dicomtags.DicomTags;
 import in.raster.mayam.models.table.TagsTableDataModel;
 import in.raster.mayam.models.table.renderer.CellRenderer;
-import java.awt.Font;
 import java.awt.Toolkit;
 import java.util.ArrayList;
 

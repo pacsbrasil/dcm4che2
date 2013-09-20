@@ -111,6 +111,7 @@ public class SettingsForm extends javax.swing.JFrame {
         setServerListTableRenderer();
         addButtonListTableListener();
         addServerListTableKeyListener();
+        setRetrieveTypeCombo();
     }
 
     public void setSelectedTab() {
@@ -126,6 +127,7 @@ public class SettingsForm extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        retrieveTypeGroup = new javax.swing.ButtonGroup();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         serverPanel = new javax.swing.JPanel();
         listenerPanel = new javax.swing.JPanel();
@@ -169,6 +171,11 @@ public class SettingsForm extends javax.swing.JFrame {
         modalityCombo = new javax.swing.JComboBox();
         miscellaneousPanel = new javax.swing.JPanel();
         loopbackChk = new javax.swing.JCheckBox();
+        retrieveTypeLabel = new javax.swing.JLabel();
+        cMoveRadioBtn = new javax.swing.JRadioButton();
+        cGetRadioBtn = new javax.swing.JRadioButton();
+        wadoRadioBtn = new javax.swing.JRadioButton();
+        dynamicJNLPRetrieveTypeChk = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle(ApplicationContext.currentBundle.getString("MainScreen.settingsMenuItem.text")); // NOI18N
@@ -630,21 +637,58 @@ public class SettingsForm extends javax.swing.JFrame {
             }
         });
 
+        retrieveTypeLabel.setFont(ApplicationContext.labelFont);
+        retrieveTypeLabel.setText(ApplicationContext.currentBundle.getString("Preferences.miscellaneous.reteriveTypeLabel.text")); // NOI18N
+
+        retrieveTypeGroup.add(cMoveRadioBtn);
+        cMoveRadioBtn.setFont(ApplicationContext.textFont);
+        cMoveRadioBtn.setText("C-MOVE");
+
+        retrieveTypeGroup.add(cGetRadioBtn);
+        cGetRadioBtn.setFont(ApplicationContext.textFont);
+        cGetRadioBtn.setText("C-GET");
+
+        retrieveTypeGroup.add(wadoRadioBtn);
+        wadoRadioBtn.setFont(ApplicationContext.textFont);
+        wadoRadioBtn.setText("WADO");
+
+        dynamicJNLPRetrieveTypeChk.setFont(ApplicationContext.labelFont);
+        dynamicJNLPRetrieveTypeChk.setText(ApplicationContext.currentBundle.getString("Prferences.miscellaneous.overrideRetrieveTypeChk")); // NOI18N
+
         javax.swing.GroupLayout miscellaneousPanelLayout = new javax.swing.GroupLayout(miscellaneousPanel);
         miscellaneousPanel.setLayout(miscellaneousPanelLayout);
         miscellaneousPanelLayout.setHorizontalGroup(
             miscellaneousPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(miscellaneousPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(loopbackChk)
-                .addContainerGap(397, Short.MAX_VALUE))
+                .addGroup(miscellaneousPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(loopbackChk)
+                    .addGroup(miscellaneousPanelLayout.createSequentialGroup()
+                        .addGap(6, 6, 6)
+                        .addComponent(retrieveTypeLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 270, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(cMoveRadioBtn)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(cGetRadioBtn)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(wadoRadioBtn))
+                    .addComponent(dynamicJNLPRetrieveTypeChk, javax.swing.GroupLayout.PREFERRED_SIZE, 449, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(165, Short.MAX_VALUE))
         );
         miscellaneousPanelLayout.setVerticalGroup(
             miscellaneousPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(miscellaneousPanelLayout.createSequentialGroup()
                 .addGap(21, 21, 21)
                 .addComponent(loopbackChk)
-                .addContainerGap(452, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(miscellaneousPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(retrieveTypeLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(cMoveRadioBtn)
+                    .addComponent(cGetRadioBtn)
+                    .addComponent(wadoRadioBtn))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(dynamicJNLPRetrieveTypeChk)
+                .addContainerGap(376, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab(ApplicationContext.currentBundle.getString("Preferences.miscellaneous.text"), miscellaneousPanel); // NOI18N
@@ -832,11 +876,14 @@ public class SettingsForm extends javax.swing.JFrame {
     private javax.swing.JButton addPreset;
     private javax.swing.JButton addServerBtn;
     private javax.swing.JTable buttonListTable;
+    private javax.swing.JRadioButton cGetRadioBtn;
+    private javax.swing.JRadioButton cMoveRadioBtn;
     private javax.swing.JComboBox countryCombo;
     private javax.swing.JLabel countryLabel;
     private javax.swing.JButton deleteButton;
     private javax.swing.JButton deletePreset;
     private javax.swing.JButton deleteServerBtn;
+    private javax.swing.JCheckBox dynamicJNLPRetrieveTypeChk;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
@@ -861,6 +908,8 @@ public class SettingsForm extends javax.swing.JFrame {
     private javax.swing.JPanel presetsPanel;
     private javax.swing.JPanel queryButtonsPanel;
     private javax.swing.JPanel queryParametersPanel;
+    private javax.swing.ButtonGroup retrieveTypeGroup;
+    private javax.swing.JLabel retrieveTypeLabel;
     private javax.swing.JButton saveListenerBtn;
     private javax.swing.JButton saveThemeBtn;
     private javax.swing.JLabel selectThemeLabel;
@@ -871,6 +920,7 @@ public class SettingsForm extends javax.swing.JFrame {
     private javax.swing.JPanel themesPanel;
     private javax.swing.JButton updateLanguageButton;
     private javax.swing.JButton verifyServerBtn;
+    private javax.swing.JRadioButton wadoRadioBtn;
     // End of variables declaration//GEN-END:variables
 
     public static SettingsForm getSettingsObject() {
@@ -1218,6 +1268,8 @@ public class SettingsForm extends javax.swing.JFrame {
         localeIdLabel.setText(ApplicationContext.currentBundle.getString("Preferences.language.localidLabel.text"));
         updateLanguageButton.setText(ApplicationContext.currentBundle.getString("Preferences.language.okButton.text"));
         loopbackChk.setText(ApplicationContext.currentBundle.getString("Preferences.miscellaneous.loopbackChk.text"));
+        retrieveTypeLabel.setText(ApplicationContext.currentBundle.getString("Preferences.miscellaneous.reteriveTypeLabel.text"));
+        dynamicJNLPRetrieveTypeChk.setText(ApplicationContext.currentBundle.getString("Prferences.miscellaneous.overrideRetrieveTypeChk"));
         setLocaleForTableHeader();
     }
 
@@ -1266,5 +1318,35 @@ public class SettingsForm extends javax.swing.JFrame {
             tableHeader2.validate();
             tableHeader2.repaint();
         }
+    }
+
+    private void setRetrieveTypeCombo() {
+        String retrieveType = ApplicationContext.databaseRef.getJNLPRetrieveType();
+        if (retrieveType.equals("C-GET")) {
+            cGetRadioBtn.setSelected(true);
+        } else if (retrieveType.equals("C-MOVE")) {
+            cMoveRadioBtn.setSelected(true);
+        } else {
+            wadoRadioBtn.setSelected(true);
+        }
+
+        ItemListener itemListener = new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                ApplicationContext.databaseRef.updateJNLPRetrieveType(((JRadioButton) e.getItem()).getText());
+            }
+        };
+
+        cGetRadioBtn.addItemListener(itemListener);
+        cMoveRadioBtn.addItemListener(itemListener);
+        wadoRadioBtn.addItemListener(itemListener);
+
+        dynamicJNLPRetrieveTypeChk.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                ApplicationContext.databaseRef.updateDynamicRetrieveTypeStatus(dynamicJNLPRetrieveTypeChk.isSelected());
+            }
+        });
+        dynamicJNLPRetrieveTypeChk.setSelected(ApplicationContext.databaseRef.getDynamicRetrieveTypeStatus());
     }
 }

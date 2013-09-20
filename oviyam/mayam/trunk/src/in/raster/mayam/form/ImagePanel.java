@@ -563,7 +563,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         windowChanged(windowLevel, windowWidth);
         JPanel panel = ((JPanel) ((JSplitPane) ApplicationContext.tabbedPane.getSelectedComponent()).getRightComponent());
         if (!ApplicationContext.imgView.getImageToolbar().isImageLayout) {
-            setScaleFactor(((JPanel) panel.getComponent(0)).getWidth(), ((JPanel) panel.getComponent(0)).getHeight(), layoutColumns * layoutRows);
+            setScaleFactor(ApplicationContext.tabbedPane.getWidth(), ((JPanel) panel.getComponent(0)).getHeight(), layoutColumns * layoutRows);
         } else {
             setScaleFactor(((JPanel) panel.getComponent(0)).getWidth() / layoutColumns, ((JPanel) panel.getComponent(0)).getHeight() / layoutRows, layoutColumns * layoutRows);
         }
@@ -1271,7 +1271,11 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
             }
         }
         canvas.getLayeredCanvas().textOverlay.getTextOverlayParam().setImageSize((imgHeight + "x" + imgWidth));
-        canvas.getLayeredCanvas().textOverlay.getTextOverlayParam().setViewSize(((int) parentWidth + "x" + (int) parentHeight));
+        if (ApplicationContext.tabbedPane.getWidth() == parentWidth) {
+            canvas.getLayeredCanvas().textOverlay.getTextOverlayParam().setViewSize(((int) ApplicationContext.tabbedPane.getWidth() - ((JSplitPane) panel.getParent()).getDividerLocation() + "x" + (int) parentHeight));
+        } else {
+            canvas.getLayeredCanvas().textOverlay.getTextOverlayParam().setViewSize(((int) parentWidth + "x" + (int) parentHeight));
+        }
     }
 
     public void zoom(double scalefactor) {
@@ -1676,7 +1680,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         for (int i = 0; i < outerComponent.getComponentCount(); i++) {
             LayeredCanvas layeredCanvas = (LayeredCanvas) ((JPanel) outerComponent.getComponent(i)).getComponent(0);
             ImagePanel imgPanel = layeredCanvas.imgpanel;
-            if (ApplicationContext.layeredCanvas.imgpanel != imgPanel) {
+            if (imgPanel != null && ApplicationContext.layeredCanvas.imgpanel != imgPanel) {
                 String iuid = ApplicationContext.databaseRef.getInstanceUIDBasedOnSliceLocation(studyUID, imgPanel.seriesUID, ApplicationContext.layeredCanvas.imgpanel.getSliceLocation(), ApplicationContext.layeredCanvas.imgpanel.sliceThickness);
                 if (iuid != null) {
                     int index = imgPanel.instanceUidList.indexOf(iuid);

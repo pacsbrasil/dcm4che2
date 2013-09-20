@@ -45,8 +45,6 @@ import in.raster.mayam.models.SeriesAnnotations;
 import in.raster.mayam.param.TextOverlayParam;
 import java.awt.image.ColorModel;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import org.dcm4che.image.ColorModelParam;
@@ -140,6 +138,11 @@ public class SeriesChooserDelegate extends Thread {
         JPanel container = ((JPanel) ((JSplitPane) ApplicationContext.tabbedPane.getSelectedComponent()).getRightComponent());
         LayeredCanvas tempCanvas = ((LayeredCanvas) tilePanel.getComponent(0));
         tempCanvas.createSubComponents(fileLocation, instanceNumber, true);
+        if (container.getComponentCount() == 1) {
+            tempCanvas.imgpanel.setScaleFactor(container.getWidth() / tempCanvas.imgpanel.layoutColumns, container.getHeight() / tempCanvas.imgpanel.layoutRows, tempCanvas.imgpanel.layoutColumns * tempCanvas.imgpanel.layoutRows);
+        } else {
+            tempCanvas.imgpanel.setScaleFactor(((JPanel) container.getComponent(0)).getWidth() / tempCanvas.imgpanel.layoutColumns, ((JPanel) container.getComponent(0)).getHeight() / tempCanvas.imgpanel.layoutRows, tempCanvas.imgpanel.layoutColumns * tempCanvas.imgpanel.layoutRows);
+        }
         TextOverlayParam textOverlayParam = tempCanvas.imgpanel.getTextOverlayParam();
         tempCanvas.imgpanel.getFilePathsifLink();
         double pixelSpacingX = tempCanvas.imgpanel.getPixelSpacingX();
@@ -179,7 +182,7 @@ public class SeriesChooserDelegate extends Thread {
             if (imageToDisplay < instanceUidList.size()) {
                 tempCanvas.createImageLayoutComponents();
                 tempCanvas.textOverlay.setTextOverlayParam(new TextOverlayParam(textOverlayParam.getPatientName(), textOverlayParam.getPatientID(), textOverlayParam.getSex(), textOverlayParam.getStudyDate(), textOverlayParam.getStudyDescription(), textOverlayParam.getSeriesDescription(), textOverlayParam.getBodyPartExamined(), textOverlayParam.getInstitutionName(), textOverlayParam.getWindowLevel(), textOverlayParam.getWindowWidth(), i, textOverlayParam.getTotalInstance(), textOverlayParam.isMultiframe()));
-                if (((JPanel) container.getComponent(0)).getComponentCount() <= 1) {
+                if (container.getComponentCount() <= 1) {
                     tempCanvas.imgpanel.setScaleFactor(container.getWidth() / tempCanvas.imgpanel.layoutColumns, container.getHeight() / tempCanvas.imgpanel.layoutRows, tempCanvas.imgpanel.layoutColumns * tempCanvas.imgpanel.layoutRows);
                 } else {
                     tempCanvas.imgpanel.setScaleFactor(((JPanel) container.getComponent(0)).getWidth() / tempCanvas.imgpanel.layoutColumns, ((JPanel) container.getComponent(0)).getHeight() / tempCanvas.imgpanel.layoutRows, tempCanvas.imgpanel.layoutColumns * tempCanvas.imgpanel.layoutRows);

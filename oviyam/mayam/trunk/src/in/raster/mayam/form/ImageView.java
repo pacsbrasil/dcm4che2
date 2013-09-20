@@ -55,6 +55,7 @@ import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import uk.co.caprica.vlcj.component.EmbeddedMediaPlayerComponent;
 
 /**
  *
@@ -79,18 +80,32 @@ public class ImageView extends javax.swing.JFrame {
             @Override
             public void stateChanged(ChangeEvent ce) {
                 try {
-                    for (int i = 0; i < selectedSeriesDisplays.size(); i++) {
-                        if (selectedSeriesDisplays.get(i).getTabIndex() == ApplicationContext.tabbedPane.getSelectedIndex()) {
-                            selectedStudy = i;
-                            ApplicationContext.layeredCanvas = null;
-                            ApplicationContext.layeredCanvas = selectedSeriesDisplays.get(i).getLastSelectedCanvas();
-                            ApplicationContext.selectedPanel = ((JPanel) ApplicationContext.layeredCanvas.getParent());
-                            ApplicationContext.layeredCanvas.getCanvas().setSelectionColoring();
-                            break;
+                    if (((JSplitPane) ApplicationContext.tabbedPane.getSelectedComponent()).getRightComponent() instanceof VideoPanel) {
+                        imageToolbar.disableImageTools();
+                        ApplicationContext.layeredCanvas = null;
+                        ApplicationContext.selectedPanel = null;
+                        for (int i = 0; i < selectedSeriesDisplays.size(); i++) {
+                            if (selectedSeriesDisplays.get(i).getTabIndex() == ApplicationContext.tabbedPane.getSelectedIndex()) {
+                                selectedStudy = i;
+                                break;
+                            }
+                        }
+                    } else {
+                        imageToolbar.enableImageTools();
+                        for (int i = 0; i < selectedSeriesDisplays.size(); i++) {
+                            if (selectedSeriesDisplays.get(i).getTabIndex() == ApplicationContext.tabbedPane.getSelectedIndex()) {
+                                selectedStudy = i;
+                                ApplicationContext.layeredCanvas = null;
+                                ApplicationContext.layeredCanvas = selectedSeriesDisplays.get(i).getLastSelectedCanvas();
+                                ApplicationContext.selectedPanel = ((JPanel) ApplicationContext.layeredCanvas.getParent());
+                                ApplicationContext.layeredCanvas.getCanvas().setSelectionColoring();
+                                break;
+                            }
                         }
                     }
                     imageToolbar.setWindowing();
                 } catch (NullPointerException npe) {
+                    System.out.println("Null pointer exception : " + npe.getMessage());
                     //Null pointer exception occurs when the first time the tab was opened
                 }
             }
@@ -138,28 +153,8 @@ public class ImageView extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void windowCloseHandler(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_windowCloseHandler
-        saveAnnotations();
-        selectedSeriesDisplays = null; //To clear the memory
-        ImagePanel.setDisplayScout(false);
-        imageToolbar.resetCineTimer();
-        imageToolbar = null;
-        ApplicationContext.imgView = null;
-        ApplicationContext.tabbedPane = null;
-        if (ApplicationContext.isJnlp) {
-            System.exit(0);
-        }
+        onWindowClose();
     }//GEN-LAST:event_windowCloseHandler
-
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new ImageView().setVisible(true);
-            }
-        });
-    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private in.raster.mayam.form.ImageToolbar imageToolbar;
     public javax.swing.JTabbedPane jTabbedPane1;
@@ -176,15 +171,19 @@ public class ImageView extends javax.swing.JFrame {
             for (int i = 0; i < ApplicationContext.tabbedPane.getTabCount(); i++) {
                 JPanel panel = ((JPanel) ((JSplitPane) ApplicationContext.tabbedPane.getComponentAt(i)).getRightComponent());
                 for (int j = 0; j < panel.getComponentCount(); j++) {
-                    JPanel seriesLevelPanel = (JPanel) panel.getComponent(j);
-                    for (int k = 0; k < seriesLevelPanel.getComponentCount(); k++) {
-                        if (seriesLevelPanel.getComponent(k) instanceof LayeredCanvas) {
-                            LayeredCanvas tempCanvas = (LayeredCanvas) seriesLevelPanel.getComponent(k);
-                            if (tempCanvas.textOverlay != null) {
-                                tempCanvas.textOverlay.repaint();
-                                tempCanvas.imgpanel.displayZoomLevel();
+                    if (!(panel instanceof VideoPanel)) {
+                        JPanel seriesLevelPanel = (JPanel) panel.getComponent(j);
+                        for (int k = 0; k < seriesLevelPanel.getComponentCount(); k++) {
+                            if (seriesLevelPanel.getComponent(k) instanceof LayeredCanvas) {
+                                LayeredCanvas tempCanvas = (LayeredCanvas) seriesLevelPanel.getComponent(k);
+                                if (tempCanvas.textOverlay != null) {
+                                    tempCanvas.textOverlay.repaint();
+                                    tempCanvas.imgpanel.displayZoomLevel();
+                                }
                             }
                         }
+                    } else {
+                        ((VideoPanel) panel).updateLocale();
                     }
                 }
             }
@@ -196,19 +195,29 @@ public class ImageView extends javax.swing.JFrame {
     private void saveAnnotations() {
         for (int i = 0; i < ApplicationContext.tabbedPane.getTabCount(); i++) {
             JPanel panel = ((JPanel) ((JSplitPane) ApplicationContext.tabbedPane.getComponentAt(i)).getRightComponent());
-            for (int j = 0; j < panel.getComponentCount(); j++) {
-                JPanel seriesLevelPanel = (JPanel) panel.getComponent(j);
-                for (int k = 0; k < seriesLevelPanel.getComponentCount(); k++) {
-                    if (seriesLevelPanel.getComponent(k) instanceof LayeredCanvas) {
-                        LayeredCanvas tempCanvas = (LayeredCanvas) seriesLevelPanel.getComponent(k);
-                        try {
-                            tempCanvas.imgpanel.storeAnnotation();
-                            tempCanvas.imgpanel.storeMultiframeAnnotation();
-                        } catch (NullPointerException ex) {
-                            //Null pointer exception occurs when there is no image panel
+            if (!(panel instanceof VideoPanel)) {
+                for (int j = 0; j < panel.getComponentCount(); j++) {
+                    JPanel seriesLevelPanel = (JPanel) panel.getComponent(j);
+                    for (int k = 0; k < seriesLevelPanel.getComponentCount(); k++) {
+                        if (seriesLevelPanel.getComponent(k) instanceof LayeredCanvas) {
+                            LayeredCanvas tempCanvas = (LayeredCanvas) seriesLevelPanel.getComponent(k);
+                            try {
+                                tempCanvas.imgpanel.storeAnnotation();
+                                tempCanvas.imgpanel.storeMultiframeAnnotation();
+                            } catch (NullPointerException ex) {
+                                //Null pointer exception occurs when there is no image panel
+                            }
                         }
                     }
                 }
+            } else {
+                ((VideoPanel) panel).stopTimer();
+                EmbeddedMediaPlayerComponent mediaPlayerComp = (EmbeddedMediaPlayerComponent) ((JPanel) panel.getComponent(0)).getComponent(0);
+                mediaPlayerComp.getMediaPlayer().stop();
+                mediaPlayerComp.getMediaPlayer().release();
+                mediaPlayerComp.getMediaPlayerFactory().release();
+                mediaPlayerComp.release();
+                panel.removeAll();
             }
         }
         for (int i = 0; i < selectedSeriesDisplays.size(); i++) {
@@ -217,24 +226,41 @@ public class ImageView extends javax.swing.JFrame {
     }
 
     public void writeToFile(SeriesDisplayModel annotationInfo) {
-        FileOutputStream fos = null;
-        ObjectOutputStream oos = null;
-        try {
-            File storeFile = new File(annotationInfo.getStudyDir(), "info.ser");
-            fos = new FileOutputStream(storeFile);
-            oos = new ObjectOutputStream(fos);
-            oos.writeObject(annotationInfo.getStudyAnnotation());
-        } catch (FileNotFoundException ex) {
-            //ignore
-        } catch (IOException ex) {
-            Logger.getLogger(ImageView.class.getName()).log(Level.SEVERE, null, ex);
-        } finally {
+        if (annotationInfo.getStudyDir() != null) {
+            FileOutputStream fos = null;
+            ObjectOutputStream oos = null;
             try {
-                if (fos != null) {
-                    fos.close();
-                }
+                File storeFile = new File(annotationInfo.getStudyDir(), "info.ser");
+                fos = new FileOutputStream(storeFile);
+                oos = new ObjectOutputStream(fos);
+                oos.writeObject(annotationInfo.getStudyAnnotation());
+            } catch (FileNotFoundException ex) {
+                //ignore
             } catch (IOException ex) {
                 Logger.getLogger(ImageView.class.getName()).log(Level.SEVERE, null, ex);
+            } finally {
+                try {
+                    if (fos != null) {
+                        fos.close();
+                    }
+                } catch (IOException ex) {
+                    Logger.getLogger(ImageView.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
+    }
+
+    public void onWindowClose() {
+        if (ApplicationContext.tabbedPane != null) {
+            saveAnnotations();
+            selectedSeriesDisplays = null; //To clear the memory
+            ImagePanel.setDisplayScout(false);
+            imageToolbar.resetCineTimer();
+            imageToolbar = null;
+            ApplicationContext.imgView = null;
+            ApplicationContext.tabbedPane = null;
+            if (ApplicationContext.isJnlp) {
+                System.exit(0);
             }
         }
     }

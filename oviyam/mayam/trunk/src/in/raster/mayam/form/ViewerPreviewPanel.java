@@ -43,7 +43,7 @@ import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.delegates.ImageGenerator;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Font;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -51,6 +51,7 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.ArrayList;
 import javax.swing.*;
+import uk.co.caprica.vlcj.component.EmbeddedMediaPlayerComponent;
 
 /**
  *
@@ -69,14 +70,14 @@ public class ViewerPreviewPanel extends javax.swing.JPanel {
     ArrayList<JLabel> labelList = new ArrayList<JLabel>();
     int labelPanelHeight;
     MouseAdapter mouseClickAdapter1 = null;
-    boolean isMultiframe = false;
+    boolean isMultiframe = false, isVideo = false;
     String sopUid;
     ArrayList<Integer> selectedInstances = new ArrayList<Integer>(0);
 
     /**
      * Creates new form ViewerPreviewPanel
      */
-    public ViewerPreviewPanel(String studyInstanceUid, String seriesInstanceUid, String seriesDescription, int totalImages, Thumbnail[] thumbnails, boolean isMultiframe, String instanceUid) {
+    public ViewerPreviewPanel(String studyInstanceUid, String seriesInstanceUid, String seriesDescription, int totalImages, Thumbnail[] thumbnails, boolean isMultiframe, String instanceUid, boolean isVideo) {
         initComponents();
         this.studyInstanceUid = studyInstanceUid;
         this.seriesInstanceUid = seriesInstanceUid;
@@ -86,10 +87,11 @@ public class ViewerPreviewPanel extends javax.swing.JPanel {
             totalImages = 1;
         }
         this.thumbnails = thumbnails;
-        this.SeriesLabel.setText(seriesDescription + ", " + totalImages);
+        this.SeriesLabel.setText(seriesDescription);
         this.selectedButton = three;
         this.isMultiframe = isMultiframe;
         this.sopUid = instanceUid;
+        this.isVideo = isVideo;
         setLayout(null);
         createComponents();
         addMouseAdapter();
@@ -372,46 +374,102 @@ public class ViewerPreviewPanel extends javax.swing.JPanel {
                 ApplicationContext.imgView.getImageToolbar().deselectLoopChk();
                 ApplicationContext.imgView.getImageToolbar().resetCineTimer();
                 String iuid = ((JLabel) me.getSource()).getName();
-                if (ApplicationContext.selectedPanel.getComponentCount() == 1) {
-                    if (sopUid == null) {
-                        if (ApplicationContext.layeredCanvas.imgpanel.getSeriesUID().equals(seriesInstanceUid) && !ApplicationContext.layeredCanvas.imgpanel.isMultiFrame()) {
-                            for (int i = 0; i < thumbnails.length; i++) {
-                                if (thumbnails[i].getName().equals(iuid)) {
-                                    ApplicationContext.layeredCanvas.imgpanel.selectImage(i);
-                                    break;
+                if (!isVideo) {
+                    ApplicationContext.imgView.getImageToolbar().enableImageTools();
+                    if (ApplicationContext.selectedPanel != null) {
+                        if (ApplicationContext.selectedPanel.getComponentCount() == 1) {
+                            if (sopUid == null) {
+                                if (ApplicationContext.layeredCanvas.imgpanel.getSeriesUID().equals(seriesInstanceUid) && !ApplicationContext.layeredCanvas.imgpanel.isMultiFrame()) {
+                                    for (int i = 0; i < thumbnails.length; i++) {
+                                        if (thumbnails[i].getName().equals(iuid)) {
+                                            ApplicationContext.layeredCanvas.imgpanel.selectImage(i);
+                                            break;
+                                        }
+                                    }
+                                } else {
+                                    for (int i = 0; i < thumbnails.length; i++) {
+                                        if (thumbnails[i].getName().equals(iuid)) {
+                                            ApplicationContext.layeredCanvas.imgpanel.changeSeries(studyInstanceUid, seriesInstanceUid, iuid, i);
+                                            break;
+                                        }
+                                    }
                                 }
+                            } else {
+                                ApplicationContext.layeredCanvas.imgpanel.changeSeries(studyInstanceUid, seriesInstanceUid, iuid, 0);
                             }
                         } else {
+                            int clickedImg = 0;
                             for (int i = 0; i < thumbnails.length; i++) {
                                 if (thumbnails[i].getName().equals(iuid)) {
-                                    ApplicationContext.layeredCanvas.imgpanel.changeSeries(studyInstanceUid, seriesInstanceUid, iuid, i);
+                                    clickedImg = i + 1;
+                                    int x = clickedImg % ApplicationContext.selectedPanel.getComponentCount();
+                                    if (seriesInstanceUid.equals(ApplicationContext.layeredCanvas.imgpanel.getSeriesUID())) {
+                                        if (x > 0) {
+                                            setImageUpdatorArgs(clickedImg - x);
+                                            ApplicationContext.layeredCanvas.imgpanel.displayImages(ApplicationContext.selectedPanel, clickedImg - x, true);
+                                        } else {
+                                            setImageUpdatorArgs(clickedImg - ApplicationContext.selectedPanel.getComponentCount());
+                                            ApplicationContext.layeredCanvas.imgpanel.displayImages(ApplicationContext.selectedPanel, clickedImg - ApplicationContext.selectedPanel.getComponentCount(), true);
+                                        }
+                                    } else {
+                                        ApplicationContext.layeredCanvas.imgpanel.changeSeries(studyInstanceUid, seriesInstanceUid, iuid, i, ApplicationContext.selectedPanel);
+                                    }
                                     break;
                                 }
                             }
                         }
                     } else {
-                        ApplicationContext.layeredCanvas.imgpanel.changeSeries(studyInstanceUid, seriesInstanceUid, iuid, 0);
+                        JSplitPane splitPane = ((JSplitPane) ApplicationContext.tabbedPane.getSelectedComponent());
+                        JPanel parent = (JPanel) splitPane.getRightComponent();
+                        parent.removeAll();
+                        GridLayout g = new GridLayout(1, 1);
+                        parent = new JPanel(g);
+                        JPanel container = new JPanel(g);
+                        container.setBackground(Color.BLACK);
+                        File dicomFile = new File(ApplicationContext.databaseRef.getFileLocation(studyInstanceUid, seriesInstanceUid, iuid));
+                        for (int i = 0; i < thumbnails.length; i++) {
+                            if (thumbnails[i].getName().equals(iuid)) {
+                                LayeredCanvas canvas = new LayeredCanvas(dicomFile, i, false);
+                                container.add(canvas, 0);
+                                parent.add(container);
+                                parent.setName(studyInstanceUid);
+                                canvas.imgpanel.getTextOverlayParam().setCurrentInstance(i);
+                                container.setName(canvas.imgpanel.getTextOverlayParam().getPatientName());
+                                break;
+                            }
+                        }
+                        ((JSplitPane) ApplicationContext.tabbedPane.getSelectedComponent()).setRightComponent(parent);
+                        ApplicationContext.layeredCanvas = ((LayeredCanvas) ((JPanel) ((JPanel) ((JSplitPane) splitPane).getRightComponent()).getComponent(0)).getComponent(0));
+                        ApplicationContext.selectedPanel = ((JPanel) ((JPanel) ((JSplitPane) splitPane).getRightComponent()).getComponent(0));
+                        ApplicationContext.imgView.getImageToolbar().setWindowing();
+                        ApplicationContext.layeredCanvas.imgpanel.setScaleFactor(ApplicationContext.imgView.jTabbedPane1.getWidth() - (((JSplitPane) ApplicationContext.tabbedPane.getSelectedComponent()).getDividerLocation()), ApplicationContext.imgView.jTabbedPane1.getHeight(), 1);
+                        ApplicationContext.layeredCanvas.annotationPanel.doZoomIn();
+                        ApplicationContext.layeredCanvas.imgpanel.repaint();
+                        ApplicationContext.layeredCanvas.imgpanel.setCurrentSeriesAnnotation();
+                        ApplicationContext.layeredCanvas.canvas.setSelectionColoring();
+                        ApplicationContext.layeredCanvas.imgpanel.invalidate();
+                        ApplicationContext.setSeriesContext();
                     }
                 } else {
-                    int clickedImg = 0;
-                    for (int i = 0; i < thumbnails.length; i++) {
-                        if (thumbnails[i].getName().equals(iuid)) {
-                            clickedImg = i + 1;
-                            int x = clickedImg % ApplicationContext.selectedPanel.getComponentCount();
-                            if (seriesInstanceUid.equals(ApplicationContext.layeredCanvas.imgpanel.getSeriesUID())) {
-                                if (x > 0) {
-                                    setImageUpdatorArgs(clickedImg - x);
-                                    ApplicationContext.layeredCanvas.imgpanel.displayImages(ApplicationContext.selectedPanel, clickedImg - x, true);
-                                } else {
-                                    setImageUpdatorArgs(clickedImg - ApplicationContext.selectedPanel.getComponentCount());
-                                    ApplicationContext.layeredCanvas.imgpanel.displayImages(ApplicationContext.selectedPanel, clickedImg - ApplicationContext.selectedPanel.getComponentCount(), true);
-                                }
-                            } else {
-                                ApplicationContext.layeredCanvas.imgpanel.changeSeries(studyInstanceUid, seriesInstanceUid, iuid, i, ApplicationContext.selectedPanel);
-                            }
-                            break;
-                        }
+                    ApplicationContext.selectedPanel = null;
+                    ApplicationContext.layeredCanvas = null;
+                    JPanel panel = (JPanel) ((JSplitPane) ApplicationContext.tabbedPane.getSelectedComponent()).getRightComponent();
+                    if (panel instanceof VideoPanel) {
+                        ((VideoPanel) panel).stopTimer();
                     }
+                    panel.removeAll();
+                    panel = null;
+                    VideoPanel videoPanel = new VideoPanel();
+                    ((JSplitPane) ApplicationContext.tabbedPane.getSelectedComponent()).setRightComponent(videoPanel);
+                    videoPanel.setName(studyInstanceUid);
+                    videoPanel.setBorder(BorderFactory.createLineBorder(new Color(255, 138, 0)));
+                    videoPanel.setUniqueIdentifier(iuid);
+                    EmbeddedMediaPlayerComponent mediaPlayerComponent = new EmbeddedMediaPlayerComponent();
+                    videoPanel.setMediaPlayer(mediaPlayerComponent);
+                    ApplicationContext.imgView.getImageToolbar().disableImageTools();
+                    mediaPlayerComponent.getMediaPlayer().playMedia(ApplicationContext.databaseRef.getFileLocation(studyInstanceUid, seriesInstanceUid, iuid));
+                    videoPanel.startTimer();
+                    ApplicationContext.setVideoThumbnailIdentification();
                 }
             }
         };

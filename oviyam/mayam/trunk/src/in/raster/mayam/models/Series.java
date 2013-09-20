@@ -39,7 +39,6 @@
  * ***** END LICENSE BLOCK ***** */
 package in.raster.mayam.models;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import org.dcm4che.data.Dataset;
@@ -66,6 +65,7 @@ public class Series {
     String seriesTime;
     private boolean multiframe;
     private String instanceUID;
+    private boolean isVideo;
 
     public Series() {
         SeriesInstanceUID = "";
@@ -77,6 +77,7 @@ public class Series {
         instanceUID = "";
         seriesDate = "";
         seriesTime = "";
+        isVideo = false;
         imageList = new ArrayList<Instance>();
     }
 
@@ -91,6 +92,20 @@ public class Series {
         seriesTime = dataset.getString(Tags.SeriesTime) != null ? dataset.getString(Tags.SeriesTime) : "";
         this.institutionName = dataset.getString(Tags.InstitutionName) != null ? dataset.getString(Tags.InstitutionName) : "";
         this.seriesRelatedInstance = dataset.getInteger(Tags.NumberOfSeriesRelatedInstances);
+    }
+
+    public Series(String studyUid, String seriesUid, String seriesNo, String seriesDesc, String bodyPart, String seriesDate, String seriesTime, boolean multiframe, String instanceUid, int noOfInstances) {
+        this.StudyInstanceUID = studyUid;
+        this.SeriesInstanceUID = seriesUid;
+        this.SeriesNumber = seriesNo;
+        this.seriesDesc = seriesDesc;
+        this.bodyPartExamined = bodyPart;
+        this.seriesDate = seriesDate;
+        this.seriesTime = seriesTime;
+        this.multiframe = multiframe;
+        this.instanceUID = instanceUid;
+        this.seriesRelatedInstance = noOfInstances;
+        imageList = new ArrayList<Instance>();
     }
 
     /**
@@ -217,5 +232,13 @@ public class Series {
 
     public void setSeriesTime(String seriesTime) {
         this.seriesTime = seriesTime;
+    }
+
+    public boolean isVideo() {
+        return isVideo;
+    }
+
+    public void setVideoStatus(boolean isVideo) {
+        this.isVideo = isVideo;
     }
 }

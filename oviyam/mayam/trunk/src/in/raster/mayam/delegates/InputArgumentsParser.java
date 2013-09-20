@@ -39,10 +39,10 @@
  * ***** END LICENSE BLOCK ***** */
 package in.raster.mayam.delegates;
 
-import in.raster.mayam.facade.ApplicationFacade;
+import in.raster.mayam.context.ApplicationContext;
+import static in.raster.mayam.delegates.InputArgumentsParser.inputArgumentValues;
+import static in.raster.mayam.delegates.InputArgumentsParser.opts;
 import in.raster.mayam.models.InputArgumentValues;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import org.apache.commons.cli.*;
 
 /**
@@ -56,58 +56,59 @@ public class InputArgumentsParser {
     public static InputArgumentValues inputArgumentValues = null;
     private static final String USAGE = "java -jar Mayam.jar [Options] ";//<aet>[@<host>[:<port>]]
     private static final String EXAMPLE =
-            "\nExample: java -jar Mayam.jar -AET <aetitle> -HostName <hostname> -Port <port> -StudyUID <studyuid> -WADOURL <wadourl> -WADOPort <wadoport> -WADOProtocol <wadoprotocol>  \n"
-            + "=> Query Application Entity listening on local port for "
-            + "the specified study uid retrieve instances of matching study to "
-            + "Application Entity of Mayam";
+            "\nExample: java -jar Mayam.jar -AET <aetitle> -HostName <hostname> -Port <port> [Options] \n"
+            + "=> Query the specified Application Entity with the given filters "
+            + "and retrieves the matching studies to Application Entity of Mayam."
+            + "One of the fields Patient ID or Study Uid or Accession number is mandatory.";
+    static Options opts = new Options();
 
     public static void parse(String[] args) {
         if (args.length > 0) {
             inputArgumentValues = new InputArgumentValues();
-            Options opts = new Options();
+
             OptionBuilder.withArgName("StudyUID");
             OptionBuilder.hasArg();
-            OptionBuilder.withDescription("Set the study instance uid for query/retrieve the studies from server,Mandatory Field");
+            OptionBuilder.withDescription("Set the study instance uid for query/retrieve");
             opts.addOption(OptionBuilder.create("StudyUID"));
 
             OptionBuilder.withArgName("PatientID");
             OptionBuilder.hasArg();
-            OptionBuilder.withDescription("Set the patient id matching key for query/retrieve the studies of patient from server");
+            OptionBuilder.withDescription("Set the patient id query/retrieve from server");
             opts.addOption(OptionBuilder.create("PatientID"));
 
             OptionBuilder.withArgName("Modality");
             OptionBuilder.hasArg();
-            OptionBuilder.withDescription("Set the modality matching key for query/retrieve the studies from server.");
+            OptionBuilder.withDescription("Set the modality matching key for query/retrieve from server");
             opts.addOption(OptionBuilder.create("Modality"));
 
             OptionBuilder.withArgName("AccessionNumber");
             OptionBuilder.hasArg();
-            OptionBuilder.withDescription("Set the accession number matching key for query/retrieve the studies from server");
+            OptionBuilder.withDescription("Set the accession number matching key for query/retrieve");
             opts.addOption(OptionBuilder.create("Accession"));
 
             OptionBuilder.withArgName("PatientName");
             OptionBuilder.hasArg();
-            OptionBuilder.withDescription("Set the patient name matching key for query/retrieve the studies from server");
+            OptionBuilder.withDescription("Set the patient name matching key for query/retrieve");
             opts.addOption(OptionBuilder.create("PatientName"));
 
             OptionBuilder.withArgName("StudyDate");
             OptionBuilder.hasArg();
-            OptionBuilder.withDescription("Set the study date matching key for query/retrieve the studies from server");
+            OptionBuilder.withDescription("Set the study date matching key for query/retrieve. Date Format : yyyy-MM-dd/today/lastweek/lastmonth/between");
             opts.addOption(OptionBuilder.create("StudyDate"));
 
             OptionBuilder.withArgName("AETitle");
             OptionBuilder.hasArg();
-            OptionBuilder.withDescription("Specifies the AE title of remote DICOM server for query/retrieve");
+            OptionBuilder.withDescription("Specifies the AE title of DICOM server for query/retrieve");
             opts.addOption(OptionBuilder.create("AET"));
 
             OptionBuilder.withArgName("Port");
             OptionBuilder.hasArg();
-            OptionBuilder.withDescription("Specifies the port of remote DICOM server for query/retrieve");
+            OptionBuilder.withDescription("Specifies the port of DICOM server");
             opts.addOption(OptionBuilder.create("Port"));
 
             OptionBuilder.withArgName("HostName");
             OptionBuilder.hasArg();
-            OptionBuilder.withDescription("Specifies the hostname of remote DICOM server for query/retrieve");
+            OptionBuilder.withDescription("Specifies the hostname of DICOM server");
             opts.addOption(OptionBuilder.create("HostName"));
 
             OptionBuilder.withArgName("WADOURL");
@@ -129,16 +130,21 @@ public class InputArgumentsParser {
 
             OptionBuilder.withArgName("From");
             OptionBuilder.hasArg();
-            OptionBuilder.withDescription("Specifies the starting date of the studies to be queried and loaded at startup");
+            OptionBuilder.withDescription("Specifies the starting date of the studies.Date Format : yyyy-MM-dd");
             opts.addOption(OptionBuilder.create("From"));
 
 
             OptionBuilder.withArgName("To");
             OptionBuilder.hasArg();
-            OptionBuilder.withDescription("Specifies the ending date of the studies to be queries and loaded at startup");
+            OptionBuilder.withDescription("Specifies the ending date of the studies.Date Format : yyyy-MM-dd");
             opts.addOption(OptionBuilder.create("To"));
 
-            opts.addOption("h", "help", false, "Print this message");
+            OptionBuilder.withArgName("RetrieveType");
+            OptionBuilder.hasArg();
+            OptionBuilder.withDescription("Specifies the retrieve method C-Move/C-GET/WADO");
+            opts.addOption(OptionBuilder.create("RetrieveType"));
+
+            opts.addOption("h", "help", false, "Prints help");
 
             CommandLine cl = null;
             try {
@@ -150,6 +156,7 @@ public class InputArgumentsParser {
             if (cl.hasOption('h')) {
                 HelpFormatter formatter = new HelpFormatter();
                 formatter.printHelp(USAGE, "\nOptions:", opts, EXAMPLE);
+//                System.exit(0);
             }
             getInputArgumentValues(cl);
         }
@@ -167,21 +174,21 @@ public class InputArgumentsParser {
 
     public static void getInputArgumentValues(CommandLine cl) {
         if (cl.hasOption("StudyUID") || cl.hasOption("PatientID") || cl.hasOption("Accession")) {
-//            DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
-            if (cl.hasOption("WADOURL")) {
-                inputArgumentValues.setWadoContext(cl.getOptionValue("WADOURL"));
+            checkDicomServerInfo(cl);
+            if (ApplicationContext.databaseRef.getDynamicRetrieveTypeStatus()) {
+                if (cl.hasOption("RetrieveType")) {
+                    inputArgumentValues.setRetrieveType(cl.getOptionValue("RetrieveType"));
+                } else {
+                    inputArgumentValues.setRetrieveType(ApplicationContext.databaseRef.getJNLPRetrieveType());
+                }
+            } else {
+                inputArgumentValues.setRetrieveType(ApplicationContext.databaseRef.getJNLPRetrieveType());
             }
-            if (cl.hasOption("WADOPort")) {
-                inputArgumentValues.setWadoPort(Integer.parseInt(cl.getOptionValue("WADOPort")));
-            }
-            if (cl.hasOption("AET")) {
-                inputArgumentValues.setAeTitle(cl.getOptionValue("AET"));
+            if (inputArgumentValues.getRetrieveType().equals("WADO")) {
+                checkWadoInfo(cl);
             }
             if (cl.hasOption("Accession")) {
                 inputArgumentValues.setAccessionNumber(cl.getOptionValue("Accession"));
-            }
-            if (cl.hasOption("HostName")) {
-                inputArgumentValues.setHostName(cl.getOptionValue("HostName"));
             }
             if (cl.hasOption("Modality")) {
                 inputArgumentValues.setModality(cl.getOptionValue("Modality"));
@@ -192,9 +199,6 @@ public class InputArgumentsParser {
             if (cl.hasOption("PatientName")) {
                 inputArgumentValues.setPatientName(cl.getOptionValue("PatientName"));
             }
-            if (cl.hasOption("Port")) {
-                inputArgumentValues.setPort(Integer.parseInt(cl.getOptionValue("Port")));
-            }
             if (cl.hasOption("StudyDate")) {
                 inputArgumentValues.setStudyDate(cl.getOptionValue("StudyDate"));
             } else {
@@ -203,17 +207,49 @@ public class InputArgumentsParser {
             if (cl.hasOption("StudyUID")) {
                 inputArgumentValues.setStudyUID(cl.getOptionValue("StudyUID"));
             }
-            if (cl.hasOption("WADOProtocol")) {
-                inputArgumentValues.setWadoProtocol(cl.getOptionValue("WADOProtocol"));
-            }
             if (cl.hasOption("From")) {
                 inputArgumentValues.setFrom(cl.getOptionValue("From"));
             }
             if (cl.hasOption("To")) {
                 inputArgumentValues.setTo(cl.getOptionValue("To"));
             }
+        } else if (!cl.hasOption("h")) {
+            System.out.println("");
+            System.err.println("ERROR : One of Patient ID or Study Uid or Accession Number Should be specified.");
+            System.out.println("");
+            HelpFormatter formatter = new HelpFormatter();
+            formatter.printHelp(USAGE, "\nOptions:", opts, EXAMPLE);
+//            System.exit(0);
+        }
+    }
+
+    private static void checkDicomServerInfo(CommandLine cl) {
+        if (cl.hasOption("AET") && cl.hasOption("HostName") && cl.hasOption("Port")) {
+            inputArgumentValues.setAeTitle(cl.getOptionValue("AET"));
+            inputArgumentValues.setHostName(cl.getOptionValue("HostName"));
+            inputArgumentValues.setPort(Integer.parseInt(cl.getOptionValue("Port")));
         } else {
-            ApplicationFacade.exitApp("Mandatory Fields not given");
+            System.out.println("");
+            System.err.println("ERROR : Mandatory Fields AET, Host Name, Port ");
+            System.out.println("");
+            HelpFormatter formatter = new HelpFormatter();
+            formatter.printHelp(USAGE, "\nOptions:", opts, EXAMPLE);
+//            System.exit(0);
+        }
+    }
+
+    private static void checkWadoInfo(CommandLine cl) {
+        if (cl.hasOption("WADOURL") && cl.hasOption("WADOPort") && cl.hasOption("WADOProtocol")) {
+            inputArgumentValues.setWadoContext(cl.getOptionValue("WADOURL"));
+            inputArgumentValues.setWadoPort(Integer.parseInt(cl.getOptionValue("WADOPort")));
+            inputArgumentValues.setWadoProtocol(cl.getOptionValue("WADOProtocol"));
+        } else {
+            System.out.println("");
+            System.err.println("ERROR : Insufficient WADO information.");
+            System.out.println("");
+            HelpFormatter formatter = new HelpFormatter();
+            formatter.printHelp(USAGE, "\nOptions:", opts, EXAMPLE);
+//            System.exit(0);
         }
     }
 }

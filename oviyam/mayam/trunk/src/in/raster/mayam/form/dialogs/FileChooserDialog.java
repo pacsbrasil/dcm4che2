@@ -64,6 +64,7 @@ public class FileChooserDialog extends javax.swing.JDialog {
     public FileChooserDialog(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        setCurrentDirectory();
     }
 
     /**
@@ -175,4 +176,13 @@ public class FileChooserDialog extends javax.swing.JDialog {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JFileChooser fileChooser;
     // End of variables declaration//GEN-END:variables
+
+    private void setCurrentDirectory() {
+        String os = System.getProperty("os.name").toLowerCase();
+        if (os.startsWith("mac")) {
+            fileChooser.setCurrentDirectory(new File("/Volumes"));
+        } else {
+            fileChooser.setCurrentDirectory(new File("/media"));
+        }
+    }
 }

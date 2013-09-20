@@ -49,11 +49,13 @@ public class InstanceDisplayModel {
     String serUid;
     String iuid;
     int instanceNo;
+    boolean isVideo;
 
-    public InstanceDisplayModel(String serUid, String iuid, int instanceNo) {
+    public InstanceDisplayModel(String serUid, String iuid, int instanceNo, boolean isVideo) {
         this.serUid = serUid;
         this.iuid = iuid;
         this.instanceNo = instanceNo;
+        this.isVideo = isVideo;
     }
 
     public InstanceDisplayModel() {
@@ -81,5 +83,13 @@ public class InstanceDisplayModel {
 
     public void setSerUid(String serUid) {
         this.serUid = serUid;
+    }
+
+    public boolean isIsVideo() {
+        return isVideo;
+    }
+
+    public void setIsVideo(boolean isVideo) {
+        this.isVideo = isVideo;
     }
 }

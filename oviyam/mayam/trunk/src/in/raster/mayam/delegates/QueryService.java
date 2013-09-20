@@ -89,7 +89,6 @@ public class QueryService {
                 }
 
                 if (searchStudyDate != null && searchStudyDate.length() > 0) {
-                    System.out.println("QS: " + searchStudyDate);
                     cfgDimseService.put("key.StudyDate", searchStudyDate);
                 }
 
@@ -109,13 +108,13 @@ public class QueryService {
                 if (searchTime != null && searchTime.length() > 0) {
                     cfgDimseService.put("key.StudyTime", searchTime);
                 }
-                
-                if(studyDescription!=null && studyDescription.length()>0) {
-                    cfgDimseService.put("key.StudyDescription", studyDescription+"*");
+
+                if (studyDescription != null && studyDescription.length() > 0) {
+                    cfgDimseService.put("key.StudyDescription", studyDescription + "*");
                 }
-                
-                if(referringPhysicianName!=null && referringPhysicianName.length()>0) {
-                    cfgDimseService.put("key.ReferringPhysicianName", referringPhysicianName+"*");
+
+                if (referringPhysicianName != null && referringPhysicianName.length() > 0) {
+                    cfgDimseService.put("key.ReferringPhysicianName", referringPhysicianName + "*");
                 }
 
                 if (studyUID != null) {

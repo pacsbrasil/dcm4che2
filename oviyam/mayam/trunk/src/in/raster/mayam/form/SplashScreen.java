@@ -39,6 +39,8 @@
  * ***** END LICENSE BLOCK ***** */
 package in.raster.mayam.form;
 
+import java.awt.Toolkit;
+
 /**
  *
  * @author BabuHussain
@@ -61,7 +63,9 @@ public class SplashScreen extends javax.swing.JFrame {
 
         splashLabel = new javax.swing.JLabel();
 
+        setTitle("MAYAM");
         setAlwaysOnTop(true);
+        setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/in/raster/mayam/form/images/fav_mayam.png")));
         setUndecorated(true);
 
         splashLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/mayam.png"))); // NOI18N

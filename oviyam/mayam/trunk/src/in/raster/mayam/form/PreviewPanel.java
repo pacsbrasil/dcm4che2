@@ -41,7 +41,6 @@ package in.raster.mayam.form;
 
 import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.models.InstanceDisplayModel;
-import java.awt.Font;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -74,7 +73,11 @@ public class PreviewPanel extends javax.swing.JPanel {
         this.studyInstanceUid = studyInstanceUid;
         this.seriesInstanceUid = seriesInstanceUid;
         initComponents();
-        seriesLabel.setText(seriesDescription + ", " + totalImages);
+        if (!seriesDescription.equals("Multiframe") && !seriesDescription.equals("Video")) {
+            seriesLabel.setText(seriesDescription + ", Images:" + totalImages);
+        } else {
+            seriesLabel.setText(seriesDescription + ", Frames:" + totalImages);
+        }
         threeThumbnails = new Thumbnail[3];
         todayInfo = Calendar.getInstance();
         this.isLocal = false;
@@ -88,7 +91,11 @@ public class PreviewPanel extends javax.swing.JPanel {
         this.studyInstanceUid = studyInstanceUid;
         this.seriesInstanceUid = seriesInstanceUid;
         initComponents();
-        seriesLabel.setText(seriesDescription + ", " + totalImages);
+        if (!seriesDescription.contains("Multiframe") && !seriesDescription.contains("Video")) {
+            seriesLabel.setText(seriesDescription + ", Images:" + totalImages);
+        } else {
+            seriesLabel.setText(seriesDescription);
+        }
         this.threeThumbnails = threeThumbnails;
         this.isLocal = true;
         setLayout(null);
@@ -148,7 +155,7 @@ public class PreviewPanel extends javax.swing.JPanel {
     private javax.swing.JLabel seriesLabel;
     // End of variables declaration//GEN-END:variables
 
-    private void createComponents() {
+   private void createComponents() {
         seriesLabel.setBounds(0, 0, 220, 20);
         loadThreeThumbnails();
         totalHeight = 23 + 76;
@@ -169,14 +176,22 @@ public class PreviewPanel extends javax.swing.JPanel {
             int i = 0;
             try {
                 for (i = 0; i < threeInstanceDetails.length; i++) {
-                    file = new File(dest + threeInstanceDetails[i].getIuid());
-                    threeThumbnails[i] = new Thumbnail(threeInstanceDetails[i].getIuid(), ImageIO.read(file));
+                    if (!threeInstanceDetails[i].isIsVideo()) {
+                        file = new File(dest + threeInstanceDetails[i].getIuid());
+                        threeThumbnails[i] = new Thumbnail(threeInstanceDetails[i].getIuid());
+                        threeThumbnails[i].setImage(ImageIO.read(file));
+                    } else {
+                        threeThumbnails[i] = new Thumbnail(threeInstanceDetails[i].getIuid());
+                        threeThumbnails[i].setVideoImage();
+                    }
+
                     threeThumbnails[i].setBounds(xPos, yPos, 76, 76);
                     xPos += 76;
                     imagePanel.add(threeThumbnails[i]);
                 }
             } catch (IOException ex) {
-                threeThumbnails[i] = new Thumbnail(threeInstanceDetails[i].getIuid(), null);
+                threeThumbnails[i] = new Thumbnail(threeInstanceDetails[i].getIuid());
+                threeThumbnails[i].setDefaultImage();
             }
         }
         imagePanel.setBounds(0, 25, 220, hei);
@@ -209,11 +224,15 @@ public class PreviewPanel extends javax.swing.JPanel {
                 if (me.getClickCount() == 2 && ApplicationContext.isLocal) {
                     String sopUid = ((JLabel) me.getSource()).getName();
                     String filePath = ApplicationContext.databaseRef.getFileLocation(studyInstanceUid, seriesInstanceUid, sopUid);
-                    boolean alreadyOpenedStudy = ApplicationContext.openImageView(filePath, studyInstanceUid, ApplicationContext.mainScreenObj.getCurrentImagePreviewPanel().getLabelInfo(), instanceIdentificationNo - 5);
-                    if (!alreadyOpenedStudy) {
-                        ApplicationContext.layeredCanvas.imgpanel.setCurrentInstanceNo(instanceIdentificationNo);
-                        ApplicationContext.setImageIdentification();
-                        ApplicationContext.layeredCanvas.textOverlay.getTextOverlayParam().setCurrentInstance(instanceIdentificationNo);
+                    if (!seriesLabel.getText().contains("Video")) {
+                        boolean alreadyOpenedStudy = ApplicationContext.openImageView(filePath, studyInstanceUid, ApplicationContext.mainScreenObj.getCurrentImagePreviewPanel().getLabelInfo(), instanceIdentificationNo - 5);
+                        if (!alreadyOpenedStudy) {
+                            ApplicationContext.layeredCanvas.imgpanel.setCurrentInstanceNo(instanceIdentificationNo);
+                            ApplicationContext.setImageIdentification();
+                            ApplicationContext.layeredCanvas.textOverlay.getTextOverlayParam().setCurrentInstance(instanceIdentificationNo);
+                        }
+                    } else {
+                        ApplicationContext.openVideo(filePath, studyInstanceUid, ApplicationContext.mainScreenObj.getCurrentImagePreviewPanel().getLabelInfo());
                     }
                 }
             }

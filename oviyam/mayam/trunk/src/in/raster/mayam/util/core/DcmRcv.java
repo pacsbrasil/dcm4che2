@@ -100,13 +100,13 @@ public class DcmRcv {
         UID.RLELossless, UID.ExplicitVRLittleEndian,
         UID.ExplicitVRBigEndian, UID.ImplicitVRLittleEndian,
         UID.JPEGBaseline1, UID.JPEGExtended24, UID.JPEGLSLossyNearLossless,
-        UID.JPEG2000, UID.MPEG2,};
+        UID.JPEG2000, UID.MPEG2, UID.MPEG2MainProfileHighLevel, UID.MPEG4AVCH264HighProfileLevel41, UID.MPEG4AVCH264BDCompatibleHighProfileLevel41};
     private static final String[] NON_RETIRED_LE_TS = {UID.JPEGLSLossless,
         UID.JPEGLossless, UID.JPEGLosslessNonHierarchical14,
         UID.JPEG2000LosslessOnly, UID.DeflatedExplicitVRLittleEndian,
         UID.RLELossless, UID.ExplicitVRLittleEndian,
         UID.ImplicitVRLittleEndian, UID.JPEGBaseline1, UID.JPEGExtended24,
-        UID.JPEGLSLossyNearLossless, UID.JPEG2000, UID.MPEG2,};
+        UID.JPEGLSLossyNearLossless, UID.JPEG2000, UID.MPEG2, UID.MPEG2MainProfileHighLevel, UID.MPEG4AVCH264HighProfileLevel41, UID.MPEG4AVCH264BDCompatibleHighProfileLevel41};
     private static final String[] CUIDS = {
         UID.BasicStudyContentNotificationSOPClassRetired,
         UID.StoredPrintStorageSOPClassRetired,
@@ -693,12 +693,12 @@ public class DcmRcv {
         if (cl.hasOption("V")) {
             Package p = DcmRcv.class.getPackage();
             System.out.println("dcmrcv v" + p.getImplementationVersion());
-            System.exit(0);
+//            System.exit(0);
         }
         if (cl.hasOption("h") || cl.getArgList().size() == 0) {
             HelpFormatter formatter = new HelpFormatter();
             formatter.printHelp(USAGE, DESCRIPTION, opts, EXAMPLE);
-            System.exit(0);
+//            System.exit(0);
         }
         return cl;
     }
@@ -1173,9 +1173,9 @@ public class DcmRcv {
         stgcmtAE.setNetworkConnection(stgcmtNC);
         stgcmtAE.setAETitle(as.getRemoteAET());
         stgcmtAE.setTransferCapability(new TransferCapability[]{
-                    new TransferCapability(
-                    UID.StorageCommitmentPushModelSOPClass, ONLY_DEF_TS,
-                    TransferCapability.SCU)});
+            new TransferCapability(
+            UID.StorageCommitmentPushModelSOPClass, ONLY_DEF_TS,
+            TransferCapability.SCU)});
         return stgcmtAE;
     }
 

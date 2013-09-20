@@ -42,11 +42,12 @@ package in.raster.mayam.form;
 import com.nilo.plaf.nimrod.NimRODLookAndFeel;
 import com.sun.java.swing.plaf.motif.MotifLookAndFeel;
 import in.raster.mayam.context.ApplicationContext;
+import in.raster.mayam.delegates.CGetDelegate;
 import in.raster.mayam.delegates.CreateButtonsDelegate;
 import in.raster.mayam.delegates.InputArgumentsParser;
+import in.raster.mayam.delegates.MoveDelegate;
 import in.raster.mayam.delegates.ReceiveDelegate;
 import in.raster.mayam.delegates.WadoRetrieveDelegate;
-import in.raster.mayam.facade.ApplicationFacade;
 import in.raster.mayam.form.dialogs.FileChooserDialog;
 import in.raster.mayam.listeners.*;
 import in.raster.mayam.models.*;
@@ -70,7 +71,7 @@ import javax.swing.table.TableColumnModel;
  */
 public class MainScreen extends javax.swing.JFrame {
 
-    private ReceiveDelegate receiveDelegate = null;
+     private ReceiveDelegate receiveDelegate = null;
     public CreateButtonsDelegate createButtonsDelegate = null;
     public SettingsForm settingsForm = null;
     //Variables    
@@ -87,7 +88,6 @@ public class MainScreen extends javax.swing.JFrame {
      * Creates new form MainScreen
      */
     public MainScreen() {
-        ApplicationContext.setAppLocale();
         initComponents();
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         initAppDefaults();
@@ -195,9 +195,13 @@ public class MainScreen extends javax.swing.JFrame {
     }//GEN-LAST:event_settingsButtonMousePressed
 
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
-        // TODO add your handling code here:
+         stopReceiver();
+        if (ApplicationContext.imgView != null) {
+            ApplicationContext.imgView.onWindowClose();
+        }
         ApplicationContext.databaseRef.deleteLinkStudies();
         ApplicationContext.deleteDir(new File(ApplicationContext.getAppDirectory() + File.separator + "Thumbnails"));
+        ApplicationContext.deleteDir(new File(ApplicationContext.getAppDirectory() + File.separator + "Videos"));
     }//GEN-LAST:event_formWindowClosing
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel buttonsToolbar;
@@ -240,7 +244,6 @@ public class MainScreen extends javax.swing.JFrame {
                 }
             });
         }
-
     }
 
     public void startListening() {
@@ -325,7 +328,9 @@ public class MainScreen extends javax.swing.JFrame {
             uIDefaults.put("TabbedPane.tabInsets", new Insets(5, 5, 5, 5));
             uIDefaults.put("TabbedPane.selectedTabPadInsets", new Insets(5, 7, 5, 7));
             uIDefaults.put("OptionPane.messageFont", ApplicationContext.labelFont);
+            uIDefaults.put("OptionPane.buttonFont", ApplicationContext.labelFont);
             uIDefaults.put("ToolTip.font", ApplicationContext.labelFont);
+            uIDefaults.put("Slider.horizontalThumbIcon", new ImageIcon(getClass().getResource("/in/raster/mayam/form/images/slider.png")));
             updateComponentsTreeUI();
         } catch (UnsupportedLookAndFeelException ex) {
             Logger.getLogger(MainScreen.class.getName()).log(Level.SEVERE, null, ex);
@@ -523,21 +528,28 @@ public class MainScreen extends javax.swing.JFrame {
     //To launch From JNLP
     private void loadStudiesBasedOnInputParameter() {
         InputArgumentValues inputArgumentValues = InputArgumentsParser.inputArgumentValues;
-        if (inputArgumentValues != null && inputArgumentValues.getAeTitle() != null && inputArgumentValues.getPort() != 0 && inputArgumentValues.getHostName() != null && inputArgumentValues.getWadoContext() != null && inputArgumentValues.getWadoPort() != 0 && inputArgumentValues.getWadoProtocol() != null) {
+        if (inputArgumentValues != null) {
             setTheme();
             ApplicationContext.isJnlp = true;
             if (ApplicationContext.communicationDelegate.verifyServer(ApplicationContext.communicationDelegate.constructURL(inputArgumentValues.getAeTitle(), inputArgumentValues.getHostName(), inputArgumentValues.getPort()))) {
-                ServerModel serverModel = new ServerModel();
-                serverModel.setAeTitle(inputArgumentValues.getAeTitle());
-                serverModel.setHostName(inputArgumentValues.getHostName());
-                serverModel.setPort(inputArgumentValues.getPort());
-                serverModel.setWadoContextPath(inputArgumentValues.getWadoContext());
-                serverModel.setWadoPort(inputArgumentValues.getWadoPort());
-                serverModel.setWadoProtocol(inputArgumentValues.getWadoProtocol());
-                WadoRetrieveDelegate wadoRetrieveDelegate = new WadoRetrieveDelegate();
-                wadoRetrieveDelegate.retrieveStudy(serverModel);
+                if (inputArgumentValues.getRetrieveType().equals("WADO")) {
+                    ServerModel serverModel = new ServerModel();
+                    serverModel.setAeTitle(inputArgumentValues.getAeTitle());
+                    serverModel.setHostName(inputArgumentValues.getHostName());
+                    serverModel.setPort(inputArgumentValues.getPort());
+                    serverModel.setWadoContextPath(inputArgumentValues.getWadoContext());
+                    serverModel.setWadoPort(inputArgumentValues.getWadoPort());
+                    serverModel.setWadoProtocol(inputArgumentValues.getWadoProtocol());
+                    WadoRetrieveDelegate wadoRetrieveDelegate = new WadoRetrieveDelegate();
+                    wadoRetrieveDelegate.retrieveStudy(serverModel);
+                } else if (inputArgumentValues.getRetrieveType().equals("C-GET")) {
+                    CGetDelegate cGetDelegate = new CGetDelegate(inputArgumentValues);
+                } else {
+                    MoveDelegate moveDelegate = new MoveDelegate(inputArgumentValues);
+                }
             } else {
-                ApplicationFacade.exitApp("Server Unreachable");
+                System.err.println("ERROR : DICOM Server Unreachable");
+                System.exit(0);
             }
         }
     }
@@ -701,7 +713,7 @@ public class MainScreen extends javax.swing.JFrame {
     }
 
     public synchronized void refreshLocalDB() {
-        if (ApplicationContext.isLocal) {
+        if (ApplicationContext.isLocal && !ApplicationContext.isJnlp) {
             ArrayList<Integer> expandedRows = new ArrayList<Integer>();
             JTree tree;
             if (ApplicationContext.currentTreeTable.getRowCount() > 1) {

@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.5" maxVersion="1.8" type="org.netbeans.modules.form.forminfo.JFrameFormInfo">
+  <NonVisualComponents>
+    <Component class="javax.swing.ButtonGroup" name="retrieveTypeGroup">
+    </Component>
+  </NonVisualComponents>
   <Properties>
     <Property name="defaultCloseOperation" type="int" value="2"/>
     <Property name="title" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
@@ -847,10 +851,23 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
+                  <Group type="102" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="loopbackChk" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="397" max="32767" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="loopbackChk" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
+                              <Component id="retrieveTypeLabel" min="-2" pref="270" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="cMoveRadioBtn" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="cGetRadioBtn" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                              <Component id="wadoRadioBtn" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <Component id="dynamicJNLPRetrieveTypeChk" min="-2" pref="449" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace pref="165" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -859,7 +876,16 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="-2" pref="21" max="-2" attributes="0"/>
                       <Component id="loopbackChk" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="452" max="32767" attributes="0"/>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="retrieveTypeLabel" alignment="3" min="-2" pref="28" max="-2" attributes="0"/>
+                          <Component id="cMoveRadioBtn" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="cGetRadioBtn" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="wadoRadioBtn" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      <Component id="dynamicJNLPRetrieveTypeChk" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace pref="376" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -881,6 +907,59 @@
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="loopbackChkActionPerformed"/>
               </Events>
+            </Component>
+            <Component class="javax.swing.JLabel" name="retrieveTypeLabel">
+              <Properties>
+                <Property name="font" type="java.awt.Font" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                  <Connection code="ApplicationContext.labelFont" type="code"/>
+                </Property>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="Preferences.miscellaneous.reteriveTypeLabel.text" replaceFormat="ApplicationContext.currentBundle.getString(&quot;Preferences.miscellaneous.reteriveTypeLabel.text&quot;)"/>
+                </Property>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JRadioButton" name="cMoveRadioBtn">
+              <Properties>
+                <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                  <ComponentRef name="retrieveTypeGroup"/>
+                </Property>
+                <Property name="font" type="java.awt.Font" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                  <Connection code="ApplicationContext.textFont" type="code"/>
+                </Property>
+                <Property name="text" type="java.lang.String" value="C-MOVE"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JRadioButton" name="cGetRadioBtn">
+              <Properties>
+                <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                  <ComponentRef name="retrieveTypeGroup"/>
+                </Property>
+                <Property name="font" type="java.awt.Font" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                  <Connection code="ApplicationContext.textFont" type="code"/>
+                </Property>
+                <Property name="text" type="java.lang.String" value="C-GET"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JRadioButton" name="wadoRadioBtn">
+              <Properties>
+                <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                  <ComponentRef name="retrieveTypeGroup"/>
+                </Property>
+                <Property name="font" type="java.awt.Font" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                  <Connection code="ApplicationContext.textFont" type="code"/>
+                </Property>
+                <Property name="text" type="java.lang.String" value="WADO"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JCheckBox" name="dynamicJNLPRetrieveTypeChk">
+              <Properties>
+                <Property name="font" type="java.awt.Font" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                  <Connection code="ApplicationContext.labelFont" type="code"/>
+                </Property>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="in/raster/mayam/form/i18n/Bundle.properties" key="Prferences.miscellaneous.overrideRetrieveTypeChk" replaceFormat="ApplicationContext.currentBundle.getString(&quot;Prferences.miscellaneous.overrideRetrieveTypeChk&quot;)"/>
+                </Property>
+              </Properties>
             </Component>
           </SubComponents>
         </Container>

@@ -58,6 +58,7 @@ import org.dcm4che.dict.Tags;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.data.UID;
 
 /**
  *
@@ -128,6 +129,8 @@ public class DatabaseHandler {
                 insertDefaultLocales();
                 insertMiscellaneous();
                 conn.commit();
+            } else {
+                upgradeDatabase();
             }
             conn.setAutoCommit(false);
         } catch (SQLException e) {
@@ -158,7 +161,7 @@ public class DatabaseHandler {
             statement.executeUpdate("create table patient (PatientId varchar(255) NOT NULL CONSTRAINT PatientId_pk PRIMARY KEY," + "PatientName varchar(255)," + "PatientBirthDate varchar(30)," + "PatientSex varchar(10))");
             statement.executeUpdate("create table study (StudyInstanceUID varchar(255) NOT NULL CONSTRAINT StudyInstanceUID_pk PRIMARY KEY," + "StudyDate varchar(30)," + "StudyTime varchar(30)," + "AccessionNo varchar(50)," + "RefferingPhysicianName varchar(255)," + "StudyDescription varchar(80)," + "ModalitiesInStudy varchar(10)," + "NoOfSeries integer," + "NoOfInstances integer," + "RecdImgCnt integer," + "SendImgCnt integer," + "RetrieveAET varchar(50)," + "StudyType varchar(75)," + "DownloadStatus boolean," + "PatientId varchar(255), foreign key(PatientId) references Patient(PatientId))");
             statement.executeUpdate("create table series (SeriesInstanceUID varchar(255) NOT NULL CONSTRAINT SeriesInstanceUID_pk PRIMARY KEY," + "SeriesNo varchar(50)," + "SeriesDate varchar(30)," + "SeriesTime varchar(30)," + "Modality varchar(10)," + "SeriesDescription varchar(100)," + "BodyPartExamined varchar(100)," + "InstitutionName varchar(255)," + "NoOfSeriesRelatedInstances integer," + "PatientId varchar(255), foreign key(PatientId) references Patient(PatientId)," + "StudyInstanceUID varchar(255),foreign key(StudyInstanceUID) references Study(StudyInstanceUID))");
-            statement.executeUpdate("create table image (SopUID varchar(255) NOT NULL CONSTRAINT SopUID_pk PRIMARY KEY," + "InstanceNo integer," + "multiframe boolean," + "totalframe varchar(50)," + "SendStatus varchar(50)," + "ForwardDateTime varchar(30)," + "ReceivedDateTime varchar(30)," + "ReceiveStatus varchar(50)," + "FileStoreUrl varchar(1000)," + "SliceLocation integer," + "EncapsulatedDocument varchar(50)," + "ThumbnailStatus boolean," + "FrameOfReferenceUID varchar(128)," + "ImagePosition varchar(64)," + "ImageOrientation varchar(128)," + "ImageType varchar(30)," + "PixelSpacing varchar(64)," + "SliceThickness varchar(16)," + "NoOfRows integer," + "NoOfColumns integer," + "ReferencedSopUid varchar(128)," + "PatientId varchar(255),foreign key(PatientId) references Patient(PatientId)," + "StudyInstanceUID varchar(255),foreign key(StudyInstanceUID) references Study(StudyInstanceUID)," + "SeriesInstanceUID varchar(255),foreign key(SeriesInstanceUID) references Series(SeriesInstanceUID))");
+            statement.executeUpdate("create table image (SopUID varchar(255) NOT NULL CONSTRAINT SopUID_pk PRIMARY KEY," + "SOPClassUID varchar(255)," + "InstanceNo integer," + "multiframe boolean," + "totalframe varchar(50)," + "SendStatus varchar(50)," + "ForwardDateTime varchar(30)," + "ReceivedDateTime varchar(30)," + "ReceiveStatus varchar(50)," + "FileStoreUrl varchar(1000)," + "SliceLocation integer," + "EncapsulatedDocument varchar(50)," + "ThumbnailStatus boolean," + "FrameOfReferenceUID varchar(128)," + "ImagePosition varchar(64)," + "ImageOrientation varchar(128)," + "ImageType varchar(30)," + "PixelSpacing varchar(64)," + "SliceThickness varchar(16)," + "NoOfRows integer," + "NoOfColumns integer," + "ReferencedSopUid varchar(128)," + "PatientId varchar(255),foreign key(PatientId) references Patient(PatientId)," + "StudyInstanceUID varchar(255),foreign key(StudyInstanceUID) references Study(StudyInstanceUID)," + "SeriesInstanceUID varchar(255),foreign key(SeriesInstanceUID) references Series(SeriesInstanceUID))");
             statement.executeUpdate("create table listener (pk integer primary key GENERATED ALWAYS AS IDENTITY,aetitle varchar(255),port varchar(255),storagelocation varchar(255))");
             statement.executeUpdate("create table servers(pk integer primary key GENERATED ALWAYS AS IDENTITY,logicalname varchar(255) NOT NULL UNIQUE,aetitle varchar(255),hostname varchar(255),port integer,retrievetype varchar(100),showpreviews boolean,wadocontext varchar(100),wadoport integer,wadoprotocol varchar(100),retrievets varchar(255))");
             statement.executeUpdate("create table theme(pk integer primary key GENERATED ALWAYS AS IDENTITY,name varchar(255),status boolean)");
@@ -166,7 +169,7 @@ public class DatabaseHandler {
             statement.executeUpdate("create table modality(pk integer primary key GENERATED ALWAYS AS IDENTITY,logicalname varchar(255),shortname varchar(255),status boolean)");
             statement.executeUpdate("create table presets(pk integer primary key GENERATED ALWAYS AS IDENTITY,presetname varchar(255),windowwidth numeric,windowlevel numeric,modality_fk integer,foreign key(modality_fk) references modality(pk))");
             statement.executeUpdate("create table locale (pk integer primary key GENERATED ALWAYS AS IDENTITY,countrycode varchar(10),country varchar(255),languagecode varchar(10),language varchar(255),localeid varchar(255),status boolean)");
-            statement.executeUpdate("create table miscellaneous(Loopback boolean)");
+            statement.executeUpdate("create table miscellaneous(Loopback boolean,JNLPRetrieveType varchar(25),AllowDynamicRetrieveType boolean)");
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -183,6 +186,23 @@ public class DatabaseHandler {
         } catch (NullPointerException npe) {
         }
         return false;
+    }
+
+    public void upgradeDatabase() {
+        try {
+            ResultSet tableInfo = conn.createStatement().executeQuery("select * from miscellaneous");
+            ResultSetMetaData metaData = tableInfo.getMetaData();
+            tableInfo.close();
+            if (metaData.getColumnCount() == 1) {
+                conn.createStatement().execute("alter table miscellaneous add column JNLPRetrieveType varchar(25)");
+                conn.createStatement().execute("alter table miscellaneous add column AllowDynamicRetrieveType boolean");
+                conn.createStatement().execute("alter table image add column SOPClassUID varchar(255)");
+                conn.createStatement().execute("update miscellaneous set JNLPRetrieveType='C-GET',AllowDynamicRetrieveType=false");
+            }
+            conn.commit();
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     //insertions
@@ -271,7 +291,7 @@ public class DatabaseHandler {
     }
 
     private void insertMiscellaneous() throws SQLException {
-        conn.createStatement().execute("insert into miscellaneous(Loopback) values(true)");
+        conn.createStatement().execute("insert into miscellaneous(Loopback,JNLPRetrieveType,AllowDynamicRetrieveType) values(true,'C-GET',false)");
     }
 
     public void writeDatasetInfo(DicomObject dataset, boolean isLink, String filePath) {
@@ -298,7 +318,6 @@ public class DatabaseHandler {
                 insertStmt.setString(3, date);
                 insertStmt.setString(4, dataset.getString(Tags.PatientSex));
                 insertStmt.execute();
-                conn.commit();
             } catch (SQLException ex) {
                 System.out.println("Exception in inserting patient info : " + ex.getMessage());
             }
@@ -316,7 +335,6 @@ public class DatabaseHandler {
                 String studyDesc = (dataset.getString(Tags.StudyDescription) != null && dataset.getString(Tags.StudyDescription).length() > 0) ? dataset.getString(Tags.StudyDescription) : "";
                 String studyType = saveAsLink ? "link" : "local";
                 conn.createStatement().execute("insert into study values('" + dataset.getString(Tags.StudyInstanceUID) + "','" + date + "','" + time + "','" + accessionNo + "','" + refName + "','" + studyDesc.replace('/', ' ') + "','" + dataset.getString(Tags.Modality) + "'," + 0 + "," + 0 + "," + 0 + "," + 0 + ",'" + retAe + "','" + studyType + "'," + "false,'" + dataset.getString(Tags.PatientID) + "')");
-                conn.commit();
             } catch (SQLException ex) {
                 System.out.println("Exception in inserting study info");
             }
@@ -341,11 +359,10 @@ public class DatabaseHandler {
             String bodyPartExamined = (dataset.getString(Tags.BodyPartExamined) != null && dataset.getString(Tags.BodyPartExamined).length() > 0) ? dataset.getString(Tags.BodyPartExamined) : "";
             try {
                 conn.createStatement().execute("insert into series values('" + dataset.getString(Tags.SeriesInstanceUID) + "','" + seriesNo + "','" + date + "','" + time + "','" + modality + "','" + seriesDesc + "','" + bodyPartExamined + "','" + institution + "'," + numSeries + ",'" + dataset.getString(Tags.PatientID) + "','" + dataset.getString(Tags.StudyInstanceUID) + "')");
-                conn.commit();
             } catch (SQLException ex) {
                 System.out.println("Exception in inserting series info");
             }
-            if (ApplicationContext.isLocal && !ApplicationContext.isJnlp) {
+            if (!ApplicationContext.isJnlp) {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
@@ -412,9 +429,17 @@ public class DatabaseHandler {
                 String[] imagePosition = dataset.getStrings(Tags.ImagePosition);
                 String sliceLoc = imagePosition != null && imagePosition[2] != null ? imagePosition[2] : "0";
                 try {
-                    conn.createStatement().execute("insert into image values('" + dataset.getString(Tags.SOPInstanceUID) + "'," + dataset.getInt(Tags.InstanceNumber) + ",'" + multiframe + "','" + totalFrame + "','" + "partial" + "','" + " " + "','" + " " + "','" + "partial" + "','" + filePath + "'," + sliceLoc + ",'" + encapsulatedPDF + "',false,'" + frameOfRefUid + "','" + imgPos + "','" + imgOrientation + "','" + image_type + "','" + pixelSpacing + "','" + sliceThickness + "'," + row + "," + columns + ",'" + referSopInsUid + "','" + dataset.getString(Tags.PatientID) + "','" + dataset.getString(Tags.StudyInstanceUID) + "','" + dataset.getString(Tags.SeriesInstanceUID) + "')");
+                    conn.createStatement().executeUpdate("insert into image(SopUID,SOPClassUID,InstanceNo,multiframe,totalframe,SendStatus,ForwardDateTime,ReceivedDateTime,ReceiveStatus,FileStoreUrl,SliceLocation,EncapsulatedDocument,ThumbnailStatus,FrameOfReferenceUID,ImagePosition,ImageOrientation,ImageType,PixelSpacing,SliceThickness,NoOfRows,NoOfColumns,ReferencedSopUid,PatientId,StudyInstanceUID,SeriesInstanceUID) values('" + dataset.getString(Tags.SOPInstanceUID) + "','" + dataset.getString(Tags.SOPClassUID) + "'," + dataset.getInt(Tags.InstanceNumber) + ",'" + multiframe + "','" + totalFrame + "','" + "partial" + "','" + " " + "','" + " " + "','" + "partial" + "','" + filePath + "'," + sliceLoc + ",'" + encapsulatedPDF + "',false,'" + frameOfRefUid + "','" + imgPos + "','" + imgOrientation + "','" + image_type + "','" + pixelSpacing + "','" + sliceThickness + "'," + row + "," + columns + ",'" + referSopInsUid + "','" + dataset.getString(Tags.PatientID) + "','" + dataset.getString(Tags.StudyInstanceUID) + "','" + dataset.getString(Tags.SeriesInstanceUID) + "')");
                     conn.commit();
                     addInstanceCount(dataset.getString(Tags.StudyInstanceUID), dataset.getString(Tags.SeriesInstanceUID));
+                    if (multiframe) {
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                ApplicationContext.mainScreenObj.refreshLocalDB();
+                            }
+                        });
+                    }
                 } catch (SQLException ex) {
                     System.out.println("Exception in inserting image info " + ex.getMessage());
                 }
@@ -770,36 +795,20 @@ public class DatabaseHandler {
             ResultSet rs = null;
             rs = conn.createStatement().executeQuery(sql);
             while (rs.next()) {
-                Series series = new Series();
-                series.setStudyInstanceUID(siuid);
-                series.setSeriesInstanceUID(rs.getString("SeriesInstanceUID"));
-                series.setSeriesNumber(rs.getString("SeriesNo"));
-                series.setSeriesDesc(rs.getString("SeriesDescription"));
-                series.setBodyPartExamined(rs.getString("BodyPartExamined"));
-                series.setSeriesDate(rs.getString("SeriesDate"));
-                series.setSeriesTime(rs.getString("SeriesTime"));
-                series.setMultiframe(false);
-                series.setInstanceUID(null);
-                series.setSeriesRelatedInstance(rs.getInt("NoOfSeriesRelatedInstances"));
+                Series series = new Series(siuid, rs.getString("SeriesInstanceUID"), rs.getString("SeriesNo"), rs.getString("SeriesDescription"), rs.getString("BodyPartExamined"), rs.getString("SeriesDate"), rs.getString("SeriesTime"), false, null, rs.getInt("NoOfSeriesRelatedInstances"));
                 ResultSet rs1 = null;
-                String sql1 = "select FileStoreUrl,totalframe,SopUID,InstanceNo,multiframe,EncapsulatedDocument from image where StudyInstanceUID='" + siuid + "' AND " + "SeriesInstanceUID='" + rs.getString("SeriesInstanceUID") + "'" + "AND multiframe=false" + " order by InstanceNo asc";
+                String sql1 = "select FileStoreUrl,totalframe,SopUID,InstanceNo,multiframe,EncapsulatedDocument,SOPClassUID from image where StudyInstanceUID='" + siuid + "' AND " + "SeriesInstanceUID='" + rs.getString("SeriesInstanceUID") + "'" + "AND multiframe=false" + " order by InstanceNo asc";
                 rs1 = conn.createStatement().executeQuery(sql1);
                 boolean allInstanceAreMultiframe = true;
                 while (rs1.next()) {
                     allInstanceAreMultiframe = false;
-                    Instance img = new Instance();
-                    img.setFilepath(rs1.getString("FileStoreUrl"));
-                    img.setSop_iuid(rs1.getString("SopUID"));
-                    img.setInstance_no(rs1.getString("InstanceNo"));
-                    img.setEncapsulatedPDF(rs1.getBoolean("EncapsulatedDocument"));
-                    img.setMultiframe(false);
-                    series.setMultiframe(false);
+                    Instance img = new Instance(rs1.getString("FileStoreUrl"), rs1.getString("SopUID"), rs1.getString("SopUID"), rs1.getBoolean("EncapsulatedDocument"), rs1.getString("SOPClassUID"), false);
                     series.getImageList().add(img);
                 }
                 if (!allInstanceAreMultiframe) {
                     arr.add(series);
                 }
-                arr.addAll(getMultiframeSeriesList(siuid, series.getSeriesInstanceUID()));
+                arr.addAll(getMultiframeSeriesList(siuid, series.getSeriesInstanceUID(), rs.getString("SeriesNo"), rs.getString("BodyPartExamined"), rs.getString("SeriesDate"), rs.getString("SeriesTime")));
             }
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
@@ -807,27 +816,23 @@ public class DatabaseHandler {
         return arr;
     }
 
-    public ArrayList<Series> getMultiframeSeriesList(String studyUID, String seriesUID) {
+    public ArrayList<Series> getMultiframeSeriesList(String studyUID, String seriesUID, String seriesNo, String bodyPart, String seriesDate, String seriesTime) {
         ArrayList<Series> arr = new ArrayList();
         try {
             ResultSet rs1 = null;
-            String sql1 = "select FileStoreUrl,totalframe,SopUID,InstanceNo,multiframe,EncapsulatedDocument from image where StudyInstanceUID='" + studyUID + "' AND " + "SeriesInstanceUID='" + seriesUID + "'" + " AND multiframe=true" + " order by InstanceNo asc";
+            String sql1 = "select FileStoreUrl,totalframe,SopUID,InstanceNo,multiframe,EncapsulatedDocument,SOPClassUID from image where StudyInstanceUID='" + studyUID + "' AND " + "SeriesInstanceUID='" + seriesUID + "'" + " AND multiframe=true" + " order by InstanceNo asc";
             rs1 = conn.createStatement().executeQuery(sql1);
             while (rs1.next()) {
-                Series series = new Series();
-                series.setStudyInstanceUID(studyUID);
-                series.setSeriesInstanceUID(seriesUID);
-                series.setSeriesDesc("Multiframe:" + rs1.getString("InstanceNo"));
-                series.setMultiframe(true);
-                series.setInstanceUID(rs1.getString("SopUID"));
                 int totalFrames = Integer.parseInt(rs1.getString("totalFrame"));
-                Instance img = new Instance();
-                img.setFilepath(rs1.getString("FileStoreUrl"));
+                Series series = new Series(studyUID, seriesUID, seriesNo, null, bodyPart, seriesDate, seriesTime, true, rs1.getString("SopUID"), totalFrames);
+                Instance img = new Instance(rs1.getString("FileStoreUrl"), rs1.getString("SopUID"), rs1.getString("InstanceNo"), rs1.getBoolean("EncapsulatedDocument"), rs1.getString("SOPClassUID"), true);
                 img.setTotalNumFrames(totalFrames);
-                img.setSop_iuid(rs1.getString("SopUID"));
-                img.setInstance_no(rs1.getString("InstanceNo"));
-                img.setEncapsulatedPDF(rs1.getBoolean("EncapsulatedDocument"));
-                img.setMultiframe(true);
+                if (img.getSopClassUid() != null && (img.getSopClassUid().equals(UID.VideoEndoscopicImageStorage) || img.getSopClassUid().equals(UID.VideoMicroscopicImageStorage) || img.getSopClassUid().equals(UID.VideoPhotographicImageStorage))) {
+                    series.setVideoStatus(true);
+                    series.setSeriesDesc("Video");
+                } else {
+                    series.setSeriesDesc("Multiframe : " + totalFrames + " Frames");
+                }
                 series.getImageList().add(img);
                 arr.add(series);
             }
@@ -851,25 +856,6 @@ public class DatabaseHandler {
         return locations;
     }
 
-    public String getPatientNameBasedonStudyUID(String studyUid) {
-        String patientName = null;
-        try {
-            String sql = "select PatientId from study where StudyInstanceUID='" + studyUid + "'";
-            ResultSet rs = conn.createStatement().executeQuery(sql);
-            rs.next();
-            String patientid = rs.getString("PatientId");
-            String sql1 = "select PatientName from patient where PatientId='" + patientid + "'";
-            ResultSet rs1 = conn.createStatement().executeQuery(sql1);
-            rs1.next();
-            patientName = rs1.getString("PatientName");
-            rs.close();
-            rs1.close();
-        } catch (SQLException ex) {
-            Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return patientName;
-    }
-
     public ArrayList<Series> getSeriesList(String siuid) {
         ArrayList<Series> arr = new ArrayList();
         try {
@@ -885,7 +871,7 @@ public class DatabaseHandler {
                 series.setSeriesDesc(rs.getString("SeriesDescription"));
                 series.setBodyPartExamined(rs.getString("BodyPartExamined"));
                 ResultSet rs1;
-                String sql1 = "select FileStoreUrl,SopUID,InstanceNo,multiframe,totalframe from image where StudyInstanceUID='" + siuid + "' AND " + "SeriesInstanceUID='" + rs.getString("SeriesInstanceUID") + "'" + " order by InstanceNo asc";
+                String sql1 = "select FileStoreUrl,SopUID,SopClassUid,InstanceNo,multiframe,totalframe from image where StudyInstanceUID='" + siuid + "' AND " + "SeriesInstanceUID='" + rs.getString("SeriesInstanceUID") + "'" + " order by InstanceNo asc";
                 rs1 = conn.createStatement().executeQuery(sql1);
                 while (rs1.next()) {
                     int totalFrames = Integer.parseInt(rs1.getString("totalFrame"));
@@ -896,6 +882,9 @@ public class DatabaseHandler {
                         img.setFilepath(rs1.getString("FileStoreUrl"));
                         img.setSop_iuid(rs1.getString("SopUID"));
                         img.setInstance_no(rs1.getString("InstanceNo"));
+                        if (rs1.getString("SopClassUid").equals(UID.VideoEndoscopicImageStorage) || rs1.getString("SopClassUid").equals(UID.VideoMicroscopicImageStorage) || rs1.getString("SopClassUid").equals(UID.VideoPhotographicImageStorage)) {
+                            series.setVideoStatus(true);
+                        }
                         img.setMultiframe(new Boolean(rs1.getString("multiframe")));
                         img.setCurrentFrameNum(tempi);
                         img.setTotalNumFrames(totalFrames);
@@ -975,7 +964,7 @@ public class DatabaseHandler {
     public ArrayList<String> getInstancesLocation(String studyUid, String seriesUid) {
         ArrayList<String> locations = new ArrayList<String>();
         try {
-            ResultSet instanceInfo = conn.createStatement().executeQuery("select FileStoreUrl from image where StudyInstanceUID='" + studyUid + "' and SeriesInstanceUID='" + seriesUid + "' and multiframe=false" + " order by InstanceNo asc");
+            ResultSet instanceInfo = conn.createStatement().executeQuery("select FileStoreUrl from image where StudyInstanceUID='" + studyUid + "' and SeriesInstanceUID='" + seriesUid + "'" + " order by InstanceNo asc");
             while (instanceInfo.next()) {
                 locations.add(instanceInfo.getString("FileStoreUrl"));
             }
@@ -988,32 +977,28 @@ public class DatabaseHandler {
     }
 
     public String getFirstInstanceLocation(String studyUid, String seriesInstanceUid) {
-        String location = null;
         try {
             ResultSet locationInfo = conn.createStatement().executeQuery("select FileStoreUrl from image where StudyInstanceUID='" + studyUid + "' and SeriesInstanceUID='" + seriesInstanceUid + "'" + " order by InstanceNo asc");
             locationInfo.next();
-            location = locationInfo.getString("FileStoreUrl");
-            locationInfo.close();
+            return locationInfo.getString("FileStoreUrl");
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return location;
+        return null;
     }
 
     public String getFirstInstanceLocation(String studyUid) {
-        String location = null;
         try {
             ResultSet seriesInfo = conn.createStatement().executeQuery("select SeriesInstanceUID from series where StudyInstanceUID='" + studyUid + "' order by SeriesNo asc");
             seriesInfo.next();
-            ResultSet locationInfo = conn.createStatement().executeQuery("select FileStoreUrl from image where StudyInstanceUID='" + studyUid + "' and SeriesInstanceUID='" + seriesInfo.getString("SeriesInstanceUID") + "'" + " order by InstanceNo asc");
+            ResultSet locationInfo = conn.createStatement().executeQuery("select SOPClassUID,FileStoreUrl from image where StudyInstanceUID='" + studyUid + "' and SeriesInstanceUID='" + seriesInfo.getString("SeriesInstanceUID") + "'" + " order by InstanceNo asc");
             locationInfo.next();
-            location = locationInfo.getString("FileStoreUrl");
             seriesInfo.close();
-            locationInfo.close();
+            return locationInfo.getString("FileStoreUrl");
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return location;
+        return null;
     }
 
     public String getFileLocation(String studyUid, String seriesUid, String sopUid) {
@@ -1060,6 +1045,28 @@ public class DatabaseHandler {
         } catch (NumberFormatException nfe) {
         }
         return matchingStudies;
+    }
+
+    public String getJNLPRetrieveType() {
+        try {
+            ResultSet retrieveInfo = conn.createStatement().executeQuery("select JNLPRetrieveType from miscellaneous");
+            retrieveInfo.next();
+            return retrieveInfo.getString("JNLPRetrieveType");
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
+    public boolean getDynamicRetrieveTypeStatus() {
+        try {
+            ResultSet retrieveInfo = conn.createStatement().executeQuery("select AllowDynamicRetrieveType from miscellaneous");
+            retrieveInfo.next();
+            return retrieveInfo.getBoolean("AllowDynamicRetrieveType");
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return false;
     }
 
     //Added for Memeory Handling
@@ -1126,15 +1133,6 @@ public class DatabaseHandler {
     }
 
     //Updations
-    public void update(String tableName, String fieldName, String fieldValue, String whereField, String whereValue) {
-        try {
-            conn.createStatement().executeUpdate("update " + tableName + " set " + fieldName + "='" + fieldValue + "' where " + whereField + "='" + whereValue + "'");
-            conn.commit();
-        } catch (SQLException ex) {
-            Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
     public void update(String tableName, String fieldName, int fieldValue, String whereField, String whereValue) {
         try {
             conn.createStatement().executeUpdate("update " + tableName + " set " + fieldName + "=" + fieldValue + " where " + whereField + "='" + whereValue + "'");
@@ -1147,6 +1145,15 @@ public class DatabaseHandler {
     public void update(String tableName, String fieldName, boolean fieldValue, String whereField, String whereValue) {
         try {
             conn.createStatement().executeUpdate("update " + tableName + " set " + fieldName + "=" + fieldValue + " where " + whereField + "='" + whereValue + "'");
+            conn.commit();
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public void update(String tableName, String fieldName, String fieldValue, String whereField, String whereValue) {
+        try {
+            conn.createStatement().executeUpdate("update " + tableName + " set " + fieldName + "='" + fieldValue + "' where " + whereField + "='" + whereValue + "'");
             conn.commit();
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
@@ -1273,6 +1280,24 @@ public class DatabaseHandler {
     public void updateLoopBack(boolean isLoopback) {
         try {
             conn.createStatement().executeUpdate("update miscellaneous set Loopback=" + isLoopback);
+            conn.commit();
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public void updateJNLPRetrieveType(String retrieveType) {
+        try {
+            conn.createStatement().executeUpdate("update miscellaneous set JNLPRetrieveType='" + retrieveType + "'");
+            conn.commit();
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public void updateDynamicRetrieveTypeStatus(boolean allow) {
+        try {
+            conn.createStatement().executeUpdate("update miscellaneous set AllowDynamicRetrieveType=" + allow);
             conn.commit();
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);

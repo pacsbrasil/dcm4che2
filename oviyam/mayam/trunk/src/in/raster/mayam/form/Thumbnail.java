@@ -53,9 +53,7 @@ import javax.swing.SwingConstants;
  */
 public class Thumbnail extends JLabel {
 
-    ImageIcon defaultIcon = new ImageIcon(getClass().getResource("/in/raster/mayam/form/images/blank.jpg"));
-
-    public Thumbnail(String iuid, BufferedImage image) {
+    public Thumbnail(String iuid) {
         Color color = new Color(0, 0, 0);
         setBackground(color);
         setDoubleBuffered(false);
@@ -64,10 +62,17 @@ public class Thumbnail extends JLabel {
         setName(iuid);
         setFont(new java.awt.Font("Times", 0, 10));
         setHorizontalAlignment(SwingConstants.CENTER);
-        if (image != null) {
-            setIcon(new ImageIcon(image));
-        } else {
-            setIcon(defaultIcon);
-        }
+    }
+
+    public void setImage(BufferedImage image) {
+        setIcon(new ImageIcon(image));
+    }
+
+    public void setVideoImage() {
+        setIcon(new ImageIcon(getClass().getResource("/in/raster/mayam/form/images/video.png")));
+    }
+
+    public void setDefaultImage() {
+        setIcon(new ImageIcon(getClass().getResource("/in/raster/mayam/form/images/blank.jpg")));
     }
 }

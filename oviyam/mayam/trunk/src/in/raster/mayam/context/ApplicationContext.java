@@ -224,6 +224,13 @@ public class ApplicationContext {
         return showImageViewDelegate.isAlreadyOpenedStudy();
     }
 
+    public static void openVideo(String filePath, String studyUid, String[] patientInfo) {
+        if (!isImageViewExist()) {
+            createImageView();
+        }
+        ShowImageView showImageViewDelegate = new ShowImageView(filePath, studyUid, patientInfo);
+    }
+
     public static void applyLocaleChange() {
         appNameLabel.setText(ApplicationContext.currentBundle.getString("MainScreen.appNameLabel.text"));
         if (moreButton != null) {
@@ -249,6 +256,35 @@ public class ApplicationContext {
                         }
                     } catch (NullPointerException ex) {
 //                        System.out.println("Null pointer exception in setImageIdentifiaction() : " + ex.getMessage());
+                    }
+                }
+            }
+        } catch (IndexOutOfBoundsException ex) {
+            //ignore [Index out of bounds will occurs when the selected study not yet determined]
+        }
+    }
+
+    public static void setVideoThumbnailIdentification() {
+        try {
+            JPanel panel = ((JPanel) ((JSplitPane) ApplicationContext.tabbedPane.getSelectedComponent()).getRightComponent());
+            //To uncolor the series which were not selected
+            SeriesDisplayModel selectedStudy = imgView.selectedSeriesDisplays.get(imgView.selectedStudy);
+            for (int i = 0; i < selectedStudy.getAllSeriesDisplays().length; i++) {
+                selectedStudy.getAllSeriesDisplays()[i].clearAllSelectedColor();
+            }
+            //To identify the selected study and to color the labels according to the series in viewer component
+            for (int i = 0; i < imgView.selectedSeriesDisplays.size(); i++) { //Contains all studies opened in JtabbedPane
+                if (panel.getName().equals(imgView.selectedSeriesDisplays.get(i).getStudyUid())) {
+                    selectedStudy = imgView.selectedSeriesDisplays.get(i);
+                    selectedStudy.setSelectedSeriesDisplays(null);
+                    ArrayList<ViewerPreviewPanel> selectedSeriesList = new ArrayList<ViewerPreviewPanel>();
+                    for (int j = 0; j < selectedStudy.getAllSeriesDisplays().length; j++) {
+                        if (selectedStudy.getAllSeriesDisplays()[j].getSopUid() != null && selectedStudy.getAllSeriesDisplays()[j].getSopUid().equals(((JPanel) panel.getComponent(0)).getName())) {
+                            selectedStudy.getAllSeriesDisplays()[j].setSelectedInstance(0);
+                            selectedSeriesList.add(selectedStudy.getAllSeriesDisplays()[j]);
+                            selectedStudy.setSelectedSeriesDisplays(selectedSeriesList);
+                            break;
+                        }
                     }
                 }
             }

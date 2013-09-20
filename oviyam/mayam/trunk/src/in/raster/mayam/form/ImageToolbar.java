@@ -102,7 +102,7 @@ public class ImageToolbar extends javax.swing.JPanel {
         keyEventDispatcher = new KeyEventDispatcher() {
             @Override
             public boolean dispatchKeyEvent(KeyEvent e) {
-                if (e.getID() == KeyEvent.KEY_PRESSED && ApplicationContext.imgView != null && ApplicationContext.imgView.isFocused()) {
+                if (e.getID() == KeyEvent.KEY_PRESSED && ApplicationContext.imgView != null && ApplicationContext.imgView.isFocused() && windowing.isEnabled()) {
                     keyEventProcessor(e);
                 }
                 boolean discardEvent = false;
@@ -153,7 +153,7 @@ public class ImageToolbar extends javax.swing.JPanel {
                 if (i < tempRef.size()) {
                     JPanel newPanel = new JPanel(g);
                     LayeredCanvas canvas = new LayeredCanvas(new File(tempRef.get(i)), 0, false);
-                    canvas.imgpanel.setScaleFactor((ApplicationContext.tabbedPane.getWidth() - 270) / col, ApplicationContext.tabbedPane.getHeight() / row, (row * col));
+                    canvas.imgpanel.setScaleFactor((ApplicationContext.tabbedPane.getWidth()) / col, ApplicationContext.tabbedPane.getHeight() / row, (row * col));
                     canvas.annotationPanel.doZoomIn();
                     canvas.imgpanel.layoutRows = row;
                     canvas.imgpanel.layoutColumns = col;
@@ -261,7 +261,11 @@ public class ImageToolbar extends javax.swing.JPanel {
         if (row != 1 || col != 1) {
             canvas.imgpanel.setScaleFactor(ApplicationContext.selectedPanel.getWidth() / col, ApplicationContext.selectedPanel.getHeight() / row, (row * col) + (row * col));
         } else {
-            canvas.imgpanel.setScaleFactor(ApplicationContext.selectedPanel.getWidth(), ApplicationContext.selectedPanel.getHeight(), row);
+            if (((JPanel) ((JSplitPane) ApplicationContext.tabbedPane.getSelectedComponent()).getRightComponent()).getComponentCount() > 1) {
+                canvas.imgpanel.setScaleFactor(ApplicationContext.selectedPanel.getWidth(), ApplicationContext.selectedPanel.getHeight(), ((JPanel) ((JSplitPane) ApplicationContext.tabbedPane.getSelectedComponent()).getRightComponent()).getComponentCount());
+            } else {
+                canvas.imgpanel.setScaleFactor(ApplicationContext.tabbedPane.getWidth(), ApplicationContext.selectedPanel.getHeight(), col);
+            }
         }
         canvas.annotationPanel.resizeHandler();
         canvas.imgpanel.layoutRows = row;
@@ -729,7 +733,7 @@ public class ImageToolbar extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jToolBar1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 1657, Short.MAX_VALUE)
+            .addComponent(jToolBar1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 1540, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1316,9 +1320,9 @@ public class ImageToolbar extends javax.swing.JPanel {
 
     public void setAnnotationToolsStatus() {
         if (ApplicationContext.layeredCanvas.annotationPanel.isShowAnnotation()) {
-            ApplicationContext.imgView.getImageToolbar().showAnnotationTools();
+            showAnnotationTools();
         } else {
-            ApplicationContext.imgView.getImageToolbar().hideAnnotationTools();
+            hideAnnotationTools();
         }
     }
 
@@ -1455,6 +1459,7 @@ public class ImageToolbar extends javax.swing.JPanel {
         cube3DButton.setEnabled(true);
         synchronizeButton.setEnabled(true);
         setAnnotationToolsStatus();
+        loopSlider.setEnabled(true);
     }
 
     public void disableAllTools() {
@@ -1487,6 +1492,7 @@ public class ImageToolbar extends javax.swing.JPanel {
         scoutButton.setEnabled(false);
         cube3DButton.setEnabled(false);
         synchronizeButton.setEnabled(false);
+        loopSlider.setEnabled(false);
     }
 
     public void resetCineTimer() {
@@ -1585,5 +1591,44 @@ public class ImageToolbar extends javax.swing.JPanel {
             return true;
         }
         return false;
+    }
+
+    public void enableTools() {
+        layoutButton.setEnabled(true);
+        tileLayoutButton.setEnabled(true);
+        windowing.setEnabled(true);
+        presetButton.setEnabled(true);
+        probeButton.setEnabled(true);
+        verticalFlip.setEnabled(true);
+        horizontalFlip.setEnabled(true);
+        leftRotate.setEnabled(true);
+        rightRotate.setEnabled(true);
+        zoomin.setEnabled(true);
+        zoomoutButton.setEnabled(true);
+        panButton.setEnabled(true);
+        invert.setEnabled(true);
+        annotationVisibility.setEnabled(true);
+        textOverlay.setEnabled(true);
+        reset.setEnabled(true);
+        exportButton.setEnabled(true);
+        metaDataButton.setEnabled(true);
+        stackButton.setEnabled(true);
+        scoutButton.setEnabled(true);
+        cube3DButton.setEnabled(true);
+        synchronizeButton.setEnabled(true);
+        showAnnotationTools();
+        loopSlider.setEnabled(true);
+    }
+
+    public void disableImageTools() {
+        if (windowing.isEnabled()) {
+            disableAllTools();
+        }
+    }
+
+    public void enableImageTools() {
+        if (!windowing.isEnabled()) {
+            enableTools();
+        }
     }
 }

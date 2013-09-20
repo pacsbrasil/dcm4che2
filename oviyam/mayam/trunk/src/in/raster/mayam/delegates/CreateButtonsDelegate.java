@@ -84,7 +84,6 @@ public class CreateButtonsDelegate {
         ApplicationContext.appNameLabel = new JLabel(ApplicationContext.currentBundle.getString("MainScreen.appNameLabel.text"));
         ApplicationContext.appNameLabel.setFont(new Font("Lucida Grande", Font.BOLD, 16));
         ApplicationContext.appNameLabel.setBounds(10, 5, 120, 30);
-//        ApplicationContext.appNameLabel.setToolTipText("MAYAM : 2.0(R-120)");
         buttonsToolbar.add(ApplicationContext.appNameLabel);
 
         for (int i = 0; i < loopvar; i++) {

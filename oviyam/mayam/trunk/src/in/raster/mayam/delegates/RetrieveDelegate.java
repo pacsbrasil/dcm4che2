@@ -44,6 +44,7 @@ import in.raster.mayam.models.Series;
 import in.raster.mayam.models.ServerModel;
 import java.util.ArrayList;
 import org.dcm4che.util.DcmURL;
+import org.dcm4che2.data.UID;
 
 /**
  *
@@ -66,7 +67,17 @@ public class RetrieveDelegate {
         cgetParam.add("-qStudyInstanceUID=" + studyUID);
         for (int i = 0; i < sopUidList.size(); i++) {
             cgetParam.add("-cstore");
-            cgetParam.add(sopUidList.get(i) + ":1.2.840.10008.1.2.1");
+            cgetParam.add(sopUidList.get(i) + ":" + UID.ExplicitVRLittleEndian);
+            if (sopUidList.contains(UID.VideoEndoscopicImageStorage) || sopUidList.contains(UID.VideoMicroscopicImageStorage) || sopUidList.contains(UID.VideoPhotographicImageStorage)) {
+                cgetParam.add(",");
+                cgetParam.add(sopUidList.get(i) + ":" + UID.MPEG2);
+                cgetParam.add(",");
+                cgetParam.add(sopUidList.get(i) + ":" + UID.MPEG2MainProfileHighLevel);
+                cgetParam.add(",");
+                cgetParam.add(sopUidList.get(i) + ":" + UID.MPEG4AVCH264HighProfileLevel41);
+                cgetParam.add(",");
+                cgetParam.add(sopUidList.get(i) + ":" + UID.MPEG4AVCH264BDCompatibleHighProfileLevel41);
+            }
         }
         cgetParam.add("-cstoredest");
         cgetParam.add(ApplicationContext.listenerDetails[2]);

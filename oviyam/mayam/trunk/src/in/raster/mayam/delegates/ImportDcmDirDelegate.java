@@ -62,10 +62,19 @@ import javax.imageio.stream.ImageInputStream;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import org.dcm4che.dict.Tags;
 import org.dcm4che2.data.*;
 import org.dcm4che2.image.OverlayUtils;
 import org.dcm4che2.io.DicomInputStream;
+import org.dcm4che2.tool.dcm2xml.Dcm2Xml;
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 /**
  *
@@ -78,7 +87,7 @@ public class ImportDcmDirDelegate extends Thread {
     String dest = ApplicationContext.listenerDetails[2] + File.separator + today.get(Calendar.YEAR) + File.separator + today.get(Calendar.MONTH) + File.separator + today.get(Calendar.DATE);
     boolean saveAsLink = false, skip = false;
     OutputStream outStream = null;
-    boolean isDirectory = false;
+    boolean isDirectory = false, isVideo = false;
     File file = null;
     private File importFolder;
     ArrayList<String> absolutePathList = new ArrayList();
@@ -106,6 +115,13 @@ public class ImportDcmDirDelegate extends Thread {
             checkIsLink();
             if (!skip) {
                 readAndImportDicomFile(file);
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        ApplicationContext.mainScreenObj.refreshLocalDB();
+                    }
+                });
+
             } else {
                 return;
             }
@@ -204,10 +220,51 @@ public class ImportDcmDirDelegate extends Thread {
                     }
                 }
             }
-            if (!thumbnail.exists()) {
-                thumbnail.mkdirs();
+            if (!data.getString(Tags.SOPClassUID).equals(UID.VideoEndoscopicImageStorage) && !data.getString(Tags.SOPClassUID).equals(UID.VideoMicroscopicImageStorage) && !data.getString(Tags.SOPClassUID).equals(UID.VideoPhotographicImageStorage)) {
+                if (!thumbnail.exists()) {
+                    thumbnail.mkdirs();
+                }
+                createThumbnail(parseFile, new File(thumbnail + File.separator + data.getString(Tags.SOPInstanceUID)), data.getString(Tags.StudyInstanceUID), data.getString(Tags.SeriesInstanceUID), data.getString(Tags.SOPInstanceUID));
+            } else {
+                File videoFile = null;
+                if (!saveAsLink) {
+                    videoFile = new File(dest + File.separator + data.getString(Tags.StudyInstanceUID) + File.separator + data.getString(Tags.SeriesInstanceUID) + File.separator + data.getString(Tags.SOPInstanceUID) + "_V" + File.separator + "video.xml");
+                } else {
+                    videoFile = new File(ApplicationContext.getAppDirectory() + File.separator + "Videos" + File.separator + data.getString(Tags.SOPInstanceUID) + "_V" + File.separator + "video.xml");
+                }
+                videoFile.getParentFile().mkdirs();
+                try {
+                    videoFile.createNewFile();
+                } catch (IOException ex) {
+                    Logger.getLogger(CGetDelegate.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                Dcm2Xml.main(new String[]{parseFile.getAbsolutePath(), "-X", "-o", videoFile.getAbsolutePath()});
+                DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+                DocumentBuilder dBuilder;
+                try {
+                    dBuilder = dbFactory.newDocumentBuilder();
+                    Document doc = dBuilder.parse(videoFile);
+                    NodeList elementsByTagName1 = doc.getElementsByTagName("item");
+                    for (int k = 0; k < elementsByTagName1.getLength(); k++) {
+                        Node item = elementsByTagName1.item(k);
+                        NamedNodeMap attributes = item.getAttributes();
+                        if (attributes.getNamedItem("src") != null) {
+                            Node namedItem = attributes.getNamedItem("src");
+                            videoFile = new File(videoFile.getParentFile() + File.separator + namedItem.getNodeValue());
+                            videoFile.renameTo(new File(videoFile.getAbsolutePath() + ".mpg"));
+                            ApplicationContext.databaseRef.update("image", "FileStoreUrl", videoFile.getAbsolutePath() + ".mpg", "SopUID", data.getString(Tags.SOPInstanceUID));
+                        }
+                    }
+                    dBuilder = null;
+                    dbFactory = null;
+                } catch (IOException ex) {
+                    Logger.getLogger(ImportDcmDirDelegate.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (ParserConfigurationException ex) {
+                    Logger.getLogger(ImportDcmDirDelegate.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (SAXException ex) {
+                    Logger.getLogger(ImportDcmDirDelegate.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
-            createThumbnail(parseFile, new File(thumbnail + File.separator + data.getString(Tags.SOPInstanceUID)), data.getString(Tags.StudyInstanceUID), data.getString(Tags.SeriesInstanceUID), data.getString(Tags.SOPInstanceUID));
         } catch (IOException ex) {
             ex.printStackTrace();
         } catch (NullPointerException ex) {
@@ -325,13 +382,11 @@ public class ImportDcmDirDelegate extends Thread {
             } catch (ConcurrentModificationException cme) {
             } catch (NullPointerException npe) {
             } catch (NegativeArraySizeException nase) {
-//                System.out.println("Negative Array Size");
             } catch (NoSuchElementException elementException) {
             }
         } catch (IOException ex) {
-            Logger.getLogger(ConstructThumbnails.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ImportDcmDirDelegate.class.getName()).log(Level.SEVERE, null, ex);
         } catch (Exception ex) {
-//            System.out.println("Exception in create thumbnail(ImportDcmDirDelegate) : " + ex.getMessage());
         }
     }
 

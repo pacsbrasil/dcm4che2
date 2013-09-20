@@ -68,10 +68,8 @@ public class ImageBuffer {
         try {
             if (map.size() <= defaultBufferSize) {
                 map.put(instanceNumber, image);
-//                System.out.println("Assignment in producer : " + instanceNumber);
             }
         } catch (Exception ex) {
-//            System.out.println("Exception in put() : " + ex.getMessage());
         }
     }
 
@@ -106,7 +104,6 @@ public class ImageBuffer {
                 wait(5);
             }
         } catch (Exception ex) {
-//            System.out.println("Exception in GET : " + ex.getMessage());
         }
         return map.get(instanceNumber);
     }
@@ -114,7 +111,6 @@ public class ImageBuffer {
     public synchronized BufferedImage get(int instanceNumber) {
         do {
             try {
-//                System.out.println("Waiting for image : " + instanceNumber);
                 wait(10);
             } catch (InterruptedException ex) {
                 Logger.getLogger(ImageBuffer.class.getName()).log(Level.SEVERE, null, ex);

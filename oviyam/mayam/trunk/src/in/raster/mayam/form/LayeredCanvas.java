@@ -43,6 +43,7 @@ import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.delegates.LocalizerDelegate;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.GridLayout;
 import java.awt.event.*;
 import java.io.File;
 import javax.swing.*;
@@ -133,8 +134,12 @@ public class LayeredCanvas extends JLayeredPane implements FocusListener, MouseL
             createLayers();
         }
         textOverlay.setTextOverlayParam(this.imgpanel.getTextOverlayParam());
-        if (((JPanel) container.getComponent(0)).getComponentCount() <= 1) {
-            imgpanel.setScaleFactor(container.getWidth() / layoutColumns, container.getHeight() / layoutRows, layoutColumns * layoutRows);
+        if (container.getComponentCount() <= 1 || ((JPanel) container.getComponent(0)).getComponentCount() <= 1) {
+            if (container.getComponentCount() > 1) {
+                imgpanel.setScaleFactor(container.getWidth() / ((GridLayout) container.getLayout()).getColumns(), container.getHeight() / ((GridLayout) container.getLayout()).getRows(), container.getComponentCount());
+            } else {
+                imgpanel.setScaleFactor(ApplicationContext.tabbedPane.getWidth() / ((GridLayout) container.getLayout()).getColumns(), container.getHeight() / ((GridLayout) container.getLayout()).getRows(), container.getComponentCount());
+            }
         } else {
             imgpanel.setScaleFactor(((JPanel) container.getComponent(0)).getWidth() / layoutColumns, ((JPanel) container.getComponent(0)).getHeight() / layoutRows, layoutColumns * layoutRows);
         }

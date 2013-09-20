@@ -40,8 +40,8 @@
 package in.raster.mayam.form.tab.component;
 
 import in.raster.mayam.context.ApplicationContext;
-import in.raster.mayam.form.ImagePreviewPanel;
 import in.raster.mayam.form.LayeredCanvas;
+import in.raster.mayam.form.VideoPanel;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -115,23 +115,25 @@ public class ButtonTabComp extends JPanel {
             int x = i;
             if (i != -1) {
                 JPanel panel = ((JPanel) ((JSplitPane) ApplicationContext.tabbedPane.getComponentAt(i)).getRightComponent());
-                for (int j = 0; j < panel.getComponentCount(); j++) {
-                    JPanel seriesLevelPanel = (JPanel) panel.getComponent(j);
-                    for (int k = 0; k < seriesLevelPanel.getComponentCount(); k++) {
-                        if (seriesLevelPanel.getComponent(k) instanceof LayeredCanvas) {
-                            LayeredCanvas tempCanvas = (LayeredCanvas) seriesLevelPanel.getComponent(k);
-                            try {
-                                tempCanvas.imgpanel.storeAnnotation();
-                                tempCanvas.imgpanel.storeMultiframeAnnotation();
-                            } catch (NullPointerException ex) {
-                                //Null pointer exception occurs when there is no image panel
+                if (!(panel instanceof VideoPanel)) {
+                    for (int j = 0; j < panel.getComponentCount(); j++) {
+                        JPanel seriesLevelPanel = (JPanel) panel.getComponent(j);
+                        for (int k = 0; k < seriesLevelPanel.getComponentCount(); k++) {
+                            if (seriesLevelPanel.getComponent(k) instanceof LayeredCanvas) {
+                                LayeredCanvas tempCanvas = (LayeredCanvas) seriesLevelPanel.getComponent(k);
+                                try {
+                                    tempCanvas.imgpanel.storeAnnotation();
+                                    tempCanvas.imgpanel.storeMultiframeAnnotation();
+                                } catch (NullPointerException ex) {
+                                    //Null pointer exception occurs when there is no image panel
+                                }
                             }
                         }
                     }
                 }
 
                 for (int j = 0; j < ApplicationContext.imgView.selectedSeriesDisplays.size(); j++) {
-                    if (ApplicationContext.imgView.selectedSeriesDisplays.get(j).getStudyUid().equals(((LayeredCanvas) ((JPanel) ((JPanel) ((JSplitPane) pane.getComponentAt(i)).getRightComponent()).getComponent(0)).getComponent(0)).imgpanel.getStudyUID())) {
+                    if (ApplicationContext.imgView.selectedSeriesDisplays.get(j).getStudyUid().equals(panel.getComponent(0).getName())) {
                         ApplicationContext.imgView.writeToFile(ApplicationContext.imgView.selectedSeriesDisplays.get(j));
                         ApplicationContext.imgView.selectedSeriesDisplays.remove(j);
                     }

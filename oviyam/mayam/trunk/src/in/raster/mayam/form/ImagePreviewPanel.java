@@ -41,7 +41,6 @@ package in.raster.mayam.form;
 
 import in.raster.mayam.context.ApplicationContext;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.GridLayout;
 import javax.swing.JPanel;
 
@@ -128,7 +127,7 @@ public class ImagePreviewPanel extends javax.swing.JPanel {
     private javax.swing.JScrollPane seriesScrollPane;
     // End of variables declaration//GEN-END:variables
 
-    public void paint(int size) {
+      public void paint(int size) {
         parent.setBounds(0, 0, 240, size);
         container.add(parent);
         container.setPreferredSize(new Dimension(230, size));

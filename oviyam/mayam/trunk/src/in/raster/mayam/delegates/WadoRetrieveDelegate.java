@@ -53,13 +53,25 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.util.DcmURL;
+import org.dcm4che2.data.UID;
+import org.dcm4che2.tool.dcm2xml.Dcm2Xml;
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 /**
  *
@@ -114,7 +126,8 @@ public class WadoRetrieveDelegate extends Thread {
             QueryService queryService = new QueryService();
             queryService.callFindWithQuery(inputArgumentValues.getPatientID(), inputArgumentValues.getPatientName(), "", inputArgumentValues.getSearchDate(), inputArgumentValues.getModality(), "", inputArgumentValues.getAccessionNumber(), "", "", inputArgumentValues.getStudyUID(), dcmurl);
             if (queryService.getDatasetVector().size() == 0) {
-                ApplicationFacade.exitApp("No matching studies found");
+                System.err.println("No Matching Studies Found");
+                System.exit(0);
             }
             for (int dataSetCount = 0; dataSetCount < queryService.getDatasetVector().size(); dataSetCount++) {
                 try {
@@ -162,8 +175,15 @@ public class WadoRetrieveDelegate extends Thread {
                 for (int instanceCount = 0; instanceCount < queryInstanceService.getDatasetVector().size(); instanceCount++) {
                     Dataset instanceDataset = (Dataset) queryInstanceService.getDatasetVector().elementAt(instanceCount);
                     instanceUID = instanceDataset.getString(Tags.SOPInstanceUID) != null ? instanceDataset.getString(Tags.SOPInstanceUID) : "";
-                    WadoParam wadoParam = getWadoParam(serverModel.getWadoProtocol(), serverModel.getAeTitle(), serverModel.getHostName(), serverModel.getWadoPort(), studyUID, seriesInstanceUID, instanceUID, serverModel.getRetrieveTransferSyntax());
-                    wadoUrls.add(wadoParam);
+                    if (!instanceDataset.getString(Tags.SOPClassUID).equals(UID.VideoEndoscopicImageStorage) && !instanceDataset.getString(Tags.SOPClassUID).equals(UID.VideoMicroscopicImageStorage) && !instanceDataset.getString(Tags.SOPClassUID).equals(UID.VideoPhotographicImageStorage)) {
+                        WadoParam wadoParam = getWadoParam(serverModel.getWadoProtocol(), serverModel.getAeTitle(), serverModel.getHostName(), serverModel.getWadoPort(), studyUID, seriesInstanceUID, instanceUID, serverModel.getRetrieveTransferSyntax(), false);
+                        wadoUrls.add(wadoParam);
+                    } else {
+                        series.setVideoStatus(true);
+                        WadoParam wadoParam = getWadoParam(serverModel.getWadoProtocol(), serverModel.getAeTitle(), serverModel.getHostName(), serverModel.getWadoPort(), studyUID, seriesInstanceUID, instanceUID, serverModel.getRetrieveTransferSyntax(), true);
+                        wadoUrls.add(wadoParam);
+                    }
+
                 }
 
             } catch (Exception e) {
@@ -172,7 +192,7 @@ public class WadoRetrieveDelegate extends Thread {
         }
     }
 
-    private WadoParam getWadoParam(String wadoProtocol, String aeTitle, String hostName, int port, String studyUID, String seriesUID, String instanceUID, String retrieveTransferSyntax) {
+    private WadoParam getWadoParam(String wadoProtocol, String aeTitle, String hostName, int port, String studyUID, String seriesUID, String instanceUID, String retrieveTransferSyntax, boolean useDefault_TS) {
         WadoParam wadoParam = new WadoParam();
         if (wadoProtocol.equalsIgnoreCase("https")) {
             wadoParam.setSecureQuery(true);
@@ -185,7 +205,11 @@ public class WadoRetrieveDelegate extends Thread {
         wadoParam.setStudy(studyUID);
         wadoParam.setSeries(seriesUID);
         wadoParam.setObject(instanceUID);
-        wadoParam.setRetrieveTrasferSyntax(retrieveTransferSyntax);
+        if (!useDefault_TS) {
+            wadoParam.setRetrieveTrasferSyntax(retrieveTransferSyntax);
+        } else {
+            wadoParam.setRetrieveTrasferSyntax("");
+        }
         return wadoParam;
     }
 
@@ -258,15 +282,57 @@ public class WadoRetrieveDelegate extends Thread {
     }
 
     private void updateDatabase() {
+        sortSeries();
         ApplicationContext.databaseRef.update("study", "NoOfSeries", seriesList.size(), "StudyInstanceUID", studyUID);
         ApplicationContext.databaseRef.update("study", "NoOfInstances", numberOfStudyRelatedInstances, "StudyInstanceUID", studyUID);
         for (int i = 0; i < seriesList.size(); i++) {
-            ApplicationContext.databaseRef.update("series", "NoOfSeriesRelatedInstances", seriesList.get(i).getSeriesRelatedInstance(), "SeriesInstanceUID", seriesList.get(i).getSeriesInstanceUID());
-            ConstructThumbnails constructThumbnails = new ConstructThumbnails(studyUID, seriesList.get(i).getSeriesInstanceUID());
-            ApplicationContext.mainScreenObj.increaseProgressValue();
+            if (!seriesList.get(i).isVideo()) {
+                ApplicationContext.databaseRef.update("series", "NoOfSeriesRelatedInstances", seriesList.get(i).getSeriesRelatedInstance(), "SeriesInstanceUID", seriesList.get(i).getSeriesInstanceUID());
+                ConstructThumbnails constructThumbnails = new ConstructThumbnails(studyUID, seriesList.get(i).getSeriesInstanceUID());
+                ApplicationContext.mainScreenObj.increaseProgressValue();
+            } else {
+                ArrayList<String> instancesLocation = ApplicationContext.databaseRef.getInstancesLocation(studyUID, seriesList.get(i).getSeriesInstanceUID());
+                for (int j = 0; j < instancesLocation.size(); j++) {
+                    if (!instancesLocation.get(j).contains("V")) {
+                        File videoFile = new File(instancesLocation.get(j) + "_V" + File.separator + "video.xml");
+                        videoFile.getParentFile().mkdirs();
+                        try {
+                            videoFile.createNewFile();
+                        } catch (IOException ex) {
+                            Logger.getLogger(CGetDelegate.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                        Dcm2Xml.main(new String[]{instancesLocation.get(j), "-X", "-o", videoFile.getAbsolutePath()});
+                        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+                        DocumentBuilder dBuilder;
+                        try {
+                            dBuilder = dbFactory.newDocumentBuilder();
+                            Document doc = dBuilder.parse(instancesLocation.get(j) + "_V" + File.separator + "video.xml");
+                            NodeList elementsByTagName1 = doc.getElementsByTagName("item");
+                            for (int k = 0; k < elementsByTagName1.getLength(); k++) {
+                                Node item = elementsByTagName1.item(k);
+                                NamedNodeMap attributes = item.getAttributes();
+                                if (attributes.getNamedItem("src") != null) {
+                                    Node namedItem = attributes.getNamedItem("src");
+                                    videoFile = new File(instancesLocation.get(j) + "_V" + File.separator + namedItem.getNodeValue());
+                                    videoFile.renameTo(new File(videoFile.getAbsolutePath() + ".mpg"));
+                                    ApplicationContext.databaseRef.update("image", "FileStoreUrl", videoFile.getAbsolutePath() + ".mpg", "SopUID", instancesLocation.get(j).substring(instancesLocation.get(j).lastIndexOf(File.separator) + 1));
+                                }
+                            }
+                            dBuilder = null;
+                            dbFactory = null;
+                        } catch (IOException ex) {
+                            Logger.getLogger(WadoRetrieveDelegate.class.getName()).log(Level.SEVERE, null, ex);
+                        } catch (ParserConfigurationException ex) {
+                            Logger.getLogger(WadoRetrieveDelegate.class.getName()).log(Level.SEVERE, null, ex);
+                        } catch (SAXException ex) {
+                            Logger.getLogger(WadoRetrieveDelegate.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    }
+                }
+            }
         }
-
         ApplicationContext.databaseRef.update("study", "DownloadStatus", true, "StudyInstanceUID", studyUID);
+
 
         if (!ApplicationContext.isJnlp) {
             //Decides whether all studies completed
@@ -292,9 +358,37 @@ public class WadoRetrieveDelegate extends Thread {
             }
             patientInfo[4] = String.valueOf(seriesList.size() + " Series");
         }
-
-        String filePath = ApplicationContext.databaseRef.getFirstInstanceLocation(studyUID);
         ApplicationFacade.hideSplash();
-        ApplicationContext.openImageView(filePath, studyUID, patientInfo,0);
+        String filePath = ApplicationContext.databaseRef.getFirstInstanceLocation(studyUID, seriesList.get(0).getSeriesInstanceUID());
+        if (!seriesList.get(0).isVideo()) {
+            ApplicationContext.openImageView(filePath, studyUID, patientInfo, 0);
+        } else {
+            ApplicationContext.openVideo(filePath, studyUID, patientInfo);
+        }
+    }
+
+    private void sortSeries() {
+        Collections.sort(seriesList, new Comparator() {
+            @Override
+            public int compare(Object t, Object t1) {
+                Series i1 = (Series) t;
+                Series i2 = (Series) t1;
+
+                if (!i1.getSeriesNumber().equals("") && !i2.getSeriesNumber().equals("")) {
+                    if (new Integer(i1.getSeriesNumber()) == null) {
+                        return (-1);
+                    } else if (new Integer(i2.getSeriesNumber()) == null) {
+                        return (1);
+                    } else {
+                        int a = new Integer(i1.getSeriesNumber());
+                        int b = new Integer(i2.getSeriesNumber());
+                        int temp = (a == b ? 0 : (a > b ? 1 : -1));
+                        return temp;
+                    }
+                } else {
+                    return 0;
+                }
+            }
+        });
     }
 }

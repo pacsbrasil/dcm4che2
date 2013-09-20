@@ -124,9 +124,7 @@ public class IconRenderer extends DefaultTableCellRenderer {
             }
             comp.setForeground(selectedColor);
         } else if (isSelected) {
-            if (row != 0) {
-                comp.setForeground(Color.WHITE);
-            } else {
+            if (ApplicationContext.isLocal && row == 0) {
                 comp.setForeground(Color.BLACK);
                 comp.setBackground(alternateColor);
             }

@@ -43,6 +43,7 @@ import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.form.ImagePreviewPanel;
 import in.raster.mayam.form.LayeredCanvas;
 import in.raster.mayam.form.Thumbnail;
+import in.raster.mayam.form.VideoPanel;
 import in.raster.mayam.form.ViewerPreviewPanel;
 import in.raster.mayam.form.tab.component.ButtonTabComp;
 import in.raster.mayam.models.Instance;
@@ -50,6 +51,7 @@ import in.raster.mayam.models.SeriesDisplayModel;
 import in.raster.mayam.models.Series;
 import in.raster.mayam.models.StudyAnnotation;
 import java.awt.Color;
+import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ComponentAdapter;
@@ -63,9 +65,23 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
+import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+import uk.co.caprica.vlcj.component.EmbeddedMediaPlayerComponent;
 
 /**
  *
@@ -74,21 +90,20 @@ import javax.swing.JTabbedPane;
  */
 public class ShowImageView {
 
-    String filePath, studyUid;
-    String[] patientInfo;
+    String studyUid;
     private boolean alreadyOpenedStudy = false;
-    int pos, size;
-    int instanceNumberToStart = 0;
 
     public ShowImageView(String filePath, String studyUid, String[] patientInfo, int startBufferingFrom) {
-        this.filePath = filePath;
         this.studyUid = studyUid;
-        this.patientInfo = patientInfo;
-        this.instanceNumberToStart = startBufferingFrom;
-        showImageView();
+        showImageView(filePath, patientInfo, startBufferingFrom);
     }
 
-    private void showImageView() {
+    public ShowImageView(String videoFilePath, String studyUid, String[] patientInfo) {
+        this.studyUid = studyUid;
+        showVideo(videoFilePath, patientInfo);
+    }
+
+    private void showImageView(String filePath, String[] patientInfo, int instanceNoToStart) {
         ImagePreviewPanel imagePreviewPanel = new ImagePreviewPanel();
         imagePreviewPanel.setPatientInfo(patientInfo);
         GridLayout g = new GridLayout(1, 1);
@@ -96,10 +111,11 @@ public class ShowImageView {
         JPanel container = new JPanel(g);
         container.setBackground(Color.BLACK);
         File dicomFile = new File(filePath);
-        LayeredCanvas canvas = new LayeredCanvas(dicomFile, instanceNumberToStart, false);
+        LayeredCanvas canvas = new LayeredCanvas(dicomFile, instanceNoToStart, false);
         if (ApplicationContext.tabbedPane != null) {
-            for (int i = 0; i < ApplicationContext.tabbedPane.getTabCount(); i++) { //If already opened study just set the tab selected which holds the study
-                if (((LayeredCanvas) ((JPanel) ((JPanel) ((JSplitPane) ApplicationContext.tabbedPane.getComponentAt(i)).getRightComponent()).getComponent(0)).getComponent(0)).imgpanel.getStudyUID().equals(canvas.imgpanel.getStudyUID())) {
+            ApplicationContext.imgView.getImageToolbar().enableImageTools();
+            for (int i = 0; i < ApplicationContext.tabbedPane.getTabCount(); i++) { //If already opened study just set the tab selected which holds the study                
+                if (((JPanel) ((JSplitPane) ApplicationContext.tabbedPane.getComponentAt(i)).getRightComponent()).getName().equals(studyUid)) {
                     alreadyOpenedStudy = true;
                     ApplicationContext.tabbedPane.setSelectedIndex(i);
                     break;
@@ -109,6 +125,7 @@ public class ShowImageView {
         if (!alreadyOpenedStudy) { //If the study was not already opened create a new tab in image view
             container.add(canvas, 0);
             parent.add(container);
+            parent.setName(studyUid);
             container.setName(canvas.imgpanel.getTextOverlayParam().getPatientName());
             CreateThumbnails createThumbnails = new CreateThumbnails(imagePreviewPanel, dicomFile.getParentFile().getParent());
             createThumbnails.start();
@@ -142,7 +159,7 @@ public class ShowImageView {
             ApplicationContext.tabbedPane = (JTabbedPane) tabComp.getTabbedComponent();
         }
         ApplicationContext.tabbedPane.setSelectedIndex(ApplicationContext.tabbedPane.getTabCount() - 1);
-        ApplicationContext.layeredCanvas.imgpanel.setScaleFactor(ApplicationContext.imgView.jTabbedPane1.getWidth() - (((JSplitPane) ApplicationContext.tabbedPane.getSelectedComponent()).getDividerLocation()), ApplicationContext.imgView.jTabbedPane1.getHeight(), 1);
+        ApplicationContext.layeredCanvas.imgpanel.setScaleFactor(ApplicationContext.imgView.jTabbedPane1.getWidth(), ApplicationContext.imgView.jTabbedPane1.getHeight(), 1);
         ApplicationContext.layeredCanvas.annotationPanel.doZoomIn();
         ApplicationContext.layeredCanvas.imgpanel.repaint();
         ApplicationContext.layeredCanvas.canvas.setSelectionColoring();
@@ -150,45 +167,62 @@ public class ShowImageView {
         ApplicationContext.imgView.setVisible(true);
     }
 
-    public void setSelectedSeriesContext(ViewerPreviewPanel[] allPreviews, ArrayList<ViewerPreviewPanel> selectedPreviews, String studyDir) {
-        for (int i = 0; i < allPreviews.length; i++) {
-            if (ApplicationContext.layeredCanvas.imgpanel.getSeriesUID().equals(allPreviews[i].getSeriesInstanceUid())) {
-                selectedPreviews.add(allPreviews[i]);
-                allPreviews[i].setSelectedInstance(ApplicationContext.layeredCanvas.imgpanel.getCurrentInstanceNo());
-                break;
-            }
-        }
-        SeriesDisplayModel displayModel = new SeriesDisplayModel(studyUid, ApplicationContext.tabbedPane.getSelectedIndex(), selectedPreviews, allPreviews, ApplicationContext.layeredCanvas, studyDir);
-        ApplicationContext.imgView.selectedSeriesDisplays.add(displayModel);
-        ApplicationContext.imgView.selectedStudy = ApplicationContext.imgView.selectedSeriesDisplays.size() - 1;
-        File annotationInfo = new File(studyDir, "info.ser");
-        if (annotationInfo.isFile()) {
-            try {
-                FileInputStream fis = new FileInputStream(annotationInfo);
-                ObjectInputStream ois = new ObjectInputStream(fis);
-                try {
-                    displayModel.setStudyAnnotation((StudyAnnotation) ois.readObject());
-                } catch (ClassNotFoundException ex) {
-//                    System.out.println("Class not found");
+    public void setSelectedSeriesContext(ViewerPreviewPanel[] allPreviews, ArrayList<ViewerPreviewPanel> selectedPreviews, String studyDir, boolean isVideo) {
+        if (!isVideo) {
+            for (int i = 0; i < allPreviews.length; i++) {
+                if (ApplicationContext.layeredCanvas.imgpanel.getSeriesUID().equals(allPreviews[i].getSeriesInstanceUid())) {
+                    selectedPreviews.add(allPreviews[i]);
+                    allPreviews[i].setSelectedInstance(ApplicationContext.layeredCanvas.imgpanel.getCurrentInstanceNo());
+                    break;
                 }
-            } catch (IOException ex) {
-                Logger.getLogger(ShowImageView.class.getName()).log(Level.SEVERE, null, ex);
             }
+            SeriesDisplayModel displayModel = new SeriesDisplayModel(studyUid, ApplicationContext.tabbedPane.getSelectedIndex(), selectedPreviews, allPreviews, ApplicationContext.layeredCanvas, studyDir);
+            ApplicationContext.imgView.selectedSeriesDisplays.add(displayModel);
+            ApplicationContext.imgView.selectedStudy = ApplicationContext.imgView.selectedSeriesDisplays.size() - 1;
+            File annotationInfo = new File(studyDir, "info.ser");
+            if (annotationInfo.isFile()) {
+                try {
+                    FileInputStream fis = new FileInputStream(annotationInfo);
+                    ObjectInputStream ois = new ObjectInputStream(fis);
+                    try {
+                        displayModel.setStudyAnnotation((StudyAnnotation) ois.readObject());
+                    } catch (ClassNotFoundException ex) {
+//                    System.out.println("Class not found");
+                    }
+                } catch (IOException ex) {
+                    Logger.getLogger(ShowImageView.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+            ApplicationContext.layeredCanvas.imgpanel.setCurrentSeriesAnnotation();
+        } else {
+            String iuid = ((JPanel) ((VideoPanel) ((JSplitPane) ApplicationContext.imgView.jTabbedPane1.getSelectedComponent()).getRightComponent()).getComponent(0)).getName();
+            for (int i = 0; i < allPreviews.length; i++) {
+                if (allPreviews[i].getSopUid() != null && allPreviews[i].getSopUid().equals(iuid)) {
+                    selectedPreviews.add(allPreviews[i]);
+                    allPreviews[i].setSelectedInstance(0);
+                    break;
+                }
+            }
+
+            SeriesDisplayModel displayModel = new SeriesDisplayModel(studyUid, ApplicationContext.tabbedPane.getSelectedIndex(), selectedPreviews, allPreviews, ApplicationContext.layeredCanvas, studyDir);
+            ApplicationContext.imgView.selectedSeriesDisplays.add(displayModel);
+            ApplicationContext.imgView.selectedStudy = ApplicationContext.imgView.selectedSeriesDisplays.size() - 1;
         }
-        ApplicationContext.layeredCanvas.imgpanel.setCurrentSeriesAnnotation();
     }
 
     private void resize() {
         try {
             for (int i = 0; i < ApplicationContext.tabbedPane.getTabCount(); i++) {
                 JPanel panel = ((JPanel) ((JSplitPane) ApplicationContext.tabbedPane.getComponentAt(i)).getRightComponent());
-                for (int j = 0; j < panel.getComponentCount(); j++) {
-                    JPanel seriesLevelPanel = (JPanel) panel.getComponent(j);
-                    for (int k = 0; k < seriesLevelPanel.getComponentCount(); k++) {
-                        if (seriesLevelPanel.getComponent(k) instanceof LayeredCanvas) {
-                            LayeredCanvas tempCanvas = (LayeredCanvas) seriesLevelPanel.getComponent(k);
-                            if (tempCanvas.textOverlay != null) {
-                                tempCanvas.imgpanel.getTextOverlayParam().setViewSize(seriesLevelPanel.getComponent(k).getWidth() + " X " + seriesLevelPanel.getComponent(k).getHeight());
+                if (panel.getComponent(0) instanceof LayeredCanvas) {
+                    for (int j = 0; j < panel.getComponentCount(); j++) {
+                        JPanel seriesLevelPanel = (JPanel) panel.getComponent(j);
+                        for (int k = 0; k < seriesLevelPanel.getComponentCount(); k++) {
+                            if (seriesLevelPanel.getComponent(k) instanceof LayeredCanvas) {
+                                LayeredCanvas tempCanvas = (LayeredCanvas) seriesLevelPanel.getComponent(k);
+                                if (tempCanvas.textOverlay != null) {
+                                    tempCanvas.imgpanel.getTextOverlayParam().setViewSize(seriesLevelPanel.getComponent(k).getWidth() + " X " + seriesLevelPanel.getComponent(k).getHeight());
+                                }
                             }
                         }
                     }
@@ -214,31 +248,75 @@ public class ShowImageView {
         }
 
         public void run() {
+            int pos = 0, size = 0;
             Thumbnail[] thumbnails;
-            String dest;
             ArrayList<ViewerPreviewPanel> selectedPreviews = new ArrayList<ViewerPreviewPanel>();
             ArrayList<Series> seriesList = ApplicationContext.databaseRef.getSeriesList_SepMulti(studyUid);
             ViewerPreviewPanel[] allPreviews = new ViewerPreviewPanel[seriesList.size()];
             for (int i = 0; i < seriesList.size(); i++) {
                 List<Instance> imageList = seriesList.get(i).getImageList();
                 String path = imageList.get(0).getFilepath();
-                if (!ApplicationContext.databaseRef.isLink(studyUid)) {
-                    dest = path.substring(0, path.lastIndexOf(File.separator)) + File.separator + "Thumbnails";
-                } else {
-                    dest = ApplicationContext.getAppDirectory() + File.separator + "Thumbnails";
-                }
                 File file;
-                thumbnails = new Thumbnail[imageList.size()];
-                for (int j = 0; j < imageList.size(); j++) {
+                if (!seriesList.get(i).isVideo()) {
+                    String dest;
+                    seriesList.get(i).setSeriesDesc(seriesList.get(i).getSeriesDesc() + ", " + imageList.size() + " images");
+                    if (!ApplicationContext.databaseRef.isLink(studyUid)) {
+                        dest = path.substring(0, path.lastIndexOf(File.separator)) + File.separator + "Thumbnails";
+                    } else {
+                        dest = ApplicationContext.getAppDirectory() + File.separator + "Thumbnails";
+                    }
+                    thumbnails = new Thumbnail[imageList.size()];
+                    for (int j = 0; j < imageList.size(); j++) {
+                        try {
+                            file = new File(dest + File.separator + imageList.get(j).getSop_iuid());
+                            thumbnails[j] = new Thumbnail(imageList.get(j).getSop_iuid());
+                            thumbnails[j].setImage(ImageIO.read(file));
+                        } catch (IOException ex) {
+                            thumbnails[j] = new Thumbnail(imageList.get(j).getSop_iuid());
+                            thumbnails[j].setDefaultImage();
+                        } catch (NullPointerException npe) {                            
+                        }
+                    }
+                } else {
+                    thumbnails = new Thumbnail[1];
+                    thumbnails[0] = new Thumbnail(imageList.get(0).getSop_iuid());
+                    thumbnails[0].setVideoImage();
+                    DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+                    DocumentBuilder dBuilder;
                     try {
-                        file = new File(dest + File.separator + imageList.get(j).getSop_iuid());
-                        thumbnails[j] = new Thumbnail(imageList.get(j).getSop_iuid(), ImageIO.read(file));
+                        dBuilder = dbFactory.newDocumentBuilder();
+                        Document doc = null;
+                        if (!ApplicationContext.databaseRef.isLink(studyUid)) {
+                            doc = dBuilder.parse(imageList.get(0).getFilepath().split("_")[0] + "_V" + File.separator + "video.xml");
+                        } else {
+                            doc = dBuilder.parse(ApplicationContext.getAppDirectory() + File.separator + "Videos" + File.separator + imageList.get(0).getSop_iuid() + "_V" + File.separator + "video.xml");
+                        }
+                        XPathFactory xPathfactory = XPathFactory.newInstance();
+                        XPath xpath = xPathfactory.newXPath();
+                        XPathExpression expr = xpath.compile("//attr[@tag=\"00181063\"]");
+                        NodeList nl = (NodeList) expr.evaluate(doc, XPathConstants.NODESET);
+                        Node frameTime = nl.item(0);
+                        expr = xpath.compile("//attr[@tag=\"00280008\"]");
+                        nl = (NodeList) expr.evaluate(doc, XPathConstants.NODESET);
+                        Node numberOfFrames = nl.item(0);
+                        try {
+                            seriesList.get(i).setSeriesDesc("Video : " + (int) Math.floor((Double.parseDouble(numberOfFrames.getTextContent()) * (1000 / Double.parseDouble(frameTime.getTextContent()))) / 1000) + " Sec");
+                        } catch (NumberFormatException ex) {
+                            System.out.println("Illegal number format : " + ex.getMessage());
+                        }
+                        dBuilder = null;
+                        dbFactory = null;
                     } catch (IOException ex) {
-                        thumbnails[j] = new Thumbnail(imageList.get(j).getSop_iuid(), null);
-                    } catch (NullPointerException npe) {
+                        Logger.getLogger(ShowImageView.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (ParserConfigurationException ex) {
+                        Logger.getLogger(ShowImageView.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (SAXException ex) {
+                        Logger.getLogger(ShowImageView.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (XPathExpressionException ex) {
+                        Logger.getLogger(ShowImageView.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
-                ViewerPreviewPanel viewerPreviewPanel = new ViewerPreviewPanel(studyUid, seriesList.get(i).getSeriesInstanceUID(), seriesList.get(i).getSeriesDesc(), imageList.size(), thumbnails, seriesList.get(i).isMultiframe(), seriesList.get(i).getInstanceUID());
+                ViewerPreviewPanel viewerPreviewPanel = new ViewerPreviewPanel(studyUid, seriesList.get(i).getSeriesInstanceUID(), seriesList.get(i).getSeriesDesc(), imageList.size(), thumbnails, seriesList.get(i).isMultiframe(), seriesList.get(i).getInstanceUID(), seriesList.get(i).isVideo());
                 viewerPreviewPanel.setVisible(true);
                 viewerPreviewPanel.setName(String.valueOf(i));
                 int height = viewerPreviewPanel.getTotalHeight();
@@ -248,7 +326,74 @@ public class ShowImageView {
                 pos += (height + 5);
                 allPreviews[i] = viewerPreviewPanel;
             }
-            setSelectedSeriesContext(allPreviews, selectedPreviews, studyDir);
+            if (studyDir != null) {
+                setSelectedSeriesContext(allPreviews, selectedPreviews, studyDir, false);
+            } else {
+                setSelectedSeriesContext(allPreviews, selectedPreviews, studyDir, true);
+            }
+        }
+    }
+
+    private void showVideo(String videoFilePath, String[] patientInfo) {
+        try {
+            if (ApplicationContext.tabbedPane != null) {
+                for (int i = 0; i < ApplicationContext.tabbedPane.getTabCount(); i++) { //If already opened study just set the tab selected which holds the study
+                    if (((JPanel) ((JSplitPane) ApplicationContext.tabbedPane.getComponentAt(i)).getRightComponent()).getName().equals(studyUid)) {
+                        alreadyOpenedStudy = true;
+                        ApplicationContext.tabbedPane.setSelectedIndex(i);
+                        break;
+                    }
+                }
+            }
+            if (!alreadyOpenedStudy) {
+                VideoPanel videoPanel = new VideoPanel();
+                videoPanel.setName(studyUid);
+                String iuid = videoFilePath.substring(videoFilePath.split("_")[0].lastIndexOf(File.separator) + 1, videoFilePath.indexOf("_"));
+                EmbeddedMediaPlayerComponent mediaPlayerComponent = null;
+                try {
+                    mediaPlayerComponent = new EmbeddedMediaPlayerComponent();
+                } catch (NoClassDefFoundError ncdf) {
+                    System.out.println("no cls found");
+                }
+                videoPanel.setMediaPlayer(mediaPlayerComponent);
+                videoPanel.setUniqueIdentifier(iuid);
+                videoPanel.setBorder(BorderFactory.createLineBorder(new Color(255, 138, 0)));
+                ImagePreviewPanel imagePreviewPanel = new ImagePreviewPanel();
+                imagePreviewPanel.setPatientInfo(patientInfo);
+                JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, imagePreviewPanel, videoPanel);
+                splitPane.setOneTouchExpandable(true);
+                splitPane.setDividerLocation(270);
+                splitPane.setDividerSize(15);
+                splitPane.setName(patientInfo[0]);
+                imagePreviewPanel.setMinimumSize(new Dimension(270, splitPane.getHeight()));
+                ApplicationContext.imgView.jTabbedPane1.add(splitPane);
+
+                //The following lines are used for tab close button and event
+                ButtonTabComp tabComp = new ButtonTabComp(ApplicationContext.imgView.jTabbedPane1);
+                if (ApplicationContext.tabbedPane == null) {
+                    ApplicationContext.tabbedPane = (JTabbedPane) tabComp.getTabbedComponent();
+                }
+                ApplicationContext.imgView.jTabbedPane1.setTabComponentAt(ApplicationContext.imgView.jTabbedPane1.getTabCount() - 1, tabComp);
+                ApplicationContext.imgView.jTabbedPane1.setTabLayoutPolicy(JTabbedPane.WRAP_TAB_LAYOUT);
+                ApplicationContext.tabbedPane.setSelectedIndex(ApplicationContext.tabbedPane.getTabCount() - 1);
+                CreateThumbnails createThumbnails = new CreateThumbnails(imagePreviewPanel, null);
+                createThumbnails.start();
+                mediaPlayerComponent.getMediaPlayer().playMedia(videoFilePath);
+                videoPanel.startTimer();
+                ApplicationContext.imgView.getImageToolbar().disableImageTools();
+            }
+        } catch (Exception ex) {
+            System.out.println("exception : "+ex);
+            if (Desktop.isDesktopSupported()) {
+                try {
+                    if (ApplicationContext.tabbedPane == null || ApplicationContext.tabbedPane.getTabCount() == 0) {
+                        ApplicationContext.imgView.dispose();
+                    }
+                    Desktop.getDesktop().open(new File(videoFilePath));
+                } catch (IOException ex1) {
+                    Logger.getLogger(ShowImageView.class.getName()).log(Level.SEVERE, null, ex1);
+                }
+            }
         }
     }
 }

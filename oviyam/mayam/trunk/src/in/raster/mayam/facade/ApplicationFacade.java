@@ -41,6 +41,8 @@ package in.raster.mayam.facade;
 
 import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.delegates.InputArgumentsParser;
+import static in.raster.mayam.facade.ApplicationFacade.mainscreen;
+import static in.raster.mayam.facade.ApplicationFacade.splash;
 import in.raster.mayam.form.MainScreen;
 import in.raster.mayam.form.SplashScreen;
 import in.raster.mayam.form.display.Display;
@@ -67,10 +69,11 @@ public class ApplicationFacade {
     }
 
     public static void main(String[] args) {
-        InputArgumentsParser.parse(args);
         ApplicationFacade facade = new ApplicationFacade();
-        facade.setSystemProperties();
         facade.createSplash();
+        ApplicationContext.setAppLocale();
+        InputArgumentsParser.parse(args);
+        facade.setSystemProperties();
         facade.createMainScreen();
         if (!ApplicationContext.isJnlp) {
             splash.setVisible(false);

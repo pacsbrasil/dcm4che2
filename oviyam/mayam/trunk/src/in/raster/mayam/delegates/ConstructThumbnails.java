@@ -48,7 +48,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
-import java.util.NoSuchElementException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
@@ -101,11 +100,8 @@ public class ConstructThumbnails {
             } catch (IOException ex) {
                 Logger.getLogger(ConstructThumbnails.class.getName()).log(Level.SEVERE, null, ex);
             } catch (ConcurrentModificationException cme) {
-//                System.out.println("Concurrent Modification");
             } catch (IllegalArgumentException ile) {
-//                System.out.println("Illagal Arg");
             } catch (NullPointerException npe) {
-//                System.out.println("Null pointer");
             }
             ApplicationContext.databaseRef.updateThumbnailStatus(studyInstanceUid, seriesInstanceUid, sopInstanceUid);
         }

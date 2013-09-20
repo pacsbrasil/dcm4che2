@@ -39,12 +39,9 @@
 package in.raster.mayam.models;
 
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -71,6 +68,8 @@ public class InputArgumentValues {
     private String wadoProtocol;
     private String from;
     private String to;
+    //Added to include C-Move,C-GET Retrieve methods
+    private String retrieveType;
 
     public String getAccessionNumber() {
         return accessionNumber;
@@ -184,6 +183,14 @@ public class InputArgumentValues {
         this.to = to;
     }
 
+    public String getRetrieveType() {
+        return retrieveType;
+    }
+
+    public void setRetrieveType(String retrieveType) {
+        this.retrieveType = retrieveType;
+    }
+
     public String getSearchDate() {
         String searchDate = "";
         Date date = new Date();
@@ -215,12 +222,7 @@ public class InputArgumentValues {
         } else {
             studyDate = studyDate.replace("/", "");
             studyDate = studyDate.replace("-", "");
-            try {
-                Date sDate = dateFormat.parse(studyDate);
-                searchDate = dateFormat.format(sDate);
-            } catch (ParseException ex) {
-                System.out.println("Could not parse the study date : " + ex.getMessage());
-            }
+            searchDate = studyDate;
         }
         return searchDate;
 
