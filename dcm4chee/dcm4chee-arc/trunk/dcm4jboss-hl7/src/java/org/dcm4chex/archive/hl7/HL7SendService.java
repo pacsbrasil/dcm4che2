@@ -330,15 +330,14 @@ public class HL7SendService extends ServiceMBeanSupport implements
     private int forward(byte[] hl7msg, Document msg) {
         MSH msh = new MSH(msg);
         Map<String,String[]> param = new HashMap<String,String[]>();
-        String sending = msh.sendingApplication + '^' + msh.sendingFacility;
-        param.put("sending", new String[] { sending });
-        param.put("receiving", new String[] { msh.receivingApplication + '^'
-                + msh.receivingFacility });
+        String receiving = msh.receivingApplication + '^' + msh.receivingFacility;
+        param.put("sending", new String[] { msh.sendingApplication + '^' + msh.sendingFacility });
+        param.put("receiving", new String[] { receiving });
         param.put("msgtype", new String[] { msh.messageType + '^'
                 + msh.triggerEvent });
         String[] dests = forwardingRules.getForwardDestinationsFor(param);
         if (dests.length > 0) {
-            hl7msg = preprocessForward(hl7msg, msg, msh, sending);
+            hl7msg = preprocessForward(hl7msg, msg, msh, receiving);
         }
         int count = 0;
         for (int i = 0; i < dests.length; i++) {
@@ -360,9 +359,9 @@ public class HL7SendService extends ServiceMBeanSupport implements
         return count;
     }
 
-    private byte[] preprocessForward(byte[] hl7msg, Document msg, MSH msh, String sending) {
+    private byte[] preprocessForward(byte[] hl7msg, Document msg, MSH msh, String receiving) {
         String[] variations = new String[] {"_"+msh.messageType+"^"+msh.triggerEvent, "_"+msh.messageType, "" };
-        Templates xslt = templates.findTemplates(new String[]{sending}, FORWARD_XSL, variations, XSL_EXT);
+        Templates xslt = templates.findTemplates(new String[]{receiving}, FORWARD_XSL, variations, XSL_EXT);
         if (xslt != null) {
             log.info("Transform HL7 message with hl7forward stylesheet!");
             try {
