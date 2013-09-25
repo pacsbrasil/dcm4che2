@@ -178,7 +178,7 @@ public class PPSModel extends AbstractEditableDicomModel implements Serializable
                     log.warn("Missing PerformedSeriesSequence in PPS! PpsID:"+dataset.getString(Tag.PerformedProcedureStepID));
                 }
             } else {
-                numberOfSeries = seriess.size();
+                calcNumberOfChilds();
             }
         }
         return numberOfSeries;
@@ -211,14 +211,23 @@ public class PPSModel extends AbstractEditableDicomModel implements Serializable
                     }
                 }
             } else {
-                for (SeriesModel ser : seriess) {
-                    numberOfInstances += ser.getNumberOfInstances();
-                }
+                calcNumberOfChilds();
             }
         }
         return numberOfInstances;
     }
 
+    private void calcNumberOfChilds() {
+        boolean b = seriess.isEmpty();
+        if (b)
+            expand();
+        numberOfSeries = seriess.size();
+        for (SeriesModel ser : seriess) {
+            numberOfInstances += ser.getNumberOfInstances();
+        }
+        if (b)
+            collapse();
+    }
     public String getStatus() {
         return dataset != null 
                 ? dataset.getString(Tag.PerformedProcedureStepStatus)
