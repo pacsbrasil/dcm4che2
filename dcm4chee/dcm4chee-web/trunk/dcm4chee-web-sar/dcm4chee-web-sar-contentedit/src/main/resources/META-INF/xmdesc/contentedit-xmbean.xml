@@ -415,7 +415,7 @@
    <operation impact="ACTION">
       <description><![CDATA[ Delete study with given primary key.
       		]]> </description>
-      <name>moveStudyToTrash</name>
+      <name>moveStudyPkToTrash</name>
       <parameter>
         <description>Study pk</description>
         <name>pk</name>

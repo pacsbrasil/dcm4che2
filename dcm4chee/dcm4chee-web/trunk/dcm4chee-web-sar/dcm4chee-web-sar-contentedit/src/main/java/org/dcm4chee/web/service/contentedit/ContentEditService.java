@@ -401,7 +401,7 @@ public class ContentEditService extends ServiceMBeanSupport {
         return processStudyDeleted(lookupDicomEditLocal().moveStudiesToTrash(pks, trustPatientIdWithoutIssuer));
     }
     
-    public DicomObject[] moveStudyToTrash(long pk, boolean trustPatientIdWithoutIssuer) throws InstanceNotFoundException, MBeanException, ReflectionException {
+    public DicomObject[] moveStudyPkToTrash(long pk, boolean trustPatientIdWithoutIssuer) throws InstanceNotFoundException, MBeanException, ReflectionException {
         return processStudyDeleted(lookupDicomEditLocal().moveStudiesToTrash(new long[]{pk}, trustPatientIdWithoutIssuer));
     }
 
