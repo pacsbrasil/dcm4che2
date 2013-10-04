@@ -576,15 +576,17 @@ public class ExportManagerService extends AbstractScuService
             log.warn("No instance referenced in KOS! This manifest will be ignored!");
             return false;
         }
-        boolean notInStore = true;
-        for (String iuid: list) {
-            if (storeIUIDs.contains(iuid)) {
-                notInStore = false;
-                break;
+        if (!storeIUIDs.contains(sel.getString(Tags.SOPInstanceUID))) { //manifest is in seriesstored
+            boolean notInStore = true;
+            for (String iuid: list) {
+                if (storeIUIDs.contains(iuid)) {
+                    notInStore = false;
+                    break;
+                }
             }
+            if (notInStore)
+                return false;
         }
-        if (notInStore)
-            return false;
         final String[] iuids = (String[]) list.toArray(new String[list.size()]);
         log.info("Check if " + iuids.length
                 + " referenced objects were already received");
