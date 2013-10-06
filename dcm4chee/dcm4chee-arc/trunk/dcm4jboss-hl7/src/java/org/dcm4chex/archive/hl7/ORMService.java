@@ -45,16 +45,25 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 
 import javax.management.ObjectName;
 import javax.xml.transform.Templates;
 
+import org.apache.log4j.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.DcmObjectFactory;
+import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.Tags;
+import org.dcm4che2.audit.message.AuditMessage;
+import org.dcm4che2.audit.message.InstancesAccessedMessage;
+import org.dcm4che2.audit.message.ParticipantObject;
+import org.dcm4che2.audit.message.ParticipantObjectDescription;
+import org.dcm4che2.audit.message.ProcedureRecordMessage;
+import org.dcm4che2.audit.message.AuditEvent.ActionCode;
 import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.PPSStatus;
 import org.dcm4chex.archive.common.PatientMatching;
@@ -66,6 +75,7 @@ import org.dcm4chex.archive.ejb.interfaces.MWLManagerHome;
 import org.dcm4chex.archive.exceptions.DuplicateMWLItemException;
 import org.dcm4chex.archive.exceptions.PatientMergedException;
 import org.dcm4chex.archive.exceptions.PatientMismatchException;
+import org.dcm4chex.archive.mbean.HttpUserInfo;
 import org.dcm4chex.archive.mbean.TemplatesDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.XSLTUtils;
@@ -332,13 +342,13 @@ public class ORMService extends AbstractHL7Service {
     private void updateRequestAttributes(Dataset mwlitem,
             MWLManager mwlManager) throws Exception {
         MPPSManager mppsManager = getMPPSManager();
-        List<Dataset> mppsList = 
+        List<Dataset>[] mppsAndMovedStudies = 
             mppsManager.updateScheduledStepAttributes(mwlitem,
                     patientMatching, updateDifferentPatientOfExistingStudy);
-        if (!mppsList.isEmpty()) {
+        if (mppsAndMovedStudies != null) {
             if ("DISCONTINUED".equals(mwlitem.getItem(Tags.SPSSeq).getString(Tags.SPSStatus))) {
                 HashSet<String> seriesIuids = new HashSet<String>();
-                for (Dataset mpps : mppsList) {
+                for (Dataset mpps : mppsAndMovedStudies[0]) {
                     DcmElement perfSeriesSq = mpps.get(Tags.PerformedSeriesSeq);
                     if (perfSeriesSq != null && !perfSeriesSq.isEmpty()) {
                         for (int i = 0, n = perfSeriesSq.countItems(); i < n; i++) {
@@ -348,9 +358,12 @@ public class ORMService extends AbstractHL7Service {
                 }
                 mppsManager.removeRequestAttributesInSeries(mwlitem, seriesIuids);
             } else {
-                updateSPSStatus(mwlitem, mppsList.get(0), mwlManager);
-                updateRequestAttributesInSeries(mwlitem, mppsList, mppsManager);
+                updateSPSStatus(mwlitem, mppsAndMovedStudies[0].get(0), mwlManager);
+                updateRequestAttributesInSeries(mwlitem, mppsAndMovedStudies[0], mppsManager);
             }
+            logLinkingAction(mppsAndMovedStudies[0], mwlitem);
+            if (mppsAndMovedStudies[1] != null && mppsAndMovedStudies[1].size() > 0) 
+                logStudyMoved(mppsAndMovedStudies[1]);
         }
     }
 
@@ -602,4 +615,79 @@ public class ORMService extends AbstractHL7Service {
             }
         }
     }
+    
+    private void logLinkingAction(List<Dataset> mppsList, Dataset mwlitem) {
+        try {
+            DcmElement spsSQ = mwlitem.get(Tags.SPSSeq);
+            String spsID = spsSQ.getItem().getString(Tags.SPSID);
+            String accNr = mwlitem.getString(Tags.AccessionNumber);
+            StringBuffer sb = new StringBuffer();
+            sb.append("ORM result: ").append(
+               "DISCONTINUED".equals(mwlitem.getItem(Tags.SPSSeq).getString(Tags.SPSStatus)) ? 
+                       "Unlink" : "Link")
+               .append(" SPS ID: ").append(spsID).append(" and ");
+            int baseLen = sb.length();
+            for (Dataset mpps : mppsList) {
+                sb.append("MPPS iuid:").append(mpps.getString(Tags.SOPInstanceUID));
+                if (mpps.contains(Tags.ModifiedAttributesSeq)) {
+                    logProcedureRecord(mpps, accNr, ProcedureRecordMessage.UPDATE, sb.toString());
+                }
+                sb.setLength(baseLen);
+            }
+        } catch (Exception x) {
+            log.warn("Failed to audit linking action!", x);
+        }
+    }
+    private void logProcedureRecord(Dataset mppsAttrs, String accNr, ActionCode actionCode,
+            String desc) {
+        HttpUserInfo userInfo = new HttpUserInfo(AuditMessage
+                .isEnableDNSLookups());
+        if ( log.isDebugEnabled()) {
+            log.debug("log Procedure Record! actionCode:" + actionCode);
+            log.debug("mppsAttrs:");log.debug(mppsAttrs);
+        }
+        try {
+            ProcedureRecordMessage msg = new ProcedureRecordMessage(actionCode);
+            msg.addUserPerson(userInfo.getUserId(), null, null, userInfo
+                    .getHostName(), true);
+            PersonName pn = mppsAttrs.getPersonName(Tags.PatientName);
+            String pname = pn != null ? pn.format() : null;
+            msg.addPatient(mppsAttrs.getString(Tags.PatientID), pname);
+            ParticipantObjectDescription poDesc = new ParticipantObjectDescription();
+            if (accNr != null)
+                poDesc.addAccession(accNr);
+            ParticipantObject study = msg.addStudy(mppsAttrs.getItem(Tags.ScheduledStepAttributesSeq).getString(Tags.StudyInstanceUID),
+                    poDesc);
+            study.addParticipantObjectDetail("Description", desc);
+            msg.validate();
+            Logger.getLogger("auditlog").info(msg);
+        } catch (Exception x) {
+            log.warn("Audit Log 'Procedure Record' failed:", x);
+        }
+    }
+
+    private void logStudyMoved(List<Dataset> movedStudies) {
+        try {
+            HttpUserInfo userInfo = new HttpUserInfo(AuditMessage
+                    .isEnableDNSLookups());
+            InstancesAccessedMessage msg = new InstancesAccessedMessage(
+                    InstancesAccessedMessage.UPDATE);
+            msg.addUserPerson(userInfo.getUserId(), null, null, userInfo.getHostName(), true);
+            Dataset studyDs = movedStudies.get(0);
+            PersonName pn = studyDs.getPersonName(Tags.PatientName);
+            String pname = pn != null ? pn.format() : null;
+            msg.addPatient(studyDs.getString(Tags.PatientID), pname);
+            ParticipantObject study;
+            for (int i = 0, len = movedStudies.size(); i < len ; i++) {
+                studyDs = movedStudies.get(i);
+                study = msg.addStudy(studyDs.getString(Tags.StudyInstanceUID), null);
+                study.addParticipantObjectDetail("Description", "Study moved to Patient");
+            }
+            msg.validate();
+            Logger.getLogger("auditlog").info(msg);
+        } catch (Exception x) {
+            log.warn("Failed to audit study moved action!", x);
+        }
+    }
+
 }

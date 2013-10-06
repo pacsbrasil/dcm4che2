@@ -845,7 +845,7 @@ public abstract class MPPSManagerBean implements SessionBean {
      * @throws PatientMismatchException
      * @ejb.interface-method
      */
-    public List updateScheduledStepAttributes(Dataset mwlitem,
+    public List<Dataset>[] updateScheduledStepAttributes(Dataset mwlitem,
                 PatientMatching matching,
                 boolean updateDifferentPatientOfExistingStudy)
             throws PatientMismatchException {
@@ -864,7 +864,7 @@ public abstract class MPPSManagerBean implements SessionBean {
             log.debug("Found " + c.size() + " MPPS for Study " + suid);
         }
         if (c.isEmpty()) {
-            return Collections.EMPTY_LIST;
+            return null;
         }
         boolean discontinued = "DISCONTINUED".equals(mwlitem.getItem(Tags.SPSSeq).getString(Tags.SPSStatus));
         PatientLocal pat;
@@ -873,7 +873,7 @@ public abstract class MPPSManagerBean implements SessionBean {
         } catch (FinderException e) {
             throw new EJBException(e);
         }
-        List updated = new ArrayList(c.size());
+        List<Dataset>[] updatedPPSandStudiesToMove = new List[] {new ArrayList<Dataset>(c.size()), null};
         for (Iterator it = c.iterator(); it.hasNext();) {
             MPPSLocal mpps = (MPPSLocal) it.next();
             PatientLocal priorPat = mpps.getPatient();
@@ -886,7 +886,7 @@ public abstract class MPPSManagerBean implements SessionBean {
                     throw new PatientMismatchException(prompt);
                 }
                 log.info(prompt);
-                updatePatientOfMppsAndStudy(suid, mpps, pat);
+                updatedPPSandStudiesToMove[1] = updatePatientOfMppsAndStudy(suid, mpps, pat);
             }
             Dataset attrs = mpps.getAttributes();
             if (log.isDebugEnabled()) {
@@ -895,9 +895,16 @@ public abstract class MPPSManagerBean implements SessionBean {
                 log.debug(attrs);
             }
             DcmElement ssasq = attrs.get(Tags.ScheduledStepAttributesSeq);
+            String oldAccNr = mpps.getAccessionNumber();
             if (updateScheduledStepAttributes(mwlitem, ssasq, discontinued)) {
                 mpps.setAttributes(attrs);
-                updated.add(attrs);
+                attrs.putAll(mpps.getPatient().getAttributes(false));
+                String newAccNr = mpps.getAccessionNumber();
+                if ((oldAccNr == null && newAccNr != null) || (oldAccNr != null && newAccNr == null)) {
+                    attrs.putSQ(Tags.ModifiedAttributesSeq).addNewItem()
+                    .putSH(Tags.AccessionNumber, oldAccNr);
+                }
+                updatedPPSandStudiesToMove[0].add(attrs);
                 log.info("Updated Scheduled Step Attributes of "
                         + mpps.asString());
                 if (log.isDebugEnabled()) {
@@ -905,10 +912,10 @@ public abstract class MPPSManagerBean implements SessionBean {
                 }
             }
         }
-        return updated;
+        return updatedPPSandStudiesToMove;
     }
 
-    private void updatePatientOfMppsAndStudy(String suid, MPPSLocal mpps,
+    private List<Dataset> updatePatientOfMppsAndStudy(String suid, MPPSLocal mpps,
             PatientLocal pat) {
         PatientLocal priorPat = mpps.getPatient();
         String patPrompt = pat.asString();
@@ -917,19 +924,27 @@ public abstract class MPPSManagerBean implements SessionBean {
                 + " to " + patPrompt);
         mpps.setPatient(pat);
         Collection studies = priorPat.getStudies();
+        ArrayList movedStudies = new ArrayList<Dataset>(studies.size());
+        Dataset attrs;
+        StudyLocal study;
+        String studyPrompt;
         for (Iterator it = studies.iterator(); it.hasNext();) {
-            StudyLocal study = (StudyLocal) it.next();
-            String studyPrompt = study.asString();
+            study = (StudyLocal) it.next();
+            studyPrompt = study.asString();
             if (study.getStudyIuid().equals(suid)) {
                 log.info("Move " + studyPrompt + " from " + priorPatPrompt
                         + " to " + patPrompt);
                 it.remove();
                 study.setPatient(pat);
+                attrs = study.getAttributes(false);
+                attrs.putAll(pat.getAttributes(false));
+                movedStudies.add(attrs);
             } else {
                 log.warn(studyPrompt + " still associated with "
                         + priorPatPrompt);
             }
         }
+        return movedStudies;
     }
 
     private boolean contains(DcmElement refRequestSeq, String suid) {
