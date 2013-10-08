@@ -73,16 +73,22 @@ public class ForwardService extends ServiceMBeanSupport {
 
     protected void handleSeriesStoredNotification(Notification notif, Object handback) {
         SeriesStored seriesStored = (SeriesStored) notif.getUserData();
+        log.info("handle SeriesStored:"+seriesStored);
+        if (seriesStored.getRetrieveAET() == null && ignoreNotLocalRetrievable) {
+            log.warn("Ignore SeriesStored notification! Reason: Series is not locally retrievable.");
+            return;
+        }
         Map<String, String[]> param = new HashMap<String, String[]>();
         param.put("calling", new String[] { seriesStored.getSourceAET() });
-        String[] destAETs = forwardingRules
-                .getForwardDestinationsFor(param);
+        param.put("extRetrieveAET", new String[] { seriesStored.getExtRetrieveAET() });
+        param.put("archived", new String[] { String.valueOf(seriesStored.isArchived()) });
+        String[] destAETs = forwardingRules.getForwardDestinationsFor(param);
         for (int i = 0; i < destAETs.length; i++) {
             final String destAET = ForwardingRules.toAET(destAETs[i]);
             final long scheduledTime = ForwardingRules
                     .toScheduledTime(destAETs[i]);
             scheduleMove(seriesStored.getRetrieveAET(), destAET,
-                    forwardPriority, null,
+                    ForwardingRules.toPriority(destAET, forwardPriority), null,
                     seriesStored.getStudyInstanceUID(),
                     seriesStored.getSeriesInstanceUID(),
                     sopIUIDsOrNull(seriesStored),
