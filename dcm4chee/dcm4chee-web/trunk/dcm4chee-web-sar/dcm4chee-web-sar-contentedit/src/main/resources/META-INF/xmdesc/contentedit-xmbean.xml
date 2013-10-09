@@ -686,6 +686,17 @@
       <name>unlinkMpps</name>
       <parameter>
         <description>MPPS primary key</description>
+        <name>mppsPk</name>
+        <type>long</type>
+      </parameter>
+      <return-type>boolean</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description><![CDATA[ Unlink a list of MPPS. (only for internal use)
+      		]]> </description>
+      <name>unlinkMppsByPks</name>
+      <parameter>
+        <description>MPPS primary keys</description>
         <name>mppsPks</name>
         <type>[J</type>
       </parameter>

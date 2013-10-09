@@ -768,8 +768,12 @@ public class ContentEditService extends ServiceMBeanSupport {
             log.error("Attribute coercion failed! Can not add MWL attributes to MPPS Linked notification!", e);
         }
     }
-    public boolean unlinkMpps(long[] pk) {
-        MppsToMwlLinkResult result = lookupMppsToMwlLinkLocal().unlinkMpps(pk, updateMwlStatus, modifyingSystem, modifyReason, useIOCM);
+    public boolean unlinkMpps(long pk) {
+        return unlinkMppsByPks(new long[]{pk});
+    }
+    
+    public boolean unlinkMppsByPks(long[] pks) {
+        MppsToMwlLinkResult result = lookupMppsToMwlLinkLocal().unlinkMpps(pks, updateMwlStatus, modifyingSystem, modifyReason, useIOCM);
         for (MPPS mpps : result.getMppss()) {
             DicomObject mppsAttrs = mpps.getAttributes();
             DicomObject patAttrs = mpps.getPatient().getAttributes();

@@ -259,8 +259,8 @@ public class ContentEditDelegate extends BaseMBeanDelegate {
     
     public boolean unlink(PPSModel mpps)  throws InstanceNotFoundException, MBeanException, ReflectionException, IOException {
         boolean status = (Boolean) server.invoke(serviceObjectName, "unlinkMpps", 
-                new Object[]{new long[]{mpps.getPk()}}, 
-                new String[]{long[].class.getName()});
+                new Object[]{mpps.getPk()}, 
+                new String[]{long.class.getName()});
         mpps.getStudy().expand();
         return status;
     }
@@ -276,7 +276,7 @@ public class ContentEditDelegate extends BaseMBeanDelegate {
         for (int i = 0 ; i < pks.length ; i++) {
             pks[i] = ppss.get(i).getPk();
         }
-        if (!(Boolean) server.invoke(serviceObjectName, "unlinkMpps", 
+        if (!(Boolean) server.invoke(serviceObjectName, "unlinkMppsByPks", 
                 new Object[]{pks}, 
                 new String[]{long[].class.getName()})) {
                 failed++;
