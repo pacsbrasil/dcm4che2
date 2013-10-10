@@ -84,6 +84,21 @@ Default behaviour (<i>false</i>) is to ignore such SC messages.
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="isUpdateRequestAttributesForXO"
+      setMethod="setUpdateRequestAttributesForXO">
+      <description><![CDATA[Update Request Attributes if XO message is received after instances/MPPS are received.<br />
+                If disabled, Attributes are only updated by NW and CA messages.<br />
+                You should only enable this feature if the Order Filler fully supports linking via ORM messages.<br />
+                Note: Request Attributes will be also updated if the order is created for an update message (XO or SC, 
+                see <i>OrderControlOperationMap</i> and <i>CreateMissingOrderOnStatusChange</i>)
+		]]></description>
+      <name>UpdateRequestAttributesForXO</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="isUpdateDifferentPatientOfExistingStudy"
       setMethod="setUpdateDifferentPatientOfExistingStudy">
       <description><![CDATA[Controls the behavior on receive of an order

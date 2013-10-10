@@ -118,6 +118,7 @@ public class ORMService extends AbstractHL7Service {
     
     private boolean updateDifferentPatientOfExistingStudy;
     private boolean createMissingOrderOnStatusChange;
+    private boolean updateRequestAttributesForXO;
     
     private ObjectName deviceServiceName;
 
@@ -196,6 +197,14 @@ public class ORMService extends AbstractHL7Service {
 
     public final void setUpdateDifferentPatientOfExistingStudy(boolean update) {
         this.updateDifferentPatientOfExistingStudy = update;
+    }
+
+    public boolean isUpdateRequestAttributesForXO() {
+        return updateRequestAttributesForXO;
+    }
+
+    public void setUpdateRequestAttributesForXO(boolean updateRequestAttributesForXO) {
+        this.updateRequestAttributesForXO = updateRequestAttributesForXO;
     }
 
     public final String getDefaultModality() {
@@ -324,8 +333,10 @@ public class ORMService extends AbstractHL7Service {
             log("->Schedule New ", ds);
             logDataset("Insert MWL Item:", ds);
             mwlManager.addWorklistItem(ds, patientMatching);
+            updateRequestAttributes(ds, mwlManager);
+        } else if (updateRequestAttributesForXO) {
+            updateRequestAttributes(ds, mwlManager);
         }
-        updateRequestAttributes(ds, mwlManager);
     }
 
     protected void processCA(Dataset ds, MWLManager mwlManager) throws Exception {
