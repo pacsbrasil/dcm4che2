@@ -552,8 +552,8 @@ public class UserAccessBean implements UserAccess {
     public void updateAETInAETGroups(String oldAET, String newAET) {
         List<AETGroup> aetGroups = getAllAETGroups();
         for (AETGroup aetGroup : aetGroups) {
-            aetGroup.getAets().remove(oldAET);
-            aetGroup.getAets().add(newAET);
+            if (aetGroup.getAets().remove(oldAET))
+                aetGroup.getAets().add(newAET);
         }
         saveAETGroups(aetGroups);
     }
