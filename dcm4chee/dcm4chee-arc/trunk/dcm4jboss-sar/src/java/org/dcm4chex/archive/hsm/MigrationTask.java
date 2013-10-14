@@ -112,10 +112,10 @@ public class MigrationTask implements Runnable {
             }
         }
         int nrOfFiles = 0;
-        String targetTarFilename = srcTarFilename;
+        String targetTarFilename = service.toTargetFilename(srcTarFilename);
         File target = null;
         try {
-            target = service.prepareHSMFile(targetFsId, srcTarFilename);
+            target = service.prepareHSMFile(targetFsId, targetTarFilename);
             if(!target.exists()) {
                 if (!target.getParentFile().exists()) {
                     log.info("M-CREATE Directory "+target);
@@ -142,7 +142,7 @@ public class MigrationTask implements Runnable {
                       destCh.close();
                 }
             }
-            targetTarFilename = service.storeHSMFile(target, targetFsId, srcTarFilename);
+            targetTarFilename = service.storeHSMFile(target, targetFsId, targetTarFilename);
             nrOfFiles = mgr.migrateFilesOfTarFile(srcFsId, srcTarFilename, targetFsId, targetTarFilename, 
                     FileStatus.toInt(service.getTargetFileStatus()));
             if (service.isVerifyTar()) {

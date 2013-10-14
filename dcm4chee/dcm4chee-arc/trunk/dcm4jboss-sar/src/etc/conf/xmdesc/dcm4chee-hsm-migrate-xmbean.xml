@@ -189,6 +189,18 @@
          <value value="true"/>
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="isCreateNewTargetFilename"
+      setMethod="setCreateNewTargetFilename">
+      <description><![CDATA[Create new target filename. <br />
+          Should be used if source filename is only a UID (e.g. Centera) and target filesystem is file based.
+          ]]></description>
+      <name>CreateNewTargetFilename</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
+      </descriptors>
+   </attribute>
    <attribute access="read-only"
       getMethod="getOffsetForRemove">
       <description>Current DB offset for checking tar files for removal.
