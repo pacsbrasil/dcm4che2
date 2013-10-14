@@ -336,11 +336,9 @@ public class HL7SendService extends ServiceMBeanSupport implements
         param.put("msgtype", new String[] { msh.messageType + '^'
                 + msh.triggerEvent });
         String[] dests = forwardingRules.getForwardDestinationsFor(param);
-        if (dests.length > 0) {
-            hl7msg = preprocessForward(hl7msg, msg, msh, receiving);
-        }
         int count = 0;
         for (int i = 0; i < dests.length; i++) {
+            hl7msg = preprocessForward(hl7msg, msg, msh, dests[i]);
             HL7SendOrder order = new HL7SendOrder(hl7msg, dests[i]);
             try {
                 order.processOrderProperties(msh);
