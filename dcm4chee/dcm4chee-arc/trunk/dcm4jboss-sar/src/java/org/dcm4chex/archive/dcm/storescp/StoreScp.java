@@ -1097,6 +1097,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             }
             return true;
         }
+        log.debug("IgnoreDuplicate:"+result+" dontChangeReceivedStatus:"+dontChangeReceivedStatus[0]);
         return result;
     }
     
