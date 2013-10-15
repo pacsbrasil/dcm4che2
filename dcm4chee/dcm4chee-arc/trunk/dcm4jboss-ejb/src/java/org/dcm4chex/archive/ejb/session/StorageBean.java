@@ -262,6 +262,10 @@ public abstract class StorageBean implements SessionBean {
             if (!dontChangeReceivedStatus) {
                 instance.setInstanceStatus(RECEIVED);
                 instance.getSeries().setSeriesStatus(RECEIVED);
+            } else {
+                if (log.isDebugEnabled())
+                    log.debug("Dont change Received Status! instStatus:"+instance.getInstanceStatus()+
+                        " seriesStatus:"+instance.getSeries().getSeriesStatus());
             }
             log.info("inserted records for instance[uid=" + iuid + "]");
             return coercedElements;
