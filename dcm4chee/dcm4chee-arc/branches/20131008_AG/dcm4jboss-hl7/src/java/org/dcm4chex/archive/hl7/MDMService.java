@@ -86,7 +86,7 @@ public class MDMService extends ORU_MDMService {
         return el != null ? ((Element) el).getText() : "";
     }
     
-    private byte[] getPDF(Document msg) {
+    protected byte[] getPDF(Document msg) {
         List obxs = msg.getRootElement().elements("OBX");
         String base64 = "";
         for (Iterator iter = obxs.iterator(); iter.hasNext();) {
