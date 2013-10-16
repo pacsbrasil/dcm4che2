@@ -704,12 +704,14 @@ class SqlBuilder {
             return;
 
         SqlBuilder subQuery = new SqlBuilder();
+        if (!subQuery.addCodeMatch(null, item))
+            return;
+
         subQuery.setSelect1();
         subQuery.setFrom(tables);
         subQuery.setRelations(relations);
-        if (!subQuery.addCodeMatch(null, item))
-            return;
-        
+        subQuery.addFieldValueMatch(null, parentRelations[0], false, null, 
+                parentRelations[1]);
         Match match = new Match.Subquery(subQuery, null, null);
         if (!type2) {
             addMatch(match);
