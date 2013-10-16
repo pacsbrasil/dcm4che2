@@ -416,7 +416,7 @@ public class HL7ServerService extends ServiceMBeanSupport implements
         }
     }
 
-    private HL7Service getService(MSH msh) throws HL7Exception {
+    protected HL7Service getService(MSH msh) throws HL7Exception {
         String messageType = msh.messageType + '^' + msh.triggerEvent;
         HL7Service service = (HL7Service) serviceRegistry.get(messageType);
         if (service == null) {
@@ -503,15 +503,7 @@ public class HL7ServerService extends ServiceMBeanSupport implements
                             log.error("Failed to preprocess HL7 message!", x);
                         }
                     }
-                    MSH msh = new MSH(msg);
-                    HL7Service service = getService(msh);
-                    if (service == null || service.process(msh, msg, hl7out, getXsltSearchDirectories(inetAddr, msh))) {
-                        ack(msg, hl7out, null);
-                    }
-                    if (sendNotification) {
-                        sendNotification(makeNotification(realloc(bb, msglen,msglen),
-                                msg));
-                    }
+                    process(bb, msglen, msg, hl7out, inetAddr);
                 } catch (SAXException e) {
                     throw new HL7Exception("AE", "Failed to parse message ", e);
                 }
@@ -536,7 +528,18 @@ public class HL7ServerService extends ServiceMBeanSupport implements
         }
     }
 
-    private String[] getXsltSearchDirectories(InetSocketAddress inetAddr, MSH msh) {
+    protected void process(byte[] bb, int msglen, Document msg, ContentHandler hl7out, InetSocketAddress inetAddr) throws HL7Exception {
+        MSH msh = new MSH(msg);
+        HL7Service service = getService(msh);
+        if (service == null || service.process(msh, msg, hl7out, getXsltSearchDirectories(inetAddr, msh))) {
+            ack(msg, hl7out, null);
+        }
+        if (sendNotification) {
+            sendNotification(makeNotification(realloc(bb, msglen, msglen), msg));
+        }
+    }
+
+    protected String[] getXsltSearchDirectories(InetSocketAddress inetAddr, MSH msh) {
         String sending = msh.sendingApplication+"^"+msh.sendingFacility;
         String ipAddr = !useHostSubdirs || inetAddr == null ? null : inetAddr.getAddress().getHostAddress();
         String hostname = ipAddr == null ? null : inetAddr.getHostName();
@@ -583,7 +586,7 @@ public class HL7ServerService extends ServiceMBeanSupport implements
         }
     }
 
-    private byte[] realloc(byte[] bb, int len, int newlen) {
+    protected byte[] realloc(byte[] bb, int len, int newlen) {
         byte[] out = new byte[newlen];
         System.arraycopy(bb, 0, out, 0, len);
         return out;

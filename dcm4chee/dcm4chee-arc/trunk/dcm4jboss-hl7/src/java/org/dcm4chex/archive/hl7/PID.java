@@ -52,7 +52,7 @@ import org.regenstrief.xhl7.HL7XMLLiterate;
  * @version $Revision$ $Date$
  * @since Jun 20, 2007
  */
-class PID {
+public class PID {
     
     private final ArrayList pids = new ArrayList();
 
