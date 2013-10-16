@@ -43,6 +43,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -124,6 +125,30 @@ public class FileCache {
     public void setJournalFilePathFormat(String format) {
         this.journalFilePathFormat = new SimpleDateFormat(format);
     }
+    
+    /** Finds the date of the oldest journal file */
+    public Date findOldestJournalDate() throws IOException {
+    	return findOldestJournalDate(journalRootDir);
+    }
+    
+	private Date findOldestJournalDate(File dir) {
+		String[] fnames = dir.list();
+		Arrays.sort(fnames);
+		if (fnames.length == 0) {
+			try {
+				return getJournalDate(dir);
+			} catch (Exception e) {
+				return null;
+			}
+		}
+		
+        for (String fname : fnames) {
+            File subdir = new File(dir, fname);
+            Date d = findOldestJournalDate(subdir);
+            if( d!=null ) return d;
+        }
+        return null;
+	}
 
     /** Record a newly created file in the journaling cache, (default instance) */
     public void record(File f) throws IOException {
@@ -166,6 +191,21 @@ public class FileCache {
     private synchronized File getJournalDirectory(long time) {
         return new File(journalRootDir,
                     journalFilePathFormat.format(new Date(time)));
+    }
+    
+    public synchronized Date getJournalDate(File dir) throws IOException {
+    	if( dir.isFile() ) dir = dir.getParentFile();
+    	String sDir = dir.getCanonicalPath();
+    	String prefix = journalRootDir.getCanonicalPath();
+    	sDir = sDir.substring(prefix.length()+1);
+    	sDir = sDir.replace('\\', '/');
+    	try {
+    		return journalFilePathFormat.parse(sDir);
+    	}
+    	catch(ParseException e) {
+    		log.warn("Can't parse {}", dir);
+    		throw new IllegalArgumentException(e);
+    	}
     }
 
     /** Return true if the free is running file was created, or is very old.   Create
@@ -215,7 +255,7 @@ public class FileCache {
             }
         }
         try {
-            return free(size, journalRootDir);
+            return free(size, journalRootDir,true);
         } finally {
             freeIsRunning = false;
             new File(journalRootDir,ZZZFREE_IS_RUNNING).delete();
@@ -250,18 +290,23 @@ public class FileCache {
         return true;
     }
 
-    private long free(long size, File dir) throws IOException {
+    private long free(long size, File dir, boolean endMost) throws IOException {
         long free = 0L;
         if (dir.isDirectory()) {
             String[] fnames = dir.list();
             Arrays.sort(fnames);
+            int i=fnames.length;
             for (String fname : fnames) {
-                free += free(size - free, new File(dir, fname));
+                free += free(size - free, new File(dir, fname), endMost && (i--<2));
                 if (free >= size) {
                     break;
                 }
             }
         } else {
+        	if(endMost) {
+        		log.warn("Got to the last (current) journal system without being able to clean up enough space, not cleaning current journal to prevent race condition.");
+        		return 0L;
+        	}
             BufferedReader journal = new BufferedReader(new FileReader(dir));
             try {
                 String path;
