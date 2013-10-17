@@ -199,7 +199,7 @@ public abstract class UPSBean implements EntityBean {
     private void updateScheduledHumanPerformers(DcmElement oldPerformers,
             DcmElement newPerformers)
             throws CreateException, FinderException {
-        if (!equals(oldPerformers, newPerformers)) {
+        if (newPerformers != null && !newPerformers.equals(oldPerformers)) {
             Collection<CodeLocal> c = getScheduledHumanPerformerCodes();
             c.clear();
             if (newPerformers != null)
@@ -213,7 +213,7 @@ public abstract class UPSBean implements EntityBean {
     }
     private void updateRefRequests(DcmElement oldRequests,
             DcmElement newRequests) throws CreateException, RemoveException {
-        if (!equals(oldRequests, newRequests)) {
+        if (newRequests != null && !newRequests.equals(oldRequests)) {
             Collection<UPSRequestLocal> c = getRefRequests();
             for (UPSRequestLocal refRequest :
                 c.toArray(new UPSRequestLocal[c.size()])) {
@@ -229,7 +229,7 @@ public abstract class UPSBean implements EntityBean {
 
     private void updateRelatedPS(DcmElement oldRelPS, DcmElement newRelPS)
             throws CreateException, RemoveException {
-        if (!equals(oldRelPS, newRelPS)) {
+        if (newRelPS != null && !newRelPS.equals(oldRelPS)) {
             Collection<UPSRelatedPSLocal> c = getRelatedProcedureSteps();
             for (UPSRelatedPSLocal relatedPS :
                 c.toArray(new UPSRelatedPSLocal[c.size()])) {
@@ -245,7 +245,7 @@ public abstract class UPSBean implements EntityBean {
 
     private void updateReplacedPS(DcmElement oldReplPS, DcmElement newReplPS)
             throws CreateException, RemoveException {
-        if (!equals(oldReplPS, newReplPS)) {
+        if (newReplPS != null && !newReplPS.equals(oldReplPS)) {
             Collection<UPSReplacedPSLocal> c = getReplacedProcedureSteps();
             for (UPSReplacedPSLocal replacedPS :
                 c.toArray(new UPSReplacedPSLocal[c.size()])) {
@@ -583,20 +583,16 @@ public abstract class UPSBean implements EntityBean {
         setAttributes(ds);
     }
 
-    private static boolean equals(Object o1, Object o2) {
-        return o1 == null ? o2 == null : o1.equals(o2);
-    }
-
     private void updateWorkitemCode(Dataset oldCode, Dataset newCode)
             throws CreateException, FinderException {
-        if (!equals(oldCode, newCode))
+        if (newCode != null && !newCode.equals(oldCode))
             setScheduledWorkItemCode(CodeBean.valueOf(codeHome, newCode));
     }
 
     private void updateScheduledProcessingApplicationsCodes(
             DcmElement oldCodes, DcmElement newCodes)
             throws CreateException, FinderException {
-        if (!equals(newCodes, oldCodes)) {
+        if (newCodes != null && !newCodes.equals(oldCodes)) {
             Collection<CodeLocal> codes = getScheduledProcessingApplicationsCodes();
             codes.clear();
             CodeBean.addCodesTo(codeHome, newCodes, codes);
@@ -606,7 +602,7 @@ public abstract class UPSBean implements EntityBean {
     private void updateScheduledStationNameCodes(
             DcmElement oldCodes,DcmElement newCodes)
             throws CreateException, FinderException {
-        if (!equals(oldCodes, newCodes)) {
+        if (newCodes != null && !newCodes.equals(oldCodes)) {
             Collection<CodeLocal> codes = getScheduledStationNameCodes();
             codes.clear();
             CodeBean.addCodesTo(codeHome, newCodes, codes);
@@ -616,7 +612,7 @@ public abstract class UPSBean implements EntityBean {
     private void updateScheduledStationClassCodes(
             DcmElement oldCodes, DcmElement newCodes)
             throws CreateException, FinderException {
-        if (!equals(oldCodes, newCodes)) {
+        if (newCodes != null && !newCodes.equals(oldCodes)) {
             Collection<CodeLocal> codes = getScheduledStationClassCodes();
             codes.clear();
             CodeBean.addCodesTo(codeHome, newCodes, codes);
@@ -626,7 +622,7 @@ public abstract class UPSBean implements EntityBean {
     private void updateScheduledStationGeographicLocationCodes(
             DcmElement oldCodes, DcmElement newCodes)
             throws CreateException, FinderException {
-        if (!equals(oldCodes, newCodes)) {
+        if (newCodes != null && !newCodes.equals(oldCodes)) {
             Collection<CodeLocal> codes =
                     getScheduledStationGeographicLocationCodes();
             codes.clear();
