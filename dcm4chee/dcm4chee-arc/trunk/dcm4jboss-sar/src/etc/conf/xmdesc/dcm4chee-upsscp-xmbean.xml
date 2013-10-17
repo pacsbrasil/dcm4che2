@@ -160,12 +160,12 @@ received UPS N-CREATE request *and* in the matching Patient Record.
       getMethod="isNoMatchForNoValue"
       setMethod="setNoMatchForNoValue">
       <description>Do not match entities with zero-length value for specified
-      matching keys (= non DICOM conform matching behavior).
+      matching keys.
       </description>
       <name>NoMatchForNoValue</name>
       <type>boolean</type>
       <descriptors>
-         <value value="false"/>
+         <value value="true"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"

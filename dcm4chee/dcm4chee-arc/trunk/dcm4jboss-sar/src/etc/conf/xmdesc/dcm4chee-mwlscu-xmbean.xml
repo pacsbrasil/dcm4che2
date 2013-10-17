@@ -75,14 +75,14 @@
       getMethod="isNoMatchForNoValue"
       setMethod="setNoMatchForNoValue">
       <description><![CDATA[Do not match entities with zero-length value for
-specified matching keys (= non DICOM conform matching behavior). Effective if
+specified matching keys. Effective if
 <b>CalledAETitle</b> = <tt>LOCAL</tt>. Also effective for MWL SCP Service with
 <b>UseProxy</b> = <tt>false</tt>.]]>
       </description>
       <name>NoMatchForNoValue</name>
       <type>boolean</type>
       <descriptors>
-         <value value="false"/>
+         <value value="true"/>
       </descriptors>
    </attribute>
    
