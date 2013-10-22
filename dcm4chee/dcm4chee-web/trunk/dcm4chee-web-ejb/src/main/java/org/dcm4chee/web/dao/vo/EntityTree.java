@@ -42,6 +42,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -174,7 +175,19 @@ public class EntityTree implements Serializable {
         if (mapStudies != null) {
             return mapStudies.remove(study) != null;
         } else {
-            log.warn("Patient of study to remove not in entityTreeMap!");
+            Study st = null;
+            for (Map<Study, Map<Series, Set<Instance>>> studies : entityTreeMap.values()) {
+                for (Iterator<Study> it = studies.keySet().iterator() ; it.hasNext() ;) {
+                    st = it.next();
+                    if (st.getPk() == study.getPk())
+                        break;
+                    st = null;
+                }
+                log.info("st:"+st);
+                if (st != null && studies.remove(st) != null)
+                    return true;
+            }
+            log.warn("Patient of study to remove not in entityTreeMap and study not found in EntityTree!");
             return false;
         }
     }
