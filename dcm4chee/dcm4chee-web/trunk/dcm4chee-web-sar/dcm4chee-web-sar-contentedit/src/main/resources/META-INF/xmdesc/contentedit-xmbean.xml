@@ -66,6 +66,19 @@
          <value value="false" />
       </descriptors>
    </attribute>
+   <attribute access="read-write"
+      getMethod="getIocmForwardDelay"
+      setMethod="setIocmForwardDelay">
+      <description><![CDATA[Delay in milliseconds to send modified objects to IOCM archive.<br />
+      		This delay may assure that the rejection note is processed before the modified objects are sent.<br />
+      		(e.g. for move study to patient)
+      ]]></description>
+      <name>IocmForwardDelay</name>
+      <type>long</type>
+      <descriptors>
+         <value value="0" />
+      </descriptors>
+   </attribute>
 
    <attribute access="read-write"
       getMethod="getContributingEquipment"

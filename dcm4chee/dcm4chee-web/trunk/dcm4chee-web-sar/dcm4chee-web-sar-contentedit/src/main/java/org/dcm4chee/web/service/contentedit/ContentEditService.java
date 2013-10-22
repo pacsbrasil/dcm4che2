@@ -43,7 +43,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -162,6 +161,8 @@ public class ContentEditService extends ServiceMBeanSupport {
     private Templates dcm2To14Tpl, dcm14To2Tpl;
 
     private boolean enableForwardOnPatientUpdate;
+
+    private long iocmForwardDelay;
     
     public String getUIDRoot() {
         return UIDUtils.getRoot();
@@ -195,6 +196,14 @@ public class ContentEditService extends ServiceMBeanSupport {
         if (useIOCM)
             checkAttributeFilterForIOCM();
         this.useIOCM = useIOCM;
+    }
+
+    public long getIocmForwardDelay() {
+        return iocmForwardDelay;
+    }
+
+    public void setIocmForwardDelay(long iocmForwardDelay) {
+        this.iocmForwardDelay = iocmForwardDelay;
     }
 
     private void checkAttributeFilterForIOCM() {
@@ -450,12 +459,17 @@ public class ContentEditService extends ServiceMBeanSupport {
         return processMoveEntities(entityTree, targetAttrs, EXCLUDE_PPS_ATTRS);
     }
 
-    public int moveStudiesToPatient(long[] studyPks, long patPk) throws InstanceNotFoundException, MBeanException, ReflectionException {
+    public int moveStudiesToPatient(long[] studyPks, long patPk) {
+        return moveStudiesToPatient(studyPks, patPk);
+    }
+    public int moveStudiesToPatient(long[] studyPks, long patPk, Map<String, String> new2oldUIDmap) throws InstanceNotFoundException, MBeanException, ReflectionException {
         if ( studyPks == null || studyPks.length < 1) {
             return 0;
         }
         EntityTree entityTree = lookupDicomEditLocal().moveStudiesToPatient(studyPks, patPk, useIOCM);
         if (!entityTree.isEmpty()) {
+            if (new2oldUIDmap != null)
+                entityTree.getUIDMap().putAll(new2oldUIDmap);
             propagateMoveStudiesToPatient(entityTree);
         }
         return entityTree.getAllInstances().size();
@@ -503,7 +517,7 @@ public class ContentEditService extends ServiceMBeanSupport {
                     Study study = entityTree.getEntityTreeMap().values().iterator().next().keySet().iterator().next();
                     Map<Series, Set<Instance>> mapSeries = entityTree.getEntityTreeMap().values().iterator().next().values().iterator().next();
                     DicomObject fwdIan = this.makeIAN(study, mapSeries, Availability.ONLINE);
-                    scheduleForward(fwdIan, StringUtils.split(calledAETs, '\\'));
+                    forwardIocmModifiedObject(calledAETs, fwdIan);
                 }
 
             }
@@ -511,13 +525,14 @@ public class ContentEditService extends ServiceMBeanSupport {
                 for (int j = 0 ; j < suids.length ; j++ ) {
                     obj.putString(Tag.StudyInstanceUID, VR.UI, suids[j]);
                     DicomObject fwdIan = lookupDicomEditLocal().getIanForForwardModifiedObject(obj, "STUDY");
-                    scheduleForward(fwdIan, forwardModifiedToAETs);
+                    scheduleForward(fwdIan, forwardModifiedToAETs, 0);
                 }
             }
         } catch (Exception e) {
             log.error("Scheduling Attributes Modification Notification (Move Study To Patient) failed!", e);
         }
     }
+
     public int moveStudyToPatient(String studyIUID, String patId, String issuer) throws InstanceNotFoundException, MBeanException, ReflectionException {
         EntityTree entityTree = lookupDicomEditLocal().moveStudyToPatient(studyIUID, patId, issuer, useIOCM);
         if (!entityTree.isEmpty()) {
@@ -701,7 +716,7 @@ public class ContentEditService extends ServiceMBeanSupport {
                 studyPks[i++] = s.getPk();
                 tree.removeStudy(s);
             }
-            this.moveStudiesToPatient(studyPks, pat.getPk());
+            this.moveStudiesToPatient(studyPks, pat.getPk(), tree.getUIDMap());
         }
         log.debug("forwardModifiedToAETs:{}", forwardModifiedToAETs);
         ArrayList<DicomObject> fwdIANs = this.getIANs(tree, null);
@@ -712,11 +727,11 @@ public class ContentEditService extends ServiceMBeanSupport {
                 String calledAETs = (String) server.getAttribute(rejNoteServiceName, "CalledAETitles");
                 if (NONE.equals(calledAETs)) {
                     log.info("IOCM: No CalledAETitles configured in RecectionNote SCU service! Ignore forward.");
-                } else {
+                } else if (!tree.getEntityTreeMap().isEmpty() && !tree.getEntityTreeMap().values().iterator().next().isEmpty()){
                     Study study = tree.getEntityTreeMap().values().iterator().next().keySet().iterator().next();
                     Map<Series, Set<Instance>> mapSeries = tree.getEntityTreeMap().values().iterator().next().values().iterator().next();
                     DicomObject fwdIan = this.makeIAN(study, mapSeries, Availability.ONLINE);
-                    scheduleForward(fwdIan, StringUtils.split(calledAETs, '\\'));
+                    forwardIocmModifiedObject(calledAETs, fwdIan);
                 }
             } catch (Exception x) {
                 log.error("Propagate changes of linking MPPS to MWL via IOCM failed!", x);
@@ -724,7 +739,7 @@ public class ContentEditService extends ServiceMBeanSupport {
         }
         if (this.forwardModifiedToAETs != null && fwdIANs != null) {
             for (DicomObject ian : fwdIANs) {
-                this.scheduleForward(ian, forwardModifiedToAETs);
+                this.scheduleForward(ian, forwardModifiedToAETs, 0);
             }
         }
         if (sendIANonMppsLinked) {
@@ -801,7 +816,7 @@ public class ContentEditService extends ServiceMBeanSupport {
                         Study study = tree.getEntityTreeMap().values().iterator().next().keySet().iterator().next();
                         Map<Series, Set<Instance>> mapSeries = tree.getEntityTreeMap().values().iterator().next().values().iterator().next();
                         DicomObject fwdIan = this.makeIAN(study, mapSeries, Availability.ONLINE);
-                        scheduleForward(fwdIan, StringUtils.split(calledAETs, '\\'));
+                        forwardIocmModifiedObject(calledAETs, fwdIan);
                     }
                 } catch (Exception x) {
                     log.error("Propagate changes of linking MPPS to MWL via IOCM failed!", x);
@@ -1071,7 +1086,7 @@ public class ContentEditService extends ServiceMBeanSupport {
                 if (studyIUIDs.length > 0) {
                     obj.putString(Tag.StudyInstanceUID, VR.UI, studyIUIDs[0]);
                     DicomObject fwdIan = lookupDicomEditLocal().getIanForForwardModifiedObject(obj, "STUDY");
-                    scheduleForward(fwdIan, forwardModifiedToAETs);
+                    scheduleForward(fwdIan, forwardModifiedToAETs, 0);
                 } else {
                     log.info("Patient has no Study! Forward of modified patient ignored!");
                 }
@@ -1088,7 +1103,7 @@ public class ContentEditService extends ServiceMBeanSupport {
                 }
                 if (forwardModifiedToAETs != null) {
                     DicomObject fwdIan = lookupDicomEditLocal().getIanForForwardModifiedObject(obj, qrLevel);
-                    scheduleForward(fwdIan, forwardModifiedToAETs);
+                    scheduleForward(fwdIan, forwardModifiedToAETs,0);
                 }
             } else {
                 log.debug("No further action after Dicom Edit defined for level "+qrLevel+"!");
@@ -1096,7 +1111,11 @@ public class ContentEditService extends ServiceMBeanSupport {
         }        
     }
 
-    private void scheduleForward(DicomObject fwdIan, String[] aets) {
+    private void forwardIocmModifiedObject(String calledAETs, DicomObject fwdIan) {
+        scheduleForward(fwdIan, StringUtils.split(calledAETs, '\\'), System.currentTimeMillis()+iocmForwardDelay);
+    }
+
+    private void scheduleForward(DicomObject fwdIan, String[] aets, long scheduleTime) {
         log.debug("fwdIan:{}", fwdIan);
         if (fwdIan == null) {
             log.warn("Forward of modified Object ignored! Reason: No ONLINE or NEARLINE instance found!");
@@ -1105,8 +1124,9 @@ public class ContentEditService extends ServiceMBeanSupport {
                 try {
                     log.info("Scheduling forward of modified object to {}", aets[i]);
                     server.invoke(moveScuServiceName, "scheduleMoveInstances", 
-                            new Object[]{fwdIan, aets[i], null}, 
-                            new String[]{DicomObject.class.getName(), STRING, Integer.class.getName()});
+                            new Object[]{fwdIan, aets[i], null, scheduleTime}, 
+                            new String[]{DicomObject.class.getName(), STRING, Integer.class.getName(), 
+                                long.class.getName()});
                 } catch (Exception e) {
                     log.error("Scheduling forward of modified object to "+aets[i]+" failed!", e);
                 }

@@ -108,16 +108,21 @@ public class IOCMSupport {
     private DicomObject toRejectionNote(Patient pat, Map<Study, Map<Series, Set<Instance>>> entityTree, Map<String, String> uidMap) {
         DicomObject kos = newKeyObject(toUID(entityTree.keySet().iterator().next().getStudyInstanceUID(), uidMap));
         DicomElement crpeSeq = kos.putSequence(Tag.CurrentRequestedProcedureEvidenceSequence);
+        DicomElement contentSeq = kos.putSequence(Tag.ContentSequence);
         pat.getAttributes().copyTo(kos);
         for (Map.Entry<Study, Map<Series, Set<Instance>>> entry : entityTree.entrySet() ) {
             addProcedureEvidenceSequenceItem(crpeSeq, entry.getKey(), entry.getValue(), uidMap);
+            addContentSequenceItem(contentSeq, entry.getKey(), entry.getValue(), uidMap);
         }
         return kos;
     }
     
     private String toUID(String uid, Map<String, String> uidMap) {
         String uid2 = uidMap.get(uid);
-        return uid2 == null ? uid : uid2;
+        if (uid2 == null)
+            return uid;
+        String uid3 = uidMap.get(uid2);
+        return uid3 == null ? uid2 : uid3;
     }
     
     private DicomObject newKeyObject(String studyIUID) {
@@ -162,6 +167,21 @@ public class IOCMSupport {
                 refSopSeq.addDicomObject(refSopSeqItem);
                 refSopSeqItem.putString(Tag.ReferencedSOPInstanceUID, VR.UI, toUID(inst.getSOPInstanceUID(), uidMap));
                 refSopSeqItem.putString(Tag.ReferencedSOPClassUID, VR.UI, inst.getSOPClassUID());
+            }
+        }
+    }
+    private void addContentSequenceItem(DicomElement contentSeq, Study study, Map<Series, Set<Instance>> series, Map<String, String> uidMap) {
+        for ( Map.Entry<Series, Set<Instance>> instances : series.entrySet()) {
+            for ( Instance inst : instances.getValue()) {
+                DicomObject item = new BasicDicomObject();
+                item.putString(Tag.ValueType, VR.CS, "COMPOSITE");
+                item.putString(Tag.RelationshipType, VR.CS, "CONTAINS");
+                contentSeq.addDicomObject(item);
+                DicomElement refSopSq = item.putSequence(Tag.ReferencedSOPSequence);
+                DicomObject sopItem = new BasicDicomObject();
+                sopItem.putString(Tag.ReferencedSOPInstanceUID, VR.UI, toUID(inst.getSOPInstanceUID(), uidMap));
+                sopItem.putString(Tag.ReferencedSOPClassUID, VR.UI, inst.getSOPClassUID());
+                refSopSq.addDicomObject(sopItem);
             }
         }
     }
