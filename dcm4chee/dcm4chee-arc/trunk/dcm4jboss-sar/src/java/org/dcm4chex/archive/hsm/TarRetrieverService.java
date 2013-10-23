@@ -179,8 +179,15 @@ public class TarRetrieverService extends ServiceMBeanSupport {
     public File retrieveFile(String fsID, String fileID)
             throws IOException, VerifyTarException {
         if (!fsID.startsWith("tar:")) {
-            throw new IllegalArgumentException(
+            if ("true".equals(System.getProperty("tarretriever.dontcheck.protocol", "false"))) {
+                if (fsID.length() < 4 || fsID.charAt(3) != ':') {
+                    throw new IllegalArgumentException(
+                            "Not a tar file system: " + fsID + " (length of protocol must be 3!)");
+                }
+            } else {
+                throw new IllegalArgumentException(
                     "Not a tar file system: " + fsID);
+            }
         }
         int tarEnd = fileID.indexOf('!');
         if (tarEnd == -1) {
