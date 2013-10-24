@@ -39,6 +39,8 @@
 
 package org.dcm4chex.archive.hl7;
 
+import static java.lang.String.format;
+
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
@@ -64,6 +66,7 @@ import org.dcm4chex.archive.exceptions.PatientMergedException;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dom4j.Document;
 import org.dom4j.Element;
+import org.jboss.logging.Logger;
 import org.regenstrief.xhl7.HL7XMLLiterate;
 import org.xml.sax.ContentHandler;
 
@@ -246,6 +249,7 @@ public class ADTService extends AbstractHL7Service {
     public boolean process(MSH msh, Document msg, ContentHandler hl7out, String[] xslSubdirs)
             throws HL7Exception {
         try {
+        	debug("Processing ADT message [%s].", msh);
             String msgtype = msh.messageType + '^' + msh.triggerEvent;
             if (pixUpdateNotificationMessageType.equals(msgtype)
                     && !containsPatientName(msg)) {
@@ -284,6 +288,10 @@ public class ADTService extends AbstractHL7Service {
             else {
                 updatePatient(pat, patientMatching);
             }
+            
+        	debug("Processed ADT message [%s].", msh);
+            
+            return true;
         }
         catch (HL7Exception e) {
             throw e;
@@ -297,10 +305,15 @@ public class ADTService extends AbstractHL7Service {
         catch (Exception e) {
             throw new HL7Exception("AE", e.getMessage(), e);
         }
-        return true;
     }
 
-    private void movePatientToTrash(Dataset pat, PatientMatching matching)
+    private void debug(String format, Object... args) {
+    	if (log.isDebugEnabled()) {
+    		log.debug(format(format, args));
+    	}
+	}
+
+	private void movePatientToTrash(Dataset pat, PatientMatching matching)
             throws Exception {
         try {
             server.invoke(contentEditServiceName, "movePatientToTrash",
