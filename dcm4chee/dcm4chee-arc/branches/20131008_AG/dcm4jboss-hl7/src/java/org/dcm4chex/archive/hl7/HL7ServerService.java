@@ -621,7 +621,7 @@ public class HL7ServerService extends ServiceMBeanSupport implements
         return false;
     }
 
-    private Notification makeNotification(byte[] hl7msg, Document msg) {
+    protected Notification makeNotification(byte[] hl7msg, Document msg) {
         long eventID = super.getNextNotificationSequenceNumber();
         Notification notif = new Notification(EVENT_TYPE, this, eventID);
         notif.setUserData(new Object[]{hl7msg, msg});
