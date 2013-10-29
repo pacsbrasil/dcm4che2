@@ -63,7 +63,7 @@ public final class QueryXdsPublishCmd {
     private int proposedExecutionStartHour = -1;
     private int proposedExecutionEndHour = -1;
     
-    private static String MAIN_SQL_LEFT = "SELECT s.pk, p.pk, p.docentry_uid FROM study s LEFT JOIN published_study AS p ON s.pk = p.study_fk WHERE s.pk in (";
+    private static String MAIN_SQL_LEFT = "SELECT s.pk, p.pk, p.docentry_uid FROM study s LEFT JOIN published_study p ON s.pk = p.study_fk WHERE s.pk in (";
     private static String MAIN_SQL_RIGHT = ") AND p.pk IS NULL OR p.status = 1";
     private static int MAIN_QUERY_LEN = MAIN_SQL_LEFT.length() + MAIN_SQL_RIGHT.length();
     
@@ -84,8 +84,8 @@ public final class QueryXdsPublishCmd {
             boolean hasPublishedStudyPk = cmd.rs.getMetaData().getColumnCount() > 1;
             boolean hasDocEntryUID = hasPublishedStudyPk && cmd.rs.getMetaData().getColumnCount() > 2;
             while (cmd.next()) {
-                studyPks.add(new PublishStudy((Long)cmd.rs.getObject(1), 
-                        hasPublishedStudyPk ? (Long)cmd.rs.getObject(2) : null,
+                studyPks.add(new PublishStudy(cmd.rs.getLong(1), 
+                        hasPublishedStudyPk ? cmd.rs.getLong(2) : null,
                         hasDocEntryUID ? cmd.rs.getString(3) : null));
             }
         } finally {
