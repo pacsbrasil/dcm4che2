@@ -52,6 +52,7 @@ import javax.management.NotificationListener;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
 
+import org.dcm4cheri.util.StringUtils;
 import org.dcm4chex.archive.common.FileStatus;
 import org.dcm4chex.archive.config.RetryIntervalls;
 import org.dcm4chex.archive.ejb.interfaces.FileSystemDTO;
@@ -60,6 +61,7 @@ import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2Home;
 import org.dcm4chex.archive.ejb.jdbc.QueryHSMMigrateCmd;
 import org.dcm4chex.archive.mbean.SchedulerDelegate;
 import org.dcm4chex.archive.util.EJBHomeFactory;
+import org.dcm4chex.archive.util.FileUtils;
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
@@ -98,6 +100,8 @@ public class HSMMigrateService extends ServiceMBeanSupport {
     private ObjectName hsmModuleServicename;
     
     private boolean verifyTar;
+    private boolean createNewTargetFilename;
+    private int filenameBase = (int) (System.currentTimeMillis() & 0xffffffff);
     
     private final NotificationListener timerListenerMigrate = new NotificationListener() {
         public void handleNotification(Notification notif, Object handback) {
@@ -377,6 +381,12 @@ public class HSMMigrateService extends ServiceMBeanSupport {
         this.limitNumberOfFilesPerRemoveTask = limitNumberOfFilesPerRemoveTask;
     }
     
+    public boolean isCreateNewTargetFilename() {
+        return createNewTargetFilename;
+    }
+    public void setCreateNewTargetFilename(boolean createNewTargetFilename) {
+        this.createNewTargetFilename = createNewTargetFilename;
+    }
     public int getOffsetForRemove() {
         return offsetForRemove ;
     }
@@ -645,6 +655,20 @@ public class HSMMigrateService extends ServiceMBeanSupport {
     private FileSystemMgt2 newFileSystemMgt() throws Exception {
         return ((FileSystemMgt2Home) EJBHomeFactory.getFactory().lookup(
                 FileSystemMgt2Home.class, FileSystemMgt2Home.JNDI_NAME)).create();
+    }
+    
+    public String toTargetFilename(String fn) {
+        if (createNewTargetFilename) {
+            Calendar cal = Calendar.getInstance();
+            StringBuilder sb = new StringBuilder();
+            sb.append(String.valueOf(cal.get(Calendar.YEAR))).append(File.separatorChar)
+            .append(String.valueOf(cal.get(Calendar.MONTH) + 1)).append(File.separatorChar)
+            .append(String.valueOf(cal.get(Calendar.DAY_OF_MONTH))).append(File.separatorChar)
+            .append(String.valueOf(cal.get(Calendar.HOUR_OF_DAY))).append(File.separatorChar)
+            .append(FileUtils.toHex(filenameBase++));
+            fn = sb.toString();
+        }
+        return fn;
     }
 
     private enum QueryStatusMode {
