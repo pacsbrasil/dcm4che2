@@ -55,10 +55,8 @@ import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.form.ListChoice;
 import org.apache.wicket.markup.html.form.ListMultipleChoice;
-import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.util.ListModel;
-import org.dcm4chee.icons.ImageManager;
 import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 import org.dcm4chee.web.war.common.AutoSelectInputTextBehaviour;
 import org.dcm4chee.web.war.tc.TCPopupManager.AbstractTCPopup;
@@ -77,7 +75,10 @@ public class TCKeywordListInput extends AbstractTCKeywordInput {
 
 	private Map<String, TCKeyword> keywordMap;
     private AutoCompleteTextField<String> text;
-
+    private KeywordListPopup popup;
+    private WebMarkupContainer trigger;
+    private boolean triggerInstalled;
+    
     public TCKeywordListInput(final String id, TCQueryFilterKey filterKey, 
     		boolean usedForSearch, boolean exclusive,
     		TCKeyword selectedKeyword, final List<TCKeyword> keywords)
@@ -168,7 +169,7 @@ public class TCKeywordListInput extends AbstractTCKeywordInput {
             }
         });
 
-        final WebMarkupContainer chooserBtn = new WebMarkupContainer("chooser-button", new Model<String>("...")) {
+        trigger = new WebMarkupContainer("chooser-button", new Model<String>("...")) {
         	@Override
         	protected void onComponentTag(ComponentTag tag)
         	{
@@ -178,11 +179,26 @@ public class TCKeywordListInput extends AbstractTCKeywordInput {
         	}
         };
         
-        final KeywordListPopup popup = new KeywordListPopup(chooserBtn, keywords);
+        popup = new KeywordListPopup(keywords);
 
         add(text);
         add(popup);
-        add(chooserBtn);
+        add(trigger);
+    }
+    
+    @Override
+    protected void onBeforeRender()
+    {
+    	super.onBeforeRender();
+    	
+    	if (!triggerInstalled)
+    	{
+        	popup.installPopupTrigger(trigger, new TCPopupPosition(
+	                trigger.getMarkupId(),
+	                popup.getMarkupId(), 
+	                PopupAlign.BottomLeft, PopupAlign.TopLeft));
+        	triggerInstalled = true;
+    	}
     }
 
     @Override
@@ -294,7 +310,7 @@ public class TCKeywordListInput extends AbstractTCKeywordInput {
 		private IListCreator listCreator;
 		private Component list;
 
-		public KeywordListPopup(Component trigger, final List<TCKeyword> availableKeywords)
+		public KeywordListPopup(final List<TCKeyword> availableKeywords)
         {
         	super("list-keyword-popup", true, false, true, true);
         	
@@ -391,11 +407,6 @@ public class TCKeywordListInput extends AbstractTCKeywordInput {
                     }
                 }
             };
-        	
-        	installPopupTrigger(trigger, new TCPopupPosition(
-	                trigger.getMarkupId(),
-	                getMarkupId(), 
-	                PopupAlign.BottomLeft, PopupAlign.TopLeft));
         	
         	add(this.list=listCreator.createList());
         }

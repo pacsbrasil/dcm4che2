@@ -78,6 +78,9 @@ public class TCKeywordTreeInput extends AbstractTCKeywordInput {
 
     private TCKeywordNode root;
     private AutoCompleteTextField<String> text;
+    private KeywordTreePopup popup;
+    private WebMarkupContainer trigger;
+    private boolean triggerInstalled;
     
     public TCKeywordTreeInput(final String id, TCQueryFilterKey filterKey,
     		boolean usedForSearch, boolean exclusive, 
@@ -150,8 +153,8 @@ public class TCKeywordTreeInput extends AbstractTCKeywordInput {
             }
         });
         
-        final KeywordTreePopup popup = new KeywordTreePopup();
-        final WebMarkupContainer chooserBtn = new WebMarkupContainer("chooser-button", new Model<String>("...")) {
+        popup = new KeywordTreePopup();
+        trigger = new WebMarkupContainer("chooser-button", new Model<String>("...")) {
         	@Override
         	protected void onComponentTag(ComponentTag tag)
         	{
@@ -210,14 +213,25 @@ public class TCKeywordTreeInput extends AbstractTCKeywordInput {
 
         popup.setTree(root, tree);
         popup.add(tree);
-        popup.installPopupTrigger(chooserBtn, new TCPopupPosition(
-                chooserBtn.getMarkupId(),
-                popup.getMarkupId(), 
-                PopupAlign.BottomLeft, PopupAlign.TopLeft));
-        
+
         add(text);
-        add(chooserBtn);
+        add(trigger);
         add(popup);
+    }
+    
+    @Override
+    protected void onBeforeRender()
+    {
+    	super.onBeforeRender();
+    	
+    	if (!triggerInstalled)
+    	{
+        	popup.installPopupTrigger(trigger, new TCPopupPosition(
+	                trigger.getMarkupId(),
+	                popup.getMarkupId(), 
+	                PopupAlign.BottomLeft, PopupAlign.TopLeft));
+        	triggerInstalled = true;
+    	}
     }
     
     public List<TCKeyword> getKeywordsAsList() {

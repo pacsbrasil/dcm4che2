@@ -81,8 +81,11 @@ public class TCKeywordACRInput extends AbstractTCKeywordInput {
 
     private static final long serialVersionUID = 1L;
 
+    private ACRPopup popup;
+    private WebMarkupContainer chooserBtn;
     private TextField<String> text;
-
+    private boolean triggerInstalled;
+    
     public TCKeywordACRInput(final String id, TCQueryFilterKey filterKey, 
     		boolean usedForSearch, boolean exclusive,
     		TCKeyword selectedKeyword) 
@@ -145,7 +148,7 @@ public class TCKeywordACRInput extends AbstractTCKeywordInput {
             }
         });
         
-        WebMarkupContainer chooserBtn = new WebMarkupContainer("chooser-button", new Model<String>("...")) {
+        chooserBtn = new WebMarkupContainer("chooser-button", new Model<String>("...")) {
         	@Override
         	protected void onComponentTag(ComponentTag tag)
         	{
@@ -155,15 +158,26 @@ public class TCKeywordACRInput extends AbstractTCKeywordInput {
         	}
         };
 
-        ACRPopup popup = new ACRPopup(chooser);
-        popup.installPopupTrigger(chooserBtn, new TCPopupPosition(
-                chooserBtn.getMarkupId(),
-                popup.getMarkupId(), 
-                PopupAlign.BottomLeft, PopupAlign.TopLeft));
+        popup = new ACRPopup(chooser);
         
         add(text);
         add(chooserBtn);
         add(popup);
+    }
+    
+    @Override
+    protected void onBeforeRender()
+    {
+    	super.onBeforeRender();
+    	
+    	if (!triggerInstalled)
+    	{
+	        popup.installPopupTrigger(chooserBtn, new TCPopupPosition(
+	                chooserBtn.getMarkupId(),
+	                popup.getMarkupId(), 
+	                PopupAlign.BottomLeft, PopupAlign.TopLeft));
+	        triggerInstalled = true;
+    	}
     }
 
     @Override

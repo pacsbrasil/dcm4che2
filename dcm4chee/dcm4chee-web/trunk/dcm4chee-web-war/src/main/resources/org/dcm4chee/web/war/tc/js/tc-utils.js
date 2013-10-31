@@ -85,7 +85,7 @@ function hidePopup(popupId, hideOnOutsideClickCallbackUrl)
 		nPopupsToHideOnOutsideClick--;
 		if (nPopupsToHideOnOutsideClick<=0)
 		{
-			$(document).off('click', handlePopupOutsideClick);
+			$(document).off('click.tc-popup', handlePopupOutsideClick);
 			nPopupsToHideOnOutsideClick = 0;
 		}
 	}
@@ -104,7 +104,7 @@ function showPopup(popupId, hideOnOutsideClickCallbackUrl)
 	{		
 		if (nPopupsToHideOnOutsideClick==0)
 		{
-			$(document).on('click', {url:hideOnOutsideClickCallbackUrl}, handlePopupOutsideClick);
+			$(document).on('click.tc-popup', {url:hideOnOutsideClickCallbackUrl}, handlePopupOutsideClick);
 		}
 		
 		nPopupsToHideOnOutsideClick++;

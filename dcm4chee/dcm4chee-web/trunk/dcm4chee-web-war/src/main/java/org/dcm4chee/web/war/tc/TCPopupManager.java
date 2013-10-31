@@ -187,7 +187,7 @@ public class TCPopupManager implements Serializable
         boolean hideOnMouseOut = true;
         boolean hideOnOutsideClick = true;
         boolean hideOnShowOther = true;
-        
+
         public AbstractTCPopup(final String id, boolean resizeable, boolean hideOnMouseOut, boolean hideOnOutsideClick, boolean hideOnShowOther)
         {
             this(id, null, resizeable, hideOnMouseOut, hideOnOutsideClick, hideOnShowOther);
@@ -425,7 +425,7 @@ public class TCPopupManager implements Serializable
             	}
             }
 
-            sbuf.append(")");
+            sbuf.append(");");
             
             return sbuf.toString();
         }
