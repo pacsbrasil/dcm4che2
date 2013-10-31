@@ -280,6 +280,9 @@ public class TCDetailsPanel extends Panel {
     	js.append(".addClass('ui-corner-bottom');");
     	js.append("$('.details-tabs .ui-tabs-nav').appendTo('.details-tabs');");
     	
+    	// show tabs
+    	js.append("$('.details-tabs').show();");
+    	
     	return js.toString();
     }    
     

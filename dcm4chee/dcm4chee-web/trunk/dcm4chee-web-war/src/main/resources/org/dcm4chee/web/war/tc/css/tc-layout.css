@@ -66,8 +66,6 @@
 
 .ui-tabs-vertical .ui-tabs-nav li.ui-tabs-active { padding-bottom: 0; padding-right: .1em; border-right-width: 1px; border-right-width: 1px; }
 
-.ui-tabs-vertical .ui-tabs-panel { margin-left: 13.75em; }
-
 
 /******************************************************  
  * Position/Size of top-level areas 
@@ -119,8 +117,7 @@ div.diagnosis-warning  {
 {
     display: none;
     position: fixed !important;
-    _position: absolute; /* hack for IE 6*/
-    z-index: 99;
+    z-index: 20001;
     border: 1px solid transparent;
     padding: 1px 1px 16px;
     top:0px;
@@ -518,11 +515,10 @@ div.details-tabs div.tab-panel span.table-property-key
 
 .tc-view .ui-tabs-vertical .ui-tabs-panel {
 	position: absolute;
-	left: 13.5em;
+	left: 0;
 	right: 0;
 	top: 0;
 	bottom: 0;
-	margin-left: 0;
 }
 
 div.tc-view-title

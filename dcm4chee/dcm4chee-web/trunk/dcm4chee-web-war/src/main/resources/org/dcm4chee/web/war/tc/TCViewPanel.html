@@ -38,7 +38,7 @@
 					</div>
 				</div>
 			</div>
-			<div id="tc-view-content" wicket:id="tc-view-content" class="ui-content">
+			<div id="tc-view-content" wicket:id="tc-view-content" class="ui-content" style="display:none">
 				<ul>
 					<li>
 					   <a href="#tabs-overview"> 
@@ -101,41 +101,43 @@
 					   </a>
 					</li>
 				</ul>
-				<div id="tabs-overview">
-				    <div wicket:id="tc-view-overview" class="tc-view-tab-container"/>
-				</div>
-				<div id="tabs-diagnosis">
-				    <div wicket:id="tc-view-diagnosis" class="tc-view-tab-container"/>
-				</div>
-				<div id="tabs-diffDiagnosis">
-					<div wicket:id="tc-view-diffDiagnosis" class="tc-view-tab-container"/>
-				</div>
-				<div id="tabs-finding">
-					<div wicket:id="tc-view-finding" class="tc-view-tab-container"/>
-				</div>
-				<div id="tabs-history">
-					<div wicket:id="tc-view-history" class="tc-view-tab-container"/>
-				</div>
-				<div id="tabs-discussion">
-					<div wicket:id="tc-view-discussion" class="tc-view-tab-container"/>
-				</div>
-				<div id="tabs-forum">
-					<div wicket:id="tc-view-forum" class="tc-view-tab-container"/>
-				</div>
-				<div id="tabs-organSystem">
-					<div wicket:id="tc-view-organSystem" class="tc-view-tab-container"/>
-				</div>
-				<div id="tabs-bibliography">
-					<div wicket:id="tc-view-bibliography" class="tc-view-tab-container"/>
-				</div>
-				<div id="tabs-documents" style="padding:0px">
-					<div wicket:id="tc-view-documents" class="tc-view-tab-container"/>
-				</div>
-				<div id="tabs-links" style="padding:0px">
-					<div wicket:id="tc-view-links" class="tc-view-tab-container"/>
-				</div>
-				<div id="tabs-images" class="tc-view-images-tab-container-parent" style="padding:10px 0 0">
-				    <div wicket:id="tc-view-images" id="tc-view-images-tab-container" class="tc-view-tab-container"/>
+				<div style="position:absolute; top:0; left:0; right: 0; bottom:0; padding: 0.22em;">
+					<div id="tabs-overview" class="ui-border-box" style="width:100%; height:100%">
+					    <div wicket:id="tc-view-overview" class="tc-view-tab-container"/>
+					</div>
+					<div id="tabs-diagnosis" class="ui-border-box" style="width:100%; height:100%">
+					    <div wicket:id="tc-view-diagnosis" class="tc-view-tab-container"/>
+					</div>
+					<div id="tabs-diffDiagnosis" class="ui-border-box" style="width:100%; height:100%">
+						<div wicket:id="tc-view-diffDiagnosis" class="tc-view-tab-container"/>
+					</div>
+					<div id="tabs-finding" class="ui-border-box" style="width:100%; height:100%">
+						<div wicket:id="tc-view-finding" class="tc-view-tab-container"/>
+					</div>
+					<div id="tabs-history" class="ui-border-box" style="width:100%; height:100%">
+						<div wicket:id="tc-view-history" class="tc-view-tab-container"/>
+					</div>
+					<div id="tabs-discussion" class="ui-border-box" style="width:100%; height:100%">
+						<div wicket:id="tc-view-discussion" class="tc-view-tab-container"/>
+					</div>
+					<div id="tabs-forum" class="ui-border-box" style="width:100%; height:100%">
+						<div wicket:id="tc-view-forum" class="tc-view-tab-container"/>
+					</div>
+					<div id="tabs-organSystem" class="ui-border-box" style="width:100%; height:100%">
+						<div wicket:id="tc-view-organSystem" class="tc-view-tab-container"/>
+					</div>
+					<div id="tabs-bibliography" class="ui-border-box" style="width:100%; height:100%">
+						<div wicket:id="tc-view-bibliography" class="tc-view-tab-container"/>
+					</div>
+					<div id="tabs-documents"  class="ui-border-box" style="padding:0px;width:100%; height:100%">
+						<div wicket:id="tc-view-documents" class="tc-view-tab-container"/>
+					</div>
+					<div id="tabs-links"  class="ui-border-box" style="padding:0px;width:100%; height:100%">
+						<div wicket:id="tc-view-links" class="tc-view-tab-container"/>
+					</div>
+					<div id="tabs-images" class="tc-view-images-tab-container-parent ui-border-box" style="padding:10px 0 0;width:100%; height:100%">
+					    <div wicket:id="tc-view-images" id="tc-view-images-tab-container" class="tc-view-tab-container"/>
+					</div>
 				</div>
 			</div>
 		    <wicket:child/>

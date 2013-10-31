@@ -23,8 +23,6 @@ function updateTCViewDialog(verticalTabs) {
 }
 
 function updateTCViewDialogToUseQueryUI(verticalTabs) {
-	style($("#tc-view"));
-	
 	$('#tc-view-content, #tc-view-editable-content').each(function(index) {
 		if (verticalTabs) {
 			$(this).addClass('ui-tabs-vertical ui-helper-clearfix');
@@ -41,12 +39,18 @@ function updateTCViewDialogToUseQueryUI(verticalTabs) {
 		});
 	});
 	
+	style($("#tc-view"));
+
 	$('#tc-view-images-tab-container').parent().addClass("tc-view-images-tab-container-parent");
 	$('#tc-view button').each(function() {
 		if (!$(this).hasClass('tc-keyword-chooser-btn'))
 		{
 			$(this).button();
 		}
+	});
+	
+	$('#tc-view-content, #tc-view-editable-content').each(function(index) {
+		$(this).show();
 	});
 }
 
@@ -85,60 +89,18 @@ function updateTCViewTabsLayout() {
 	// layout content
 	$('#tc-view-content, #tc-view-editable-content').each(function(index) {
 		var vertical = $(this).hasClass('ui-tabs-vertical');
-		if (!vertical) {
+		if (vertical) {
 			var nav = $(this).find('.ui-tabs-nav').first();
-			var tabHeight = $(this).height() - $(nav).outerHeight(true);
-			var tabWidth = $(this).width();
-
-			$(this).find('.ui-tabs-panel').each(function(index) {
-				var diffHeight = $(this).outerHeight(true)-$(this).height();
-				var diffWidth = $(this).outerWidth(true)-$(this).width();
-				
-				$(this).height(tabHeight-diffHeight);
-				$(this).width(tabWidth-diffWidth);
+			$(this).children('div').each(function(index) {
+				$(this).css('margin-left',$(nav).outerWidth(true)+"px");
 			});
 		}
-		
-		/*
-		var nav = $(this).find('.ui-tabs-nav').first();
-		var header = $(this).siblings('#tc-view-header').first();
-		var footer = $(this).siblings('#tc-view-footer').first();
-		var parentHeight = $(this).parent().height();
-		var parentWidth = $(this).parent().width();
-
-		var contentHeight = parentHeight;
-		var contentWidth = parentWidth;
-		if (header) {
-			contentHeight -= header.outerHeight(true);
-		}
-		if (footer) {
-			contentHeight -= footer.outerHeight(true);
-		}
-		
-		contentHeight -= ($(this).outerHeight(true)-$(this).height());
-		contentWidth -= ($(this).outerWidth(true)-$(this).width());
-
-		$(this).height(contentHeight);
-		$(this).width(contentWidth);
-		
-		var tabHeight = $(this).height();
-		var tabWidth = $(this).width();
-
-		if (vertical) {
-			$(nav).height(contentHeight);
-		}
 		else {
-			tabHeight -= $(nav).outerHeight(true);
+			var nav = $(this).find('.ui-tabs-nav').first();
+			$(this).children('div').each(function(index) {
+				$(this).css('margin-top',$(nav).outerHeight(true)+"px");
+			});
 		}
-		
-		$(this).find('.ui-tabs-panel').each(function(index) {
-			var diffHeight = $(this).outerHeight(true)-$(this).height();
-			var diffWidth = $(this).outerWidth(true)-$(this).width();
-			
-			$(this).height(tabHeight-diffHeight);
-			$(this).width(tabWidth-diffWidth);
-		});
-		*/
 	});
 	
 	//adapt height of individual elements
