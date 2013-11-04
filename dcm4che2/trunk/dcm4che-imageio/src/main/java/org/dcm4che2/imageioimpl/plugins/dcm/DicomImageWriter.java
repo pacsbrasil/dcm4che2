@@ -288,7 +288,7 @@ public class DicomImageWriter extends ImageWriter {
             throws IOException {
 
         if (encapsulated) {
-            dos.writeHeader(Tag.Item, null, (data.length+1) % ~1);
+            dos.writeHeader(Tag.Item, null, (data.length+1) & ~1);
         }
 
         dos.write(data);
