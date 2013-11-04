@@ -70,7 +70,7 @@ public  class XdsHttpCfgDelegate {
     public void init() {
         if (server != null) return;
         server = MBeanServerLocator.locate();
-        String s = DEFAULT_XDS_HTTP_CFG_SERVICE_NAME;
+        String s = System.getProperty("org.dcm4chee.xds.httpcfg.servicename", DEFAULT_XDS_HTTP_CFG_SERVICE_NAME);
         try {
             xdsHttpCfgServiceName = new ObjectName(s);
         } catch (Exception e) {
