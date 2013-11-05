@@ -84,7 +84,7 @@ public final class QueryXdsPublishCmd {
             boolean hasPublishedStudyPk = cmd.rs.getMetaData().getColumnCount() > 1;
             boolean hasDocEntryUID = hasPublishedStudyPk && cmd.rs.getMetaData().getColumnCount() > 2;
             while (cmd.next()) {
-                studyPks.add(new PublishStudy(cmd.rs.getLong(1), 
+                studyPks.add(new PublishStudy(cmd.rs.getObject(1) != null ? cmd.rs.getLong(1) : null, 
                         hasPublishedStudyPk ? cmd.rs.getLong(2) : null,
                         hasDocEntryUID ? cmd.rs.getString(3) : null));
             }
