@@ -61,6 +61,7 @@ public class TrashFolderForm extends BasicFolderForm {
     protected static Logger log = Logger.getLogger(TrashFolderForm.class);
 
     private Dataset ds = DcmObjectFactory.getInstance().newDataset();
+    private int privType = TrashFolderCtrl.DELETED;
 
     static TrashFolderForm getTrashFolderForm(ControllerContext ctx) {
         HttpServletRequest request = ctx.getRequest();
@@ -124,6 +125,14 @@ public class TrashFolderForm extends BasicFolderForm {
 
     public Dataset filterDS() {
         return ds;
+    }
+    
+    public int getPrivType() {
+    	return privType;
+    }
+    
+    public final void setPrivType(int privType) {
+    	this.privType = privType;
     }
 
     public String getModelName() { return "TRASH"; }

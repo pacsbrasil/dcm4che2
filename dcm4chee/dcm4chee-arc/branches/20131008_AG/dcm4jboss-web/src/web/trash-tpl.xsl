@@ -47,7 +47,22 @@
       </xsl:choose>
      </td>
 
-     <td class="folder_header" width="150"></td>
+     <td class="folder_header" width="150">
+      <select id="privType" name="privType" onchange="selectAll(document.myForm,'sticky',false); document.getElementsByName('filter')[0].click()">
+        <option value="1">
+          <xsl:if test="/model/privType = 1">
+            <xsl:attribute name="selected">selected</xsl:attribute>
+          </xsl:if>
+          &ManualDeletion;
+        </option>
+        <option value="2">
+          <xsl:if test="/model/privType = 2">
+            <xsl:attribute name="selected">selected</xsl:attribute>
+          </xsl:if>
+          &ILMDeletion;
+        </option>
+      </select>
+     </td>
      <td class="folder_header" width="40">
       <input type="image" value="Search" name="filter"
         src="images/search.gif" border="0" title="&NewSearch;" />
@@ -85,7 +100,7 @@
         src="images/loeschen.gif" alt="delete" border="0"
          title="&DeleteSelectedEntitiesIrrevocable;"
          onclick="return confirm('&DeleteSelectedEntitiesIrrevocable;?')">
-        <xsl:if test="total &lt;= 0">
+        <xsl:if test="total &lt;= 0 or /model/privType = 2">
          <xsl:attribute name="disabled">disabled</xsl:attribute>
         </xsl:if>
        </input>
@@ -95,7 +110,7 @@
         src="images/deltrash.gif" alt="emptyTrash" border="0"
          title="&EmptyTrash;"
          onclick="return confirm('&EmptyTrash;?')">
-         <xsl:if test="total &lt;= 0">
+         <xsl:if test="total &lt;= 0 or /model/privType = 2">
          <xsl:attribute name="disabled">disabled</xsl:attribute>
         </xsl:if>
        </input>

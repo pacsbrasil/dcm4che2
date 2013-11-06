@@ -142,10 +142,10 @@ public class TrashFolderCtrl extends FolderCtrl {
             TrashFolderForm folderForm = (TrashFolderForm) getForm();
             folderForm.setCallingAETs(getAEFilterPermissions());
             if (newQuery) {
-                folderForm.setTotal(new QueryPrivateStudiesCmd(folderForm.filterDS(), DELETED, 
+                folderForm.setTotal(new QueryPrivateStudiesCmd(folderForm.filterDS(), folderForm.getPrivType(), 
                         !folderForm.isShowWithoutStudies()).count());
             }
-            List studyList = new QueryPrivateStudiesCmd(folderForm.filterDS(), DELETED, !folderForm.isShowWithoutStudies()).list(folderForm.getOffset(), folderForm.getLimit());
+            List studyList = new QueryPrivateStudiesCmd(folderForm.filterDS(), folderForm.getPrivType(), !folderForm.isShowWithoutStudies()).list(folderForm.getOffset(), folderForm.getLimit());
             List patList = new ArrayList();
             PatientModel curPat = null;
             for (int i = 0, n = studyList.size(); i < n; i++) {

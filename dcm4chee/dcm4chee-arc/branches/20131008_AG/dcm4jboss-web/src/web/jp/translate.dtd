@@ -173,3 +173,5 @@
 <!ENTITY QueryHasIssuer_text3 "患者IDに問題">
 <!ENTITY AlternativeStudyUID "Alternative query to find study with Study IUID of an order that doesn't match with StudyIUID of received composite object.">
 <!ENTITY AlternativeStudyUID_text "of Order">
+<!ENTITY ManualDeletion "Manual Deletion">
+<!ENTITY ILMDeletion "ILM Deletion">

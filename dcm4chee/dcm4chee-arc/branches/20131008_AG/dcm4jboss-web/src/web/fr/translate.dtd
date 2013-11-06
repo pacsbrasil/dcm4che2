@@ -172,3 +172,5 @@
 <!ENTITY QueryHasIssuer_text3 "Sans exposant de PID">
 <!ENTITY AlternativeStudyUID "La requête alternative pour trouver l'étude avec l'Étude IUID d'un ordre qui ne s'accorde pas avec Étude IUID d'objet composite reçu.">
 <!ENTITY AlternativeStudyUID_text "de l'ordre">
+<!ENTITY ManualDeletion "Manual Deletion">
+<!ENTITY ILMDeletion "ILM Deletion">
