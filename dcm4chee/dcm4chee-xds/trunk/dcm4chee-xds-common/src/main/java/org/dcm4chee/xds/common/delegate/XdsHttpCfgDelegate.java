@@ -70,18 +70,19 @@ public  class XdsHttpCfgDelegate {
     public void init() {
         if (server != null) return;
         server = MBeanServerLocator.locate();
-        String s = System.getProperty("org.dcm4chee.xds.httpcfg.servicename", DEFAULT_XDS_HTTP_CFG_SERVICE_NAME);
-        try {
-            xdsHttpCfgServiceName = new ObjectName(s);
-        } catch (Exception e) {
-            log.error( "Exception in init! Cant create ObjectName for "+s,e );
+        if (xdsHttpCfgServiceName == null) {
+            try {
+                xdsHttpCfgServiceName = new ObjectName(DEFAULT_XDS_HTTP_CFG_SERVICE_NAME);
+            } catch (Exception e) {
+                log.error( "Exception in init! Cant create ObjectName for "+DEFAULT_XDS_HTTP_CFG_SERVICE_NAME,e );
+            }
         }
     }
 
-    public static ObjectName getXdsRepositoryServiceName() {
+    public static ObjectName getXdsHttpCfgServiceName() {
         return xdsHttpCfgServiceName;
     }
-    public static void setXdsRepositoryServiceName(
+    public static void setXdsHttpCfgServiceName(
             ObjectName xdsHttpCfgServiceName) {
         XdsHttpCfgDelegate.xdsHttpCfgServiceName = xdsHttpCfgServiceName;
     }
