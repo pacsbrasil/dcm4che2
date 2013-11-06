@@ -341,6 +341,33 @@
       
       <return-type>void</return-type>
    </operation>
+   <operation impact="ACTION">
+      <description><![CDATA[ Schedule DICOM C-MOVE requests to given Destination AET for instances referenced in given IAN.
+      		]]> </description>
+      <name>scheduleMoveInstances</name>
+      <parameter>
+        <description>IAN DicomObject which references the instances to move</description>
+        <name>ian</name>
+        <type>org.dcm4che2.data.DicomObject</type>
+      </parameter>
+      <parameter>
+        <description>Application Entity Title of MOVE destination</description>
+        <name>destAET</name>
+        <type>java.lang.String</type>
+      </parameter>
+      <parameter>
+        <description>DICOM priority for this move request</description>
+        <name>priority</name>
+        <type>java.lang.Integer</type>
+      </parameter>
+      <parameter>
+        <description>Schedule time as long. Use 0 to schedule immediately</description>
+        <name>scheduleTime</name>
+        <type>long</type>
+      </parameter>
+      
+      <return-type>void</return-type>
+   </operation>
 
    <operation impact="ACTION">
       <description><![CDATA[ Schedule DICOM C-MOVE request to given Destination AET.

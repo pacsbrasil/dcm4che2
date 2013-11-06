@@ -267,10 +267,14 @@ public class MoveScuService extends AbstractScuService implements MessageListene
             String retrAet, String moveDestination, Integer prio) throws Exception {
         schedule(new MoveOrder(retrAet == null ? this.calledAET : retrAet, moveDestination, 
                 prio != null ? prio.intValue() : priority,
-                patId, studyIuid, seriesIuid, iuids));
+                patId, studyIuid, seriesIuid, iuids), 0l);
     }
     
     public void scheduleMoveInstances(DicomObject ian, String moveDestination, Integer prio) throws Exception {
+        scheduleMoveInstances(ian, moveDestination, prio, 0);
+    }
+    
+    public void scheduleMoveInstances(DicomObject ian, String moveDestination, Integer prio, long scheduledTime) throws Exception {
         String patId = ian.getString(Tag.PatientID);
         String studyIuid = ian.getString(Tag.StudyInstanceUID);
         HashMap<String, HashMap<String, HashSet<String>>> iuidsMap = getIuidsByRetrAet(ian);
@@ -282,7 +286,7 @@ public class MoveScuService extends AbstractScuService implements MessageListene
                 seriesIuid = instBySeries.getKey();
                 iuids = instBySeries.getValue();
                 schedule(new MoveOrder(retrAet,moveDestination, prio != null ? prio.intValue() : priority,
-                        patId, studyIuid, seriesIuid, iuids.toArray(new String[iuids.size()])));
+                        patId, studyIuid, seriesIuid, iuids.toArray(new String[iuids.size()])), scheduledTime);
             }
             
         }
@@ -321,9 +325,9 @@ public class MoveScuService extends AbstractScuService implements MessageListene
         return iuidsByRetrAet;
     }
 
-    public void schedule(MoveOrder order) throws Exception {
+    public void schedule(MoveOrder order, long scheduledTime) throws Exception {
         log.info("Schedule order: " + order);            
-        jmsDelegate.queue(queueName, order, Message.DEFAULT_PRIORITY, 0);
+        jmsDelegate.queue(queueName, order, Message.DEFAULT_PRIORITY, scheduledTime);
     }
 
     public void onMessage(Message message) {

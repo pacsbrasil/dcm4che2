@@ -459,8 +459,8 @@ public class ContentEditService extends ServiceMBeanSupport {
         return processMoveEntities(entityTree, targetAttrs, EXCLUDE_PPS_ATTRS);
     }
 
-    public int moveStudiesToPatient(long[] studyPks, long patPk) {
-        return moveStudiesToPatient(studyPks, patPk);
+    public int moveStudiesToPatient(long[] studyPks, long patPk) throws InstanceNotFoundException, MBeanException, ReflectionException {
+        return moveStudiesToPatient(studyPks, patPk, null);
     }
     public int moveStudiesToPatient(long[] studyPks, long patPk, Map<String, String> new2oldUIDmap) throws InstanceNotFoundException, MBeanException, ReflectionException {
         if ( studyPks == null || studyPks.length < 1) {
