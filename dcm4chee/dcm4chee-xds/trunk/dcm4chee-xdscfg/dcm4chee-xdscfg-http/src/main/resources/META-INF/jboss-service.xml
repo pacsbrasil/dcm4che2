@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mbean PUBLIC "-//JBoss//DTD JBOSS XMBEAN 1.1//EN" "http://www.jboss.org/j2ee/dtd/jboss_xmbean_1_1.dtd">
 <!--  Version $Revision:$ $Date:$ -->
 <server>
   <mbean code="org.dcm4chee.xds.cfg.mbean.XdsHttpCfgService" 
@@ -261,7 +262,10 @@
       </descriptors>
    </attribute>
 
-   <!-- Operations -->
+       &defaultAttributes;
+       
+       <!-- Operations -->
+       &defaultOperations;
 
    <operation impact="ACTION">
       <description><![CDATA[ Configure TLS for given URL.<br/>
