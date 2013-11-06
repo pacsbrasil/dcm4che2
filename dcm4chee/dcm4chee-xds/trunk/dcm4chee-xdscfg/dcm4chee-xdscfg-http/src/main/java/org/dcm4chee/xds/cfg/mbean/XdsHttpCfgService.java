@@ -129,7 +129,7 @@ public class XdsHttpCfgService extends ServiceMBeanSupport {
     static Logger log = LoggerFactory.getLogger(XdsHttpCfgService.class);
 
     protected void startService() throws Exception {
-        XdsHttpCfgDelegate.setXdsRepositoryServiceName(this.getServiceName());
+        XdsHttpCfgDelegate.setXdsHttpCfgServiceName(this.getServiceName());
     }
 
     public String getProxyHost() {
