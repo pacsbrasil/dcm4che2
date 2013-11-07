@@ -535,7 +535,7 @@ public class TCKeywordACRInput extends AbstractTCKeywordInput {
 		private ACRChooser chooser;
 
         public ACRPopup(ACRChooser chooser) {
-            super("acr-keyword-popup", true, false, true, true);
+            super("acr-keyword-popup", true, false, true);
 
             this.chooser = chooser;
             

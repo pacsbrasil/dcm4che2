@@ -406,7 +406,7 @@ public class TCImageViewPanel extends Panel
     {
         public SeriesListPopup(SeriesListModel seriesModel, TCPopupManager manager) 
         {
-            super("tc-view-images-series-popup", manager, false, true, true, true);
+            super("tc-view-images-series-popup", manager, false, true, true);
 
             setMarkupId("tc-view-images-series-popup");
             

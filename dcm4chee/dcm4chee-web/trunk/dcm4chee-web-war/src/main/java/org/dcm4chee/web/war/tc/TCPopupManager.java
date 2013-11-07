@@ -3,8 +3,6 @@ package org.dcm4chee.web.war.tc;
 import java.awt.Point;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.wicket.Component;
@@ -27,8 +25,9 @@ import org.slf4j.LoggerFactory;
 public class TCPopupManager implements Serializable
 {
     private static Logger log = LoggerFactory.getLogger(TCPopupManager.class);
-        
-    private List<AbstractTCPopup> popupsShown;
+
+    private List<AbstractTCPopup> popups = new ArrayList<AbstractTCPopup>(5);
+    
     private HideOnOutsideClickBehavior globalHideOnOutsideClickHandler =
         new HideOnOutsideClickBehavior();
         
@@ -37,54 +36,11 @@ public class TCPopupManager implements Serializable
         return globalHideOnOutsideClickHandler;
     }
     
-    public List<AbstractTCPopup> getPopupsShown()
-    {
-        if (popupsShown!=null)
-        {
-            return new ArrayList<AbstractTCPopup>(popupsShown);
-        }
-        
-        return Collections.emptyList();
-    }
-    
-    public boolean isPopupShown(AbstractTCPopup popup)
-    {
-        return popupsShown!=null ? popupsShown.contains(popup) : false;
-    }
-    
     public void hideAllPopups(AjaxRequestTarget target)
     {
-    	if (popupsShown!=null && !popupsShown.isEmpty())
-    	{
-    		List<AbstractTCPopup> list = new ArrayList<AbstractTCPopup>(popupsShown);
-    		for (AbstractTCPopup popup : list)
-    		{
-    			popup.hide(target);
-    		}
+    	for (AbstractTCPopup popup : popups) {
+    		popup.hide(target);
     	}
-    }
-    
-    private void popupShown(AbstractTCPopup popup)
-    {
-        if (popupsShown==null)
-        {
-            popupsShown = new ArrayList<AbstractTCPopup>();
-        }
-        if (!popupsShown.contains(popup))
-        {            
-            popupsShown.add(popup);
-        }
-    }
-    
-    private void popupHidden(AbstractTCPopup popup)
-    {
-        if (popupsShown!=null)
-        {
-            if (popupsShown.contains(popup))
-            {
-                popupsShown.remove(popup);
-            }
-        }
     }
         
     private class HideOnOutsideClickBehavior extends AbstractDefaultAjaxBehavior       
@@ -92,19 +48,7 @@ public class TCPopupManager implements Serializable
         @Override
         protected void respond(AjaxRequestTarget target)
         {
-            if (popupsShown!=null)
-            {
-                for (Iterator<AbstractTCPopup> it=popupsShown.iterator();it.hasNext();)
-                {
-                    AbstractTCPopup popup = it.next();
-                    if (popup.isHideOnOutsideClickEnabled())
-                    {
-                        it.remove();
-                        
-                        popup.hide(target);
-                    }
-                }
-            }
+            hideAllPopups(target);
         }
     }
     
@@ -186,14 +130,13 @@ public class TCPopupManager implements Serializable
         boolean resizeable = false;
         boolean hideOnMouseOut = true;
         boolean hideOnOutsideClick = true;
-        boolean hideOnShowOther = true;
 
-        public AbstractTCPopup(final String id, boolean resizeable, boolean hideOnMouseOut, boolean hideOnOutsideClick, boolean hideOnShowOther)
+        public AbstractTCPopup(final String id, boolean resizeable, boolean hideOnMouseOut, boolean hideOnOutsideClick)
         {
-            this(id, null, resizeable, hideOnMouseOut, hideOnOutsideClick, hideOnShowOther);
+            this(id, null, resizeable, hideOnMouseOut, hideOnOutsideClick);
         }
         
-        public AbstractTCPopup(final String id, TCPopupManager manager, boolean resizeable, boolean hideOnMouseOut, boolean hideOnOutsideClick, boolean hideOnShowOther)
+        public AbstractTCPopup(final String id, TCPopupManager manager, boolean resizeable, boolean hideOnMouseOut, boolean hideOnOutsideClick)
         {
             super(id);
                         
@@ -204,7 +147,6 @@ public class TCPopupManager implements Serializable
             this.resizeable = resizeable;
             this.hideOnMouseOut = hideOnMouseOut;
             this.hideOnOutsideClick = hideOnOutsideClick;
-            this.hideOnShowOther = hideOnShowOther;
             
             if (this.hideOnMouseOut)
             {
@@ -231,44 +173,25 @@ public class TCPopupManager implements Serializable
         {
             return hideOnOutsideClick;
         }
-        
-        public boolean isHideOnShowOtherEnabled()
-        {
-            return hideOnShowOther;
-        }
 
-        public void show(AjaxRequestTarget target, TCPopupPosition position)
+        public synchronized void show(AjaxRequestTarget target, TCPopupPosition position)
         {
         	TCPopupManager manager = getPopupManager();
-            if (manager!=null && !manager.isPopupShown(this))
-            {
-                List<AbstractTCPopup> popups = manager.getPopupsShown();
-                for (AbstractTCPopup popup : popups)
-                {
-                    if (popup.isHideOnShowOtherEnabled())
-                    {
-                        popup.hide(target);
-                    }
-                }
-                
+            if (manager!=null)
+            {            
+            	getPopupManager().hideAllPopups(target);
+            	
                 beforeShowing(target);
                 
                 showPopup(position, target);
-                
-                manager.popupShown(this);
-                
+
                 afterShowing(target);
             }
         }
 
-        public void hide(AjaxRequestTarget target)
+        public synchronized void hide(AjaxRequestTarget target)
         {       
             beforeHiding(target);
-                    
-            TCPopupManager manager = getPopupManager();
-            if (manager!=null) {
-            	manager.popupHidden(this);
-            }
             
             hidePopup(target);
             
@@ -320,8 +243,17 @@ public class TCPopupManager implements Serializable
                 {
                     target = AjaxRequestTarget.get();
                 }
-                        
-                target.prependJavascript(getShowPopupJavascript(position));
+                
+                TCPopupManager popupManager = getPopupManager();
+                if (popupManager!=null)
+                {
+	                if (!popupManager.popups.contains(this))
+	                {
+	                	popupManager.popups.add(this);
+	                }
+                }
+                
+                target.appendJavascript(getShowPopupJavascript(position));
             }
             catch (Exception e)
             {
@@ -458,7 +390,7 @@ public class TCPopupManager implements Serializable
                 super.renderHead(head);
                 
                 StringBuffer sbuf = new StringBuffer();
-                sbuf.append("$(document).on('click',");
+                sbuf.append("$(document).on('click." + getComponent().getMarkupId(true)+"',");
                 sbuf.append("'#").append(getComponent().getMarkupId(true)).append("',");
                 sbuf.append("function(event) {");
                 sbuf.append(getCallbackScript());

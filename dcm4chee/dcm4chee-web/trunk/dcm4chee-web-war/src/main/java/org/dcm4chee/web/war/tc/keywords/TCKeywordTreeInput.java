@@ -421,7 +421,7 @@ public class TCKeywordTreeInput extends AbstractTCKeywordInput {
 
         public KeywordTreePopup() 
         {
-            super("tree-keyword-popup", true, false, true, true);
+            super("tree-keyword-popup", true, false, true);
             this.selectedNodes = new ArrayList<TCKeywordNode>();
         }
 

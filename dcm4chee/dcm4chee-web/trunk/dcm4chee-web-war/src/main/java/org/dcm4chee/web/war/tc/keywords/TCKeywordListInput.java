@@ -312,7 +312,7 @@ public class TCKeywordListInput extends AbstractTCKeywordInput {
 
 		public KeywordListPopup(final List<TCKeyword> availableKeywords)
         {
-        	super("list-keyword-popup", true, false, true, true);
+        	super("list-keyword-popup", true, false, true);
         	
         	this.listCreator = new IListCreator() {
 				private static final long serialVersionUID = 8173577296342482236L;

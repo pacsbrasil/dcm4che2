@@ -67,8 +67,6 @@ function setPopupResizeable(popupId)
 	$("[id='"+popupId+"']").resizable();
 }
 
-var nPopupsToHideOnOutsideClick = 0;
-
 function hidePopup(popupId)
 {
 	hidePopup(popupId, null);
@@ -76,19 +74,11 @@ function hidePopup(popupId)
 
 function hidePopup(popupId, hideOnOutsideClickCallbackUrl)
 {	
+	$(document).off('click.tc-popup', handlePopupOutsideClick);
+	
 	$("[id='" + popupId + "']").fadeOut('slow', function() {
 		$("[id='" + popupId + "']").css({'left':'0','top':'0'});
 	});
-		
-	if (hideOnOutsideClickCallbackUrl!=null)
-	{
-		nPopupsToHideOnOutsideClick--;
-		if (nPopupsToHideOnOutsideClick<=0)
-		{
-			$(document).off('click.tc-popup', handlePopupOutsideClick);
-			nPopupsToHideOnOutsideClick = 0;
-		}
-	}
 }
 
 function showPopup(popupId)
@@ -98,17 +88,12 @@ function showPopup(popupId)
 
 function showPopup(popupId, hideOnOutsideClickCallbackUrl)
 {
-	$("[id='" + popupId + "']").fadeIn('slow');
-
 	if (hideOnOutsideClickCallbackUrl!=null)	
 	{		
-		if (nPopupsToHideOnOutsideClick==0)
-		{
-			$(document).on('click.tc-popup', {url:hideOnOutsideClickCallbackUrl}, handlePopupOutsideClick);
-		}
-		
-		nPopupsToHideOnOutsideClick++;
+		$(document).on('click.tc-popup', {url:hideOnOutsideClickCallbackUrl}, handlePopupOutsideClick);
 	}
+	
+	$("[id='" + popupId + "']").fadeIn('slow');
 }
 
 function isPopupShown(popupId)
