@@ -133,10 +133,13 @@ public class MppsToMwlLinkBean implements MppsToMwlLinkLocal {
             MppsToMwlLinkResult result) {
         Patient mppsPat;
         mppsPat = mpps.getPatient();
+        Study study;
         if ( mppsPat.getPk() != mwlPat.getPk()) {
             log.warn("Patient of MPPS("+mppsPat.getPatientID()+") and MWL("+mwlPat.getPatientID()+") are different!");
             if (mpps.getSeries().size() > 0) {
-                result.addStudyToMove(mpps.getSeries().iterator().next().getStudy());
+                study = mpps.getSeries().iterator().next().getStudy();
+                study.getPatient().getPk();
+                result.addStudyToMove(study);
             } else {
                 mpps.setPatient(mwlPat);
                 em.merge(mpps);
