@@ -60,10 +60,12 @@
         <servlet-name>CopyDicomFilesServlet</servlet-name>
         <servlet-class>in.raster.oviyam.threed.CopyDicomFiles</servlet-class>
     </servlet>
+    <!--
     <servlet>
         <servlet-name>ThreeDServlet</servlet-name>
         <servlet-class>in.raster.oviyam.threed.surfaceJson</servlet-class>
     </servlet>
+    -->
     <servlet>
         <servlet-name>IOviyamContext</servlet-name>
         <servlet-class>in.raster.oviyam.servlet.IOviyamContext</servlet-class>
@@ -133,10 +135,12 @@
         <servlet-name>CopyDicomFilesServlet</servlet-name>
         <url-pattern>/CopyDicomFiles.do</url-pattern>
     </servlet-mapping>
+    <!--
     <servlet-mapping>
         <servlet-name>ThreeDServlet</servlet-name>
         <url-pattern>/surfaceJson.do</url-pattern>
     </servlet-mapping>
+    -->
     <servlet-mapping>
         <servlet-name>IOviyamContext</servlet-name>
         <url-pattern>/do/IOviyamContext</url-pattern>

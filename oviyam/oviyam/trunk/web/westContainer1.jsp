@@ -43,8 +43,8 @@
 
 <%@page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" isELIgnored="false"%>
 <%@page errorPage="ErrorPage.jsp" %>
-<%@taglib prefix="ser" uri="SeriesDetails" %>
-<%@taglib prefix="img" uri="ImageInfo" %>
+<%@taglib prefix="ser" uri="/WEB-INF/tags/SeriesDetails.tld" %>
+<%@taglib prefix="img" uri="/WEB-INF/tags/ImageInfo.tld" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>

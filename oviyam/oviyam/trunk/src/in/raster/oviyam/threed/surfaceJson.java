@@ -17,7 +17,7 @@ import vtk.*;
 @SuppressWarnings("serial")
 public class surfaceJson extends HttpServlet {
 
-    static {
+	static {
         try {
             System.out.println("\n\nLibrary Path : " + System.getProperty("java.library.path"));
             System.out.println("\n\n Java Version : " + System.getProperty("java.version"));
