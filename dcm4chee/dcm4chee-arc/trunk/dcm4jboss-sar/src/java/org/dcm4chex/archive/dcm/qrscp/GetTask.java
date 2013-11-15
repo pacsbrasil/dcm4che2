@@ -37,6 +37,7 @@
  * ***** END LICENSE BLOCK ***** */
 package org.dcm4chex.archive.dcm.qrscp;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -255,66 +256,32 @@ class GetTask implements Runnable {
             new HashSet<StudyInstanceUIDAndDirPath>();
         Association a = assoc.getAssociation();
         Collection<List<FileInfo>> localFiles = retrieveInfo.getLocalFiles();
-        for (List<FileInfo> list : localFiles) {
+        ArrayList<String> failedFSdir;
+        boolean cancelled;
+        INSTANCES: for (List<FileInfo> list : localFiles) {
             if (service.isSendPendingCGetRSP()) {
                 sendGetRsp(Status.Pending, null);
             }
-            final FileInfo fileInfo = list.get(0);
-            final String iuid = fileInfo.sopIUID;
-            DimseListener storeScpListener = new DimseListener() {
-
-                public void dimseReceived(Association assoc, Dimse dimse) {
-                    switch (dimse.getCommand().getStatus()) {
-                    case Status.Success:
-                        ++completed;
-                        transferred.add(fileInfo);
-                        break;
-                    case Status.CoercionOfDataElements:
-                    case Status.DataSetDoesNotMatchSOPClassWarning:
-                    case Status.ElementsDiscarded:
-                        ++warnings;
-                        transferred.add(fileInfo);
-                        break;
-                    default:
-                        failedIUIDs.add(iuid);
-                    break;
+            failedFSdir = null;
+            FILES: for (int i = 0, len= list.size() ; i < len ; i++) {
+                final FileInfo fileInfo = list.get(i);
+                if (i == 0 || (fileInfo.availability <= Availability.NEARLINE && !failedFSdir.contains(fileInfo.basedir))) {
+                    try {
+                        cancelled = makeCStoreRQ(a, fileInfo, studyInfos);
+                        if (i > 0)
+                            log.info("--Use File "+prompt(fileInfo)+" for this retrieve!");
+                        if (cancelled)
+                            break INSTANCES;
+                        break FILES;
+                    } catch (FileRetrieveFailedException e) {
+                        log.warn("File retrieve of "+prompt(fileInfo)+" failed! Try all (ONLINE/NEARLINE) files of this instance!");
+                        log.debug("Files of instance:"+list);
+                        if (failedFSdir == null) {
+                            failedFSdir = new ArrayList<String>();
+                        }
+                        failedFSdir.add(fileInfo.basedir);
                     }
-                    remainingIUIDs.remove(iuid);
                 }
-            };
-            Dimse rq;
-            try {
-                rq = service.makeCStoreRQ(assoc, fileInfo, null, priority, 
-                        null, 0, null, pixQueryResults);
-            } catch (NoPresContextException e) {
-                if (!service.isIgnorableSOPClass(fileInfo.sopCUID, 
-                        a.getCallingAET())) {
-                    failedIUIDs.add(fileInfo.sopIUID);
-                    remainingIUIDs.remove(iuid);
-                    log.warn(e.getMessage());
-                } else {
-                    log.info(e.getMessage());
-                }
-                continue;
-            } catch (Exception e) {
-                log.error(e.getMessage(), e);
-                failedIUIDs.add(iuid);
-                remainingIUIDs.remove(iuid);
-                continue;
-            }
-
-            try {
-                assoc.invoke(rq, storeScpListener);
-            } catch (Exception e) {
-                log.error("Exception during retrieve of " + iuid, e);
-            }
-            // track access on ONLINE FS
-            if (fileInfo.availability == Availability.ONLINE) {
-                studyInfos.add(new StudyInstanceUIDAndDirPath(fileInfo));
-            }
-            if (canceled 
-                    || a.getState() != Association.ASSOCIATION_ESTABLISHED) {
-                break;
             }
         }
         if (a.getState() == Association.ASSOCIATION_ESTABLISHED) {
@@ -328,6 +295,72 @@ class GetTask implements Runnable {
             service.logInstancesSent(a, a, transferred);
         }
         service.updateStudyAccessTime(studyInfos);
+    }
+
+    private boolean makeCStoreRQ(Association a, final FileInfo fileInfo, Set<StudyInstanceUIDAndDirPath> studyInfos) throws FileRetrieveFailedException {
+        final String iuid = fileInfo.sopIUID;
+        DimseListener storeScpListener = new DimseListener() {
+
+            public void dimseReceived(Association assoc, Dimse dimse) {
+                switch (dimse.getCommand().getStatus()) {
+                case Status.Success:
+                    ++completed;
+                    transferred.add(fileInfo);
+                    break;
+                case Status.CoercionOfDataElements:
+                case Status.DataSetDoesNotMatchSOPClassWarning:
+                case Status.ElementsDiscarded:
+                    ++warnings;
+                    transferred.add(fileInfo);
+                    break;
+                default:
+                    failedIUIDs.add(iuid);
+                break;
+                }
+                remainingIUIDs.remove(iuid);
+            }
+        };
+        Dimse rq;
+        try {
+            rq = service.makeCStoreRQ(assoc, fileInfo, null, priority, 
+                    null, 0, null, pixQueryResults);
+        } catch (FileRetrieveFailedException frfe) {
+            throw frfe;
+        } catch (NoPresContextException e) {
+            if (!service.isIgnorableSOPClass(fileInfo.sopCUID, 
+                    a.getCallingAET())) {
+                failedIUIDs.add(fileInfo.sopIUID);
+                remainingIUIDs.remove(iuid);
+                log.warn(e.getMessage());
+            } else {
+                log.info(e.getMessage());
+            }
+            return false;
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            failedIUIDs.add(iuid);
+            remainingIUIDs.remove(iuid);
+            return false;
+        }
+
+        try {
+            assoc.invoke(rq, storeScpListener);
+        } catch (Exception e) {
+            log.error("Exception during retrieve of " + iuid, e);
+        }
+        // track access on ONLINE FS
+        if (fileInfo.availability == Availability.ONLINE) {
+            studyInfos.add(new StudyInstanceUIDAndDirPath(fileInfo));
+        }
+        if (canceled 
+                || a.getState() != Association.ASSOCIATION_ESTABLISHED) {
+            return true;
+        }
+        return false;
+    }
+    
+    private String prompt(FileInfo fi) {
+        return fi.basedir+"/"+fi.fileID+" of instance "+fi.sopIUID;
     }
 
     private int status() {

@@ -39,6 +39,7 @@
 package org.dcm4chex.archive.mbean;
 
 import java.io.File;
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -46,6 +47,7 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import javax.management.JMException;
+import javax.management.MBeanException;
 import javax.management.ObjectName;
 
 import org.dcm4che.data.Dataset;
@@ -227,13 +229,15 @@ public class UpdateAttributesService extends ServiceMBeanSupport {
             try {
                 log.debug("Update Attributes of fileinfo:"+fileInfos[i][0]);
                 Dataset inst = loadDataset(fileInfos[i]);
-                correctUID(inst, Tags.SOPInstanceUID, fileInfos[i][0].sopIUID);
-                correctUID(inst, Tags.SeriesInstanceUID, fileInfos[i][0].seriesIUID);
-                correctUID(inst, Tags.StudyInstanceUID, fileInfos[i][0].studyIUID);
                 if (inst != null) {
+                    correctUID(inst, Tags.SOPInstanceUID, fileInfos[i][0].sopIUID);
+                    correctUID(inst, Tags.SeriesInstanceUID, fileInfos[i][0].seriesIUID);
+                    correctUID(inst, Tags.StudyInstanceUID, fileInfos[i][0].studyIUID);
                     updateAttributes.updateInstanceAttributes(inst);
                     ds = inst;
                     ++count;
+                } else {
+                    log.warn("Instance "+fileInfos[i][0].sopIUID+" could not be updated! Missing attributes");
                 }
             } catch (Exception e) {
                 log.error("Failed to update instance[uid= " +fileInfos[i][0].sopIUID + "]");
@@ -269,14 +273,22 @@ public class UpdateAttributesService extends ServiceMBeanSupport {
     private Dataset loadDataset(FileInfo[] fileInfos) {
         for (int i = 0; i < fileInfos.length; i++) {
             FileInfo fileInfo = fileInfos[i];
-            if (isLocalRetrieveAET(fileInfo.fileRetrieveAET)) {
+            if (fileInfo.availability <= Availability.NEARLINE && isLocalRetrieveAET(fileInfo.fileRetrieveAET)) {
                 Dataset ds = DcmObjectFactory.getInstance().newDataset();
                 try {
                     ds.readFile(getFile(fileInfo), FileFormat.DICOM_FILE, Tags.PixelData);
+                } catch (MBeanException e) {
+                    if (e.getCause() instanceof IOException) {
+                        log.warn("Reading File "+fileInfo.fileID+" failed!");
+                        if (fileInfos.length > 1)
+                            log.warn("Trying other files of this instance!");
+                        ds = null;
+                        continue;
+                    }
+                    log.error("Failed to read dataset referenced by " + fileInfo, e);
+                    return null;
                 } catch (Exception e) {
-                    log.error(
-                            "Failed to read dataset referenced by " + fileInfo,
-                            e);
+                    log.error("Failed to read dataset referenced by " + fileInfo, e);
                     return null;
                 }
                 checkUID(ds, Tags.SOPInstanceUID, "SOP", fileInfo.sopIUID);
