@@ -877,7 +877,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         addMouseWheelListener(this);
     }
 
-    public void probe() {
+    public boolean probe() {
         if (!probeFlag) {
             probeFlag = true;
             canvas.getLayeredCanvas().textOverlay.repaint();
@@ -885,6 +885,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
             probeFlag = false;
             canvas.getLayeredCanvas().textOverlay.repaint();
         }
+        return probeFlag;
     }
 
     /**
@@ -1781,11 +1782,13 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         }
     }
 
-    public void doPan() {
+    public boolean doPan() {
         if (tool.equalsIgnoreCase("panning")) {
             tool = "";
+            return false;
         } else {
             tool = "panning";
+            return true;
         }
     }
 
@@ -1825,7 +1828,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         }
     }
 
-    public void setImageInfo(double pixelSpacingX, double pixelSpacingY, String studyUid, String seriesUid, String fileLocation, SeriesAnnotations currentSeriesAnnotation, ArrayList<String> instanceUidList, ColorModelParam cmParam, ColorModel cm, int windowLevel, int windowWidth, String modality, String studyDesc) {
+    public void setImageInfo(double pixelSpacingX, double pixelSpacingY, String studyUid, String seriesUid, String fileLocation, SeriesAnnotations currentSeriesAnnotation, ArrayList<String> instanceUidList, ColorModelParam cmParam, ColorModel cm, int windowLevel, int windowWidth, String modality, String studyDesc, ScoutLineInfoModel currentScoutDetails) {
         this.pixelSpacingX = pixelSpacingX;
         this.pixelSpacingY = pixelSpacingY;
         this.studyUID = studyUid;
@@ -1840,6 +1843,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         this.windowWidth = WW = windowWidth;
         this.modality = modality;
         this.studyDesc = studyDesc;
+        this.currentScoutDetails = currentScoutDetails;
     }
 
     public TextOverlayParam getTextOverlayParam() {

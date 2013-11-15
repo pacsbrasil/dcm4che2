@@ -39,7 +39,6 @@
  * ***** END LICENSE BLOCK ***** */
 package in.raster.mayam.form;
 
-import in.raster.mayam.context.ApplicationContext;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Graphics;
@@ -69,9 +68,7 @@ public class JComboButton extends JToggleButton {
     private boolean isArrowMouseOver;
     private int arrowWidth;
     private int arrowSpaceWidth;
-    private boolean isImageLayout = false;
     private MouseInputAdapter mouseHandler = new MouseInputAdapter() {
-
         @Override
         public void mouseExited(MouseEvent e) {
             setActionCommand(originalActionCommand);
@@ -186,7 +183,6 @@ public class JComboButton extends JToggleButton {
         setText(null);
         setDivided(isDivided);
         addHierarchyListener(new HierarchyListener() {
-
             public void hierarchyChanged(HierarchyEvent e) {
                 long changeFlags = e.getChangeFlags();
                 if ((changeFlags & HierarchyEvent.PARENT_CHANGED) != 0) {
@@ -197,7 +193,6 @@ public class JComboButton extends JToggleButton {
             }
         });
         setModel(new DefaultButtonModel() {
-
             @Override
             public boolean isPressed() {
                 return super.isPressed() && JComboButton.this.isDivided && (!isArrowMouseOver || isKeyEvent);
@@ -242,14 +237,7 @@ public class JComboButton extends JToggleButton {
         if (isArrowEvent(e)) {
             requestFocus();
             if (arrowPopupMenu != null) {
-                if (isImageLayout) {
-                    ApplicationContext.imgView.getImageToolbar().isImageLayout = true;
-                    ApplicationContext.imgView.getImageToolbar().getImageLayoutPopupDesign().resetPopupMenu();
-                    arrowPopupMenu.show(JComboButton.this, getComponentOrientation().isLeftToRight() ? 0 : getWidth() - arrowPopupMenu.getPreferredSize().width, getHeight());
-                } else {
-                    ApplicationContext.imgView.getImageToolbar().isImageLayout = false;
-                    arrowPopupMenu.show(JComboButton.this, getComponentOrientation().isLeftToRight() ? 0 : getWidth() - arrowPopupMenu.getPreferredSize().width, getHeight());
-                }
+                arrowPopupMenu.show(JComboButton.this, getComponentOrientation().isLeftToRight() ? 0 : getWidth() - arrowPopupMenu.getPreferredSize().width, getHeight());
                 return true;
             }
         }
@@ -414,9 +402,5 @@ public class JComboButton extends JToggleButton {
      */
     public JPopupMenu getArrowPopupMenu() {
         return arrowPopupMenu;
-    }
-
-    public void setIsImageLayout(boolean isImageLayout) {
-        this.isImageLayout = isImageLayout;
     }
 }

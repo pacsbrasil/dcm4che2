@@ -41,6 +41,7 @@ package in.raster.mayam.delegates;
 
 import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.form.LayeredCanvas;
+import in.raster.mayam.models.ScoutLineInfoModel;
 import in.raster.mayam.models.SeriesAnnotations;
 import in.raster.mayam.param.TextOverlayParam;
 import java.awt.image.ColorModel;
@@ -157,6 +158,7 @@ public class SeriesChooserDelegate extends Thread {
         int windowWidth = tempCanvas.imgpanel.getWindowWidth();
         String modality = tempCanvas.imgpanel.getModality();
         String studyDesc = tempCanvas.imgpanel.getStudyDesc();
+        ScoutLineInfoModel currentScoutDetails = tempCanvas.imgpanel.getCurrentScoutDetails();
         tempCanvas.imgpanel.setCurrentInstanceNo(imageToDisplay);
         tempCanvas.textOverlay.getTextOverlayParam().setCurrentInstance(imageToDisplay);
         ApplicationContext.imgBuffer.clearBuffer();
@@ -187,7 +189,7 @@ public class SeriesChooserDelegate extends Thread {
                 } else {
                     tempCanvas.imgpanel.setScaleFactor(((JPanel) container.getComponent(0)).getWidth() / tempCanvas.imgpanel.layoutColumns, ((JPanel) container.getComponent(0)).getHeight() / tempCanvas.imgpanel.layoutRows, tempCanvas.imgpanel.layoutColumns * tempCanvas.imgpanel.layoutRows);
                 }
-                tempCanvas.imgpanel.setImageInfo(pixelSpacingX, pixelSpacingY, studyUID, seriesUID, fileLoc, currentSeriesAnnotation, instanceUidList, cmParam, cm, windowLevel, windowWidth, modality, studyDesc);
+                tempCanvas.imgpanel.setImageInfo(pixelSpacingX, pixelSpacingY, studyUID, seriesUID, fileLoc, currentSeriesAnnotation, instanceUidList, cmParam, cm, windowLevel, windowWidth, modality, studyDesc, currentScoutDetails);
                 tempCanvas.imgpanel.setImage(imageToDisplay);
                 tempCanvas.imgpanel.setVisibility(tempCanvas, true);
             } else {

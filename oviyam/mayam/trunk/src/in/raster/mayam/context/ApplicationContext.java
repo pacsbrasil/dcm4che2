@@ -134,7 +134,6 @@ public class ApplicationContext {
         GraphicsDevice[] screenDevices = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices();
         if (screenDevices.length > 1) {
             imgView.setLocation((screenDevices[0].getDisplayMode().getWidth()) + 1, 0);
-            imgView.setSize(screenDevices[1].getDisplayMode().getWidth(), screenDevices[1].getDisplayMode().getHeight());
         }
         imgView.setVisible(true);
     }
