@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -271,9 +272,12 @@ public class UpdateAttributesService extends ServiceMBeanSupport {
     }
 
     private Dataset loadDataset(FileInfo[] fileInfos) {
+        ArrayList<String> failedFSdir = new ArrayList<String>();
         for (int i = 0; i < fileInfos.length; i++) {
             FileInfo fileInfo = fileInfos[i];
-            if (fileInfo.availability <= Availability.NEARLINE && isLocalRetrieveAET(fileInfo.fileRetrieveAET)) {
+            if (fileInfo.availability <= Availability.NEARLINE && 
+                    isLocalRetrieveAET(fileInfo.fileRetrieveAET) &&
+                    !failedFSdir.contains(fileInfo.basedir)) {
                 Dataset ds = DcmObjectFactory.getInstance().newDataset();
                 try {
                     ds.readFile(getFile(fileInfo), FileFormat.DICOM_FILE, Tags.PixelData);
@@ -283,6 +287,7 @@ public class UpdateAttributesService extends ServiceMBeanSupport {
                         if (fileInfos.length > 1)
                             log.warn("Trying other files of this instance!");
                         ds = null;
+                        failedFSdir.add(fileInfo.basedir);
                         continue;
                     }
                     log.error("Failed to read dataset referenced by " + fileInfo, e);
