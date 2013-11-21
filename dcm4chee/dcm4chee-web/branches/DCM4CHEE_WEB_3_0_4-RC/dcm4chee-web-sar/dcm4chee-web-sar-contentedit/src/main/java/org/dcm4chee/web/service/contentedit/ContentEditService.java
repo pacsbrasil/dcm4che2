@@ -460,11 +460,12 @@ public class ContentEditService extends ServiceMBeanSupport {
     }
 
     public int moveStudiesToPatient(long[] studyPks, long patPk) throws InstanceNotFoundException, MBeanException, ReflectionException {
-        return moveStudiesToPatient(studyPks, patPk, null);
+        EntityTree tree = moveStudiesToPatient(studyPks, patPk, null);
+        return tree == null ? 0 : tree.getAllInstances().size();
     }
-    public int moveStudiesToPatient(long[] studyPks, long patPk, Map<String, String> new2oldUIDmap) throws InstanceNotFoundException, MBeanException, ReflectionException {
+    public EntityTree moveStudiesToPatient(long[] studyPks, long patPk, Map<String, String> new2oldUIDmap) throws InstanceNotFoundException, MBeanException, ReflectionException {
         if ( studyPks == null || studyPks.length < 1) {
-            return 0;
+            return null;
         }
         EntityTree entityTree = lookupDicomEditLocal().moveStudiesToPatient(studyPks, patPk, useIOCM);
         if (!entityTree.isEmpty()) {
@@ -472,7 +473,7 @@ public class ContentEditService extends ServiceMBeanSupport {
                 entityTree.getUIDMap().putAll(new2oldUIDmap);
             propagateMoveStudiesToPatient(entityTree);
         }
-        return entityTree.getAllInstances().size();
+        return entityTree;
     }
     
     public void reloadAttributeFilter() {
@@ -701,6 +702,7 @@ public class ContentEditService extends ServiceMBeanSupport {
         log.debug("MppsToMwlLinkResult:{}",result);
         logMppsLinkRecord(result);
         EntityTree tree = updateSeriesAttributes(result);
+        EntityTree movedStudies = null;
         if (this.addMwlAttrsToMppsXsl != null) {
             addMwlAttrs2Mpps(result);
         }
@@ -716,7 +718,7 @@ public class ContentEditService extends ServiceMBeanSupport {
                 studyPks[i++] = s.getPk();
                 tree.removeStudy(s);
             }
-            this.moveStudiesToPatient(studyPks, pat.getPk(), tree.getUIDMap());
+            movedStudies = moveStudiesToPatient(studyPks, pat.getPk(), tree.getUIDMap());
         }
         log.debug("forwardModifiedToAETs:{}", forwardModifiedToAETs);
         ArrayList<DicomObject> fwdIANs = this.getIANs(tree, null);
@@ -743,6 +745,10 @@ public class ContentEditService extends ServiceMBeanSupport {
             }
         }
         if (sendIANonMppsLinked) {
+            if (movedStudies != null) {
+                log.debug("Add IAN's for moved studies! # of IAN's before:"+fwdIANs.size());
+                fwdIANs.addAll(getIANs(movedStudies, null));
+            }
             log.info("Send IAN after linking MPPS to MWL! IANs:"+fwdIANs.size());
             try {
                 this.sendIANs(fwdIANs);
