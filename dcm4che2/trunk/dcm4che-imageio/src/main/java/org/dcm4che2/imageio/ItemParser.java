@@ -134,7 +134,7 @@ public class ItemParser implements StreamSegmentMapper {
 
     private final boolean jpeg;
 
-    private int[] basicOffsetTable;
+    private long[] basicOffsetTable;
 
     private final byte[] soi = new byte[2];
 
@@ -161,14 +161,34 @@ public class ItemParser implements StreamSegmentMapper {
                         + " frames!");
                 iis.skipBytes(offsetTableLen);
             } else {
-                basicOffsetTable = new int[numberOfFrames];
+                basicOffsetTable = new long[numberOfFrames];
+                long highWord = 0, highInc = 0x100000000L;
                 iis.setByteOrder(ByteOrder.LITTLE_ENDIAN);
                 for (int i = 0; i < basicOffsetTable.length; i++) {
-                    basicOffsetTable[i] = iis.readInt();
+                    basicOffsetTable[i] = highWord | (0xFFFFFFFF & iis.readInt());
+                    // Allow wrapping of the counter in case we get more than 2^32 sized offsets.
+                    if( i>0 && basicOffsetTable[i] < basicOffsetTable[i-1] ) {
+                    	highWord += highInc;
+                    	basicOffsetTable[i] += highInc;
+                    }
+                    
                 }
             }
         }
         next();
+        
+        // Create the items/first items based on the basic offset table.
+        if( basicOffsetTable!=null ) {
+            Item firstItem = firstItemOfFrame.get(0);
+            Item prev = firstItemOfFrame.get(firstItemOfFrame.size()-1);
+            for(int i=firstItemOfFrame.size(); i<basicOffsetTable.length-1; i++) {
+        		Item addItem = new Item(prev.nextOffset(), firstItem.startPos + basicOffsetTable[i],
+                        (int) (basicOffsetTable[i+1]-basicOffsetTable[i]-8));
+        		addFirstItemOfFrame(addItem);
+        		items.add(addItem);
+        		prev = addItem;
+        	}
+        }        
     }
 
     public int getNumberOfDataFragments() {
@@ -207,8 +227,7 @@ public class ItemParser implements StreamSegmentMapper {
                     if (basicOffsetTable != null) {
                         Item firstItem = firstItemOfFrame.get(0);
                         int frame = firstItemOfFrame.size();
-                        if (item.startPos == firstItem.startPos
-                                + (basicOffsetTable[frame] & 0xFFFFFFFFL)) {
+                        if (item.startPos == firstItem.startPos + basicOffsetTable[frame]) {
                             if (log.isDebugEnabled()) {
                                 log.debug("Start position of item #"
                                         + (items.size()+1) + " matches "
@@ -263,6 +282,22 @@ public class ItemParser implements StreamSegmentMapper {
         getStreamSegment(pos, len, retval);
         return retval;
     }
+    
+    protected int findItemPosition(long offset) {
+    	int s=0, e=items.size()-1;
+    	int m = (s+e)/2;
+    	while( e>s ) {
+    		Item test = items.get(m);
+    		if( test.offset==offset ) return m;
+    		if( test.offset < offset ) s = m;
+    		else e = m-1;
+    		m = (s+e+1)/2;
+    	}
+    	return m;
+    }
+    protected int findItemPosition(Item item) {
+    	return findItemPosition(item.offset);
+    }
 
     public void getStreamSegment(long pos, int len, StreamSegment seg) {
         if (log.isDebugEnabled())
@@ -271,16 +306,7 @@ public class ItemParser implements StreamSegmentMapper {
             setEOF(seg);
             return;
         }
-        Item item = last();
-        while (item.nextOffset() <= pos) {
-            if ((item = next()) == null || isEndOfFrame(pos)) {
-                setEOF(seg);
-                return;
-            }
-        }
-        int i = items.size() - 1;
-        while (item.offset > pos)
-            item = items.get(--i);
+        Item item = items.get(findItemPosition(pos));
         seg.setStartPos(item.startPos + pos - item.offset);
         seg.setSegmentLength(Math.min((int) (item.offset + item.length - pos),
                 len));
@@ -328,7 +354,7 @@ public class ItemParser implements StreamSegmentMapper {
         int firstItemOfNextFrameIndex = frame + 1 < numberOfFrames
                 ? items.indexOf(getFirstItemOfFrame(frame + 1))
                 : getNumberOfDataFragments();
-        for (int i = items.indexOf(item) + 1; i < firstItemOfNextFrameIndex; i++) {
+        for (int i = findItemPosition(item.offset) + 1; i < firstItemOfNextFrameIndex; i++) {
             frameSize += items.get(i).length;
         }
 		return frameSize;
