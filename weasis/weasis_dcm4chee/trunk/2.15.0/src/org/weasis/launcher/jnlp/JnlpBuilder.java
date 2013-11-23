@@ -26,11 +26,11 @@ public class JnlpBuilder {
         ApplicationDesc applicationDesc = new ApplicationDesc();
         applicationDesc.setApplicationMain(props.getProperty("application.main"));
         int num = 1;
-        String key = "application.argument." + num;
-        while (props.containsKey(key)) {
-            applicationDesc.addApplicationArg(props.getProperty(key));
+        String key = "application.argument.";
+  
+        while (props.containsKey(key + num)) {
+            applicationDesc.addApplicationArg(props.getProperty(key + num));
             num++;
-            key = "application.argument." + num;
         }
         jnlp.setDesc(applicationDesc);
 
