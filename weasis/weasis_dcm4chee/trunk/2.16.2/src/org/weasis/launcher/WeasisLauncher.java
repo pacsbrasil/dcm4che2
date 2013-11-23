@@ -27,18 +27,13 @@ public class WeasisLauncher {
 
     private static Logger logger = LoggerFactory.getLogger(WeasisLauncher.class);
 
-    private final static Properties pacsProperties = new Properties();;
-
-    private final static Jnlp[] jnlpTemplate = new Jnlp[1];
+    private final static Properties pacsProperties = new Properties();
 
     static {
         try {
             pacsProperties
                 .load(WeasisLauncher.class.getClassLoader().getResourceAsStream("viewer/launcher.properties"));
             pacsProperties.put("profile.name", "dcm4chee");
-
-            jnlpTemplate[0] = JnlpBuilder.createJnlpFromProperties(pacsProperties);
-            logger.debug("jnlpTemplate: " + jnlpTemplate);
         } catch (Exception e) {
             logger.error(e.getMessage());
         }
@@ -59,12 +54,14 @@ public class WeasisLauncher {
         this.scheme = request.getScheme();
         this.serverName = request.getServerName();
         this.serverPort = "" + request.getServerPort();
+
         System.setProperty("server.base.url", scheme + "://" + serverName + ":" + serverPort);
         for (Enumeration e = pacsProperties.propertyNames(); e.hasMoreElements();) {
             String name = (String) e.nextElement();
             pacsProperties.setProperty(name,
                 FileUtil.substVars(pacsProperties.getProperty(name), name, null, pacsProperties));
         }
+
         FileOutputStream jnlpStream = null;
         try {
             // Build extension jnlp file for substance Look and Feel.
@@ -128,9 +125,10 @@ public class WeasisLauncher {
         }
 
         // Customizes the Jnlp File and save it to a temporary file
-        ApplicationDesc appDesk = (ApplicationDesc) jnlpTemplate[0].getDesc();
-        appDesk.getApplicationArg().clear();
+        Jnlp jnlp = JnlpBuilder.createJnlpFromProperties(pacsProperties);
+        ApplicationDesc appDesk = (ApplicationDesc) jnlp.getDesc();
         appDesk.addApplicationArg("$dicom:get -w " + wadoQueryFile);
+        logger.debug("jnlp: " + jnlp.toXml());
 
         try {
             // pacsProperties.put("weasis.user", request.getLogin());
@@ -139,7 +137,7 @@ public class WeasisLauncher {
             String jnlpTmpFilePath = pacsProperties.getProperty("jnlp.tmp.path");
 
             String jnlpFilePath = controllerContext.getServletContext().getRealPath("/" + jnlpTmpFilePath);
-            jnlpFile = jnlpTemplate[0].saveToTmpFile(jnlpFilePath);
+            jnlpFile = jnlp.saveToTmpFile(jnlpFilePath);
             jnlpFile =
                 scheme + "://" + serverName + ":" + serverPort + launcherContextPath + "/" + jnlpTmpFilePath + "/"
                     + jnlpFile;
@@ -147,6 +145,7 @@ public class WeasisLauncher {
         } catch (JnlpException e) {
             logger.error(e.getMessage());
         }
+
         if (jnlpFile != null) {
             // Creates the response returned to the HTTP client
             HttpServletResponse response = controllerContext.getResponse();
