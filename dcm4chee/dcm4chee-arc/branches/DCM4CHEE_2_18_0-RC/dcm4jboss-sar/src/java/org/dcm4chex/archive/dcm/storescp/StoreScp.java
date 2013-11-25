@@ -743,14 +743,14 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             boolean clearExternalRetrieveAET = hasDifferentMd5(duplicates, md5sum);
             Dataset coercedElements;
             try {
-                coercedElements = updateDB(store, ds, fspk, filePath, fileLength, md5sum,
+                coercedElements = updateDB(store, ds, callingAET, fspk, filePath, fileLength, md5sum,
                         0, newSeries || fsSwitched, clearExternalRetrieveAET, dontChangeReceivedStatus[0]);
             } catch (NonUniquePatientIDException e) {
                 service.coercePatientID(ds);
                 coerced.putLO(Tags.PatientID, ds.getString(Tags.PatientID));
                 coerced.putLO(Tags.IssuerOfPatientID,
                         ds.getString(Tags.IssuerOfPatientID));
-                coercedElements = updateDB(store, ds, fspk, filePath, fileLength, md5sum, 
+                coercedElements = updateDB(store, ds, callingAET, fspk, filePath, fileLength, md5sum, 
                         0, newSeries || fsSwitched, clearExternalRetrieveAET, dontChangeReceivedStatus[0]);
             }
             if(newSeries) {
@@ -1125,7 +1125,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         }
     }
 
-    protected Dataset updateDB(Storage storage, Dataset ds, long fspk,
+    protected Dataset updateDB(Storage storage, Dataset ds, String currentCallingAET, long fspk,
             String filePath, long fileLength, byte[] md5, int fileStatus,
             boolean updateStudyAccessTime, boolean clearExternalRetrieveAET, boolean dontChangeReceivedStatus)
             throws DcmServiceException, NonUniquePatientIDException {
@@ -1134,12 +1134,12 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             try {
                 if (serializeDBUpdate) {
                     synchronized (storage) {
-                        return storage.store(ds, fspk, filePath, fileLength,
+                        return storage.store(ds, currentCallingAET, fspk, filePath, fileLength,
                                 md5, fileStatus, updateStudyAccessTime, clearExternalRetrieveAET, dontChangeReceivedStatus,
                                 service.patientMatching());
                     }
                 } else {
-                    return storage.store(ds, fspk, filePath, fileLength,
+                    return storage.store(ds, currentCallingAET, fspk, filePath, fileLength,
                             md5, fileStatus, updateStudyAccessTime, clearExternalRetrieveAET, dontChangeReceivedStatus,
                             service.patientMatching());
                 }
