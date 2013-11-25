@@ -919,8 +919,11 @@ public class StoreScpService extends AbstractScpService {
             FileMetaInfo fmi = DcmObjectFactory.getInstance().newFileMetaInfo(cuid,
                     iuid, fileDTO.getFileTsuid());
             ds.setFileMetaInfo(fmi);
+            ds.setPrivateCreatorID(PrivateTags.CreatorID);
+            String sourceAET = ds.getString(PrivateTags.CallingAET);
+            ds.setPrivateCreatorID(null);
             String filePath = fileDTO.getFilePath();
-            scp.updateDB(store, ds, fileDTO.getFileSystemPk(), filePath, fileDTO.getFileSize(),
+            scp.updateDB(store, ds, sourceAET, fileDTO.getFileSystemPk(), filePath, fileDTO.getFileSize(),
                     fileDTO.getFileMd5(), fileDTO.getFileStatus(), true, false, false);
         } else {
             log.info("Import of file "+fileDTO+" ignored! Duplicate already exists!");
