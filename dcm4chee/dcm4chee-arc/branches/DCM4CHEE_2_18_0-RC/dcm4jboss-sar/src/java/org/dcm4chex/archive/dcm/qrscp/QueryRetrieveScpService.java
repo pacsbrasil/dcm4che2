@@ -97,6 +97,7 @@ import org.dcm4che2.audit.message.InstancesTransferredMessage;
 import org.dcm4che2.audit.message.ParticipantObjectDescription;
 import org.dcm4che2.audit.util.InstanceSorter;
 import org.dcm4cheri.util.StringUtils;
+import org.dcm4chex.archive.common.Availability;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.PIDWithIssuer;
 import org.dcm4chex.archive.config.RetryIntervalls;
@@ -1695,14 +1696,15 @@ public class QueryRetrieveScpService extends AbstractScpService {
             List<FileDTO> value = entry.getValue();
             FileDTO[] fileDTOs = value.toArray(new FileDTO[value.size()]);
             Arrays.sort(fileDTOs);
-            FileDTO localFileDTO = getLocalFileDTO(fileDTOs);
+            File[] resolvedFile = new File[]{null};
+            FileDTO localFileDTO = getLocalFileDTO(fileDTOs, resolvedFile);
             if (localFileDTO != null) {
                 String dirPath = localFileDTO.getDirectoryPath();
                 if (studyIUID != null && studyIUID.length() != 0
                         && dirPaths.add(dirPath)) {
                     updateStudyAccessTime(studyIUID, dirPath);
                 }
-                fileOrAETByIUID.put(iuid, getFile(localFileDTO));
+                fileOrAETByIUID.put(iuid, resolvedFile[0]);
             } else {
                 // no local accessible file -> return Retrieve AET
                 fileOrAETByIUID.put(iuid, fileDTOs[0].getRetrieveAET());
@@ -1722,9 +1724,21 @@ public class QueryRetrieveScpService extends AbstractScpService {
         return fileOrAETByIUID;
     }
 
-    private FileDTO getLocalFileDTO(FileDTO[] fileDTOs) {
+    private FileDTO getLocalFileDTO(FileDTO[] fileDTOs, File[] resolvedFile) {
+        ArrayList<Long> failedFSpks = new ArrayList<Long>();
         for (FileDTO dto : fileDTOs) {
-            if (isLocalRetrieveAET(dto.getRetrieveAET())) {
+            if (dto.getAvailability() <= Availability.NEARLINE && 
+                    isLocalRetrieveAET(dto.getRetrieveAET()) && 
+                    !failedFSpks.contains(dto.getFileSystemPk())) {
+                try {
+                    File f = getFile(dto);
+                    if (resolvedFile != null && resolvedFile.length > 0)
+                        resolvedFile[0] = f;
+                } catch (Exception x) {
+                    failedFSpks.add(dto.getFileSystemPk());
+                    log.warn("File can't be read! try another one. fileDTO:"+dto);
+                    continue;
+                }
                 return dto;
             }
         }
@@ -1741,7 +1755,8 @@ public class QueryRetrieveScpService extends AbstractScpService {
             if (fileDTOs.length == 0) {
                 aet = fsMgt.getExternalRetrieveAET(sopIUID);
             } else {
-                FileDTO localFileDTO = getLocalFileDTO(fileDTOs);
+                File[] resolvedFile = new File[]{null};
+                FileDTO localFileDTO = getLocalFileDTO(fileDTOs, resolvedFile);
                 if (localFileDTO != null) {
                     if (localFileDTO.getDirectoryPath().startsWith(autoUpdateAttributesFromFS))
                         updateInstanceAttributes(sopIUID);
@@ -1749,7 +1764,7 @@ public class QueryRetrieveScpService extends AbstractScpService {
                         updateStudyAccessTime(studyIUID,
                                 localFileDTO.getDirectoryPath());
                     }
-                    return getFile(localFileDTO);
+                    return resolvedFile[0];
                 }
                 aet = fileDTOs[0].getRetrieveAET();
             }
