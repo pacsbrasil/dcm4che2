@@ -201,16 +201,16 @@ public abstract class StorageBean implements SessionBean {
     /**
      * @ejb.interface-method
      */
-    public org.dcm4che.data.Dataset store(org.dcm4che.data.Dataset ds,
+    public org.dcm4che.data.Dataset store(org.dcm4che.data.Dataset ds, String currentCallingAET,
             long fspk, java.lang.String fileid, long size, byte[] md5, int fileStatus,
             boolean updateStudyAccessTime, boolean clearExternalRetrieveAET, boolean dontChangeReceivedStatus, PatientMatching matching) throws DcmServiceException, NonUniquePatientIDException {
-    	return store(ds, fspk, fileid, size, md5, fileStatus, updateStudyAccessTime, 
+    	return store(ds, currentCallingAET, fspk, fileid, size, md5, fileStatus, updateStudyAccessTime, 
     	        clearExternalRetrieveAET, dontChangeReceivedStatus, matching, true);
     }
     /**
      * @ejb.interface-method
      */
-    public org.dcm4che.data.Dataset store(org.dcm4che.data.Dataset ds,
+    public org.dcm4che.data.Dataset store(org.dcm4che.data.Dataset ds, String currentCallingAET,
             long fspk, java.lang.String fileid, long size, byte[] md5, int fileStatus,
             boolean updateStudyAccessTime, boolean clearExternalRetrieveAET, boolean dontChangeReceivedStatus, PatientMatching matching,
             boolean canRollback) throws DcmServiceException, NonUniquePatientIDException {
@@ -227,8 +227,7 @@ public abstract class StorageBean implements SessionBean {
                 prevAvailability = instance.getAvailabilitySafe();
                 coerceInstanceIdentity(instance, ds, coercedElements);
                 if (clearExternalRetrieveAET && instance.getExternalRetrieveAET() != null) {
-                    ds.setPrivateCreatorID(PrivateTags.CreatorID);
-                    if ( instance.getExternalRetrieveAET().equals(ds.getString(PrivateTags.CallingAET))) {
+                    if ( instance.getExternalRetrieveAET().equals(currentCallingAET)) {
                         log.debug("CallingAET == ExternalRetrieveAET! Don't clear ExternalRetrieveAET of instance "+instance.getSopIuid());
                     } else {
                         log.info("Clear ExternalRetrieveAET of instance "+instance.getSopIuid());
