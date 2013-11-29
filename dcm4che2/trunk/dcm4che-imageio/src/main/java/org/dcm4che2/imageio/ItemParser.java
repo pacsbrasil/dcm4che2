@@ -310,6 +310,9 @@ public class ItemParser implements StreamSegmentMapper {
         seg.setStartPos(item.startPos + pos - item.offset);
         seg.setSegmentLength(Math.min((int) (item.offset + item.length - pos),
                 len));
+        if( seg.getSegmentLength() == 0 ) {
+            setEOF(seg);
+        }
         if (log.isDebugEnabled())
             log.debug("return StreamSegment[start=" + seg.getStartPos()
                     + ", len=" + seg.getSegmentLength() + "]");
