@@ -439,15 +439,15 @@ public class WADORequestObjectImpl extends BasicRequestObjectImpl implements
     
     private boolean checkUIDs() {
         // studyUID and seriesUID are not used in query! So check UID only if length > 1 to allow short URLs
-        if (studyUID.length() > 1 && !UIDs.isValid(studyUID)) { 
+        if (studyUID.length() > 1 && !isUID(studyUID)) { 
             this.setErrorMsg("Invalid studyUID parameter!");
             return false;
         }
-        if (seriesUID.length() > 1 && !UIDs.isValid(seriesUID)) {
+        if (seriesUID.length() > 1 && !isUID(seriesUID)) {
             this.setErrorMsg("Invalid seriesUID parameter!");
             return false;
         }
-        if (!UIDs.isValid(instanceUID)) {
+        if (!isUID(instanceUID)) {
             this.setErrorMsg("Invalid objetcUID parameter!");
             return false;
         }
@@ -456,6 +456,23 @@ public class WADORequestObjectImpl extends BasicRequestObjectImpl implements
             return false;
         }
         return true;
+    }
+
+  	public static boolean isUID(String uid) {
+  		char[] a = uid.toCharArray();
+	    boolean expectDigit = true;
+    	for (int i = 0; i < a.length; ++i) {
+      		if (a[i] == '.') {
+        		if (expectDigit) 
+        		    return false;
+        		expectDigit = true;
+        	} else if (a[i] > '9' || a[i] < '0') {
+        		return false;
+        	} else {
+        		expectDigit = false;
+        	}
+    	}
+        return !expectDigit;
     }
 
     /**
