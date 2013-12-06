@@ -54,6 +54,9 @@ import org.apache.wicket.Session;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxFallbackLink;
+import org.apache.wicket.ajax.markup.html.AjaxLink;
+import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
+import org.apache.wicket.markup.html.PackageResourceReference;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.ChoiceRenderer;
 import org.apache.wicket.markup.html.form.DropDownChoice;
@@ -122,6 +125,17 @@ public class ModuleSelectorPanel extends SecureAjaxTabbedPanel {
             else if (isPopupOpen(providers)) {
                 throw new IllegalStateException(ModuleSelectorPanel.this.getString("logout.waiting"));
             }
+        }
+    };
+
+    final ModalWindow aboutWindow = new ModalWindow("aboutWindow");
+
+    AjaxLink<Object> aboutLink = new AjaxLink<Object>("aboutLink") {
+        private static final long serialVersionUID = 1L;
+
+        @Override
+        public void onClick(AjaxRequestTarget target) {
+            aboutWindow.setTitle("").show(target);
         }
     };
 
@@ -288,9 +302,11 @@ public class ModuleSelectorPanel extends SecureAjaxTabbedPanel {
         }).add(new TooltipBehaviour("application.", "styleselect"));
         add(cssSelector);
         
-        add(new Image("img_logo", new ResourceReference(ModuleSelectorPanel.class, 
-                "images/logo.gif"))
-        );
+        add(aboutWindow.setInitialWidth(600).setInitialHeight(400));
+
+        add(aboutLink
+                .add(new Image("img_logo", new PackageResourceReference(ModuleSelectorPanel.class, "images/logo.gif")))
+                .add(new TooltipBehaviour("dicom.")).setEnabled(false));
     }
 
     protected List<? extends ResourceReference> getBaseCssResources() {
@@ -335,6 +351,11 @@ public class ModuleSelectorPanel extends SecureAjaxTabbedPanel {
         return this;
     }
     
+    public ModalWindow getAboutWindow() {
+        aboutLink.setEnabled(true);
+        return aboutWindow;
+    }
+
     private boolean closePopups(List<ProgressProvider> providers) {
         boolean b = false;
         if (providers != null) {

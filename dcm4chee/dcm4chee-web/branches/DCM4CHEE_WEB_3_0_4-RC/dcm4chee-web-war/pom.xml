@@ -256,7 +256,7 @@
                     <archive> 
                         <manifestEntries>
                             <Implementation-Title>DCM4CHEE-WEB</Implementation-Title>
-                            <Implementation-Build>${pom.version}</Implementation-Build>
+                            <Implementation-Build>${project.version}</Implementation-Build>
                             <SCM-Revision>${buildNumber}</SCM-Revision>
                         </manifestEntries>
                     </archive>

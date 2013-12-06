@@ -38,16 +38,22 @@
 
 package org.dcm4chee.web.war;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
+import java.util.jar.Manifest;
 
 import javax.servlet.http.HttpSession;
 
 import org.apache.wicket.AttributeModifier;
+import org.apache.wicket.Page;
 import org.apache.wicket.RequestCycle;
 import org.apache.wicket.ajax.AbstractAjaxTimerBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
+import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.model.Model;
+import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.protocol.http.WebRequest;
 import org.apache.wicket.util.time.Duration;
 import org.dcm4chee.dashboard.ui.DashboardPanel;
@@ -61,6 +67,7 @@ import org.dcm4chee.web.common.base.ModuleSelectorPanel;
 import org.dcm4chee.web.common.license.ae.AELicenseProviderManager;
 import org.dcm4chee.web.common.license.ae.spi.AELicenseProviderSPI;
 import org.dcm4chee.web.common.secure.SecureSession;
+import org.dcm4chee.web.common.secure.SecureSessionCheckPage;
 import org.dcm4chee.web.common.secure.SecureWicketPage;
 import org.dcm4chee.web.war.ae.AEPanel;
 import org.dcm4chee.web.war.folder.StudyListPage;
@@ -156,10 +163,19 @@ public class MainPage extends SecureWicketPage {
         for (ExternalWebApp p : extApps) {
             selectorPanel.addModule(p.getPanel(), p.getTitle());
         }
+        selectorPanel.getAboutWindow().setPageCreator(new ModalWindow.PageCreator() {
+
+            private static final long serialVersionUID = 1L;
+
+            public Page createPage() {
+                return new AboutPage();
+            }
+        });
+
         try {
             Properties properties = new Properties();
             properties.load(((BaseWicketApplication) getApplication()).getServletContext().getResourceAsStream("/META-INF/MANIFEST.MF"));
-            selectorPanel.get("img_logo").add(new AttributeModifier("title", true, 
+            selectorPanel.get("aboutLink:img_logo").add(new AttributeModifier("title", true, 
                     new Model<String>(
                             properties.getProperty("Implementation-Title", "")
                             + " : " + properties.getProperty("Implementation-Build", "")
@@ -167,4 +183,46 @@ public class MainPage extends SecureWicketPage {
                             )));            
         } catch (Exception ignore) {}
     }    
+
+    private class AboutPage extends SecureSessionCheckPage {
+
+        private static final long serialVersionUID = 1L;
+
+        public AboutPage() {
+
+            Properties webProperties = new Properties();
+            Manifest pacsManifest = null;
+            Manifest dcmManifest = null;
+            try {
+                webProperties.load(((BaseWicketApplication) getApplication()).getServletContext().getResourceAsStream("/META-INF/MANIFEST.MF"));
+            } catch (IOException e) {
+                log.error("Could not retrieve properties from /META-INF/MANIFEST.MF for web application", e);
+            }
+            try {
+                 dcmManifest = new java.util.jar.JarFile(new java.io.File(
+                		Class.forName("org.dcm4che.data.Dataset").getProtectionDomain().getCodeSource().getLocation().toExternalForm().substring(6))).getManifest();
+            } catch (Exception e) {
+                log.error("Could not retrieve properties from /META-INF/MANIFEST.MF for DICOM library", e);
+            }
+            try {
+                pacsManifest = new java.util.jar.JarFile(new java.io.File(
+                		Class.forName("org.dcm4chex.archive.dcm.DcmServerService").getProtectionDomain()
+                		.getCodeSource().getLocation().toExternalForm().substring(6))).getManifest();
+            } catch (Exception e) {
+                log.error("Could not retrieve properties from /META-INF/MANIFEST.MF for archive application", e);
+            }
+            add(new Label("content", new StringResourceModel("template", this, null, new Object[] {
+            		webProperties.getProperty("Implementation-Title",""),
+            		webProperties.getProperty("Implementation-Build", ""),
+            		webProperties.getProperty("SCM-Revision", ""),
+            		pacsManifest.getMainAttributes().getValue("Implementation-Title"),
+            		pacsManifest.getMainAttributes().getValue("Implementation-Version"),
+            		pacsManifest.getMainAttributes().getValue("Implementation-Vendor"),
+            		dcmManifest.getMainAttributes().getValue("Implementation-Title"),
+            		dcmManifest.getMainAttributes().getValue("Implementation-Version"),
+            		dcmManifest.getMainAttributes().getValue("Implementation-Vendor")
+            })).setEscapeModelStrings(false));
+        }
+    }
+
 }
