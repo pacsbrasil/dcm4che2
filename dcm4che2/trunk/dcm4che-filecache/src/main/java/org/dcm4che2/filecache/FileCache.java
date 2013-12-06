@@ -66,6 +66,7 @@ public class FileCache {
 
     private File journalRootDir;
     private File cacheRootDir;
+    private File freeZZZFile;
     // journalFileName should differ for multiple FileCache instances
     // inside one and across multiple JVMs
     private String journalFileName = (hashCode() & 0xFFFFFFFFL) + "-"
@@ -88,6 +89,7 @@ public class FileCache {
             assertWritableDiretory(journalRootDir);
         }
         this.journalRootDir = journalRootDir;
+        
     }
     
 
@@ -211,9 +213,9 @@ public class FileCache {
     /** Return true if the free is running file was created, or is very old.   Create
      * a free is running file to prevent other instances from freeing at the same time.
      */
-    protected boolean multiProcessFreeIsRunningFile() {
-        File zzzFreeIsRunning = new File(journalRootDir, ZZZFREE_IS_RUNNING);
+    protected boolean multiProcessFreeIsRunningFile() {        
         try {
+        	File zzzFreeIsRunning = getFreeZZZFile();
             if (zzzFreeIsRunning.createNewFile()) {
                 return true;
             }
@@ -258,7 +260,7 @@ public class FileCache {
             return free(size, journalRootDir,true);
         } finally {
             freeIsRunning = false;
-            new File(journalRootDir,ZZZFREE_IS_RUNNING).delete();
+            getFreeZZZFile().delete();
         }
     }
 
@@ -294,9 +296,9 @@ public class FileCache {
         long free = 0L;
         if (dir.isDirectory()) {
             String[] fnames = dir.list();
-            Arrays.sort(fnames);
+            Arrays.sort(fnames); 
             int i=fnames.length;
-            for (String fname : fnames) {
+            for (String fname : fnames) {            	
                 free += free(size - free, new File(dir, fname), endMost && (i--<2));
                 if (free >= size) {
                     break;
@@ -362,4 +364,10 @@ public class FileCache {
         return true;
     }
 
+    private synchronized File getFreeZZZFile()throws IOException{
+    	if(freeZZZFile==null){
+    		freeZZZFile = new File(this.cacheRootDir,ZZZFREE_IS_RUNNING);    		
+    	}
+    	return freeZZZFile;
+    }
 }
