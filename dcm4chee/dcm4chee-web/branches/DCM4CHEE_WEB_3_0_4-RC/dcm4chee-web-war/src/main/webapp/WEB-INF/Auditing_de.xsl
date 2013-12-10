@@ -26,7 +26,7 @@
 		  		<th><font color="{$thColor}">Aktion</font></th>
 		  		<th><font color="{$thColor}">Operation</font></th>
 		  		<th><font color="{$thColor}">Benutzer</font></th>
-		  		<th><font color="{$thColor}">Ziel</font></th>
+		  		<th><font color="{$thColor}">Teilnehmer</font></th>
 		  		<th><font color="{$thColor}">Patient (Patienten-ID)</font></th>
 		  		<th><font color="{$thColor}">Studien</font></th>
 		  		<th><font color="{$thColor}">Status</font></th>
@@ -254,7 +254,12 @@
 						<!-- U S E R -->
 						<xsl:for-each select="ActiveParticipant">
 							<xsl:if test="not(@UserIsRequestor='false')">
-								<xsl:value-of select="@UserID"/>
+	                            <xsl:value-of select="@UserID"/>
+	                            <xsl:if test="@AlternativeUserID">
+		                            <i><xsl:text> (</xsl:text>
+		                            <xsl:value-of select="@AlternativeUserID"/>
+		                            <xsl:text>)</xsl:text></i>
+	                            </xsl:if><br/>
 							</xsl:if>
 						</xsl:for-each>	
 					</td>
@@ -262,7 +267,12 @@
 						<!-- H O S T -->
 						<xsl:for-each select="ActiveParticipant">
 							<xsl:if test="@UserIsRequestor='false'">
-								<xsl:value-of select="@UserID"/>
+	                            <xsl:value-of select="@UserID"/>
+	                            <xsl:if test="@AlternativeUserID">
+		                            <i><xsl:text> (</xsl:text>
+		                            <xsl:value-of select="@AlternativeUserID"/>
+		                            <xsl:text>)</xsl:text></i>
+	                            </xsl:if><br/>
 							</xsl:if>
 						</xsl:for-each>	
 					</td>
