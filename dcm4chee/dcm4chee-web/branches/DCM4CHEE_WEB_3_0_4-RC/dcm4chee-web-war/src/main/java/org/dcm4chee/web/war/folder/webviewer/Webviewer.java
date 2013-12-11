@@ -106,9 +106,13 @@ public class Webviewer  {
         } else {
             if (link == null) {
                 String url = getUrlForModel(model, p);
-                link = new ExternalLink(WEBVIEW_ID, url)
-                    .setPopupSettings(new PopupSettings(PageMap.forName("webviewPage"), 
+                link = new ExternalLink(WEBVIEW_ID, url);
+                if (p.hasOwnWindow()) {
+                	((ExternalLink)link).setPopupSettings(getPopupSettingsForDirectGET(url));
+                } else {
+                    ((ExternalLink) link).setPopupSettings(new PopupSettings(PageMap.forName("webviewPage"), 
                         PopupSettings.RESIZABLE|PopupSettings.SCROLLBARS));
+                }
                 if (callback!=null) {
                 	link.add(new AjaxEventBehavior("onclick") {
 						@Override
@@ -144,7 +148,21 @@ public class Webviewer  {
         return link;
     }
 
-    private static AbstractLink getWebviewerSelectionPageLink(final AbstractDicomModel model, final WebviewerLinkProvider[] providers, final ModalWindow modalWindow,
+    public static PopupSettings getPopupSettingsForDirectGET(final String url) {
+		PopupSettings ps = new PopupSettings(){
+			@Override
+			public String getPopupJavaScript(){
+				StringBuilder sb = new StringBuilder();
+				sb.append("xmlHttp = new XMLHttpRequest();")
+				.append("xmlHttp.open( 'GET', '").append(url).append("', true );")
+				.append("xmlHttp.send( null );return false;");
+				return sb.toString();
+			}
+		};
+		return ps;
+	}
+
+	private static AbstractLink getWebviewerSelectionPageLink(final AbstractDicomModel model, final WebviewerLinkProvider[] providers, final ModalWindow modalWindow,
     		final WebviewerLinkClickedCallback callback) {
         log.debug("Use SelectionLINK for model:{}", model);
         if (modalWindow == null) {

@@ -131,6 +131,9 @@ public class WebviewerLinkProvider implements Serializable {
     public String getUrlForStructuredReport(String iuid) {
         return provider.getUrlForStructuredReport(iuid);
     }
+    public boolean hasOwnWindow() {
+    	return provider.hasOwnWindow();
+    }
     
     private class DummyProvider extends WebviewerLinkProviderSPI {
 
@@ -181,6 +184,10 @@ public class WebviewerLinkProvider implements Serializable {
         }
         public boolean supportStructuredReport() {
             return testDummy;
+        }
+        
+        public boolean hasOwnWindow() {
+        	return Boolean.getBoolean("org.dcm4chee.webviewer.dummy.hasOwnWindow");
         }
     }
 }

@@ -72,9 +72,13 @@ public class WebviewerSelectionPage extends SecureSessionCheckPage {
             String url = Webviewer.getUrlForModel(model, providers[i]);
             if (url != null) {
                 mc = new WebMarkupContainer(rv.newChildId());
-                ExternalLink link = new ExternalLink("link", url, providers[i].getName())
-                    .setPopupSettings(new PopupSettings(PageMap.forName(providers[i].getName()), 
+                ExternalLink link = new ExternalLink("link", url, providers[i].getName());
+                if (providers[i].hasOwnWindow()) {
+                	link.setPopupSettings(Webviewer.getPopupSettingsForDirectGET(url));
+                } else {
+                    link.setPopupSettings(new PopupSettings(PageMap.forName(providers[i].getName()), 
                         PopupSettings.RESIZABLE|PopupSettings.SCROLLBARS));
+                }
                 if (modalWindow != null || callback!=null) {
                     link.add(new AjaxEventBehavior("onclick") {
                         private static final long serialVersionUID = 1L;

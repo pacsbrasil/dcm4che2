@@ -71,4 +71,7 @@ public abstract class WebviewerLinkProviderSPI implements Serializable {
     public void setBaseURL(String baseUrl) {
         log.warn("This WebviewerLinkProvider ignores setting of Base Webviewer URL! base URL:"+baseUrl);
     }
+    public boolean hasOwnWindow() {
+    	return false;
+    }
 }
