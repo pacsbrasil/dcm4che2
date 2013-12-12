@@ -144,25 +144,25 @@ public class WebviewerLinkProvider implements Serializable {
         }
 
         public String getUrlForInstance(String sopIuid) {
-            return testDummy ? "/TEST_WEBVIEWER?instance" : null;
+            return testDummy ? "/TEST_WEBVIEWER?instance="+sopIuid : null;
         }
         public String getUrlForKeyObjectSelection(String iuid) {
-            return testDummy ? "/TEST_WEBVIEWER?key_object_selection" : null;
+            return testDummy ? "/TEST_WEBVIEWER?key_object_selection="+iuid : null;
         }
         public String getUrlForPatient(String patientId, String issuer) {
-            return testDummy ? "/TEST_WEBVIEWER?patient" : null;
+            return testDummy ? "/TEST_WEBVIEWER?patient="+patientId+"^^^"+issuer : null;
         }
         public String getUrlForPresentationState(String iuid) {
-            return testDummy ? "/TEST_WEBVIEWER?presentation_state" : null;
+            return testDummy ? "/TEST_WEBVIEWER?presentation_state="+iuid : null;
         }
         public String getUrlForStructuredReport(String iuid) {
-            return testDummy ? "/TEST_WEBVIEWER?structured_report" : null;
+            return testDummy ? "/TEST_WEBVIEWER?structured_report="+iuid : null;
         }
         public String getUrlForSeries(String seriesIuid) {
-            return testDummy ? "/TEST_WEBVIEWER?series" : null;
+            return testDummy ? "/TEST_WEBVIEWER?series="+seriesIuid : null;
         }
         public String getUrlForStudy(String studyIuid) {
-            return testDummy ? "/TEST_WEBVIEWER?study" : null;
+            return testDummy ? "/TEST_WEBVIEWER?study="+studyIuid : null;
         }
         public boolean supportInstanceLevel() {
             return testDummy;
