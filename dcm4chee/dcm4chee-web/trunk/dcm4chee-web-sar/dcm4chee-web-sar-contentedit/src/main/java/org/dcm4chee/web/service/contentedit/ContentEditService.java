@@ -645,20 +645,24 @@ public class ContentEditService extends ServiceMBeanSupport {
             if (movedEntities.isEmpty()) {
                 log.info("Nothing moved!");
             } else {
-                try {
-                    if (studyIsTarget) {
-                       Set<Series> series = movedEntities.getEntityTreeMap().values().iterator().next()
-                           .values().iterator().next().keySet();
-                        dicomEdit.deleteSeries(series);
-                        log.info(series.size()+" series moved!");
-                    } else {
-                        dicomEdit.deleteInstances(movedEntities.getAllInstances());
-                        log.info(movedEntities.getAllInstances().size()+" instances moved!");
-                    }
-                } catch (Exception x) {
-                    log.error("Failed to delete moved entities!", x);
-                    result -= 2;
-                }
+            	try {
+            		if (studyIsTarget) {
+            			Collection<Map<Study, Map<Series, Set<Instance>>>> patientsMap = movedEntities.getEntityTreeMap().values();
+            			for (Map<Study, Map<Series, Set<Instance>>> studiesMap : patientsMap) {
+            				for (Map<Series, Set<Instance>> seriesMap : studiesMap.values()) {
+            					Set<Series> series = seriesMap.keySet();
+            					dicomEdit.deleteSeries(series);
+            					log.info(series.size()+" series moved!");
+            				}
+            			}
+            		} else {
+            			dicomEdit.deleteInstances(movedEntities.getAllInstances());
+            			log.info(movedEntities.getAllInstances().size()+" instances moved!");
+            		}
+            	} catch (Exception x) {
+            		log.error("Failed to delete moved entities!", x);
+            		result -= 2;
+            	}
             }
         }
         return result;
