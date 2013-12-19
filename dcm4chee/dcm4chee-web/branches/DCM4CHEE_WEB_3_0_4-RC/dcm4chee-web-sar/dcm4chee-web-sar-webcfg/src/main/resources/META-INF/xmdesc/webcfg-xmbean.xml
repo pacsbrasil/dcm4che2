@@ -880,6 +880,17 @@
          <value value="false"/>
       </descriptors>
    </attribute>
+      <attribute access="read-write"
+      getMethod="isShowDoneDialogAfterAction"
+      setMethod="setShowDoneDialogAfterAction">
+      <description><![CDATA[Enable 'done' dialog after actions like delete,... are done successfully.
+      ]]></description>
+      <name>ShowDoneDialogAfterAction</name>
+      <type>boolean</type>
+      <descriptors>
+         <value value="false"/>
+      </descriptors>
+   </attribute>
    <attribute access="read-write"
       getMethod="getMoveScuServiceName"
       setMethod="setMoveScuServiceName">

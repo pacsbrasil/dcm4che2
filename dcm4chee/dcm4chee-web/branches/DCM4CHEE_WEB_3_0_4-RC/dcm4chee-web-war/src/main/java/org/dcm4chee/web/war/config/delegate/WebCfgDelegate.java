@@ -497,4 +497,15 @@ public class WebCfgDelegate extends BaseCfgDelegate {
             return 1000;
         }
     }
+    
+    public boolean showDoneDialogAfterAction() {
+        if (server != null) {
+	        try {
+	            return (Boolean) server.getAttribute(serviceObjectName, "ShowDoneDialogAfterAction");
+	        } catch (Exception x) {
+	            log.warn("Cant get ShowDoneDialogAfterAction attribute! return false as default!", x);
+	        }
+        }
+        return false;
+    }
 }

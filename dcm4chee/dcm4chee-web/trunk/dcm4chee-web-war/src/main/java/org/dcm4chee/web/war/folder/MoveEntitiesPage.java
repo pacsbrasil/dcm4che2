@@ -86,6 +86,7 @@ import org.dcm4chee.web.war.StudyPermissionHelper;
 import org.dcm4chee.web.war.common.SimpleEditDicomObjectPanel;
 import org.dcm4chee.web.war.common.model.AbstractDicomModel;
 import org.dcm4chee.web.war.common.model.AbstractEditableDicomModel;
+import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
 import org.dcm4chee.web.war.folder.delegate.ContentEditDelegate;
 import org.dcm4chee.web.war.folder.model.InstanceModel;
 import org.dcm4chee.web.war.folder.model.PPSModel;
@@ -727,7 +728,12 @@ public class MoveEntitiesPage extends SecureSessionCheckPage {
                             if (nrOfMovedInstances > 0) {
                                 updateModels();
                                 if (emptySourceParents.size() == 0) {
-									window.close(target);
+									if (WebCfgDelegate.getInstance().showDoneDialogAfterAction()) {
+										infoMsgId = "move.message.moveDone";
+                                    	okBtn.setVisible(true);
+                                    } else {
+										window.close(target);
+									}
                                 } else {
                                     infoMsgId = "move.message.removeEmpty";
                                     yesBtn.setVisible(true);

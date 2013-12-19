@@ -213,6 +213,8 @@ public class WebCfgService extends ServiceMBeanSupport implements
     
     private int searchWarningThreshold;
     
+    private boolean showDoneDialogAfterAction;
+    
     public WebCfgService() throws MalformedObjectNameException {
         timerServiceName = new ObjectName(DEFAULT_TIMER_SERVICE);
     }
@@ -894,7 +896,15 @@ public class WebCfgService extends ServiceMBeanSupport implements
         this.mpps2mwlAutoQuery = mpps2mwlAutoQuery;
     }
 
-    public ObjectName getAEServiceName() {
+    public boolean isShowDoneDialogAfterAction() {
+		return showDoneDialogAfterAction;
+	}
+
+	public void setShowDoneDialogAfterAction(boolean showDoneDialogAfterAction) {
+		this.showDoneDialogAfterAction = showDoneDialogAfterAction;
+	}
+
+	public ObjectName getAEServiceName() {
         return aeServiceName;
     }
 

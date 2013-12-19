@@ -556,6 +556,12 @@ public class TrashListPage extends Panel {
             private static final long serialVersionUID = 1L;
 
             @Override
+            public void onOk(AjaxRequestTarget target) {
+                setRemark(null);
+                target.addComponent(form);
+            }
+
+            @Override
             public void close(AjaxRequestTarget target) {
                 target.addComponent(form);
                 super.close(target);
@@ -619,13 +625,18 @@ public class TrashListPage extends Panel {
                                     TrashListPage.this, null));
                         StoreBridgeDelegate.getInstance().importFile(fio);
                         removeRestoredEntries();
-                        setRemark(null);
+                        if (WebCfgDelegate.getInstance().showDoneDialogAfterAction()) {
+                        	setStatus(new StringResourceModel(
+                                "trash.message.restoreDone",
+                                TrashListPage.this, null));
+                        }
                         if (selected.hasPatients()) {
                             viewport.getPatients().clear();
                             queryStudies();
                         } else
                             selected.refreshView(true);
-                        close(target);
+                        if (!WebCfgDelegate.getInstance().showDoneDialogAfterAction())
+                            close(target);
                     } else {
                         setStatus(new StringResourceModel(
                                 "trash.message.restoreNotPossible",
@@ -752,6 +763,11 @@ public class TrashListPage extends Panel {
             private static final long serialVersionUID = 1L;
 
             @Override
+            public void onOk(AjaxRequestTarget target) {
+                target.addComponent(form);
+            }
+
+            @Override
             public void close(AjaxRequestTarget target) {
                 target.addComponent(form);
                 super.close(target);
@@ -777,7 +793,8 @@ public class TrashListPage extends Panel {
                         else 
                             selected.refreshView(true);
                         queryStudies();
-                        close(target);
+                        if (!WebCfgDelegate.getInstance().showDoneDialogAfterAction())
+                            close(target);
                     } else
                         setStatus(new StringResourceModel(
                                 "trash.message.deleteFailed",
