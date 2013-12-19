@@ -88,9 +88,15 @@ public class SimpleDateTimeField extends FormComponentPanel<Date> implements ITe
                     }                    
                     @Override
                     public Date convertToObject(String value, Locale locale) {
-                        if (value != null && value.length()==1 && Character.isDigit(value.charAt(0))) {
-                            long t = System.currentTimeMillis() - 86400000*(value.charAt(0)-0x30);
-                            return new Date(t);
+                        if (value != null ) {
+                        	if(value.length()==1 && Character.isDigit(value.charAt(0))) {
+	                            long t = System.currentTimeMillis() - 86400000l*(value.charAt(0)-0x30);
+	                            return new Date(t);
+	                        }
+	                        if (value.length()==2 && Character.isDigit(value.charAt(0)) && Character.isDigit(value.charAt(1))) {
+	                            long t = System.currentTimeMillis() - 86400000l*((value.charAt(0)-0x30)*10+value.charAt(1)-0x30);
+	                            return new Date(t);
+	                        }
                         }
                         return super.convertToObject(value, locale);
                     }
