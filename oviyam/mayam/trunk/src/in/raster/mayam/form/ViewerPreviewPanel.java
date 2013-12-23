@@ -442,8 +442,6 @@ public class ViewerPreviewPanel extends javax.swing.JPanel {
                         ApplicationContext.layeredCanvas = ((LayeredCanvas) ((JPanel) ((JPanel) ((JSplitPane) splitPane).getRightComponent()).getComponent(0)).getComponent(0));
                         ApplicationContext.selectedPanel = ((JPanel) ((JPanel) ((JSplitPane) splitPane).getRightComponent()).getComponent(0));
                         ApplicationContext.imgView.getImageToolbar().setWindowing();
-                        ApplicationContext.layeredCanvas.imgpanel.setScaleFactor(ApplicationContext.imgView.jTabbedPane1.getWidth() - (((JSplitPane) ApplicationContext.tabbedPane.getSelectedComponent()).getDividerLocation()), ApplicationContext.imgView.jTabbedPane1.getHeight(), 1);
-                        ApplicationContext.layeredCanvas.annotationPanel.doZoomIn();
                         ApplicationContext.layeredCanvas.imgpanel.repaint();
                         ApplicationContext.layeredCanvas.imgpanel.setCurrentSeriesAnnotation();
                         ApplicationContext.layeredCanvas.canvas.setSelectionColoring();

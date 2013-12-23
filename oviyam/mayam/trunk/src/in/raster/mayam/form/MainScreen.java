@@ -131,7 +131,7 @@ public class MainScreen extends javax.swing.JFrame {
             .addGap(0, 52, Short.MAX_VALUE)
         );
 
-        settingsButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/setting-org.png"))); // NOI18N
+        settingsButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/setting.png"))); // NOI18N
         settingsButton.setMaximumSize(new java.awt.Dimension(25, 25));
         settingsButton.setMinimumSize(new java.awt.Dimension(25, 25));
         settingsButton.setPreferredSize(new java.awt.Dimension(25, 25));

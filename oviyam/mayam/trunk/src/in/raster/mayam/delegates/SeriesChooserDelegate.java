@@ -41,13 +41,11 @@ package in.raster.mayam.delegates;
 
 import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.form.LayeredCanvas;
-import in.raster.mayam.models.ScoutLineInfoModel;
 import in.raster.mayam.models.SeriesAnnotations;
 import in.raster.mayam.param.TextOverlayParam;
 import java.awt.image.ColorModel;
 import java.util.ArrayList;
 import javax.swing.JPanel;
-import javax.swing.JSplitPane;
 import org.dcm4che.image.ColorModelParam;
 
 /**
@@ -136,14 +134,8 @@ public class SeriesChooserDelegate extends Thread {
             imageToDisplay = 0;
         }
         String fileLocation = ApplicationContext.databaseRef.getFileLocation(studyUID, seriesUID, imageToDisplay);
-        JPanel container = ((JPanel) ((JSplitPane) ApplicationContext.tabbedPane.getSelectedComponent()).getRightComponent());
         LayeredCanvas tempCanvas = ((LayeredCanvas) tilePanel.getComponent(0));
         tempCanvas.createSubComponents(fileLocation, instanceNumber, true);
-        if (container.getComponentCount() == 1) {
-            tempCanvas.imgpanel.setScaleFactor(container.getWidth() / tempCanvas.imgpanel.layoutColumns, container.getHeight() / tempCanvas.imgpanel.layoutRows, tempCanvas.imgpanel.layoutColumns * tempCanvas.imgpanel.layoutRows);
-        } else {
-            tempCanvas.imgpanel.setScaleFactor(((JPanel) container.getComponent(0)).getWidth() / tempCanvas.imgpanel.layoutColumns, ((JPanel) container.getComponent(0)).getHeight() / tempCanvas.imgpanel.layoutRows, tempCanvas.imgpanel.layoutColumns * tempCanvas.imgpanel.layoutRows);
-        }
         TextOverlayParam textOverlayParam = tempCanvas.imgpanel.getTextOverlayParam();
         tempCanvas.imgpanel.getFilePathsifLink();
         double pixelSpacingX = tempCanvas.imgpanel.getPixelSpacingX();
@@ -158,7 +150,6 @@ public class SeriesChooserDelegate extends Thread {
         int windowWidth = tempCanvas.imgpanel.getWindowWidth();
         String modality = tempCanvas.imgpanel.getModality();
         String studyDesc = tempCanvas.imgpanel.getStudyDesc();
-        ScoutLineInfoModel currentScoutDetails = tempCanvas.imgpanel.getCurrentScoutDetails();
         tempCanvas.imgpanel.setCurrentInstanceNo(imageToDisplay);
         tempCanvas.textOverlay.getTextOverlayParam().setCurrentInstance(imageToDisplay);
         ApplicationContext.imgBuffer.clearBuffer();
@@ -184,12 +175,7 @@ public class SeriesChooserDelegate extends Thread {
             if (imageToDisplay < instanceUidList.size()) {
                 tempCanvas.createImageLayoutComponents();
                 tempCanvas.textOverlay.setTextOverlayParam(new TextOverlayParam(textOverlayParam.getPatientName(), textOverlayParam.getPatientID(), textOverlayParam.getSex(), textOverlayParam.getStudyDate(), textOverlayParam.getStudyDescription(), textOverlayParam.getSeriesDescription(), textOverlayParam.getBodyPartExamined(), textOverlayParam.getInstitutionName(), textOverlayParam.getWindowLevel(), textOverlayParam.getWindowWidth(), i, textOverlayParam.getTotalInstance(), textOverlayParam.isMultiframe()));
-                if (container.getComponentCount() <= 1) {
-                    tempCanvas.imgpanel.setScaleFactor(container.getWidth() / tempCanvas.imgpanel.layoutColumns, container.getHeight() / tempCanvas.imgpanel.layoutRows, tempCanvas.imgpanel.layoutColumns * tempCanvas.imgpanel.layoutRows);
-                } else {
-                    tempCanvas.imgpanel.setScaleFactor(((JPanel) container.getComponent(0)).getWidth() / tempCanvas.imgpanel.layoutColumns, ((JPanel) container.getComponent(0)).getHeight() / tempCanvas.imgpanel.layoutRows, tempCanvas.imgpanel.layoutColumns * tempCanvas.imgpanel.layoutRows);
-                }
-                tempCanvas.imgpanel.setImageInfo(pixelSpacingX, pixelSpacingY, studyUID, seriesUID, fileLoc, currentSeriesAnnotation, instanceUidList, cmParam, cm, windowLevel, windowWidth, modality, studyDesc, currentScoutDetails);
+                tempCanvas.imgpanel.setImageInfo(pixelSpacingX, pixelSpacingY, studyUID, seriesUID, fileLoc, currentSeriesAnnotation, instanceUidList, cmParam, cm, windowLevel, windowWidth, modality, studyDesc);
                 tempCanvas.imgpanel.setImage(imageToDisplay);
                 tempCanvas.imgpanel.setVisibility(tempCanvas, true);
             } else {
@@ -197,6 +183,7 @@ public class SeriesChooserDelegate extends Thread {
                 try {
                     tempCanvas.imgpanel.setVisibility(tempCanvas, false);
                 } catch (NullPointerException npe) {
+                    System.out.println("Null pointer exception [createImageCanvas]");
                     //Null pointer occurs when there is no image panel
                 }
             }

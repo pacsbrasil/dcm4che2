@@ -105,7 +105,7 @@
     <Component class="javax.swing.JButton" name="settingsButton">
       <Properties>
         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-          <Image iconType="3" name="/in/raster/mayam/form/images/setting-org.png"/>
+          <Image iconType="3" name="/in/raster/mayam/form/images/setting.png"/>
         </Property>
         <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
           <Dimension value="[25, 25]"/>

@@ -86,16 +86,15 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
     private Canvas canvas;
     //Image manipulation Flags
     public boolean isRotate = false, flipHorizontalFlag = false, flipVerticalFlag = false;
-    private boolean invertFlag = false, scaleFlag = false, newBufferedImage = false;
+    private boolean invertFlag = false, newBufferedImage = false;
     private static boolean probeFlag;
-    private double scaleFactor = 1;
     public int rotateRightAngle = 0;
     private int rotateLeftAngle = 0;
     public static String tool = "windowing";
     //Windowing, Hu related variables
     private int windowLevel, windowWidth, WC, WW;
     private String rescaleSlope, rescaleIntercept;
-    private double pixelSpacingX, pixelSpacingY;
+    private double pixelSpacingX, pixelSpacingY, initialPixelSpacingX, initialPixelSpacingY;
     //Unique id variables
     private String studyUID, seriesUID, instanceUID, modality, studyDesc;
     //ImageIO variables
@@ -127,13 +126,11 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
     double slope1, slope2;
     private int thumbWidth = 512, thumbHeight = 512, maxHeight = 512, maxWidth = 512;
     private double thumbRatio, currentScaleFactor = 1;
-    private int startX = 0, startY = 0;
     private int axis1LeftX, axis1LeftY, axis1RightX, axis1RightY, axis2LeftX, axis2LeftY, axis2RightX, axis2RightY, axisLeftX, axisLeftY, axisRightX, axisRightY;
     private String sliceThickness;
     public static boolean synchornizeTiles = false;
     private PDFFile curFile = null;
     private int curpage = -1;
-    public int imgHeight = 0, imgWidth = 0, layoutRows = 1, layoutColumns = 1;
     private String instanceUidIfMultiframe = null;
     long timeDelay = 0; //To synchronize the mouse scroll amount
     public boolean borderAlreadyPresent = false; //To identify the yellow scout borders
@@ -144,6 +141,11 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
     public boolean isLink = false;
     ImageBuffer imgBuffer = null;
     public ImageGenerator imageUpdator = null;
+    //added for zooming    
+    private double zoomFactor = 1.0;
+    private double scale = 0.0;
+    private int originX = 0, originY;
+    private Point mousePosition;
 
     /**
      * Constructs the image panel by passing file url and outer canvas
@@ -162,8 +164,6 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         retrieveScoutParam();
         setTotalInstance();
         retriveTextOverlayParam();
-        calculateHeightAndWidth();
-        centerImage();
         instanceUidList = ApplicationContext.databaseRef.getInstanceUidList(studyUID, seriesUID);
         getFilePathsifLink();
     }
@@ -214,13 +214,6 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
             rescaleSlope = dataset.getString(Tags.RescaleSlope);
             rescaleIntercept = dataset.getString(Tags.RescaleIntercept);
             sliceThickness = (dataset.getString(Tags.SliceThickness) != null) ? dataset.getString(Tags.SliceThickness) : "";
-            try {
-                imgHeight = dataset.getInteger(Tags.Rows);
-                imgWidth = dataset.getInteger(Tags.Columns);
-            } catch (Exception e) {
-                imgHeight = 512;
-                imgWidth = 512;
-            }
         } catch (NullPointerException e) {
         }
     }
@@ -251,9 +244,10 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
             int wMax = cMax - cMin;
             int w = wMax;
             try {
-                pixelSpacingY = Double.parseDouble(dataset.getString(Tags.PixelSpacing, 0));
-                pixelSpacingX = Double.parseDouble(dataset.getString(Tags.PixelSpacing, 1));
+                initialPixelSpacingY = pixelSpacingY = Double.parseDouble(dataset.getString(Tags.PixelSpacing, 0));
+                initialPixelSpacingX = pixelSpacingX = Double.parseDouble(dataset.getString(Tags.PixelSpacing, 1));
             } catch (NullPointerException e) { //ignore
+                initialPixelSpacingX = initialPixelSpacingY = 0;
             }
             int nWindow = cmParam.getNumberOfWindows();
             if (nWindow > 0) {
@@ -409,8 +403,8 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         } else {
             thumbWidth = (int) Math.round((thumbHeight + 0.00f) * imageRatio);
         }
-        startX = (maxWidth - thumbWidth) / 2;
-        startY = (maxHeight - thumbHeight) / 2;
+        originX = (maxWidth - thumbWidth) / 2;
+        originY = (maxHeight - thumbHeight) / 2;
     }
 
     public void showNextFrame() {
@@ -452,7 +446,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
     /**
      * This routine will be invoked to invert the image box
      */
-    public void negative() {
+    public boolean negative() {
         convertToRGBImage();
         if (invertFlag) {
             invertFlag = false;
@@ -468,7 +462,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
             invertFlag = true;
         }
         canvas.repaint();
-
+        return invertFlag;
     }
 
     /**
@@ -488,7 +482,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
             rotateLeftAngle = -90;
         }
         repaint();
-        repaintTextOverlay();
+        canvas.getLayeredCanvas().textOverlay.repaint();
     }
 
     /**
@@ -508,7 +502,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
             rotateRightAngle = 90;
         }
         repaint();
-        repaintTextOverlay();
+        canvas.getLayeredCanvas().textOverlay.repaint();
     }
     /*
      * static AffineTransform mirrorHorizontalTransform;
@@ -557,20 +551,13 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
 
     public void reset() {
         canvas.getLayeredCanvas().annotationPanel.resetAnnotation();
-        canvas.getLayeredCanvas().annotationPanel.clearAllMeasurement();
+        canvas.getLayeredCanvas().annotationPanel.resetMeasurements();
         windowLevel = (int) WC;
         windowWidth = (int) WW;
         windowChanged(windowLevel, windowWidth);
-        JPanel panel = ((JPanel) ((JSplitPane) ApplicationContext.tabbedPane.getSelectedComponent()).getRightComponent());
-        if (!ApplicationContext.imgView.getImageToolbar().isImageLayout) {
-            setScaleFactor(ApplicationContext.tabbedPane.getWidth(), ((JPanel) panel.getComponent(0)).getHeight(), layoutColumns * layoutRows);
-        } else {
-            setScaleFactor(((JPanel) panel.getComponent(0)).getWidth() / layoutColumns, ((JPanel) panel.getComponent(0)).getHeight() / layoutRows, layoutColumns * layoutRows);
-        }
-        canvas.getLayeredCanvas().annotationPanel.scaleProcess();
-        canvas.getLayeredCanvas().annotationPanel.resizeHandler();
-        centerImage();
-        invertFlag = flipHorizontalFlag = flipVerticalFlag = isRotate = displayScout = synchornizeTiles = false;
+        mousePosition = null;
+        initializeParams();
+        invertFlag = flipHorizontalFlag = flipVerticalFlag = isRotate = displayScout = synchornizeTiles = probeFlag = false;
         rotateLeftAngle = rotateRightAngle = 0;
         canvas.setBackground(Color.BLACK);
         canvas.setForeground(Color.WHITE);
@@ -599,7 +586,19 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         try {
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-            g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
+            g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
+            g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+//            int x = (getWidth() - 512) / 2;
+//            int y = (getHeight() - 512) / 2;
+//
+//            for (int i = 0; i < 512; i++, x++) {
+//                for (int j = 0; j < 512; j++, y++) {
+//                    g.setColor(new Color(image.getRGB(i, j)));
+//                    g.drawOval(x, y, 1, 1);
+//                }
+//                y = (getHeight() - 512) / 2;
+//            }
+
             if (isRotate) {
                 if (rotateRightAngle == 90) {
                     g.rotate(Math.PI / 2, this.getSize().width / 2, this.getSize().height / 2);
@@ -617,9 +616,6 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
                 g.translate(0, this.getSize().height);
                 g.scale(1, -1);
             }
-            if (scaleFlag) {
-                g.scale(scaleFactor, scaleFactor);
-            }
             if (image != null) {
                 if (newBufferedImage && invertFlag) {
                     newBufferedImage = false;
@@ -633,25 +629,30 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
                     BufferedImage filteredImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
                     op.filter(image, filteredImage);
                     image = filteredImage;
-                    filteredImage = null;
                 }
-                g.drawImage(image, startX, startY, thumbWidth, thumbHeight, null);
-                if (ApplicationContext.layeredCanvas.imgpanel != null && !ApplicationContext.layeredCanvas.imgpanel.isLocalizer && displayScout && isLocalizer) {
-                    g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                Rectangle rect = getImageClipBounds();
+                if (rect == null || rect.width == 0 || rect.height == 0) { // no part of image is displayed in the panel
+                    System.out.println("return");
+                    return;
+                }
+                BufferedImage subimage = image.getSubimage(rect.x, rect.y, rect.width, rect.height);
+                g.drawImage(subimage, Math.max(0, originX), Math.max(0, originY), Math.min((int) (subimage.getWidth() * scale), getWidth()), Math.min((int) (subimage.getHeight() * scale), getHeight()), null);
+                if (ApplicationContext.layeredCanvas.imgpanel != null && displayScout && !ApplicationContext.layeredCanvas.imgpanel.isLocalizer && isLocalizer) {
                     g.setColor(Color.YELLOW);
                     if (orientationLabel.equalsIgnoreCase("SAGITTAL")) {
                         if (modality.equals("CT") || slope1 == slope2) {
-                            g.drawLine((int) (boundaryLine1X1 * currentScaleFactor + startX), (int) (boundaryLine1Y1 * currentScaleFactor + startY), (int) (boundaryLine1X2 * currentScaleFactor + startX), (int) (boundaryLine1Y2 * currentScaleFactor + startY));
-                            g.drawLine((int) (boundaryLine2X1 * currentScaleFactor + startX), (int) (boundaryLine2Y1 * currentScaleFactor + startY), (int) (boundaryLine2X2 * currentScaleFactor + startX), (int) (boundaryLine2Y2 * currentScaleFactor + startY));
+                            g.setStroke(new BasicStroke((float) scale));
+                            g.drawLine((int) (boundaryLine1X1 * scale + originX), (int) (boundaryLine1Y1 * scale + originY), (int) (boundaryLine1X2 * scale + originX), (int) (boundaryLine1Y2 * scale + originY));
+                            g.drawLine((int) (boundaryLine2X1 * scale + originX), (int) (boundaryLine2Y1 * scale + originY), (int) (boundaryLine2X2 * scale + originX), (int) (boundaryLine2Y2 * scale + originY));
                         }
                         g.setColor(Color.GREEN);
-                        g.drawLine((int) (scoutLine1X1 * currentScaleFactor + startX), (int) (scoutLine1Y1 * currentScaleFactor + startY), (int) (scoutLine1X2 * currentScaleFactor + startX), (int) (scoutLine1Y2 * currentScaleFactor + startY));
-                        g.drawLine((int) (scoutLine2X1 * currentScaleFactor + startX), (int) (scoutLine2Y1 * currentScaleFactor + startY), (int) (scoutLine2X2 * currentScaleFactor + startX), (int) (scoutLine2Y2 * currentScaleFactor + startY));
+                        g.drawLine((int) (scoutLine1X1 * scale + originX), (int) (scoutLine1Y1 * scale + originY), (int) (scoutLine1X2 * scale + originX), (int) (scoutLine1Y2 * scale + originY));
+                        g.drawLine((int) (scoutLine2X1 * scale + originX), (int) (scoutLine2Y1 * scale + originY), (int) (scoutLine2X2 * scale + originX), (int) (scoutLine2Y2 * scale + originY));
                     } else if (orientationLabel.equalsIgnoreCase("CORONAL")) {
-                        g.drawLine((int) (axis1LeftX * currentScaleFactor + startX), (int) (axis1LeftY * currentScaleFactor + startY), (int) (axis1RightX * currentScaleFactor + startX), (int) (axis1RightY * currentScaleFactor + startY));
-                        g.drawLine((int) (axis2LeftX * currentScaleFactor + startX), (int) (axis2LeftY * currentScaleFactor + startY), (int) (axis2RightX * currentScaleFactor + startX), (int) (axis2RightY * currentScaleFactor + startY));
+                        g.drawLine((int) (axis1LeftX * scale + originX), (int) (axis1LeftY * scale + originY), (int) (axis1RightX * scale + originX), (int) (axis1RightY * scale + originY));
+                        g.drawLine((int) (axis2LeftX * scale + originX), (int) (axis2LeftY * scale + originY), (int) (axis2RightX * scale + originX), (int) (axis2RightY * scale + originY));
                         g.setColor(Color.GREEN);
-                        g.drawLine((int) (axisLeftX * currentScaleFactor + startX), (int) (axisLeftY * currentScaleFactor + startY), (int) (axisRightX * currentScaleFactor + startX), (int) (axisRightY * currentScaleFactor + startY));
+                        g.drawLine((int) (axisLeftX * scale + originX), (int) (axisLeftY * scale + originY), (int) (axisRightX * scale + originX), (int) (axisRightY * scale + originY));
                     }
                 }
             }
@@ -660,28 +661,46 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
                 calculateResolutionForPdfDicom(loadedImage.getWidth(null), loadedImage.getHeight(null));
                 canvas.getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(curpage);
                 canvas.getLayeredCanvas().textOverlay.getTextOverlayParam().setTotalInstance(Integer.toString(totalInstance));
-                g.drawImage(loadedImage, startX, startY, thumbWidth, thumbHeight, null);
+                g.drawImage(loadedImage, originX, originY, thumbWidth, thumbHeight, null);
                 ApplicationContext.imgView.getImageToolbar().hideAnnotationTools();
             }
         } catch (Exception ex) { //ignore
+            System.out.println("exception in paintComponent()[imagepanel] : " + ex.getMessage());
         } finally {
             g.dispose();
 //            g = null;
         }
     }
 
-    private void calculateHeightAndWidth() {
-        thumbHeight = thumbWidth = 512;
-        if (imgHeight < imgWidth) {
-            thumbHeight = Math.min(imgHeight, imgWidth) * maxWidth / Math.max(imgHeight, imgWidth);
-        } else {
-            thumbWidth = Math.min(imgHeight, imgWidth) * maxWidth / Math.max(imgHeight, imgWidth);
-        }
-        startX = (maxWidth - thumbWidth) / 2;
-        startY = (maxHeight - thumbHeight) / 2;
-        calculateCurrentScaleFactor();
-    }
-
+//    @Override
+//    public void paint(Graphics gs) {
+//        super.paint(gs);
+//        Graphics2D g = (Graphics2D) gs;
+//        if (isRotate) {
+//            if (rotateRightAngle == 90) {
+//                g.rotate(Math.PI / 2, getSize().width / 2, getSize().height / 2);
+//            } else if (rotateRightAngle == 180) {
+//                g.rotate(Math.PI, getSize().width / 2, getSize().height / 2);
+//            } else if (rotateRightAngle == 270) {
+//                g.rotate((Math.PI * 3) / 2, getSize().width / 2, getSize().height / 2);
+//            }
+//        }
+//        if (flipHorizontalFlag) {
+//            g.translate(getSize().width, 0);
+//            g.scale(-1, 1);
+//        }
+//        if (flipVerticalFlag) {
+//            g.translate(0, getSize().height);
+//            g.scale(1, -1);
+//        }
+//        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+//        g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+//        g.setColor(new Color(255, 138, 0));
+//        gs.setColor(new Color(255, 138, 0));
+//        g.scale(scale, scale);
+//        g.drawString("Length:", 150, 150);
+//        g.drawRect(151, 160, 170, 180);
+//    }
     public void setScoutCoordinates(int line1X1, int line1Y1, int line1X2, int line1Y2, int line2X1, int line2Y1, int line2X2, int line2Y2) {
         displayScout = true;
         scoutLine1X1 = line1X1;
@@ -696,20 +715,24 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
     }
 
     public void displayZoomLevel() {
-        int currentZoomLevel = (int) Math.round(scaleFactor * currentScaleFactor * 100);
+        int currentZoomLevel = (int) Math.floor(scale * 100);
         canvas.getLayeredCanvas().textOverlay.getTextOverlayParam().setZoomLevel(ApplicationContext.currentBundle.getString("ImageView.textOverlay.zoomLabel.text") + currentZoomLevel + "%");
+        canvas.getLayeredCanvas().textOverlay.getTextOverlayParam().setImageSize((image.getWidth() + "x" + image.getHeight()));
+        canvas.getLayeredCanvas().textOverlay.getTextOverlayParam().setViewSize(getWidth() + "x" + getHeight());
     }
 
     public void calculateCurrentScaleFactor() {
-        double imageWidth = image.getWidth();
-        double imageHeight = image.getHeight();
-        double imageRatio = imageWidth / imageHeight;
+        double imageRatio = image.getWidth() / image.getHeight();
+        thumbRatio = getScreenImageWidth() / getScreenImageHeight();
         if (imageRatio < floatAspectRatio) {
-            imageHeight = (imageWidth + 0.00f) / floatAspectRatio;
+            pixelSpacingY = ((initialPixelSpacingY * image.getHeight()) / image.getHeight());
         } else {
-            imageWidth = (imageHeight + 0.00f) * floatAspectRatio;
+            pixelSpacingX = (initialPixelSpacingX * image.getWidth()) / image.getWidth();
         }
-        currentScaleFactor = (thumbHeight + 0.000f) / imageHeight;
+        if (thumbRatio < imageRatio) {
+            thumbHeight = (int) Math.round((getScreenImageWidth() + 0.00f) / imageRatio);
+        }
+        currentScaleFactor = (thumbHeight + 0.000f) / image.getHeight();
     }
 
     public void setScoutBorder1Coordinates(int line1X1, int line1Y1, int line1X2, int line1Y2) {
@@ -717,7 +740,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         boundaryLine1X2 = line1X2;
         boundaryLine1Y1 = line1Y1;
         boundaryLine1Y2 = line1Y2;
-        slope1 = findSlope(boundaryLine1X1 * currentScaleFactor + startX, boundaryLine1Y1 * currentScaleFactor + startY, boundaryLine1X2 * currentScaleFactor + startX, boundaryLine1Y2 * currentScaleFactor + startY);
+        slope1 = findSlope(boundaryLine1X1 * currentScaleFactor + originX, boundaryLine1Y1 * currentScaleFactor + originY, boundaryLine1X2 * currentScaleFactor + originX, boundaryLine1Y2 * currentScaleFactor + originY);
     }
 
     public void setScoutBorder2Coordinates(int line1X1, int line1Y1, int line1X2, int line1Y2) {
@@ -725,7 +748,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         boundaryLine2X2 = line1X2;
         boundaryLine2Y1 = line1Y1;
         boundaryLine2Y2 = line1Y2;
-        slope2 = findSlope(boundaryLine2X1 * currentScaleFactor + startX, boundaryLine2Y1 * currentScaleFactor + startY, boundaryLine2X2 * currentScaleFactor + startX, boundaryLine2Y2 * currentScaleFactor + startY);
+        slope2 = findSlope(boundaryLine2X1 * currentScaleFactor + originX, boundaryLine2Y1 * currentScaleFactor + originY, boundaryLine2X2 * currentScaleFactor + originX, boundaryLine2Y2 * currentScaleFactor + originY);
     }
 
     public void setAxis1Coordinates(int leftx, int lefty, int rightx, int righty, int topx, int topy, int bottomx, int bottomy) {
@@ -804,30 +827,6 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         }
     }
 
-    private void scaleProcess() {
-        double currentWidth = this.getSize().width;
-        double currentHeight = this.getSize().height;
-        double newWidth = maxWidth * scaleFactor;
-        double newHeight = maxHeight * scaleFactor;
-        double widthDiff = newWidth - currentWidth;
-        double heightDiff = newHeight - currentHeight;
-        int currentX = this.getBounds().x;
-        int currentY = this.getBounds().y;
-        double newX = currentX - (widthDiff / 2);
-        double newY = currentY - (heightDiff / 2);
-        this.setBounds((int) newX, (int) newY, (int) newWidth, (int) newHeight);
-        this.revalidate();
-        repaint();
-    }
-
-    /**
-     * This routine used to calculate the x and y position of the image box to
-     * be placed in the outer canvas and set the bounds
-     */
-    private void centerImage() {
-        this.setBounds((canvas.getSize().width - this.getSize().width) / 2, (canvas.getSize().height - this.getSize().height) / 2, this.getSize().width, this.getSize().height);
-    }
-
     /**
      * This method creates the color model based on the window level and width
      * and apply the values to the image box
@@ -849,10 +848,6 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
             changeTextOverlay();
         } catch (Exception e) { //ignore
         }
-    }
-
-    public void repaintTextOverlay() {
-        canvas.getLayeredCanvas().textOverlay.repaint();
     }
 
     @Override
@@ -1052,17 +1047,20 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         if (tool.equalsIgnoreCase("windowing")) {
             mouseDragWindowing(mouseLocX2, mouseLocY2);
         } else if (tool.equalsIgnoreCase("panning")) {
-            JPanel currentSeriesPanel = (JPanel) ApplicationContext.layeredCanvas.getParent();
-            for (int i = 0; i < currentSeriesPanel.getComponentCount(); i++) {
-                LayeredCanvas tempCanvas = (LayeredCanvas) currentSeriesPanel.getComponent(i);
-                if (tempCanvas.imgpanel != null) {
-                    tempCanvas.imgpanel.setLocation(this.getBounds().x + mouseLocX2 - mouseLocX1, this.getBounds().y + mouseLocY2 - mouseLocY1);
-                    tempCanvas.imgpanel.repaint();
-                    tempCanvas.canvas.repaint();
-                }
-            }
+            panImage(e.getPoint());
+//            JPanel currentSeriesPanel = (JPanel) ApplicationContext.layeredCanvas.getParent();
+//            for (int i = 0; i < currentSeriesPanel.getComponentCount(); i++) {
+//                LayeredCanvas tempCanvas = (LayeredCanvas) currentSeriesPanel.getComponent(i);
+//                if (tempCanvas.imgpanel != null) {                    
+//                    tempCanvas.imgpanel.panImage(e.getPoint(),mousePosition);
+//                    tempCanvas.imgpanel.repaint();
+//                    tempCanvas.canvas.repaint();
+//                }
+//            }
         } else if (tool.equalsIgnoreCase("stack")) {
             mouseDragStack(mouseLocX2, mouseLocY2);
+        } else if (tool.equalsIgnoreCase("zooming")) {
+            mouseDragZoom(mouseLocX2, mouseLocY2);
         }
     }
 
@@ -1092,6 +1090,26 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
             mouseLocX1 = mouseLocX2;
             mouseLocY1 = mouseLocY2;
             doNext();
+        }
+    }
+
+    private void mouseDragZoom(int mouseLocX2, int mouseLocY2) {
+        if (System.currentTimeMillis() - timeDelay > 50) {
+            int mouseLocDiffY = (int) ((mouseLocY2 - mouseLocY1));
+            if (mouseLocDiffY < 0) {
+                zoomFactor = 1.0 + 0.3;
+            } else {
+                zoomFactor = 1.0 - 0.3;
+            }
+            mouseLocX1 = mouseLocX2;
+            mouseLocY1 = mouseLocY2;
+//        JPanel currentSeriesPanel = (JPanel) ApplicationContext.layeredCanvas.getParent();
+//        for (int i = 0; i < currentSeriesPanel.getComponentCount(); i++) {
+//            ((LayeredCanvas) currentSeriesPanel.getComponent(i)).imgpanel.zoomFactor = zoomFactor;
+//            ((LayeredCanvas) currentSeriesPanel.getComponent(i)).imgpanel.zoomImage();
+//        }
+            zoomImage();
+            timeDelay = System.currentTimeMillis();
         }
     }
 
@@ -1183,13 +1201,14 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
 
     @Override
     public void mouseMoved(MouseEvent e) {
+        mousePosition = e.getPoint();
         mouseLocX2 = e.getX();
         mouseLocY2 = e.getY();
         if (probeFlag) {
             String probeParameter[] = new String[3];
-            probeParameter[0] = Integer.toString((int) Math.round(mouseLocX2 / scaleFactor));
-            probeParameter[1] = Integer.toString((int) Math.round(mouseLocY2 / scaleFactor));
-            probeParameter[2] = calculateHU((int) Math.round(mouseLocX2 / scaleFactor), (int) Math.round(mouseLocY2 / scaleFactor));
+            probeParameter[0] = Integer.toString((int) Math.round(mouseLocX2 / scale));
+            probeParameter[1] = Integer.toString((int) Math.round(mouseLocY2 / scale));
+            probeParameter[2] = calculateHU((int) Math.round(mouseLocX2 / scale), (int) Math.round(mouseLocY2 / scale));
             canvas.getLayeredCanvas().textOverlay.setProbeParameters(probeParameter);
             probeParameter = null;
         }
@@ -1254,39 +1273,6 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
     private javax.swing.JPopupMenu jPopupMenu1;
     // End of variables declaration//GEN-END:variables
 
-    public void setScaleFactor(float parentWidth, float parentHeight, int noOfComponents) {
-        JPanel panel = (JPanel) ((JSplitPane) ApplicationContext.tabbedPane.getSelectedComponent()).getRightComponent();
-        if (noOfComponents == 1) {
-            if (parentWidth > imgWidth) {
-                zoom((maxWidth / maxHeight) + (maxWidth / parentWidth));
-            } else {
-                zoom(panel.getComponentCount() + (parentHeight / parentWidth));
-            }
-        } else if (noOfComponents == 2) {
-            zoom(maxWidth / maxHeight);
-        } else {
-            if (parentHeight <= parentWidth) {
-                zoom(parentHeight / maxHeight);
-            } else {
-                zoom(parentWidth / maxWidth);
-            }
-        }
-        canvas.getLayeredCanvas().textOverlay.getTextOverlayParam().setImageSize((imgHeight + "x" + imgWidth));
-        if (ApplicationContext.tabbedPane.getWidth() == parentWidth) {
-            canvas.getLayeredCanvas().textOverlay.getTextOverlayParam().setViewSize(((int) ApplicationContext.tabbedPane.getWidth() - ((JSplitPane) panel.getParent()).getDividerLocation() + "x" + (int) parentHeight));
-        } else {
-            canvas.getLayeredCanvas().textOverlay.getTextOverlayParam().setViewSize(((int) parentWidth + "x" + (int) parentHeight));
-        }
-    }
-
-    public void zoom(double scalefactor) {
-        scaleFlag = true;
-        scaleFactor = scalefactor;
-        displayZoomLevel();
-        scaleProcess();
-        canvas.repaint();
-    }
-
     //To change the series by choosing from the preview panel
     public void changeSeries(String studyUID, String seriesUID, String sopUid, int instanceNo) {
         if (!multiframe) {
@@ -1306,7 +1292,6 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         try {
             currentbufferedimage = reader.read(currentFrame);
             convertToRGBImage();
-            calculateHeightAndWidth();
             repaint();
             canvas.getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(currentInstanceNo);
             canvas.getLayeredCanvas().textOverlay.getTextOverlayParam().setTotalInstance(Integer.toString(totalInstance));
@@ -1755,7 +1740,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         canvas.getLayeredCanvas().textOverlay.multiframeStatusDisplay(multiframe);
         instanceUID = instanceUidList.get(currentInstanceNo);
         dicomFileUrl = fileLocation + File.separator + instanceUID;
-        centerImage();
+        initializeParams();
     }
 
     public void displayImage(BufferedImage tempImage) {
@@ -1792,32 +1777,24 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         }
     }
 
-    public void doWindowing() {
+    public boolean doZoom() {
+        if (tool.equalsIgnoreCase("zooming")) {
+            tool = "";
+            return false;
+        } else {
+            tool = "zooming";
+            return true;
+        }
+    }
+
+    public boolean doWindowing() {
         if (tool.equalsIgnoreCase("windowing")) {
             tool = "";
+            return false;
         } else {
             tool = "windowing";
+            return true;
         }
-    }
-
-    public void doZoomIn() {
-        scaleFlag = true;
-        scaleFactor = scaleFactor + 0.5;
-        displayZoomLevel();
-        scaleProcess();
-        canvas.repaint();
-    }
-
-    public void doZoomOut() {
-        scaleFlag = true;
-        scaleFactor = scaleFactor - 0.5;
-        if (scaleFactor > 0) {
-            scaleProcess();
-        } else {
-            scaleFactor = 0.5;
-        }
-        displayZoomLevel();
-        canvas.repaint();
     }
 
     public void doStack() {
@@ -1828,7 +1805,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         }
     }
 
-    public void setImageInfo(double pixelSpacingX, double pixelSpacingY, String studyUid, String seriesUid, String fileLocation, SeriesAnnotations currentSeriesAnnotation, ArrayList<String> instanceUidList, ColorModelParam cmParam, ColorModel cm, int windowLevel, int windowWidth, String modality, String studyDesc, ScoutLineInfoModel currentScoutDetails) {
+    public void setImageInfo(double pixelSpacingX, double pixelSpacingY, String studyUid, String seriesUid, String fileLocation, SeriesAnnotations currentSeriesAnnotation, ArrayList<String> instanceUidList, ColorModelParam cmParam, ColorModel cm, int windowLevel, int windowWidth, String modality, String studyDesc) {
         this.pixelSpacingX = pixelSpacingX;
         this.pixelSpacingY = pixelSpacingY;
         this.studyUID = studyUid;
@@ -1843,7 +1820,6 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
         this.windowWidth = WW = windowWidth;
         this.modality = modality;
         this.studyDesc = studyDesc;
-        this.currentScoutDetails = currentScoutDetails;
     }
 
     public TextOverlayParam getTextOverlayParam() {
@@ -1887,13 +1863,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
     }
 
     public void setWindowingToolsAsDefault() {
-        if (!(tool.equalsIgnoreCase("windowing"))) {
-            tool = "windowing";
-        }
-    }
-
-    public boolean isWindowingSelected() {
-        return (tool.equalsIgnoreCase("windowing"));
+        tool = "windowing";
     }
 
     public boolean isFlipHorizontalFlag() {
@@ -1917,11 +1887,7 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
     }
 
     public double getScaleFactor() {
-        return scaleFactor;
-    }
-
-    public boolean isScaleFlag() {
-        return scaleFlag;
+        return scale;
     }
 
     public static boolean isProbeFlag() {
@@ -2055,5 +2021,111 @@ public class ImagePanel extends javax.swing.JPanel implements MouseWheelListener
 
     public String getStudyDesc() {
         return studyDesc;
+    }
+
+    private int getScreenImageWidth() {
+        return (int) (scale * image.getWidth());
+    }
+
+    private int getScreenImageHeight() {
+        return (int) (scale * image.getHeight());
+    }
+
+    public void initializeParams() {
+        if (image != null) {
+            double xScale = (double) getWidth() / image.getWidth();
+            double yScale = (double) getHeight() / image.getHeight();
+            scale = Math.min(xScale, yScale);
+            centerImage();
+            calculateCurrentScaleFactor();
+            displayZoomLevel();
+        }
+    }
+
+    private void centerImage() {
+        originX = (int) (getWidth() - getScreenImageWidth()) / 2;
+        originY = (int) (getHeight() - getScreenImageHeight()) / 2;
+    }
+
+    private void zoomImage() {
+        Coords imageP = panelToImageCoords(mousePosition);
+        scale *= zoomFactor;
+        Coords panelP = imageToPanelCoords(imageP);
+        originX += (mousePosition.x - (int) panelP.x);
+        originY += (mousePosition.y - (int) panelP.y);
+        displayZoomLevel();
+        calculateCurrentScaleFactor();
+        repaint();
+        canvas.getLayeredCanvas().annotationPanel.repaint();
+    }
+
+    private void panImage(Point p) {
+        int xDelta = p.x - mousePosition.x;
+        int yDelta = p.y - mousePosition.y;
+        originX += xDelta;
+        originY += yDelta;
+        mousePosition = p;
+        repaint();
+    }
+
+    //Converts this panel's coordinates into the original image coordinates
+    private Coords panelToImageCoords(Point p) {
+        return new Coords((p.x - originX) / scale, (p.y - originY) / scale);
+    }
+
+    //Converts the original image coordinates into this panel's coordinates
+    private Coords imageToPanelCoords(Coords p) {
+        return new Coords((p.x * scale) + originX, (p.y * scale) + originY);
+    }
+
+    //This class is required for high precision image coordinates translation.
+    private class Coords {
+
+        public double x;
+        public double y;
+
+        public Coords(double x, double y) {
+            this.x = x;
+            this.y = y;
+        }
+
+        public int getIntX() {
+            return (int) Math.round(x);
+        }
+
+        public int getIntY() {
+            return (int) Math.round(y);
+        }
+    }
+
+    public Rectangle getImageClipBounds() {
+        Coords startCoords = panelToImageCoords(new Point(0, 0));
+        Coords endCoords = panelToImageCoords(new Point(getWidth() - 1, getHeight() - 1));
+        int panelX1 = startCoords.getIntX();
+        int panelY1 = startCoords.getIntY();
+        int panelX2 = endCoords.getIntX();
+        int panelY2 = endCoords.getIntY();
+        //No intersection?
+        if (panelX1 >= image.getWidth() || panelX2 < 0 || panelY1 >= image.getHeight() || panelY2 < 0) {
+            return null;
+        }
+
+        int x1 = (panelX1 < 0) ? 0 : panelX1;
+        int y1 = (panelY1 < 0) ? 0 : panelY1;
+        int x2 = (panelX2 >= image.getWidth()) ? image.getWidth() - 1 : panelX2;
+        int y2 = (panelY2 >= image.getHeight()) ? image.getHeight() - 1 : panelY2;
+        return new Rectangle(x1, y1, x2 - x1 + 1, y2 - y1 + 1);
+    }
+
+    public void setMouseLocX1(int x1) {
+        this.mouseLocX1 = x1;
+    }
+
+    public int getOriginX() {
+        return originX;
+    }
+
+    public int getOriginY() {
+        return originY;
     }
 }

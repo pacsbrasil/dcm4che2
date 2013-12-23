@@ -159,8 +159,8 @@ public class ShowImageView {
             ApplicationContext.tabbedPane = (JTabbedPane) tabComp.getTabbedComponent();
         }
         ApplicationContext.tabbedPane.setSelectedIndex(ApplicationContext.tabbedPane.getTabCount() - 1);
-        ApplicationContext.layeredCanvas.imgpanel.setScaleFactor(ApplicationContext.imgView.jTabbedPane1.getWidth(), ApplicationContext.imgView.jTabbedPane1.getHeight(), 1);
-        ApplicationContext.layeredCanvas.annotationPanel.doZoomIn();
+//        ApplicationContext.layeredCanvas.imgpanel.setScaleFactor(ApplicationContext.imgView.jTabbedPane1.getWidth(), ApplicationContext.imgView.jTabbedPane1.getHeight(), 1);
+//        ApplicationContext.layeredCanvas.annotationPanel.doZoomIn();
         ApplicationContext.layeredCanvas.imgpanel.repaint();
         ApplicationContext.layeredCanvas.canvas.setSelectionColoring();
         ApplicationContext.layeredCanvas.imgpanel.invalidate();
@@ -274,7 +274,7 @@ public class ShowImageView {
                         } catch (IOException ex) {
                             thumbnails[j] = new Thumbnail(imageList.get(j).getSop_iuid());
                             thumbnails[j].setDefaultImage();
-                        } catch (NullPointerException npe) {                            
+                        } catch (NullPointerException npe) {
                         }
                     }
                 } else {
@@ -383,7 +383,7 @@ public class ShowImageView {
                 ApplicationContext.imgView.getImageToolbar().disableImageTools();
             }
         } catch (Exception ex) {
-            System.out.println("exception : "+ex);
+            System.out.println("exception : " + ex);
             if (Desktop.isDesktopSupported()) {
                 try {
                     if (ApplicationContext.tabbedPane == null || ApplicationContext.tabbedPane.getTabCount() == 0) {

@@ -151,10 +151,6 @@ public class ImageToolbar extends javax.swing.JPanel {
                 if (i < tempRef.size()) {
                     JPanel newPanel = new JPanel(g);
                     LayeredCanvas canvas = new LayeredCanvas(new File(tempRef.get(i)), 0, false);
-                    canvas.imgpanel.setScaleFactor((ApplicationContext.tabbedPane.getWidth()) / col, ApplicationContext.tabbedPane.getHeight() / row, (row * col));
-                    canvas.annotationPanel.doZoomIn();
-                    canvas.imgpanel.layoutRows = row;
-                    canvas.imgpanel.layoutColumns = col;
                     newPanel.add(canvas);
                     panel.add(newPanel);
                     canvas.canvas.setSelection(true);
@@ -189,7 +185,6 @@ public class ImageToolbar extends javax.swing.JPanel {
             ApplicationContext.selectedPanel.revalidate();
             ApplicationContext.selectedPanel.repaint();
             ApplicationContext.selectedPanel.setLayout(new GridLayout(row, col));
-
             LayeredCanvas canvas = new LayeredCanvas(new File(ApplicationContext.databaseRef.getFirstInstanceLocation(studyUid, seriesUid)), 0, true);
             ApplicationContext.selectedPanel.add(canvas);
             ArrayList<String> instanceUidList = canvas.imgpanel.getInstanceUidList();
@@ -218,16 +213,13 @@ public class ImageToolbar extends javax.swing.JPanel {
             int windowWidth = canvas.imgpanel.getWindowWidth();
             String modality = canvas.imgpanel.getModality();
             String studyDesc = canvas.imgpanel.getStudyDesc();
-            ScoutLineInfoModel currentScoutDetails = canvas.imgpanel.getCurrentScoutDetails();
-            setParameters(canvas, row, col);
 
             for (int i = 1; i < (row * col); i++) {
                 if (i < instanceUidList.size()) {
                     canvas = new LayeredCanvas(true, studyUid, seriesUid);
                     ApplicationContext.selectedPanel.add(canvas);
-                    canvas.imgpanel.setImageInfo(pixelSpacingX, pixelSpacingY, studyUid, seriesUid, fileLoc, currentSeriesAnnotation, instanceUidList, cmParam, cm, windowLevel, windowWidth, modality, studyDesc, currentScoutDetails);
+                    canvas.imgpanel.setImageInfo(pixelSpacingX, pixelSpacingY, studyUid, seriesUid, fileLoc, currentSeriesAnnotation, instanceUidList, cmParam, cm, windowLevel, windowWidth, modality, studyDesc);
                     canvas.textOverlay.setTextOverlayParam(new TextOverlayParam(textOverlayParam.getPatientName(), textOverlayParam.getPatientID(), textOverlayParam.getSex(), textOverlayParam.getStudyDate(), textOverlayParam.getStudyDescription(), textOverlayParam.getSeriesDescription(), textOverlayParam.getBodyPartExamined(), textOverlayParam.getInstitutionName(), textOverlayParam.getWindowLevel(), textOverlayParam.getWindowWidth(), i, textOverlayParam.getTotalInstance(), textOverlayParam.isMultiframe()));
-                    setParameters(canvas, row, col);
                 } else {
                     LayeredCanvas j = new LayeredCanvas();
                     j.setStudyUID(ApplicationContext.layeredCanvas.imgpanel.getStudyUID());
@@ -255,23 +247,8 @@ public class ImageToolbar extends javax.swing.JPanel {
             layoutPopupDesign.resetPopupMenu();
         } catch (IllegalArgumentException iae) {
             //ignore : Illegal argument occurs in Jdk 1.7
+            System.out.println("exception changeTileLayout");
         }
-    }
-
-    private void setParameters(LayeredCanvas canvas, int row, int col) {
-        if (row != 1 || col != 1) {
-            canvas.imgpanel.setScaleFactor(ApplicationContext.selectedPanel.getWidth() / col, ApplicationContext.selectedPanel.getHeight() / row, (row * col) + (row * col));
-        } else {
-            if (((JPanel) ((JSplitPane) ApplicationContext.tabbedPane.getSelectedComponent()).getRightComponent()).getComponentCount() > 1) {
-                canvas.imgpanel.setScaleFactor(ApplicationContext.selectedPanel.getWidth(), ApplicationContext.selectedPanel.getHeight(), ((JPanel) ((JSplitPane) ApplicationContext.tabbedPane.getSelectedComponent()).getRightComponent()).getComponentCount());
-            } else {
-                canvas.imgpanel.setScaleFactor(ApplicationContext.tabbedPane.getWidth(), ApplicationContext.selectedPanel.getHeight(), col);
-            }
-        }
-        canvas.annotationPanel.resizeHandler();
-        canvas.imgpanel.layoutRows = row;
-        canvas.imgpanel.layoutColumns = col;
-        canvas.getCanvas().setSelection(true);
     }
 
     /**
@@ -297,8 +274,7 @@ public class ImageToolbar extends javax.swing.JPanel {
         horizontalFlip = new javax.swing.JButton();
         leftRotate = new javax.swing.JButton();
         rightRotate = new javax.swing.JButton();
-        zoomin = new javax.swing.JButton();
-        zoomoutButton = new javax.swing.JButton();
+        zoom = new javax.swing.JButton();
         panButton = new javax.swing.JButton();
         invert = new javax.swing.JButton();
         rulerButton = new javax.swing.JButton();
@@ -431,31 +407,18 @@ public class ImageToolbar extends javax.swing.JPanel {
         });
         jToolBar1.add(rightRotate);
 
-        zoomin.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/zoomin.png"))); // NOI18N
-        toolsButtonGroup.add(zoomin);
-        zoomin.setFocusable(false);
-        zoomin.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        zoomin.setPreferredSize(new java.awt.Dimension(45, 45));
-        zoomin.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        zoomin.addActionListener(new java.awt.event.ActionListener() {
+        zoom.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/zoom.png"))); // NOI18N
+        toolsButtonGroup.add(zoom);
+        zoom.setFocusable(false);
+        zoom.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        zoom.setPreferredSize(new java.awt.Dimension(45, 45));
+        zoom.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        zoom.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                zoominActionPerformed(evt);
+                zoomActionPerformed(evt);
             }
         });
-        jToolBar1.add(zoomin);
-
-        zoomoutButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/zoomout.png"))); // NOI18N
-        toolsButtonGroup.add(zoomoutButton);
-        zoomoutButton.setFocusable(false);
-        zoomoutButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        zoomoutButton.setPreferredSize(new java.awt.Dimension(45, 45));
-        zoomoutButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        zoomoutButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                zoomoutButtonActionPerformed(evt);
-            }
-        });
-        jToolBar1.add(zoomoutButton);
+        jToolBar1.add(zoom);
 
         panButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/pan.png"))); // NOI18N
         toolsButtonGroup.add(panButton);
@@ -821,35 +784,20 @@ public class ImageToolbar extends javax.swing.JPanel {
         tempCanvas = null;
     }//GEN-LAST:event_rightRotateActionPerformed
 
-    private void zoominActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_zoominActionPerformed
-        JPanel currentSeriesPanel = (JPanel) ApplicationContext.layeredCanvas.getParent();
-        LayeredCanvas tempCanvas;
-        for (int i = 0; i < currentSeriesPanel.getComponentCount(); i++) {
-            tempCanvas = (LayeredCanvas) currentSeriesPanel.getComponent(i);
-            if (tempCanvas != null && tempCanvas.annotationPanel != null && tempCanvas.imgpanel != null) {
-                resetTools();
-                tempCanvas.imgpanel.doZoomIn();
-                tempCanvas.annotationPanel.doZoomIn();
-                tempCanvas.imgpanel.repaint();
+    private void zoomActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_zoomActionPerformed
+        toolsButtonGroup.clearSelection();
+        if (ApplicationContext.layeredCanvas.annotationPanel != null && ApplicationContext.layeredCanvas.imgpanel != null) {
+            ApplicationContext.layeredCanvas.annotationPanel.setAddLine(false);
+            ApplicationContext.layeredCanvas.annotationPanel.setAddArrow(false);
+            ApplicationContext.layeredCanvas.annotationPanel.setAddEllipse(false);
+            ApplicationContext.layeredCanvas.annotationPanel.setAddRect(false);
+            if (ApplicationContext.layeredCanvas.imgpanel.doZoom()) {
+                toolsButtonGroup.setSelected(zoom.getModel(), true);
             }
+        } else {
+            JOptionPane.showMessageDialog(ImageToolbar.this, "Tile selected is not valid for this process");
         }
-        tempCanvas = null;
-    }//GEN-LAST:event_zoominActionPerformed
-
-    private void zoomoutButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_zoomoutButtonActionPerformed
-        JPanel currentSeriesPanel = (JPanel) ApplicationContext.layeredCanvas.getParent();
-        LayeredCanvas tempCanvas;
-        for (int i = 0; i < currentSeriesPanel.getComponentCount(); i++) {
-            tempCanvas = (LayeredCanvas) currentSeriesPanel.getComponent(i);
-            if (tempCanvas != null && tempCanvas.annotationPanel != null && tempCanvas.imgpanel != null) {
-                resetTools();
-                tempCanvas.imgpanel.doZoomOut();
-                tempCanvas.annotationPanel.doZoomOut();
-                tempCanvas.imgpanel.repaint();
-            }
-        }
-        tempCanvas = null;
-    }//GEN-LAST:event_zoomoutButtonActionPerformed
+    }//GEN-LAST:event_zoomActionPerformed
 
     private void panButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_panButtonActionPerformed
         doPan();
@@ -1042,8 +990,7 @@ public class ImageToolbar extends javax.swing.JPanel {
     private javax.swing.ButtonGroup toolsButtonGroup;
     private javax.swing.JButton verticalFlip;
     private javax.swing.JButton windowing;
-    private javax.swing.JButton zoomin;
-    private javax.swing.JButton zoomoutButton;
+    private javax.swing.JButton zoom;
     // End of variables declaration//GEN-END:variables
 
     private void textOverlayContext() {
@@ -1098,8 +1045,7 @@ public class ImageToolbar extends javax.swing.JPanel {
             ApplicationContext.layeredCanvas.annotationPanel.setAddEllipse(false);
             ApplicationContext.layeredCanvas.annotationPanel.setAddRect(false);
             ApplicationContext.layeredCanvas.annotationPanel.stopPanning();
-            ApplicationContext.layeredCanvas.imgpanel.doWindowing();
-            if (ApplicationContext.layeredCanvas.imgpanel.isWindowingSelected()) {
+            if (ApplicationContext.layeredCanvas.imgpanel.doWindowing()) {
                 toolsButtonGroup.setSelected(windowing.getModel(), true);
             }
         }
@@ -1348,8 +1294,7 @@ public class ImageToolbar extends javax.swing.JPanel {
         horizontalFlip.setEnabled(true);
         leftRotate.setEnabled(true);
         rightRotate.setEnabled(true);
-        zoomin.setEnabled(true);
-        zoomoutButton.setEnabled(true);
+        zoom.setEnabled(true);
         panButton.setEnabled(true);
         invert.setEnabled(true);
         annotationVisibility.setEnabled(true);
@@ -1374,8 +1319,7 @@ public class ImageToolbar extends javax.swing.JPanel {
         horizontalFlip.setEnabled(false);
         leftRotate.setEnabled(false);
         rightRotate.setEnabled(false);
-        zoomin.setEnabled(false);
-        zoomoutButton.setEnabled(false);
+        zoom.setEnabled(false);
         panButton.setEnabled(false);
         invert.setEnabled(false);
         rulerButton.setEnabled(false);
@@ -1454,8 +1398,7 @@ public class ImageToolbar extends javax.swing.JPanel {
         horizontalFlip.setToolTipText(ApplicationContext.currentBundle.getString("ImageView.horizontalFlipButton.toolTipText"));
         leftRotate.setToolTipText(ApplicationContext.currentBundle.getString("ImageView.leftRotateButton.toolTipText"));
         rightRotate.setToolTipText(ApplicationContext.currentBundle.getString("ImageView.rightRotateButton.toolTipText"));
-        zoomin.setToolTipText(ApplicationContext.currentBundle.getString("ImageView.zoomInButton.toolTipText"));
-        zoomoutButton.setToolTipText(ApplicationContext.currentBundle.getString("ImageView.zoomOutButton.toolTipText"));
+        zoom.setToolTipText(ApplicationContext.currentBundle.getString("ImageView.zoom.toolTipText"));
         panButton.setToolTipText(ApplicationContext.currentBundle.getString("ImageView.panButton.toolTipText"));
         invert.setToolTipText(ApplicationContext.currentBundle.getString("ImageView.invertButton.toolTipText"));
         rulerButton.setToolTipText(ApplicationContext.currentBundle.getString("ImageView.rulerButton.toolTipText"));

@@ -133,7 +133,7 @@ public class Canvas extends javax.swing.JPanel {
         g.drawRect(0, 0, getWidth() - 1, getHeight() - 1);
         if (layeredCanvas.imgpanel != null) {
             if (layeredCanvas.imgpanel.getPixelSpacingY() != -1 && layeredCanvas.imgpanel.getPixelSpacingY() != 0) {
-                int viewScaleHeight = (int) ((int) (100 / layeredCanvas.imgpanel.getPixelSpacingY()) * layeredCanvas.imgpanel.getScaleFactor() * layeredCanvas.imgpanel.getCurrentScaleFactor());
+                int viewScaleHeight = (int) ((int) (100 / layeredCanvas.imgpanel.getPixelSpacingY()) * layeredCanvas.imgpanel.getScaleFactor());
                 int y1 = (getHeight() - viewScaleHeight) / 2;
                 int hx = 20;
                 int y2 = y1 + viewScaleHeight;
@@ -151,7 +151,7 @@ public class Canvas extends javax.swing.JPanel {
                 g.drawLine(hx, (int) (y1 + (viewScaleHeightUnit * 7)), hx + 6, (int) (y1 + (viewScaleHeightUnit * 7)));
                 g.drawLine(hx, (int) (y1 + (viewScaleHeightUnit * 8)), hx + 6, (int) (y1 + (viewScaleHeightUnit * 8)));
                 g.drawLine(hx, (int) (y1 + (viewScaleHeightUnit * 9)), hx + 6, (int) (y1 + (viewScaleHeightUnit * 9)));
-                int viewScaleWidth = (int) ((int) (100 / layeredCanvas.imgpanel.getPixelSpacingX()) * layeredCanvas.imgpanel.getScaleFactor() * layeredCanvas.imgpanel.getCurrentScaleFactor());
+                int viewScaleWidth = (int) ((int) (100 / layeredCanvas.imgpanel.getPixelSpacingX()) * layeredCanvas.imgpanel.getScaleFactor());
                 int wx1 = (getWidth() - viewScaleWidth) / 2;
                 int wy = getHeight() - 20;
                 int wx2 = wx1 + viewScaleWidth;
@@ -172,8 +172,8 @@ public class Canvas extends javax.swing.JPanel {
             Graphics2D g2d = (Graphics2D) g;
             JPanel panel = (JPanel) layeredCanvas.getParent();
             int gradientHeight = layeredCanvas.imgpanel.getWidth() / 2;
-            int gradientWidth = Math.round((panel.getWidth() / layeredCanvas.imgpanel.layoutColumns) * (3 / 100f));
-            int fromRight = Math.round((panel.getWidth() / layeredCanvas.imgpanel.layoutColumns) * (4 / 100f));
+            int gradientWidth = Math.round((panel.getWidth() / ((JPanel) layeredCanvas.getParent()).getComponentCount()) * (3 / 100f));
+            int fromRight = Math.round((panel.getWidth() / ((JPanel) layeredCanvas.getParent()).getComponentCount()) * (4 / 100f));
             GradientPaint gp1 = null;
 
             gp1 = new GradientPaint(getSize().width - fromRight, ((getSize().height / 2) - (gradientHeight / 2)), Color.WHITE, (getSize().width - fromRight) + gradientWidth, ((getSize().height / 2) - (gradientHeight / 2)) + gradientHeight, Color.BLACK);
@@ -245,9 +245,9 @@ public class Canvas extends javax.swing.JPanel {
      * This routine used to center the image.
      */
     private void centerImage() {
-        int xPosition = (getSize().width - getComponent(0).getSize().width) / 2;
-        int yPosition = (getSize().height - getComponent(0).getSize().height) / 2;
-        getComponent(0).setBounds(xPosition, yPosition, getComponent(0).getSize().width, getComponent(0).getSize().height);
+        getComponent(0).setBounds(0, 0, getWidth(), getHeight());
+        ((ImagePanel) getComponent(0)).initializeParams();
+        layeredCanvas.annotationPanel.setBounds(0, 0, getWidth(), getHeight());
     }
 
     public LayeredCanvas getLayeredCanvas() {
@@ -406,6 +406,7 @@ public class Canvas extends javax.swing.JPanel {
                 }
             }
         } catch (ArrayIndexOutOfBoundsException ex) {
+            System.out.println("exception[setSelection] : " + ex.getMessage());
             //ignore : No of components differ in Jdk 1.7
         }
     }
