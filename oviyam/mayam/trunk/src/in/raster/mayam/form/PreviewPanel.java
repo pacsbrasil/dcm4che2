@@ -40,13 +40,12 @@
 package in.raster.mayam.form;
 
 import in.raster.mayam.context.ApplicationContext;
-import in.raster.mayam.models.InstanceDisplayModel;
+import in.raster.mayam.models.Series;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
-import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Calendar;
-import javax.imageio.ImageIO;
 import javax.swing.JLabel;
 
 /**
@@ -57,36 +56,12 @@ import javax.swing.JLabel;
 public class PreviewPanel extends javax.swing.JPanel {
 
     int totalImages;
-    InstanceDisplayModel[] threeInstanceDetails;
     String dest, studyInstanceUid, seriesInstanceUid;
     Calendar todayInfo;
     Thumbnail[] threeThumbnails = null;
     int totalHeight = 0;
-    boolean isLocal;
 
-    /**
-     * Creates new form PreviewPanel
-     */
-    public PreviewPanel(String studyInstanceUid, String seriesInstanceUid, String seriesDescription, int totalImages, InstanceDisplayModel[] threeInstanceDetails) {
-        this.totalImages = totalImages;
-        this.threeInstanceDetails = threeInstanceDetails;
-        this.studyInstanceUid = studyInstanceUid;
-        this.seriesInstanceUid = seriesInstanceUid;
-        initComponents();
-        if (!seriesDescription.equals("Multiframe") && !seriesDescription.equals("Video")) {
-            seriesLabel.setText(seriesDescription + ", Images:" + totalImages);
-        } else {
-            seriesLabel.setText(seriesDescription + ", Frames:" + totalImages);
-        }
-        threeThumbnails = new Thumbnail[3];
-        todayInfo = Calendar.getInstance();
-        this.isLocal = false;
-        dest = ApplicationContext.listenerDetails[2] + File.separator + todayInfo.get(Calendar.YEAR) + File.separator + todayInfo.get(Calendar.MONTH) + File.separator + todayInfo.get(Calendar.DATE) + File.separator + studyInstanceUid + File.separator + seriesInstanceUid + File.separator + "Thumbnails" + File.separator;
-        setLayout(null);
-        createComponents();
-    }
-
-    public PreviewPanel(String studyInstanceUid, String seriesInstanceUid, String seriesDescription, int totalImages, Thumbnail[] threeThumbnails) {
+    public PreviewPanel(String studyInstanceUid, String seriesInstanceUid, String seriesDescription, int totalImages, Thumbnail[] threeThumbnails, String dest) {
         this.totalImages = totalImages;
         this.studyInstanceUid = studyInstanceUid;
         this.seriesInstanceUid = seriesInstanceUid;
@@ -97,7 +72,12 @@ public class PreviewPanel extends javax.swing.JPanel {
             seriesLabel.setText(seriesDescription);
         }
         this.threeThumbnails = threeThumbnails;
-        this.isLocal = true;
+        if (dest == null) {
+            todayInfo = Calendar.getInstance();
+            this.dest = ApplicationContext.listenerDetails[2] + File.separator + todayInfo.get(Calendar.YEAR) + File.separator + todayInfo.get(Calendar.MONTH) + File.separator + todayInfo.get(Calendar.DATE) + File.separator + studyInstanceUid + File.separator + seriesInstanceUid + File.separator + "Thumbnails" + File.separator;
+        } else {
+            this.dest = dest;
+        }
         setLayout(null);
         createComponents();
         addListenerForThumbnails();
@@ -155,50 +135,28 @@ public class PreviewPanel extends javax.swing.JPanel {
     private javax.swing.JLabel seriesLabel;
     // End of variables declaration//GEN-END:variables
 
-   private void createComponents() {
+    private void createComponents() {
         seriesLabel.setBounds(0, 0, 220, 20);
-        loadThreeThumbnails();
-        totalHeight = 23 + 76;
+        int imgPanelHeight = 76;
+        loadThumbnails();
+        totalHeight = 23 + imgPanelHeight;
     }
 
-    public void loadThreeThumbnails() {
+    public void loadThumbnails() {
         imagePanel.removeAll();
         imagePanel.setLayout(null);
-        int xPos = 0, yPos = 0, hei = 76;
-        if (isLocal) {
-            for (int i = 0; i < threeThumbnails.length; i++) {
-                threeThumbnails[i].setBounds(xPos, yPos, 76, 76);
-                imagePanel.add(threeThumbnails[i]);
-                xPos += 76;
+        int xPos = 0, yPos = 0;
+        for (int i = 0; i < threeThumbnails.length; i++) {
+            threeThumbnails[i].setBounds(xPos, yPos, 76, 76);
+            if (!seriesLabel.getText().contains("Video")) {
+                threeThumbnails[i].readImage(dest + File.separator + threeThumbnails[i].getName());
+            } else {
+                threeThumbnails[i].setVideoImage();
             }
-        } else {
-            File file;
-            int i = 0;
-            try {
-                for (i = 0; i < threeInstanceDetails.length; i++) {
-                    if (!threeInstanceDetails[i].isIsVideo()) {
-                        file = new File(dest + threeInstanceDetails[i].getIuid());
-                        threeThumbnails[i] = new Thumbnail(threeInstanceDetails[i].getIuid());
-                        threeThumbnails[i].setImage(ImageIO.read(file));
-                    } else {
-                        threeThumbnails[i] = new Thumbnail(threeInstanceDetails[i].getIuid());
-                        threeThumbnails[i].setVideoImage();
-                    }
-
-                    threeThumbnails[i].setBounds(xPos, yPos, 76, 76);
-                    xPos += 76;
-                    imagePanel.add(threeThumbnails[i]);
-                }
-            } catch (IOException ex) {
-                threeThumbnails[i] = new Thumbnail(threeInstanceDetails[i].getIuid());
-                threeThumbnails[i].setDefaultImage();
-            }
+            imagePanel.add(threeThumbnails[i]);
+            xPos += 76;
         }
-        imagePanel.setBounds(0, 25, 220, hei);
-    }
-
-    public Thumbnail[] getThreeThumbnails() {
-        return threeThumbnails;
+        imagePanel.setBounds(0, seriesLabel.getHeight() + 5, 220, 76);
     }
 
     public int getTotalHeight() {
@@ -223,19 +181,57 @@ public class PreviewPanel extends javax.swing.JPanel {
             public void mouseClicked(MouseEvent me) {
                 if (me.getClickCount() == 2 && ApplicationContext.isLocal) {
                     String sopUid = ((JLabel) me.getSource()).getName();
+                    createPreviews();
                     String filePath = ApplicationContext.databaseRef.getFileLocation(studyInstanceUid, seriesInstanceUid, sopUid);
-                    if (!seriesLabel.getText().contains("Video")) {
-                        boolean alreadyOpenedStudy = ApplicationContext.openImageView(filePath, studyInstanceUid, ApplicationContext.mainScreenObj.getCurrentImagePreviewPanel().getLabelInfo(), instanceIdentificationNo - 5);
-                        if (!alreadyOpenedStudy) {
-                            ApplicationContext.layeredCanvas.imgpanel.setCurrentInstanceNo(instanceIdentificationNo);
-                            ApplicationContext.setImageIdentification();
-                            ApplicationContext.layeredCanvas.textOverlay.getTextOverlayParam().setCurrentInstance(instanceIdentificationNo);
-                        }
-                    } else {
-                        ApplicationContext.openVideo(filePath, studyInstanceUid, ApplicationContext.mainScreenObj.getCurrentImagePreviewPanel().getLabelInfo());
-                    }
+                    ApplicationContext.createLayeredCanvas(filePath, studyInstanceUid, instanceIdentificationNo, false);
+                    ApplicationContext.displayAllPreviews();
+                    ApplicationContext.createVideoPreviews(studyInstanceUid);
+                    ApplicationContext.setCorrespondingPreviews();
+                    ApplicationContext.setAllSeriesIdentification(studyInstanceUid);
+                    ApplicationContext.imgView.getImageToolbar().enableMultiSeriesTools();
                 }
             }
         });
+    }
+
+    private void createPreviews() {
+        ImagePreviewPanel viewerPreview = new ImagePreviewPanel();
+        viewerPreview.setPatientInfo(((ImagePreviewPanel) getParent().getParent().getParent().getParent().getParent()).getLabelInfo());
+        int position = 0, totalSize = 0;
+        ArrayList<Series> allSeriesOfStudy = ApplicationContext.databaseRef.getSeriesList_SepMulti(studyInstanceUid);
+        for (int i = 0; i < allSeriesOfStudy.size(); i++) {
+            Series curr = allSeriesOfStudy.get(i);
+            if (!curr.isVideo()) {
+                ViewerPreviewPanel viewerPreviewPanel = null;
+                if (curr.getSeriesDesc().contains("Multiframe")) {
+                    viewerPreviewPanel = new ViewerPreviewPanel(studyInstanceUid, curr, curr.getInstanceUID() + "," + curr.getSeriesRelatedInstance());
+                } else {
+                    viewerPreviewPanel = new ViewerPreviewPanel(studyInstanceUid, curr, null);
+                }
+                viewerPreviewPanel.setVisible(true);
+                viewerPreviewPanel.setName(String.valueOf(i));
+                int height = viewerPreviewPanel.getTotalHeight();
+                totalSize += height + 5;
+                viewerPreviewPanel.setBounds(0, position, 230, height);
+                viewerPreview.addViewerPanel(position, height, viewerPreviewPanel, totalSize);
+                position += (height + 5);
+            } else {
+                ViewerPreviewPanel viewerPreviewPanel = new ViewerPreviewPanel(studyInstanceUid, curr, curr.getInstanceUID() + "," + curr.getSeriesRelatedInstance());
+                viewerPreviewPanel.setSopUid(curr.getInstanceUID());
+                viewerPreviewPanel.setVisible(true);
+                viewerPreviewPanel.setName(String.valueOf(i));
+                int height = viewerPreviewPanel.getTotalHeight();
+                totalSize += height + 5;
+                viewerPreviewPanel.setBounds(0, position, 230, height);
+                viewerPreview.addViewerPanel(position, height, viewerPreviewPanel, totalSize);
+                position += (height + 5);
+                viewerPreviewPanel.loadVideoImage();
+            }
+        }
+        ApplicationContext.ImageView(viewerPreview.getPatientName(), studyInstanceUid, viewerPreview);
+    }
+
+    public void setDest(String dest) {
+        this.dest = dest;
     }
 }

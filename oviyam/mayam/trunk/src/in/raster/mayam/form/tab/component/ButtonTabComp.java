@@ -131,14 +131,7 @@ public class ButtonTabComp extends JPanel {
                         }
                     }
                 }
-
-                for (int j = 0; j < ApplicationContext.imgView.selectedSeriesDisplays.size(); j++) {
-                    if (ApplicationContext.imgView.selectedSeriesDisplays.get(j).getStudyUid().equals(panel.getComponent(0).getName())) {
-                        ApplicationContext.imgView.writeToFile(ApplicationContext.imgView.selectedSeriesDisplays.get(j));
-                        ApplicationContext.imgView.selectedSeriesDisplays.remove(j);
-                    }
-                }
-
+                ApplicationContext.imgView.writeToFile(panel.getName(), ((LayeredCanvas) ((JPanel) panel.getComponent(0)).getComponent(0)).imgpanel.getSeriesLocation());
                 pane.remove(i);
                 if (i == 0 && pane.getComponentCount() == 1) {
                     ApplicationContext.imgView.dispose();

@@ -39,20 +39,28 @@
  * ***** END LICENSE BLOCK ***** */
 package in.raster.mayam.facade;
 
+import com.nilo.plaf.nimrod.NimRODLookAndFeel;
+import com.sun.java.swing.plaf.motif.MotifLookAndFeel;
 import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.delegates.InputArgumentsParser;
+import in.raster.mayam.delegates.JNLPSeriesRetriever;
 import static in.raster.mayam.facade.ApplicationFacade.mainscreen;
 import static in.raster.mayam.facade.ApplicationFacade.splash;
 import in.raster.mayam.form.MainScreen;
 import in.raster.mayam.form.SplashScreen;
 import in.raster.mayam.form.display.Display;
+import in.raster.mayam.models.InputArgumentValues;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
+import java.awt.Insets;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+import javax.swing.UIDefaults;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 
 /**
  *
@@ -70,12 +78,17 @@ public class ApplicationFacade {
 
     public static void main(String[] args) {
         ApplicationFacade facade = new ApplicationFacade();
+        facade.setSystemProperties();
         facade.createSplash();
         ApplicationContext.setAppLocale();
         InputArgumentsParser.parse(args);
-        facade.setSystemProperties();
-        facade.createMainScreen();
-        if (!ApplicationContext.isJnlp) {
+        InputArgumentValues inputArgumentValues = InputArgumentsParser.inputArgumentValues;
+        setTheme();
+        if (inputArgumentValues != null) {
+            ApplicationContext.isJnlp = true;
+            loadStudiesBasedOnInputParameter(inputArgumentValues);
+        } else {
+            facade.createMainScreen();
             splash.setVisible(false);
             mainscreen.setVisible(true);
         }
@@ -120,7 +133,7 @@ public class ApplicationFacade {
         if (Platform.getCurrentPlatform().equals(Platform.LINUX) || Platform.getCurrentPlatform().equals(Platform.SOLARIS)) {
             System.setProperty("sun.java2d.pmoffscreen", "false");
         }
-        System.setProperty("java.util.Arrays.useLegacyMergeSort", "true"); //Need to avoid the exceptions occured when using jdk 1.7                 
+        System.setProperty("java.util.Arrays.useLegacyMergeSort", "true"); //Need to avoid the exceptions occured when using jdk 1.7                         
     }
 
     public static void exitApp(String exitString) {
@@ -133,5 +146,66 @@ public class ApplicationFacade {
 
     public static void hideSplash() {
         splash.setVisible(false);
+    }
+
+    private static void loadStudiesBasedOnInputParameter(InputArgumentValues inputArgumentValues) {
+        if (ApplicationContext.communicationDelegate.verifyServer(ApplicationContext.communicationDelegate.constructURL(inputArgumentValues.getAeTitle(), inputArgumentValues.getHostName(), inputArgumentValues.getPort()))) {
+            JNLPSeriesRetriever jNLPSeriesRetriever = new JNLPSeriesRetriever(inputArgumentValues);
+        } else {
+            System.err.println("ERROR : DICOM Server Unreachable");
+            System.exit(0);
+        }
+    }
+
+    private static void setTheme() {
+        if (ApplicationContext.activeTheme.equals("Nimrod")) {
+            setNimRodTheme();
+        } else if (ApplicationContext.activeTheme.equals("Motif")) {
+            setMotifTheme();
+        } else {
+            setSystemTheme();
+        }
+    }
+
+    private static void setNimRodTheme() {
+        try {
+            UIManager.setLookAndFeel(new NimRODLookAndFeel());
+            UIDefaults uIDefaults = UIManager.getDefaults();
+            uIDefaults.put("Menu.font", ApplicationContext.textFont);
+            uIDefaults.put("MenuItem.font", ApplicationContext.textFont);
+            uIDefaults.put("Button.font", ApplicationContext.textFont);
+            uIDefaults.put("Label.font", ApplicationContext.textFont);
+            uIDefaults.put("RadioButton.font", ApplicationContext.textFont);
+            uIDefaults.put("CheckBox.font", ApplicationContext.textFont);
+            uIDefaults.put("TabbedPane.tabInsets", new Insets(5, 5, 5, 5));
+            uIDefaults.put("TabbedPane.selectedTabPadInsets", new Insets(5, 7, 5, 7));
+            uIDefaults.put("OptionPane.messageFont", ApplicationContext.labelFont);
+            uIDefaults.put("OptionPane.buttonFont", ApplicationContext.labelFont);
+            uIDefaults.put("ToolTip.font", ApplicationContext.labelFont);
+        } catch (UnsupportedLookAndFeelException ex) {
+            Logger.getLogger(MainScreen.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private static void setMotifTheme() {
+        try {
+            UIManager.setLookAndFeel(new MotifLookAndFeel());
+        } catch (UnsupportedLookAndFeelException ex) {
+            Logger.getLogger(MainScreen.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private static void setSystemTheme() {
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(MainScreen.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            Logger.getLogger(MainScreen.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            Logger.getLogger(MainScreen.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (UnsupportedLookAndFeelException ex) {
+            Logger.getLogger(MainScreen.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 }

@@ -59,10 +59,14 @@ public class AnnotationObj implements Serializable {
     private int centerBasedY1;
     private int centerBasedX2;
     private int centerBasedY2;
-    //Mid X point of the component
-    private int midX;
-    //Mid Y point of the component
-    private int midY;
+    //Mid point of the component    
+    /*
+     * All the calculations are based on the following SHAPEORIGIN value.So it
+     * should not be changed. Zoom level can be adjusted with out changing the
+     * component size and SHAPEORIGIN. So there is no need of changing this
+     * SHAPEORIGIN value and component size.
+     */
+    private int shapeOrigin = 256;
     // Calculated Measurement value for the current shape
     private String length;
     private String area;
@@ -142,20 +146,12 @@ public class AnnotationObj implements Serializable {
         this.centerBasedY2 = centerBasedY2;
     }
 
-    public int getMidX() {
-        return midX;
+    public int getShapeOrigin() {
+        return shapeOrigin;
     }
 
-    public void setMidX(int midX) {
-        this.midX = midX;
-    }
-
-    public int getMidY() {
-        return midY;
-    }
-
-    public void setMidY(int midY) {
-        this.midY = midY;
+    public void setShapeOrigin(int shapeOrigin) {
+        this.shapeOrigin = shapeOrigin;
     }
 
     public String getArea() {
@@ -232,21 +228,21 @@ public class AnnotationObj implements Serializable {
     //To find the center based x value for the given original X
 
     private int centerBasedX(int x) {
-        return (x - midX);
+        return (x - shapeOrigin);
     }
     //To find the center based y value for the given original Y
 
     private int centerBasedY(int y) {
-        return (y - midY);
+        return (y - shapeOrigin);
     }
     //To find the original x value for the given center based X
 
     private int originalX(int x) {
-        return (x + midX);
+        return (x + shapeOrigin);
     }
     //To find the original x value for the given center based Y
 
     private int originalY(int y) {
-        return (y + midY);
+        return (y + shapeOrigin);
     }
 }

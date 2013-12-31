@@ -40,7 +40,7 @@
 package in.raster.mayam.form;
 
 import in.raster.mayam.context.ApplicationContext;
-import in.raster.mayam.delegates.ImageGenerator;
+import in.raster.mayam.models.Series;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.GridLayout;
@@ -49,8 +49,25 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+import org.dcm4che2.tool.dcm2xml.Dcm2Xml;
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 import uk.co.caprica.vlcj.component.EmbeddedMediaPlayerComponent;
 
 /**
@@ -95,6 +112,29 @@ public class ViewerPreviewPanel extends javax.swing.JPanel {
         setLayout(null);
         createComponents();
         addMouseAdapter();
+    }
+
+    public ViewerPreviewPanel(String StudyUid, Series series, String instanceUid) {
+        initComponents();
+        this.studyInstanceUid = StudyUid;
+        this.seriesInstanceUid = series.getSeriesInstanceUID();
+        this.seriesDescription = series.getSeriesDesc();
+        this.selectedButton = three;
+        isMultiframe = (instanceUid == null ? false : true);
+        this.sopUid = instanceUid != null ? instanceUid.split(",")[0] : null;
+        this.isVideo = series.isVideo();
+        totalImages = isVideo || isMultiframe ? 1 : series.getSeriesRelatedInstance();
+        if (!isVideo) {
+            if (!isMultiframe) {
+                SeriesLabel.setText(seriesDescription + "-Images: " + series.getSeriesRelatedInstance());
+            } else {
+                SeriesLabel.setText("Multiframe-Frames: " + instanceUid.split(",")[1]);
+            }
+        } else {
+            SeriesLabel.setText("");
+        }
+        setLayout(null);
+        constructComponents();
     }
 
     /**
@@ -176,6 +216,34 @@ public class ViewerPreviewPanel extends javax.swing.JPanel {
     private javax.swing.JPanel labelPanel;
     // End of variables declaration//GEN-END:variables
 
+    private void constructComponents() {
+        SeriesLabel.setBounds(0, 0, 220, 20);
+        labelPanelHeight = 9;
+        labelPanel.setLayout(null);
+        button.setBounds(207, 21, 14, 14);
+        int xPos = 0, yPos = 0;
+        for (int l = 0; l < totalImages; l++) {
+            JLabel label = new JLabel(" ");
+            label.setOpaque(true);
+            label.setBounds(xPos, yPos, 5, 5);
+            if (xPos + 7 < 200) {
+                xPos += 7;
+            } else {
+                xPos = 0;
+                yPos += 7;
+                labelPanelHeight += 7;
+            }
+            labelList.add(label);
+            labelPanel.add(label);
+            labelPanel.setBounds(0, 23, 205, labelPanelHeight);
+        }
+        colorLabels(selectedButton);
+        imagePanel.setLayout(null);
+        imagePanel.setBounds(0, 23 + labelPanelHeight + 5, 230, 76);
+        totalHeight = 23 + labelPanelHeight + 76 + 5;
+        selectedInstances.add(0);
+    }
+
     private void createComponents() {
         SeriesLabel.setBounds(0, 0, 220, 20);
         labelPanelHeight = 9;
@@ -224,7 +292,7 @@ public class ViewerPreviewPanel extends javax.swing.JPanel {
             button.setName(one);
             selectedButton = one;
             colorLabels(selectedButton);
-            ApplicationContext.setImageIdentification();
+            ApplicationContext.setAllSeriesIdentification(studyInstanceUid);
             if (thumbnails.length > 1) {
                 for (int i = 1; i < thumbnails.length; i++) {
                     thumbnails[i].setVisible(false);
@@ -235,7 +303,7 @@ public class ViewerPreviewPanel extends javax.swing.JPanel {
             button.setName(all);
             selectedButton = all;
             colorLabels(selectedButton);
-            ApplicationContext.setImageIdentification();
+            ApplicationContext.setAllSeriesIdentification(studyInstanceUid);
             int imagePanelHeight = loadAllPreviewImages();
             alignComponents(imagePanelHeight);
         } else {
@@ -243,7 +311,7 @@ public class ViewerPreviewPanel extends javax.swing.JPanel {
             button.setName(three);
             selectedButton = three;
             colorLabels(selectedButton);
-            ApplicationContext.setImageIdentification();
+            ApplicationContext.setAllSeriesIdentification(studyInstanceUid);
             int imagePanelHeight = loadThreePreviewImages();
             alignComponents(imagePanelHeight);
         }
@@ -375,6 +443,7 @@ public class ViewerPreviewPanel extends javax.swing.JPanel {
                 ApplicationContext.imgView.getImageToolbar().resetCineTimer();
                 String iuid = ((JLabel) me.getSource()).getName();
                 if (!isVideo) {
+                    ApplicationContext.layeredCanvas.clearThumbnailSelection();
                     ApplicationContext.imgView.getImageToolbar().enableImageTools();
                     if (ApplicationContext.selectedPanel != null) {
                         if (ApplicationContext.selectedPanel.getComponentCount() == 1) {
@@ -446,7 +515,6 @@ public class ViewerPreviewPanel extends javax.swing.JPanel {
                         ApplicationContext.layeredCanvas.imgpanel.setCurrentSeriesAnnotation();
                         ApplicationContext.layeredCanvas.canvas.setSelectionColoring();
                         ApplicationContext.layeredCanvas.imgpanel.invalidate();
-                        ApplicationContext.setSeriesContext();
                     }
                 } else {
                     ApplicationContext.selectedPanel = null;
@@ -467,7 +535,7 @@ public class ViewerPreviewPanel extends javax.swing.JPanel {
                     ApplicationContext.imgView.getImageToolbar().disableImageTools();
                     mediaPlayerComponent.getMediaPlayer().playMedia(ApplicationContext.databaseRef.getFileLocation(studyInstanceUid, seriesInstanceUid, iuid));
                     videoPanel.startTimer();
-                    ApplicationContext.setVideoThumbnailIdentification();
+                    ApplicationContext.setVideoThumbnailIdentification(studyInstanceUid);
                 }
             }
         };
@@ -477,17 +545,14 @@ public class ViewerPreviewPanel extends javax.swing.JPanel {
     }
 
     private void setImageUpdatorArgs(int selectedImage) {
-        if (totalImages > ApplicationContext.imgBuffer.getDefaultBufferSize()) {
-            ApplicationContext.imgBuffer.clearBuffer();
-            ApplicationContext.imageUpdator.terminateThread();
+        if (totalImages > ApplicationContext.buffer.getDefaultBufferSize()) {
             int tiles = ApplicationContext.selectedPanel.getComponentCount();
-            ApplicationContext.imageUpdator = new ImageGenerator(ApplicationContext.imgBuffer, ApplicationContext.imgBuffer.getImagePanelRef(), true);
             if (selectedImage - tiles > 0 && selectedImage + tiles < totalImages) {
-                ApplicationContext.imageUpdator.setParameters(selectedImage - tiles, selectedImage + tiles + tiles, true);
+                ApplicationContext.buffer.updateFrom(selectedImage - tiles);
             } else {
-                ApplicationContext.imageUpdator.setParameters(totalImages - tiles, tiles + tiles, true);
+                ApplicationContext.buffer.updateFrom(totalImages - tiles);
             }
-            ApplicationContext.imageUpdator.start();
+            ApplicationContext.buffer.clearBuffer();
         }
     }
 
@@ -501,6 +566,14 @@ public class ViewerPreviewPanel extends javax.swing.JPanel {
 
     public String getSopUid() {
         return sopUid;
+    }
+
+    public void setSopUid(String sopUid) {
+        this.sopUid = sopUid;
+    }
+
+    public String getStudyInstanceUid() {
+        return studyInstanceUid;
     }
 
     public void clearSelectedInstances() {
@@ -518,6 +591,170 @@ public class ViewerPreviewPanel extends javax.swing.JPanel {
         if (instanceNumber >= 0 && instanceNumber < totalImages) {
             selectedInstances.add(instanceNumber);
             labelList.get(instanceNumber).setBackground(Color.RED);
+        }
+    }
+
+    public void loadThumbnails() {
+        if (!isVideo && sopUid == null) {
+            String thumbnailLocation = ApplicationContext.databaseRef.getThumbnailLocation(studyInstanceUid, seriesInstanceUid);
+            if (!thumbnailLocation.contains("Thumbnails")) {
+                thumbnailLocation += File.separator + "Thumbnails";
+            }
+            ArrayList<String> instanceUidList = ApplicationContext.databaseRef.getInstanceUidList(studyInstanceUid, seriesInstanceUid);
+            thumbnails = new Thumbnail[instanceUidList.size()];
+            for (int i = 0; i < instanceUidList.size(); i++) {
+                thumbnails[i] = new Thumbnail(instanceUidList.get(i));
+                try {
+//                    thumbnails[i].setImage(ImageIO.read(new File(thumbnailLocation + File.separator + "Thumbnails" + File.separator + instanceUidList.get(i))));
+                    thumbnails[i].setImage(ImageIO.read(new File(thumbnailLocation + File.separator + instanceUidList.get(i))));
+                } catch (IOException ex) {
+                    thumbnails[i].setDefaultImage();
+                }
+            }
+            loadThreeThumbnails();
+            if (totalImages > 3) {
+                button.setName(three);
+                button.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        performButtonAction();
+                    }
+                });
+            } else {
+                button.setIcon(imgAll);
+            }
+            addMouseAdapter();
+        }
+    }
+
+    private void loadThreeThumbnails() {
+        int xPos = 0, yPos = 0;
+        imagePanel.removeAll();
+        imagePanel.setLayout(null);
+        if (thumbnails.length <= 3) {
+            for (int i = 0; i < thumbnails.length; i++) {
+                imagePanel.add(thumbnails[i]);
+                thumbnails[i].setVisible(true);
+                thumbnails[i].setBounds(xPos, yPos, 76, 76);
+                xPos += 76;
+            }
+        } else {
+            imagePanel.add(thumbnails[0]);
+            thumbnails[0].setVisible(true);
+            thumbnails[0].setBounds(xPos, yPos, 76, 76);
+            xPos += 76;
+
+            imagePanel.add(thumbnails[thumbnails.length / 2]);
+            thumbnails[thumbnails.length / 2].setVisible(true);
+            thumbnails[thumbnails.length / 2].setBounds(xPos, yPos, 76, 76);
+            xPos += 76;
+
+            imagePanel.add(thumbnails[thumbnails.length - 1]);
+            thumbnails[thumbnails.length - 1].setVisible(true);
+            thumbnails[thumbnails.length - 1].setBounds(xPos, yPos, 76, 76);
+            xPos += 76;
+            imagePanel.revalidate();
+            imagePanel.repaint();
+        }
+        getParent().repaint();
+    }
+
+    public void loadVideoImage() {
+        thumbnails = new Thumbnail[1];
+        thumbnails[0] = new Thumbnail(sopUid);
+        thumbnails[0].setVideoImage();
+
+        loadThreeThumbnails();
+        if (totalImages > 3) {
+            button.setName(three);
+            button.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    performButtonAction();
+                }
+            });
+        } else {
+            button.setIcon(imgAll);
+            colorLabels(all);
+        }
+        addMouseAdapter();
+    }
+
+    public void loadMultiframes() {
+        if (!isVideo && sopUid != null) {
+            thumbnails = new Thumbnail[1];
+            thumbnails[0] = new Thumbnail(sopUid);
+            String fileLocation = ApplicationContext.databaseRef.getThumbnailLocation(studyInstanceUid, seriesInstanceUid);
+            if (!fileLocation.contains("Thumbnails")) {
+                fileLocation += File.separator + "Thumbnails";
+            }
+            try {
+//                thumbnails[0].setImage(ImageIO.read(new File(fileLocation + File.separator + "Thumbnails" + File.separator + sopUid)));
+                thumbnails[0].setImage(ImageIO.read(new File(fileLocation + File.separator + sopUid)));
+            } catch (IOException ex) {
+                thumbnails[0].setDefaultImage();
+            }
+            loadThreeThumbnails();
+            if (totalImages > 3) {
+                button.setName(three);
+                button.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        performButtonAction();
+                    }
+                });
+            } else {
+                button.setIcon(imgAll);
+                colorLabels(all);
+            }
+            addMouseAdapter();
+        }
+    }
+
+    public void convertVideo() {
+        if (isVideo) {
+            String fileLocation = ApplicationContext.databaseRef.getFileLocation(studyInstanceUid, seriesInstanceUid, sopUid);
+            File videoFile = null;
+            if (!fileLocation.contains("_V")) {
+                videoFile = new File(fileLocation + "_V" + File.separator + "video.xml");
+                videoFile.getParentFile().mkdirs();
+                try {
+                    videoFile.createNewFile();
+                } catch (IOException ex) {
+                    Logger.getLogger(ViewerPreviewPanel.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                Dcm2Xml.main(new String[]{fileLocation, "-X", "-o", videoFile.getAbsolutePath()});
+            } else {
+                videoFile = new File(new File(fileLocation).getParentFile().getParent(), "video.xml");
+            }
+            try {
+                Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(videoFile);
+                NodeList elementsByTagName1 = doc.getElementsByTagName("item");
+                for (int i = 0; i < elementsByTagName1.getLength(); i++) {
+                    NamedNodeMap attributes = elementsByTagName1.item(i).getAttributes();
+                    if (attributes.getNamedItem("src") != null) {
+                        videoFile = new File(fileLocation + "_V" + File.separator + attributes.getNamedItem("src").getNodeValue());
+                        videoFile.renameTo(new File(videoFile.getAbsolutePath() + ".mpg"));
+                        ApplicationContext.databaseRef.update("image", "FileStoreUrl", videoFile.getAbsolutePath() + ".mpg", "SopUID", fileLocation.substring(fileLocation.lastIndexOf(File.separator) + 1));
+                    }
+                }
+                XPath xPath = XPathFactory.newInstance().newXPath();
+                XPathExpression expr = xPath.compile("//attr[@tag=\"00181063\"]");
+                NodeList nl = (NodeList) expr.evaluate(doc, XPathConstants.NODESET);
+                Node frameTime = nl.item(0);
+                expr = xPath.compile("//attr[@tag=\"00280008\"]");
+                nl = (NodeList) expr.evaluate(doc, XPathConstants.NODESET);
+                Node numberOfFrames = nl.item(0);
+                SeriesLabel.setText("Video : " + (int) Math.floor((Double.parseDouble(numberOfFrames.getTextContent()) * (1000 / Double.parseDouble(frameTime.getTextContent()))) / 1000) + " Sec");
+            } catch (ParserConfigurationException ex) {
+                Logger.getLogger(ViewerPreviewPanel.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (SAXException ex) {
+                Logger.getLogger(ViewerPreviewPanel.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IOException ex) {
+                Logger.getLogger(ViewerPreviewPanel.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (XPathExpressionException ex) {
+                Logger.getLogger(ViewerPreviewPanel.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
     }
 }

@@ -308,4 +308,11 @@ public class VideoPanel extends javax.swing.JPanel {
             }
         }
     }
+
+    public void playMedia(String filePath) {
+        if (!((EmbeddedMediaPlayerComponent) videoContainer.getComponent(0)).getMediaPlayer().isPlaying()) {
+            ((EmbeddedMediaPlayerComponent) videoContainer.getComponent(0)).getMediaPlayer().playMedia(filePath);
+            startTimer();
+        }
+    }
 }

@@ -39,45 +39,58 @@
  * ***** END LICENSE BLOCK ***** */
 package in.raster.mayam.delegates;
 
-import in.raster.mayam.context.ApplicationContext;
+import java.awt.Graphics2D;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsEnvironment;
+import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.dcm4che.dict.Tags;
-import org.dcm4che2.data.BasicDicomObject;
-import org.dcm4che2.data.DicomObject;
-import org.dcm4che2.io.DicomInputStream;
+import javax.imageio.ImageIO;
 
 /**
  *
  * @author Devishree
- * @version 2.0
+ * @version 2.1
  */
-public class InfoUpdateDelegate {
+public class ThumbnailConstructor implements Runnable {
 
-    public void updateFileDetails(File file) {
-        DicomInputStream dis = null;
+    String filePath;
+    String dest = null;
+
+    public ThumbnailConstructor(String filePath, String storeLoc) {
+        this.filePath = filePath;
+        this.dest = storeLoc;
+    }
+
+    @Override
+    public void run() {
+        File fileToStore = new File(dest);
+        fileToStore.getParentFile().mkdirs();
         try {
-            dis = new DicomInputStream(file);
+            ImageIO.write(shrinkImage(DicomImageReader.readDicomFile(new File(filePath))), "jpeg", fileToStore);
         } catch (IOException ex) {
-            Logger.getLogger(InfoUpdateDelegate.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ThumbnailConstructor.class.getName()).log(Level.SEVERE, null, ex);
         }
-        DicomObject data = new BasicDicomObject();
-        try {
-            data = dis.readDicomObject();
-        } catch (IOException ex) {
+    }
+
+    private BufferedImage shrinkImage(BufferedImage image) {
+        int width = 0, height = 0, maxThumbwidth = 75;
+        if (image.getWidth() > image.getHeight()) {
+            width = maxThumbwidth;
+            height = maxThumbwidth / Math.round(image.getWidth() / image.getHeight());
+        } else {
+            height = maxThumbwidth;
+            width = maxThumbwidth / Math.round(image.getHeight() / image.getWidth());
         }
-        //Updates the dataset info in database and updates the progress bar accordingly for each file
-        if (data != null) {
-            ApplicationContext.databaseRef.writeDatasetInfo(data, false, file.getAbsolutePath());
-            if (data.getString(Tags.NumberOfFrames) != null) {
-                ApplicationContext.mainScreenObj.setProgressIndeterminate();
-            }
-            ApplicationContext.mainScreenObj.incrementProgressValue();
-        }
-        if (ApplicationContext.isLocal) {
-            ApplicationContext.noOfInstancesReceived += 1;
-        }
+        GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
+        BufferedImage imageToReturn = gc.createCompatibleImage(width, height);
+        Graphics2D g2 = imageToReturn.createGraphics();
+        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g2.drawImage(image, 0, 0, imageToReturn.getWidth(), imageToReturn.getHeight(), null);
+        g2.dispose();
+        return imageToReturn;
     }
 }

@@ -43,6 +43,7 @@ import in.raster.mayam.context.ApplicationContext;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import javax.swing.JPanel;
+import javax.swing.JSplitPane;
 
 /**
  *
@@ -127,7 +128,7 @@ public class ImagePreviewPanel extends javax.swing.JPanel {
     private javax.swing.JScrollPane seriesScrollPane;
     // End of variables declaration//GEN-END:variables
 
-      public void paint(int size) {
+    public void paint(int size) {
         parent.setBounds(0, 0, 240, size);
         container.add(parent);
         container.setPreferredSize(new Dimension(230, size));
@@ -228,5 +229,63 @@ public class ImagePreviewPanel extends javax.swing.JPanel {
 
     public void setPreviousStudyUid(String studyUid) {
         studyInstanceUid = studyUid;
+    }
+
+    public void displayPreiew(String seriesInstanceUID) {
+        for (int i = 0; i < parent.getComponentCount(); i++) {
+            ApplicationContext.databaseRef.update("series", "NoOfSeriesRelatedInstances", ApplicationContext.databaseRef.getSeriesLevelInstance(((ViewerPreviewPanel) parent.getComponent(0)).getStudyInstanceUid(), seriesInstanceUID), "SeriesInstanceUID", seriesInstanceUID);
+            if (((ViewerPreviewPanel) parent.getComponent(i)).getSeriesInstanceUid().equals(seriesInstanceUID)) {
+                ((ViewerPreviewPanel) parent.getComponent(i)).loadThumbnails();
+//                return;
+            }
+        }
+    }
+
+    public void displayAllPreviews() {
+        for (int i = 0; i < parent.getComponentCount(); i++) {
+            ((ViewerPreviewPanel) parent.getComponent(i)).loadThumbnails();
+        }
+    }
+
+    public void displayVideoPreviews() {
+        for (int i = 0; i < parent.getComponentCount(); i++) {
+            ((ViewerPreviewPanel) parent.getComponent(i)).convertVideo();
+            ((ViewerPreviewPanel) parent.getComponent(i)).loadMultiframes();
+        }
+    }
+
+    public void iteratePreviews() {
+        JPanel comp = ((JPanel) ((JSplitPane) ApplicationContext.tabbedPane.getSelectedComponent()).getRightComponent());
+        for (int i = 0; i < parent.getComponentCount(); i++) {
+            ViewerPreviewPanel preview = (ViewerPreviewPanel) parent.getComponent(i);
+            preview.clearSelectedInstances();
+            for (int j = 0; j < comp.getComponentCount(); j++) {
+                JPanel seriesLevelPanel = (JPanel) comp.getComponent(j);
+                for (int k = 0; k < seriesLevelPanel.getComponentCount(); k++) {
+                    if (preview.getSeriesInstanceUid().equals(((LayeredCanvas) seriesLevelPanel.getComponent(k)).imgpanel.getSeriesUID())) {
+                        if (!preview.isMultiframe && ((LayeredCanvas) seriesLevelPanel.getComponent(k)).imgpanel.getInstanceUidIfMultiframe() == null) {
+                            ((LayeredCanvas) seriesLevelPanel.getComponent(k)).setPreviewRef(preview);
+                        } else if (preview.getSopUid() != null && preview.getSopUid().equals(((LayeredCanvas) seriesLevelPanel.getComponent(k)).imgpanel.getInstanceUidIfMultiframe())) {
+                            ((LayeredCanvas) seriesLevelPanel.getComponent(k)).setPreviewRef(preview);
+                        }
+                    }
+                }
+            }
+            preview = null;
+        }
+    }
+
+    public String getPatientName() {
+        return labelInfo[0];
+    }
+
+    public void setVideoIdentification(VideoPanel comp) {
+        for (int j = 0; j < parent.getComponentCount(); j++) {
+            ((ViewerPreviewPanel) parent.getComponent(j)).clearSelectedInstances();
+            if (((ViewerPreviewPanel) parent.getComponent(j)).getSopUid().equals(comp.getComponent(0).getName())) {
+                ((ViewerPreviewPanel) parent.getComponent(j)).setSelectedInstance(0);
+                break;
+            }
+        }
     }
 }

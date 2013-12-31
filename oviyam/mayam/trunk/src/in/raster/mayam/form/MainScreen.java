@@ -42,12 +42,7 @@ package in.raster.mayam.form;
 import com.nilo.plaf.nimrod.NimRODLookAndFeel;
 import com.sun.java.swing.plaf.motif.MotifLookAndFeel;
 import in.raster.mayam.context.ApplicationContext;
-import in.raster.mayam.delegates.CGetDelegate;
 import in.raster.mayam.delegates.CreateButtonsDelegate;
-import in.raster.mayam.delegates.InputArgumentsParser;
-import in.raster.mayam.delegates.MoveDelegate;
-import in.raster.mayam.delegates.ReceiveDelegate;
-import in.raster.mayam.delegates.WadoRetrieveDelegate;
 import in.raster.mayam.form.dialogs.FileChooserDialog;
 import in.raster.mayam.listeners.*;
 import in.raster.mayam.models.*;
@@ -71,7 +66,6 @@ import javax.swing.table.TableColumnModel;
  */
 public class MainScreen extends javax.swing.JFrame {
 
-     private ReceiveDelegate receiveDelegate = null;
     public CreateButtonsDelegate createButtonsDelegate = null;
     public SettingsForm settingsForm = null;
     //Variables    
@@ -132,6 +126,7 @@ public class MainScreen extends javax.swing.JFrame {
         );
 
         settingsButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/setting.png"))); // NOI18N
+        settingsButton.setFocusPainted(false);
         settingsButton.setMaximumSize(new java.awt.Dimension(25, 25));
         settingsButton.setMinimumSize(new java.awt.Dimension(25, 25));
         settingsButton.setPreferredSize(new java.awt.Dimension(25, 25));
@@ -195,8 +190,10 @@ public class MainScreen extends javax.swing.JFrame {
     }//GEN-LAST:event_settingsButtonMousePressed
 
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
-         stopReceiver();
+        setVisible(false);
+        ApplicationContext.stopListening();
         if (ApplicationContext.imgView != null) {
+            ApplicationContext.imgView.setVisible(false);
             ApplicationContext.imgView.onWindowClose();
         }
         ApplicationContext.databaseRef.deleteLinkStudies();
@@ -214,51 +211,29 @@ public class MainScreen extends javax.swing.JFrame {
 
     private void initAppDefaults() {
         ApplicationContext.mainScreenObj = this;
-        ApplicationContext.listenerDetails = ApplicationContext.databaseRef.getListenerDetails();
-        ApplicationContext.activeTheme = ApplicationContext.databaseRef.getActiveTheme();
-        startListening();
-        loadStudiesBasedOnInputParameter();
-        if (!ApplicationContext.isJnlp) {
-            settingsForm = new SettingsForm();
-            createServers();
-            createPreferences();
-            setTheme();
-            queryButtonListener = new QueryButtonListener(serverTab);
-            serverTab.addMouseListener(new ServerTabListener(serverTab));
-            serverTabChangeListener = new ServerTabChangeListener(serverTab);
-            serverTab.addChangeListener(serverTabChangeListener);
-            createButtonsDelegate = new CreateButtonsDelegate(buttonsToolbar, CursorController.createListener(this, queryButtonListener));
-            createButtonsDelegate.loadButtons();
-            ApplicationContext.currentTreeTable = ((TreeTable) ((JViewport) ((JScrollPane) ((JSplitPane) serverTab.getSelectedComponent()).getRightComponent()).getComponent(0)).getComponent(0));
-            addKeyEventDispatcher();
-            queryInfoLabel.setText("");
-            loadlocalStudies();
-            hideProgressBar();
-            addComponentListener(new ComponentAdapter() {
-                @Override
-                public void componentResized(ComponentEvent ce) {
-                    createButtonsDelegate.loadButtons();
-                    if (getWidth() < 1000) {
-                        setSize(1000, getHeight());
-                    }
+        settingsForm = new SettingsForm();
+        createServers();
+        createPreferences();
+        queryButtonListener = new QueryButtonListener(serverTab);
+        serverTab.addMouseListener(new ServerTabListener(serverTab));
+        serverTabChangeListener = new ServerTabChangeListener(serverTab);
+        serverTab.addChangeListener(serverTabChangeListener);
+        createButtonsDelegate = new CreateButtonsDelegate(buttonsToolbar, CursorController.createListener(this, queryButtonListener));
+        createButtonsDelegate.loadButtons();
+        ApplicationContext.currentTreeTable = ((TreeTable) ((JViewport) ((JScrollPane) ((JSplitPane) serverTab.getSelectedComponent()).getRightComponent()).getComponent(0)).getComponent(0));
+        addKeyEventDispatcher();
+        queryInfoLabel.setText("");
+        loadlocalStudies();
+        hideProgressBar();
+        addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent ce) {
+                createButtonsDelegate.loadButtons();
+                if (getWidth() < 1000) {
+                    setSize(1000, getHeight());
                 }
-            });
-        }
-    }
-
-    public void startListening() {
-        receiveDelegate = new ReceiveDelegate();
-        try {
-            receiveDelegate.start();
-            System.out.println("Start Server listening on port " + receiveDelegate.getPort());
-        } catch (Exception ex) {
-            Logger.getLogger(MainScreen.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
-    public void stopReceiver() {
-        System.out.println("Stop server listening on port " + receiveDelegate.getPort());
-        receiveDelegate.stop();
+            }
+        });
     }
 
     public void createServers() {
@@ -525,33 +500,8 @@ public class MainScreen extends javax.swing.JFrame {
         return progressLabel.getText();
     }
 
-    //To launch From JNLP
-    private void loadStudiesBasedOnInputParameter() {
-        InputArgumentValues inputArgumentValues = InputArgumentsParser.inputArgumentValues;
-        if (inputArgumentValues != null) {
-            setTheme();
-            ApplicationContext.isJnlp = true;
-            if (ApplicationContext.communicationDelegate.verifyServer(ApplicationContext.communicationDelegate.constructURL(inputArgumentValues.getAeTitle(), inputArgumentValues.getHostName(), inputArgumentValues.getPort()))) {
-                if (inputArgumentValues.getRetrieveType().equals("WADO")) {
-                    ServerModel serverModel = new ServerModel();
-                    serverModel.setAeTitle(inputArgumentValues.getAeTitle());
-                    serverModel.setHostName(inputArgumentValues.getHostName());
-                    serverModel.setPort(inputArgumentValues.getPort());
-                    serverModel.setWadoContextPath(inputArgumentValues.getWadoContext());
-                    serverModel.setWadoPort(inputArgumentValues.getWadoPort());
-                    serverModel.setWadoProtocol(inputArgumentValues.getWadoProtocol());
-                    WadoRetrieveDelegate wadoRetrieveDelegate = new WadoRetrieveDelegate();
-                    wadoRetrieveDelegate.retrieveStudy(serverModel);
-                } else if (inputArgumentValues.getRetrieveType().equals("C-GET")) {
-                    CGetDelegate cGetDelegate = new CGetDelegate(inputArgumentValues);
-                } else {
-                    MoveDelegate moveDelegate = new MoveDelegate(inputArgumentValues);
-                }
-            } else {
-                System.err.println("ERROR : DICOM Server Unreachable");
-                System.exit(0);
-            }
-        }
+    public boolean isInProgress() {
+        return progressBar.isVisible();
     }
 
     //To filter the studies
@@ -605,6 +555,26 @@ public class MainScreen extends javax.swing.JFrame {
             }
             ApplicationContext.mainScreenObj.loadMatchingStudies();
             ApplicationContext.currentTreeTable.changeSelection(row, column, false, false);
+        } else if (isFocused() && e.getKeyChar() == KeyEvent.VK_DELETE) {
+            int[] selectedRows = ApplicationContext.currentTreeTable.getSelectedRows();
+            if (selectedRows.length > 0 && JOptionPane.showConfirmDialog(this, "Are you sure want to delete the selected studies?", "Delete Study", JOptionPane.YES_NO_OPTION) == 0) {
+                for (int i = 0; i < selectedRows.length; i++) {
+                    String studyUid = (String) ((TreeTableModelAdapter) ApplicationContext.currentTreeTable.getModel()).getValueAt(selectedRows[i], 10);
+
+                    if (studyUid == null) {
+                        int j = selectedRows[i];
+                        while (studyUid == null) {
+                            j--;
+                            studyUid = (String) ((TreeTableModelAdapter) ApplicationContext.currentTreeTable.getModel()).getValueAt(j, 10);
+                        }
+                    }
+                    ApplicationContext.databaseRef.deleteLocalStudy((String) ApplicationContext.currentTreeTable.getValueAt(i, 2), studyUid);
+                }
+                loadlocalStudies();
+                if (getCurrentImagePreviewPanel().parent.getComponentCount() > 0) {
+                    getCurrentImagePreviewPanel().resetImagePreviewPanel();
+                }
+            }
         }
     }
 

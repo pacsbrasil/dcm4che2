@@ -788,8 +788,8 @@ public class SettingsForm extends javax.swing.JFrame {
         ApplicationContext.databaseRef.updateListener(listenerAetTxt.getText(), listenerPortTxt.getText());
         ApplicationContext.listenerDetails = ApplicationContext.databaseRef.getListenerDetails();
         JOptionPane.showMessageDialog(this, "Lisetner Details updated", "Modify Listener", JOptionPane.INFORMATION_MESSAGE);
-        ApplicationContext.mainScreenObj.stopReceiver();
-        ApplicationContext.mainScreenObj.startListening();
+        ApplicationContext.stopListening();
+        ApplicationContext.startListening();
     }//GEN-LAST:event_saveListenerBtnActionPerformed
 
     private void updateLanguageButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateLanguageButtonActionPerformed

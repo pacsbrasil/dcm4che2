@@ -65,6 +65,7 @@ public class LayeredCanvas extends JLayeredPane implements FocusListener, MouseL
     public boolean focusGained = false;
     public boolean fileIsNull = false;
     private String studyUID = "";
+    public ViewerPreviewPanel previewRef = null;
 
     public LayeredCanvas() {
         addFocusListener(this);
@@ -111,7 +112,7 @@ public class LayeredCanvas extends JLayeredPane implements FocusListener, MouseL
                 imgpanel = new ImagePanel(canvas);
             }
             if (!isImageLayout) {
-                imgpanel.startImageBuffering(startFrom);
+                imgpanel.createBuffer(startFrom);
             }
             canvas.add(imgpanel);
         } else if (this.imgpanel == null && this.annotationPanel == null && this.textOverlay == null) {
@@ -127,8 +128,10 @@ public class LayeredCanvas extends JLayeredPane implements FocusListener, MouseL
         annotationPanel.repaint();
         textOverlay.revalidate();
         textOverlay.repaint();
-        imgpanel.getCanvas().setSelection(true);
-        ApplicationContext.setSeriesContext();
+        canvas.setSelection(true);
+        imgpanel.setCurrentSeriesAnnotation();
+        ApplicationContext.setCorrespondingPreviews();
+        ApplicationContext.setAllSeriesIdentification(studyUID);
         if (!isImageLayout && ImagePanel.isDisplayScout()) {
             LocalizerDelegate localizer = new LocalizerDelegate(false);
             localizer.start();
@@ -156,6 +159,7 @@ public class LayeredCanvas extends JLayeredPane implements FocusListener, MouseL
             createTextOverlay();
             createLayers();
         }
+        canvas.resizeHandler();
         imgpanel.revalidate();
         imgpanel.repaint();
         textOverlay.revalidate();
@@ -177,7 +181,7 @@ public class LayeredCanvas extends JLayeredPane implements FocusListener, MouseL
             imgpanel = new ImagePanel(canvas);
         }
         if (!isImageLayout) {
-            imgpanel.startImageBuffering(startFrom);
+            imgpanel.createBuffer(startFrom);
         }
         canvas.add(imgpanel);
     }
@@ -211,12 +215,7 @@ public class LayeredCanvas extends JLayeredPane implements FocusListener, MouseL
     }
 
     private void findMultiframeStatus() {
-        if (imgpanel.isMultiFrame()) {
-            textOverlay.multiframeStatusDisplay(true);
-        } else {
-            textOverlay.multiframeStatusDisplay(false);
-        }
-
+        textOverlay.multiframeStatusDisplay(imgpanel.isMultiFrame());
     }
 
     private void setTextOverlayParam() {
@@ -248,6 +247,10 @@ public class LayeredCanvas extends JLayeredPane implements FocusListener, MouseL
         ApplicationContext.imgView.getImageToolbar().disableAllTools();
     }
 
+    public void setColoring() {
+        this.setBorder(new LineBorder(new Color(255, 138, 0)));
+    }
+
     /**
      * This routine used to remove the selection coloring.
      */
@@ -268,6 +271,27 @@ public class LayeredCanvas extends JLayeredPane implements FocusListener, MouseL
             ApplicationContext.layeredCanvas = this;
             ApplicationContext.layeredCanvas.setSelectionColoring();
         }
+    }
+
+    public void setPreviewRef(ViewerPreviewPanel previewRef) {
+        this.previewRef = previewRef;
+    }
+
+    public void setSelectedThumbnail() {
+        previewRef.clearSelectedInstances();
+        previewRef.setSelectedInstance(imgpanel.getCurrentInstanceNo());
+    }
+
+    public void setSelectedThumbnails() {
+        if (!previewRef.isMultiframe && !imgpanel.isMultiFrame()) {
+            previewRef.setSelectedInstance(imgpanel.getCurrentInstanceNo());
+        } else if (imgpanel.isMultiFrame() && imgpanel.getInstanceUidIfMultiframe().equals(previewRef.getSopUid())) {
+            previewRef.setSelectedInstance(0);
+        }
+    }
+
+    public void clearThumbnailSelection() {
+        previewRef.clearSelectedInstances();
     }
 
     @Override
@@ -296,14 +320,6 @@ public class LayeredCanvas extends JLayeredPane implements FocusListener, MouseL
 
     public void setStudyUID(String studyUID) {
         this.studyUID = studyUID;
-    }
-
-    public AnnotationPanel getAnnotationPanel() {
-        return annotationPanel;
-    }
-
-    public TextOverlay getTextOverlay() {
-        return textOverlay;
     }
 
     @Override

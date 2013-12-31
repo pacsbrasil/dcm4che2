@@ -38,7 +38,6 @@
 package in.raster.mayam.util.core;
 
 import in.raster.mayam.context.ApplicationContext;
-import in.raster.mayam.delegates.InfoUpdateDelegate;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -202,7 +201,7 @@ public class DcmRcv {
     private String stgcmtRetrieveAETs;
     private final DimseRSPHandler nEventReportRspHandler =
             new DimseRSPHandler();
-    InfoUpdateDelegate infoUpdateDelegate = new InfoUpdateDelegate();
+//    InfoUpdateDelegate infoUpdateDelegate = new InfoUpdateDelegate();
 
     public DcmRcv() {
         this("DCMRCV");
@@ -1111,7 +1110,7 @@ public class DcmRcv {
                 dos.writeFileMetaInformation(fmi);
                 // dataStream.copyTo(dos);                
                 dos.writeDataset(data, tsuid);
-                infoUpdateDelegate.updateFileDetails(file);
+                ApplicationContext.databaseRef.writeDatasetInfo(data, false, file.getAbsolutePath(), false);
             } finally {
                 CloseUtils.safeClose(dos);
             }

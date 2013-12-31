@@ -36,6 +36,7 @@ package in.raster.mayam.util.core;
  */
 import gnu.getopt.Getopt;
 import gnu.getopt.LongOpt;
+import in.raster.mayam.context.ApplicationContext;
 import java.io.IOException;
 import java.net.Socket;
 import java.security.GeneralSecurityException;
@@ -95,7 +96,6 @@ public class MoveScu {
 
     private final InfoModel patientRoot = new InfoModel(PCID_PR_MOVE,
             UIDs.PatientRootQueryRetrieveInformationModelMOVE) {
-
         boolean applicable(Association as) {
             if (as.getAcceptedTransferSyntaxUID(pcid) == null) {
                 return false;
@@ -122,7 +122,6 @@ public class MoveScu {
     };
     private final InfoModel studyRoot = new InfoModel(PCID_SR_MOVE,
             UIDs.StudyRootQueryRetrieveInformationModelMOVE) {
-
         boolean applicable(Association as) {
             if ("PATIENT".equals(level)) {
                 return false;
@@ -154,7 +153,6 @@ public class MoveScu {
     
     private final InfoModel patientStudyOnly = new InfoModel(PCID_PSO_MOVE,
             UIDs.PatientStudyOnlyQueryRetrieveInformationModelMOVE) {
-
         boolean applicable(Association as) {
             if ("SERIES".equals(level)) {
                 return false;
@@ -461,7 +459,7 @@ public class MoveScu {
         dimseTimeout = Integer.parseInt(cfg.getProperty("dimse-timeout", "0"));
         soCloseDelay = Integer.parseInt(cfg.getProperty("so-close-delay", "500"));
         assocRQ.setCalledAET(url.getCalledAET());
-        assocRQ.setCallingAET(maskNull("MAYAM"));
+        assocRQ.setCallingAET(maskNull(ApplicationContext.listenerDetails[0]));
         assocRQ.setMaxPDULength(Integer.parseInt(cfg.getProperty("max-pdu-len",
                 "16352")));
         assocRQ.setAsyncOpsWindow(aFact.newAsyncOpsWindow(Integer.parseInt(cfg.getProperty("max-op-invoked", "0")), 1));

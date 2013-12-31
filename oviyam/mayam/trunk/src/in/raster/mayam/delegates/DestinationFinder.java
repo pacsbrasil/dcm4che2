@@ -59,7 +59,7 @@ public class DestinationFinder {
         String fileDest = null;
         if (!Platform.getCurrentPlatform().equals(Platform.MAC)) {
             try {
-                String archiveDir = "archieve";
+                String archiveDir = "archive";
                 if (file.getAbsolutePath().startsWith(archiveDir)) {
                     fileDest = transcodedDestination(file);
                 } else {
@@ -77,7 +77,7 @@ public class DestinationFinder {
     public String getFileDestination(String filePath) {
         String fileDest = filePath;
         try {
-            String archiveDir = "archieve";
+            String archiveDir = "archive";
             if (filePath.startsWith(archiveDir)) {
                 fileDest = ApplicationContext.getAppDirectory() + File.separator + filePath;
             }
@@ -110,7 +110,7 @@ public class DestinationFinder {
      */
     private String importFileTranscodedDestination(File file) throws Exception {
         String userDir = ApplicationContext.getAppDirectory();
-        String archiveDir = userDir + File.separator + "archieve";
+        String archiveDir = userDir + File.separator + "archive";
         //In order to avoid duplication it has been changed.
         //Calendar today = Calendar.getInstance();
         // String parent = archiveDir + File.separator + today.get(Calendar.YEAR) + File.separator + today.get(Calendar.MONTH) + File.separator + today.get(Calendar.DATE) + File.separator + "UnCompressed";

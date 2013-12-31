@@ -41,12 +41,9 @@ package in.raster.mayam.delegates;
 
 import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.form.LayeredCanvas;
-import in.raster.mayam.models.SeriesAnnotations;
 import in.raster.mayam.param.TextOverlayParam;
-import java.awt.image.ColorModel;
 import java.util.ArrayList;
 import javax.swing.JPanel;
-import org.dcm4che.image.ColorModelParam;
 
 /**
  *
@@ -109,13 +106,17 @@ public class SeriesChooserDelegate extends Thread {
 
     private void changeSeries_SepMulti() {
         if (canvas != null) {
+            if (ApplicationContext.layeredCanvas.imgpanel.buffer != null) {
+                ApplicationContext.layeredCanvas.imgpanel.buffer.terminateThread();
+                ApplicationContext.layeredCanvas.imgpanel.shutDown();
+                ApplicationContext.layeredCanvas.imgpanel.buffer = null;
+            }
             if (instanceUID == null) {
                 canvas.createSubComponents(ApplicationContext.databaseRef.getFirstInstanceLocation(studyUID, seriesUID), 0, false);
             } else {
                 canvas.createSubComponents(ApplicationContext.databaseRef.getFileLocation(studyUID, seriesUID, instanceUID), instanceNumber, false);
                 canvas.imgpanel.updateCurrentInstance();
             }
-            canvas.imgpanel.setCurrentSeriesAnnotation();
         } else {
             instanceNumber++;
             int x = instanceNumber % tilePanel.getComponentCount();
@@ -134,48 +135,27 @@ public class SeriesChooserDelegate extends Thread {
             imageToDisplay = 0;
         }
         String fileLocation = ApplicationContext.databaseRef.getFileLocation(studyUID, seriesUID, imageToDisplay);
-        LayeredCanvas tempCanvas = ((LayeredCanvas) tilePanel.getComponent(0));
-        tempCanvas.createSubComponents(fileLocation, instanceNumber, true);
-        TextOverlayParam textOverlayParam = tempCanvas.imgpanel.getTextOverlayParam();
-        tempCanvas.imgpanel.getFilePathsifLink();
-        double pixelSpacingX = tempCanvas.imgpanel.getPixelSpacingX();
-        double pixelSpacingY = tempCanvas.imgpanel.getPixelSpacingY();
-        tempCanvas.imgpanel.setCurrentSeriesAnnotation();
-        SeriesAnnotations currentSeriesAnnotation = tempCanvas.imgpanel.getCurrentSeriesAnnotation();
-        ArrayList<String> instanceUidList = tempCanvas.imgpanel.getInstanceUidList();
-        String fileLoc = tempCanvas.imgpanel.getFileLocation();
-        ColorModelParam cmParam = tempCanvas.imgpanel.getCmParam();
-        ColorModel cm = tempCanvas.imgpanel.getCm();
-        int windowLevel = tempCanvas.imgpanel.getWindowLevel();
-        int windowWidth = tempCanvas.imgpanel.getWindowWidth();
-        String modality = tempCanvas.imgpanel.getModality();
-        String studyDesc = tempCanvas.imgpanel.getStudyDesc();
-        tempCanvas.imgpanel.setCurrentInstanceNo(imageToDisplay);
-        tempCanvas.textOverlay.getTextOverlayParam().setCurrentInstance(imageToDisplay);
-        ApplicationContext.imgBuffer.clearBuffer();
-        ApplicationContext.imgBuffer = new ImageBuffer(tempCanvas.imgpanel);
-        ApplicationContext.imageUpdator.terminateThread();
-        ApplicationContext.imageUpdator = new ImageGenerator(ApplicationContext.imgBuffer, ApplicationContext.imgBuffer.getImagePanelRef(), true);
-        ApplicationContext.imgBuffer.setDefaultBufferSize(tilePanel.getComponentCount() + tilePanel.getComponentCount() + tilePanel.getComponentCount());
-        if (instanceUidList.size() > ApplicationContext.imgBuffer.getDefaultBufferSize()) {
-            if (imageToDisplay - tilePanel.getComponentCount() > 0 && imageToDisplay + tilePanel.getComponentCount() < instanceUidList.size()) {
-                ApplicationContext.imageUpdator.setParameters(instanceNumber - tilePanel.getComponentCount(), instanceNumber + tilePanel.getComponentCount() + tilePanel.getComponentCount(), true);
-            } else {
-                ApplicationContext.imageUpdator.setParameters(instanceUidList.size() - tilePanel.getComponentCount(), tilePanel.getComponentCount() + tilePanel.getComponentCount(), true);
-            }
+        ApplicationContext.layeredCanvas = ((LayeredCanvas) tilePanel.getComponent(0));
+        ApplicationContext.layeredCanvas.createSubComponents(fileLocation, instanceNumber, true);
+        TextOverlayParam textOverlayParam = ApplicationContext.layeredCanvas.imgpanel.getTextOverlayParam();
+        ArrayList<String> instanceUidList = ApplicationContext.layeredCanvas.imgpanel.getInstanceUidList();
+        ApplicationContext.layeredCanvas.imgpanel.setCurrentInstanceNo(imageToDisplay);
+        ApplicationContext.layeredCanvas.textOverlay.getTextOverlayParam().setCurrentInstance(imageToDisplay);
+        ApplicationContext.layeredCanvas.imgpanel.setIsNormal(false);
+        if (instanceUidList.size() > ApplicationContext.buffer.getDefaultBufferSize()) {
+            ApplicationContext.buffer.updateFrom(instanceNumber - tilePanel.getComponentCount());
         } else {
-            ApplicationContext.imageUpdator.setParameters(0, instanceUidList.size(), true);
+            ApplicationContext.buffer.updateFrom(0);
         }
-
-        ApplicationContext.imageUpdator.start();
+        ApplicationContext.buffer.clearBuffer();
         imageToDisplay++;
 
         for (int i = 1; i < tilePanel.getComponentCount(); i++) {
-            tempCanvas = ((LayeredCanvas) tilePanel.getComponent(i));
+            LayeredCanvas tempCanvas = ((LayeredCanvas) tilePanel.getComponent(i));
             if (imageToDisplay < instanceUidList.size()) {
                 tempCanvas.createImageLayoutComponents();
                 tempCanvas.textOverlay.setTextOverlayParam(new TextOverlayParam(textOverlayParam.getPatientName(), textOverlayParam.getPatientID(), textOverlayParam.getSex(), textOverlayParam.getStudyDate(), textOverlayParam.getStudyDescription(), textOverlayParam.getSeriesDescription(), textOverlayParam.getBodyPartExamined(), textOverlayParam.getInstitutionName(), textOverlayParam.getWindowLevel(), textOverlayParam.getWindowWidth(), i, textOverlayParam.getTotalInstance(), textOverlayParam.isMultiframe()));
-                tempCanvas.imgpanel.setImageInfo(pixelSpacingX, pixelSpacingY, studyUID, seriesUID, fileLoc, currentSeriesAnnotation, instanceUidList, cmParam, cm, windowLevel, windowWidth, modality, studyDesc);
+                ApplicationContext.layeredCanvas.imgpanel.setInfo(tempCanvas.imgpanel);
                 tempCanvas.imgpanel.setImage(imageToDisplay);
                 tempCanvas.imgpanel.setVisibility(tempCanvas, true);
             } else {
@@ -183,12 +163,12 @@ public class SeriesChooserDelegate extends Thread {
                 try {
                     tempCanvas.imgpanel.setVisibility(tempCanvas, false);
                 } catch (NullPointerException npe) {
-                    System.out.println("Null pointer exception [createImageCanvas]");
                     //Null pointer occurs when there is no image panel
                 }
             }
             imageToDisplay++;
         }
-        ApplicationContext.setImageIdentification();
+        ApplicationContext.setCorrespondingPreviews();
+        ApplicationContext.setAllSeriesIdentification(studyUID);
     }
 }

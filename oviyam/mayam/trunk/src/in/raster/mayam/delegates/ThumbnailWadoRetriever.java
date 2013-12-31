@@ -41,40 +41,63 @@ package in.raster.mayam.delegates;
 
 import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.models.ServerModel;
-import in.raster.mayam.param.WadoParam;
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  *
  * @author Devishree
- * @version 2.0
+ * @version 2.1
  */
-public class WadoInstanceRetrieveDelegate {
+public class ThumbnailWadoRetriever implements Runnable {
 
-    String studyUid, seriesUid, instanceUid, destinationPath;
-    ServerModel serverModel;
+    String studyUid;
+    ServerModel serverDetails;
     private HttpURLConnection httpURLConnection;
-    WadoParam wadoParam = new WadoParam();
+    HashMap<String, HashSet<String>> instances = null;
 
-    public WadoInstanceRetrieveDelegate(String studyUid, String seriesUid, String instanceUid, ServerModel serverModel) {
+    public ThumbnailWadoRetriever(String studyUid, HashMap<String, HashSet<String>> instances, ServerModel serverDetails) {
         this.studyUid = studyUid;
-        this.seriesUid = seriesUid;
-        this.instanceUid = instanceUid;
-        this.serverModel = serverModel;
-        doDownloadInstance();
+        this.instances = instances;
+        this.serverDetails = serverDetails;
+        studyUid = studyUid != null ? studyUid : "";
     }
 
-    private void doDownloadInstance() {
-        constructWadoParam();
-        String queryString = "";
-        if (wadoParam != null) {
-            queryString = wadoParam.getWadoUrlJpg();
+    public ThumbnailWadoRetriever(String studyUid, ServerModel serverDetails) {
+        this.studyUid = studyUid;
+        this.serverDetails = serverDetails;
+    }
+
+    private void doDownload() {
+        Iterator<String> iterator = instances.keySet().iterator();
+        while (iterator.hasNext()) {
+            Iterator<String> iterator1 = instances.get(iterator.next()).iterator();
+            while (iterator1.hasNext()) {
+                String next = iterator1.next();                 
+                retrieve(next.split(",")[0], next.split(",")[1]);
+            }
         }
+    }
+
+    private void retrieve(String seriesUid, String iuid) {
+        String queryString = null;
+        queryString = serverDetails.getWadoProtocol() + "://";
+        queryString += serverDetails.getHostName() != null ? serverDetails.getHostName() : "localhost";
+        queryString += serverDetails.getWadoPort() != 0 ? ":" + serverDetails.getWadoPort() : ":8080";
+        queryString += "/wado?requestType=WADO&studyUID=" + studyUid;
+        queryString += "&seriesUID=" + seriesUid + "&objectUID=" + iuid;
+        queryString += "&rows=" + 75;        
         try {
             URL wadoUrl = new URL(queryString);
             httpURLConnection = (HttpURLConnection) wadoUrl.openConnection();
@@ -88,53 +111,12 @@ public class WadoInstanceRetrieveDelegate {
                 System.out.println("Error while querying " + e.getMessage());
             }
             if (httpURLConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                responseSuccess(wadoParam);
+                responseSuccess(seriesUid, iuid);
             } else {
                 System.out.println("Response Error:" + httpURLConnection.getResponseMessage());
             }
         } catch (Exception ex) {
-            Logger.getLogger(WadoRetrieveDelegate.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
-    private void constructWadoParam() {
-        if (serverModel.getWadoProtocol().equalsIgnoreCase("https")) {
-            wadoParam.setSecureQuery(true);
-        } else {
-            wadoParam.setSecureQuery(false);
-        }
-        wadoParam.setAeTitle(serverModel.getAeTitle());
-        wadoParam.setRemoteHostName(serverModel.getHostName());
-        wadoParam.setRemotePort(serverModel.getWadoPort());
-        wadoParam.setStudy(studyUid);
-        wadoParam.setSeries(seriesUid);
-        wadoParam.setObject(instanceUid);
-        wadoParam.setRetrieveTrasferSyntax(serverModel.getRetrieveTransferSyntax());
-    }
-
-    private void responseSuccess(WadoParam wadoParam) {
-        InputStream in = null;
-        try {
-            OutputStream out = null;
-            in = httpURLConnection.getInputStream();
-            Calendar today = Calendar.getInstance();
-            destinationPath = ApplicationContext.listenerDetails[2];
-            File struturedDestination = new File(destinationPath + File.separator + today.get(Calendar.YEAR) + File.separator + today.get(Calendar.MONTH) + File.separator + today.get(Calendar.DATE) + File.separator + studyUid + File.separator + seriesUid + File.separator + "Thumbnails");
-            String child[] = struturedDestination.list();
-            if (child == null) {
-                struturedDestination.mkdirs();
-            }
-            File storeLocation = new File(struturedDestination, wadoParam.getObject());
-            out = new FileOutputStream(storeLocation);
-            copy(in, out);
-        } catch (IOException ex) {
-            Logger.getLogger(WadoRetrieveDelegate.class.getName()).log(Level.SEVERE, null, ex);
-        } finally {
-            try {
-                in.close();
-            } catch (IOException ex) {
-                Logger.getLogger(WadoRetrieveDelegate.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            Logger.getLogger(ThumbnailWadoRetriever.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -147,5 +129,40 @@ public class WadoInstanceRetrieveDelegate {
                 out.write(buffer, 0, read);
             }
         }
+    }
+
+    private void responseSuccess(String seriesUid, String iuid) {
+        InputStream in = null;
+        try {
+            OutputStream out = null;
+            in = httpURLConnection.getInputStream();
+            Calendar today = Calendar.getInstance();
+            String destinationPath = ApplicationContext.listenerDetails[2];
+            File struturedDestination = new File(destinationPath + File.separator + today.get(Calendar.YEAR) + File.separator + today.get(Calendar.MONTH) + File.separator + today.get(Calendar.DATE) + File.separator + studyUid + File.separator + seriesUid + File.separator + "Thumbnails");
+            String child[] = struturedDestination.list();
+            if (child == null) {
+                struturedDestination.mkdirs();
+            }
+            File storeLocation = new File(struturedDestination, iuid);
+            out = new FileOutputStream(storeLocation);
+            copy(in, out);
+        } catch (IOException ex) {
+            Logger.getLogger(ThumbnailWadoRetriever.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            try {
+                in.close();
+            } catch (IOException ex) {
+                Logger.getLogger(ThumbnailWadoRetriever.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+
+    @Override
+    public void run() {
+        doDownload();
+    }
+
+    public void retrieveThumbnail(String iuid) {
+        retrieve(iuid.split(",")[0], iuid.split(",")[1]);
     }
 }

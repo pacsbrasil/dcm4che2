@@ -43,39 +43,34 @@ import in.raster.mayam.context.ApplicationContext;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
-import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
-import javax.imageio.stream.ImageInputStream;
-import javax.swing.ImageIcon;
-import org.dcm4che.dict.Tags;
-import org.dcm4che2.data.DicomObject;
-import org.dcm4che2.data.Tag;
-import org.dcm4che2.image.OverlayUtils;
-import org.dcm4che2.io.DicomInputStream;
 
 /**
  *
  * @author Devishree
  * @version 2.0
  */
-public class ConstructThumbnails {
+public class ConstructThumbnails extends Thread {
 
-    String studyInstanceUid, seriesInstanceUid, sopInstanceUid;
+    String studyInstanceUid, seriesInstanceUid;
     File parent;
-    BufferedImage currentBufferedImage = null;
-    int instanceNumber, maxThumbwidth = 75;
+    int maxThumbwidth = 75;
 
     public ConstructThumbnails(String studyInstanceUid, String seriesInstanceUid) {
         this.studyInstanceUid = studyInstanceUid;
         this.seriesInstanceUid = seriesInstanceUid;
+    }
+
+    @Override
+    public void run() {
         createThumbnails();
+        ApplicationContext.displayPreview(studyInstanceUid, seriesInstanceUid);
+        ApplicationContext.createVideoPreviews(studyInstanceUid);
     }
 
     private synchronized void createThumbnails() {
@@ -87,98 +82,43 @@ public class ConstructThumbnails {
                 parent.mkdirs();
             }
         } catch (IndexOutOfBoundsException exception) {
+            System.out.println("index out of bounds");
             //ignore
         }
 
         for (int j = 0; j < imageLocations.size(); j++) {
-            BufferedImage imageToWrite = createThumbnailImages(new File(imageLocations.get(j)));
-            String fileName;
-            fileName = sopInstanceUid;
-
+            BufferedImage image = DicomImageReader.readDicomFile(new File(imageLocations.get(j)));
+            BufferedImage imageToWrite = shrinkImage(image);
             try {
-                ImageIO.write(imageToWrite, "jpeg", new File(parent, fileName));
+                ImageIO.write(imageToWrite, "jpeg", new File(parent, imageLocations.get(j).substring(imageLocations.get(j).lastIndexOf(File.separator), imageLocations.get(j).length())));
             } catch (IOException ex) {
                 Logger.getLogger(ConstructThumbnails.class.getName()).log(Level.SEVERE, null, ex);
             } catch (ConcurrentModificationException cme) {
+                System.out.println("concurrent modification");
             } catch (IllegalArgumentException ile) {
+                System.out.println("illegal arg");
             } catch (NullPointerException npe) {
+                System.out.println("null ptr");
             }
-            ApplicationContext.databaseRef.updateThumbnailStatus(studyInstanceUid, seriesInstanceUid, sopInstanceUid);
         }
 
     }
 
-    /*
-     * Will reads the dicom file and constructs the Buffered Image
-     *
-     */
-    private BufferedImage createThumbnailImages(File file) {
-        Image loadedImage = null;
-        int width = 60, height = 60;
-        BufferedImage imageToReturn = null;
-        try {
-            ImageInputStream iis = ImageIO.createImageInputStream(file);
-            try {
-                Iterator iter = ImageIO.getImageReadersByFormatName("DICOM");
-                ImageReader reader = (ImageReader) iter.next();
-                reader.setInput(iis, false);
-                FileInputStream fis = new FileInputStream(file);
-                DicomInputStream dis = new DicomInputStream(fis);
-                DicomObject obj = dis.readDicomObject();
-                instanceNumber = obj.getInt(Tags.InstanceNumber);
-                if (reader.getNumImages(true) > 0) {
-                    currentBufferedImage = reader.read(0);
-                    String overlayData = obj.getString(Tag.OverlayData);
-                    if (overlayData != null && overlayData.length() > 0) {
-                        BufferedImage overlayImg = OverlayUtils.extractOverlay(obj, Tag.OverlayData, reader, "FFFFFF");
-                        combineImages(currentBufferedImage, overlayImg);
-                    }
-                }
-                int rows = obj.getInt(Tags.Rows);
-                int cols = obj.getInt(Tags.Columns);
-                if (rows != 0 && cols != 0) {
-                    if (rows < cols) {
-                        height = Math.min(rows, cols) * maxThumbwidth / Math.max(rows, cols);
-                        width = maxThumbwidth;
-                    } else {
-                        width = Math.min(rows, cols) * maxThumbwidth / Math.max(rows, cols);
-                        height = maxThumbwidth;
-                    }
-                }
-                sopInstanceUid = obj.getString(Tags.SOPInstanceUID);
-
-                if (reader.getNumImages(true) > 0) {
-                    GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
-                    imageToReturn = gc.createCompatibleImage(width, height);
-                    Graphics2D g2 = imageToReturn.createGraphics();
-                    g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-                    g2.drawImage(currentBufferedImage, 0, 0, imageToReturn.getWidth(), imageToReturn.getHeight(), null);
-                    g2.dispose();
-                }
-
-                if (obj.getString(Tags.SOPClassUID).equalsIgnoreCase("1.2.840.10008.5.1.4.1.1.104.1")) {
-                    loadedImage = new ImageIcon(getClass().getResource("/in/raster/mayam/form/images/pdficon.jpeg")).getImage();
-                    GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
-                    BufferedImage temp = gc.createCompatibleImage(loadedImage.getWidth(null), loadedImage.getHeight(null));
-                    Graphics2D g2 = temp.createGraphics();
-                    g2.drawImage(loadedImage, 0, 0, null);
-                    imageToReturn = temp;
-                }
-            } catch (Exception e) {
-            }
-        } catch (IOException ex) {
-            Logger.getLogger(ConstructThumbnails.class.getName()).log(Level.SEVERE, null, ex);
+    private BufferedImage shrinkImage(BufferedImage image) {
+        int width = 0, height = 0, maxThumbwidth = 75;
+        if (image.getWidth() > image.getHeight()) {
+            width = maxThumbwidth;
+            height = maxThumbwidth / Math.round(image.getWidth() / image.getHeight());
+        } else {
+            height = maxThumbwidth;
+            width = maxThumbwidth / Math.round(image.getHeight() / image.getWidth());
         }
+        GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
+        BufferedImage imageToReturn = gc.createCompatibleImage(width, height);
+        Graphics2D g2 = imageToReturn.createGraphics();
+        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g2.drawImage(image, 0, 0, imageToReturn.getWidth(), imageToReturn.getHeight(), null);
+        g2.dispose();
         return imageToReturn;
-    }
-
-    private void combineImages(BufferedImage currentBufferedImage, BufferedImage overlayImg) {
-        Graphics2D g2d = currentBufferedImage.createGraphics();
-        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                RenderingHints.VALUE_ANTIALIAS_ON);
-        g2d.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
-                RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
-        g2d.drawImage(overlayImg, 0, 0, null);
-        g2d.dispose();
     }
 }

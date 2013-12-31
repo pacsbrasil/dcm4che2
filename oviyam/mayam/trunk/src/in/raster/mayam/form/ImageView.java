@@ -40,14 +40,17 @@
 package in.raster.mayam.form;
 
 import in.raster.mayam.context.ApplicationContext;
-import in.raster.mayam.models.SeriesDisplayModel;
+import in.raster.mayam.models.SeriesAnnotations;
+import in.raster.mayam.models.StudyAnnotation;
 import java.awt.Toolkit;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
@@ -64,18 +67,17 @@ import uk.co.caprica.vlcj.component.EmbeddedMediaPlayerComponent;
  */
 public class ImageView extends javax.swing.JFrame {
 
-    public ArrayList<SeriesDisplayModel> selectedSeriesDisplays = null;//Contains all studies opened in viewer
-    public int selectedStudy = 0;
+    public HashMap<String, StudyAnnotation> studyAnnotaions = null;
 
     /**
      * Creates new form ImageView
      */
     public ImageView() {
         initComponents();
+        studyAnnotaions = new HashMap<String, StudyAnnotation>(0, 1);
         imageToolbar.addKeyEventToViewer();
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         applyLocale();
-        selectedSeriesDisplays = new ArrayList<SeriesDisplayModel>();
         jTabbedPane1.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent ce) {
@@ -84,22 +86,16 @@ public class ImageView extends javax.swing.JFrame {
                         imageToolbar.disableImageTools();
                         ApplicationContext.layeredCanvas = null;
                         ApplicationContext.selectedPanel = null;
-                        for (int i = 0; i < selectedSeriesDisplays.size(); i++) {
-                            if (selectedSeriesDisplays.get(i).getTabIndex() == ApplicationContext.tabbedPane.getSelectedIndex()) {
-                                selectedStudy = i;
-                                break;
-                            }
-                        }
                     } else {
                         imageToolbar.enableImageTools();
-                        for (int i = 0; i < selectedSeriesDisplays.size(); i++) {
-                            if (selectedSeriesDisplays.get(i).getTabIndex() == ApplicationContext.tabbedPane.getSelectedIndex()) {
-                                selectedStudy = i;
-                                ApplicationContext.layeredCanvas = null;
-                                ApplicationContext.layeredCanvas = selectedSeriesDisplays.get(i).getLastSelectedCanvas();
-                                ApplicationContext.selectedPanel = ((JPanel) ApplicationContext.layeredCanvas.getParent());
-                                ApplicationContext.layeredCanvas.getCanvas().setSelectionColoring();
-                                break;
+                        JPanel comp = ((JPanel) ((JSplitPane) ApplicationContext.tabbedPane.getSelectedComponent()).getRightComponent());
+                        for (int i = 0; i < comp.getComponentCount(); i++) {
+                            JPanel seriesLevelPanel = (JPanel) comp.getComponent(i);
+                            for (int j = 0; j < seriesLevelPanel.getComponentCount(); j++) {
+                                if (((LayeredCanvas) seriesLevelPanel.getComponent(j)).canvas.focusGained) {
+                                    ApplicationContext.layeredCanvas = ((LayeredCanvas) seriesLevelPanel.getComponent(j));
+                                    break;
+                                }
                             }
                         }
                     }
@@ -210,6 +206,7 @@ public class ImageView extends javax.swing.JFrame {
                         }
                     }
                 }
+                writeToFile(panel.getName(), ((LayeredCanvas) ((JPanel) panel.getComponent(0)).getComponent(0)).imgpanel.getSeriesLocation());
             } else {
                 ((VideoPanel) panel).stopTimer();
                 EmbeddedMediaPlayerComponent mediaPlayerComp = (EmbeddedMediaPlayerComponent) ((JPanel) panel.getComponent(0)).getComponent(0);
@@ -220,28 +217,26 @@ public class ImageView extends javax.swing.JFrame {
                 panel.removeAll();
             }
         }
-        for (int i = 0; i < selectedSeriesDisplays.size(); i++) {
-            writeToFile(selectedSeriesDisplays.get(i));
-        }
     }
 
-    public void writeToFile(SeriesDisplayModel annotationInfo) {
-        if (annotationInfo.getStudyDir() != null) {
+    public void writeToFile(String studyUid, String fileLoc) {
+        if (fileLoc.contains(ApplicationContext.getAppDirectory())) {
             FileOutputStream fos = null;
             ObjectOutputStream oos = null;
             try {
-                File storeFile = new File(annotationInfo.getStudyDir(), "info.ser");
-                fos = new FileOutputStream(storeFile);
+                String storeLoc = fileLoc.substring(0, fileLoc.lastIndexOf(File.separator)) + File.separator + "info.ser";
+                fos = new FileOutputStream(storeLoc);
                 oos = new ObjectOutputStream(fos);
-                oos.writeObject(annotationInfo.getStudyAnnotation());
+                oos.writeObject(getStudyAnnotaion(studyUid));
             } catch (FileNotFoundException ex) {
                 //ignore
             } catch (IOException ex) {
-                Logger.getLogger(ImageView.class.getName()).log(Level.SEVERE, null, ex);
+                //ignore
             } finally {
                 try {
-                    if (fos != null) {
+                    if (fos != null && oos != null) {
                         fos.close();
+                        oos.close();
                     }
                 } catch (IOException ex) {
                     Logger.getLogger(ImageView.class.getName()).log(Level.SEVERE, null, ex);
@@ -253,7 +248,7 @@ public class ImageView extends javax.swing.JFrame {
     public void onWindowClose() {
         if (ApplicationContext.tabbedPane != null) {
             saveAnnotations();
-            selectedSeriesDisplays = null; //To clear the memory
+            studyAnnotaions = null;
             ImagePanel.setDisplayScout(false);
             imageToolbar.resetCineTimer();
             imageToolbar = null;
@@ -263,5 +258,38 @@ public class ImageView extends javax.swing.JFrame {
                 System.exit(0);
             }
         }
+    }
+
+    public void readAnnotaionDetails(String studyInstanceUid, File annotaionInfoLoc) {
+        try {
+            FileInputStream fis = new FileInputStream(annotaionInfoLoc + File.separator + "info.ser");
+            ObjectInputStream ois = new ObjectInputStream(fis);
+            try {
+                studyAnnotaions.put(studyInstanceUid, (StudyAnnotation) ois.readObject());
+            } catch (ClassNotFoundException ex) {
+                System.out.println("Class not found");
+            }
+        } catch (IOException ex) {
+//            System.out.println("IOE : " + ex.getMessage());
+            //ignore
+        }
+    }
+
+    public SeriesAnnotations getSeriesAnnotation(String studyInstanceUID, String seriesInstanceUID) {
+        if (studyAnnotaions.get(studyInstanceUID) == null) {
+            studyAnnotaions.put(studyInstanceUID, new StudyAnnotation());
+        }
+        if (studyAnnotaions.get(studyInstanceUID).getSeriesAnnotation(seriesInstanceUID) == null) {
+            studyAnnotaions.get(studyInstanceUID).putSeriesAnnotation(seriesInstanceUID, new SeriesAnnotations(seriesInstanceUID));
+        }
+        return studyAnnotaions.get(studyInstanceUID).getSeriesAnnotation(seriesInstanceUID);
+    }
+
+    public void putSeriesAnnotation(String studyInstanceUID, String seriesInstanceUID, SeriesAnnotations seriesAnnotaion) {
+        studyAnnotaions.get(studyInstanceUID).putSeriesAnnotation(seriesInstanceUID, seriesAnnotaion);
+    }
+
+    public StudyAnnotation getStudyAnnotaion(String studyUid) {
+        return studyAnnotaions.get(studyUid);
     }
 }

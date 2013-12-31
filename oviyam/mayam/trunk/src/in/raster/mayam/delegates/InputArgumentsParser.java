@@ -141,7 +141,7 @@ public class InputArgumentsParser {
 
             OptionBuilder.withArgName("RetrieveType");
             OptionBuilder.hasArg();
-            OptionBuilder.withDescription("Specifies the retrieve method C-Move/C-GET/WADO");
+            OptionBuilder.withDescription("Specifies the retrieve method C-MOVE/C-GET/WADO");
             opts.addOption(OptionBuilder.create("RetrieveType"));
 
             opts.addOption("h", "help", false, "Prints help");

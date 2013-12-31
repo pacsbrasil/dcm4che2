@@ -38,7 +38,6 @@
 package in.raster.mayam.util.core;
 
 import in.raster.mayam.context.ApplicationContext;
-import in.raster.mayam.delegates.InfoUpdateDelegate;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -358,7 +357,7 @@ public class DcmQR {
     private char[] keyPassword;
     private String trustStoreURL = "resource:tls/mesa_certs.jks";
     private char[] trustStorePassword = SECRET;
-    InfoUpdateDelegate infoUpdateDelegate = new InfoUpdateDelegate();
+//    InfoUpdateDelegate infoUpdateDelegate = new InfoUpdateDelegate();
 
     public DcmQR(String name) {
         device = new Device(name);
@@ -1194,10 +1193,10 @@ public class DcmQR {
                     long t4 = System.currentTimeMillis();
                     LOG.info("Retrieved {} objects (warning: {}, failed: {}) in {}s",
                             new Object[]{
-                                Integer.valueOf(dcmqr.getTotalRetrieved()),
-                                Integer.valueOf(dcmqr.getWarning()),
-                                Integer.valueOf(dcmqr.getFailed()),
-                                Float.valueOf((t4 - t2) / 1000f)});
+                        Integer.valueOf(dcmqr.getTotalRetrieved()),
+                        Integer.valueOf(dcmqr.getWarning()),
+                        Integer.valueOf(dcmqr.getFailed()),
+                        Float.valueOf((t4 - t2) / 1000f)});
                 }
                 if (repeat == 0 || closeAssoc) {
                     try {
@@ -1325,7 +1324,6 @@ public class DcmQR {
             cuids[i++] = tc.getSopClass();
         }
         return new StorageService(cuids) {
-
             @Override
             protected void onCStoreRQ(Association as, int pcid, DicomObject rq,
                     PDVInputStream dataStream, String tsuid, DicomObject rsp)
@@ -1356,7 +1354,8 @@ public class DcmQR {
                         DicomOutputStream dos = new DicomOutputStream(bos);
                         dos.writeFileMetaInformation(fmi);
                         dos.writeDataset(data, tsuid);
-                        infoUpdateDelegate.updateFileDetails(file);
+//                        infoUpdateDelegate.updateFileDetails(file);
+                        ApplicationContext.databaseRef.writeDatasetInfo(data, false, file.getAbsolutePath(), false);
                         dos.close();
                     } catch (IOException e) {
                         throw new DicomServiceException(rq, Status.ProcessingFailure, e.getMessage());
@@ -1508,11 +1507,11 @@ public class DcmQR {
                 upperLevelUIDs.get(i).copyTo(keys);
                 LOG.info("Send Query Request #{}/{} using {}:\n{}",
                         new Object[]{
-                            Integer.valueOf(i + 1),
-                            Integer.valueOf(n),
-                            UIDDictionary.getDictionary().prompt(cuid),
-                            keys
-                        });
+                    Integer.valueOf(i + 1),
+                    Integer.valueOf(n),
+                    UIDDictionary.getDictionary().prompt(cuid),
+                    keys
+                });
                 rspList.add(assoc.cfind(cuid, priority, keys, tsuid, cancelAfter));
             }
             for (int i = 0, n = rspList.size(); i < n; i++) {
@@ -1733,7 +1732,6 @@ public class DcmQR {
         assoc.waitForDimseRSP();
     }
     private final DimseRSPHandler rspHandler = new DimseRSPHandler() {
-
         @Override
         public void onDimseRSP(Association as, DicomObject cmd,
                 DicomObject data) {

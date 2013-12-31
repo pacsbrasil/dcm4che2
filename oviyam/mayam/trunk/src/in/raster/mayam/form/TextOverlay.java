@@ -371,7 +371,7 @@ public class TextOverlay extends javax.swing.JPanel {
             setTextOverlayToNull();
         }
         if (firstTime) {
-            this.setSize(layeredCanvas.getSize().width, layeredCanvas.getSize().height);
+            this.setSize(layeredCanvas.getSize().width - 5, layeredCanvas.getSize().height - 5);
             firstTime = false;
             setTextOverlayToNull();
             repaint();

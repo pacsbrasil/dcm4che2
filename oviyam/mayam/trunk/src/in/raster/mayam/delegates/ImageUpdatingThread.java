@@ -39,37 +39,55 @@
  * ***** END LICENSE BLOCK ***** */
 package in.raster.mayam.delegates;
 
-import in.raster.mayam.context.ApplicationContext;
-import java.util.ArrayList;
-import java.util.TimerTask;
-import javax.swing.SwingUtilities;
+import in.raster.mayam.form.ImagePanel;
+import java.io.File;
 
 /**
  *
  * @author Devishree
- * @version 2.0
+ * @version 2.1
  */
-public class LocalCineTimer extends TimerTask {
+public class ImageUpdatingThread extends Thread {
+
+    private ImagePanel imgPanelRef = null;
+    private int i = -1;
+    volatile private boolean terminate = false;
+    private boolean isForward = true;
+
+    public ImageUpdatingThread(ImagePanel imgPanel) {
+        this.imgPanelRef = imgPanel;
+        this.setName("Updating thread : " + imgPanelRef.getTotalInstance());
+    }
 
     @Override
     public void run() {
-        if (ApplicationContext.noOfInstancesReceived == ApplicationContext.lastInstanceCount) {
-            ApplicationContext.lastInstanceCount = 0;
-            ApplicationContext.noOfInstancesReceived = 0;
-            for (int i = 0; i < ApplicationContext.studiesInProgress.size(); i++) {
-                ApplicationContext.databaseRef.updateDownloadStatus(ApplicationContext.studiesInProgress.get(i));
+        do {
+            if (isForward && i < imgPanelRef.getTotalInstance() - 1) {
+                i++;
+                imgPanelRef.buffer.put(i, DicomImageReader.readDicomFile(new File(imgPanelRef.getFileLocation(i))));
+//                System.out.println("Forward I : " + i);
+            } else if (!isForward && i > 0) {
+                i--;
+//                System.out.println("Backward I : " + i);
+                imgPanelRef.buffer.put(i, DicomImageReader.readDicomFile(new File(imgPanelRef.getFileLocation(i))));
+            } else if (this.getState().equals(Thread.State.RUNNABLE)) {
+                imgPanelRef.buffer.makeMeWait();
             }
-            ApplicationContext.studiesInProgress = new ArrayList<String>();
-            ApplicationContext.timer.cancel();
-        } else {
-            ApplicationContext.lastInstanceCount = ApplicationContext.noOfInstancesReceived;
-            SwingUtilities.invokeLater(new Runnable() {
+        } while (!terminate);
+//        System.out.println("terminated");
+    }
 
-                @Override
-                public void run() {
-                    ApplicationContext.mainScreenObj.refreshLocalDB();
-                }
-            });
-        }
+    public void setUpdateFrom(int updateFrom, boolean isForwardDirection) {
+        i = updateFrom;
+        isForward = isForwardDirection;
+//        System.out.println("I : " + i + ", Dir : " + isForward);
+    }
+
+    public void terminateThread() {
+        terminate = true;
+    }
+
+    public void setDirection(boolean isForwardDirection) {
+        isForward = isForwardDirection;
     }
 }

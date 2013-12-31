@@ -39,8 +39,12 @@
  * ***** END LICENSE BLOCK ***** */
 package in.raster.mayam.models;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 
@@ -82,14 +86,29 @@ public class Series {
     }
 
     public Series(Dataset dataset) {
+        SimpleDateFormat timeFormatter = new SimpleDateFormat("hh:mm:ss");
+        SimpleDateFormat timeParser = new SimpleDateFormat("hhmmss");
+        SimpleDateFormat dateFormatter = new SimpleDateFormat("dd/MM/yyyy");
+        SimpleDateFormat dateParser = new SimpleDateFormat("yyyyMMdd");
         this.SeriesInstanceUID = dataset.getString(Tags.SeriesInstanceUID);
         this.StudyInstanceUID = dataset.getString(Tags.StudyInstanceUID);
         this.SeriesNumber = dataset.getString(Tags.SeriesNumber) != null ? dataset.getString(Tags.SeriesNumber) : "";
         this.Modality = dataset.getString(Tags.Modality);
         this.bodyPartExamined = dataset.getString(Tags.BodyPartExamined);
         this.seriesDesc = dataset.getString(Tags.SeriesDescription) != null ? dataset.getString(Tags.SeriesDescription) : "";
-        seriesDate = dataset.getString(Tags.SeriesDate) != null ? dataset.getString(Tags.SeriesDate) : "";
-        seriesTime = dataset.getString(Tags.SeriesTime) != null ? dataset.getString(Tags.SeriesTime) : "";
+        try {
+            seriesTime = timeFormatter.format(timeParser.parse(dataset.getString(Tags.SeriesTime)));
+        } catch (Exception ex) {
+            seriesTime = "unknown";
+        }
+        try {
+            seriesDate = dateFormatter.format(dateParser.parse(dataset.getString(Tags.SeriesDate)));
+        } catch (Exception ex) {
+            seriesDate = "unknown";
+        }
+
+//        seriesDate = dataset.getString(Tags.SeriesDate) != null ? dataset.getString(Tags.SeriesDate) : "";
+//        seriesTime = dataset.getString(Tags.SeriesTime) != null ? dataset.getString(Tags.SeriesTime) : "";
         this.institutionName = dataset.getString(Tags.InstitutionName) != null ? dataset.getString(Tags.InstitutionName) : "";
         this.seriesRelatedInstance = dataset.getInteger(Tags.NumberOfSeriesRelatedInstances);
     }

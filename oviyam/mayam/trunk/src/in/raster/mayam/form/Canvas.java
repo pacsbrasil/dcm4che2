@@ -56,7 +56,7 @@ import javax.swing.JPanel;
  */
 public class Canvas extends javax.swing.JPanel {
 
-    /**
+        /**
      * Creates new form DateFormatPanel
      */
     public boolean startPan = false;
@@ -118,7 +118,7 @@ public class Canvas extends javax.swing.JPanel {
 
     @Override
     public void paint(Graphics g) {
-        super.paint(g);
+       super.paint(g);
         if (firstTime) {
             setSize(layeredCanvas.getSize().width, layeredCanvas.getSize().height);
             firstTime = false;
@@ -261,7 +261,7 @@ public class Canvas extends javax.swing.JPanel {
     /**
      * This routine used to set the selection coloring.
      */
-    public void setSelectionColoring() {
+     public void setSelectionColoring() {
         focusGained = true;
         repaint();
     }
@@ -379,17 +379,15 @@ public class Canvas extends javax.swing.JPanel {
             String iuid = ApplicationContext.layeredCanvas.imgpanel.getInstanceUID();
             ImagePanel imgPanel = (ImagePanel) this.getComponent(0);
             if (skip || !seriesUid.equals(imgPanel.getSeriesUID()) || imgPanel.isMultiFrame() || !iuid.equals(imgPanel.getInstanceUID())) {
-                if (ApplicationContext.layeredCanvas != null) {
-                    if (ApplicationContext.layeredCanvas.getCanvas() != null) {
-                        ApplicationContext.layeredCanvas.getCanvas().setNoSelectionColoring();
-                    } else {
-                        ApplicationContext.layeredCanvas.setNoSelectionColoring();
-                    }
+                if (ApplicationContext.layeredCanvas != null && ApplicationContext.layeredCanvas.canvas != null) {
+                    ApplicationContext.layeredCanvas.getCanvas().setNoSelectionColoring();
+                } else {
+                    ApplicationContext.layeredCanvas.setNoSelectionColoring();
                 }
                 ApplicationContext.layeredCanvas = null;
                 ApplicationContext.layeredCanvas = layeredCanvas;
                 ApplicationContext.selectedPanel = (JPanel) layeredCanvas.getParent();
-                ApplicationContext.layeredCanvas.getCanvas().setSelectionColoring();
+                setSelectionColoring();
                 if (ApplicationContext.isImageViewExist()) {
                     ApplicationContext.imgView.getImageToolbar().refreshToolsDisplay();
                 }
@@ -397,16 +395,9 @@ public class Canvas extends javax.swing.JPanel {
                     LocalizerDelegate localizer = new LocalizerDelegate(false);
                     localizer.start();
                 }
-
-                for (int i = 0; i < ApplicationContext.imgView.selectedSeriesDisplays.size(); i++) {
-                    if (ApplicationContext.imgView.selectedSeriesDisplays.get(i).getTabIndex() == ApplicationContext.tabbedPane.getSelectedIndex()) {
-                        ApplicationContext.imgView.selectedSeriesDisplays.get(i).setLastSelectedCanvas(ApplicationContext.layeredCanvas);
-                        break;
-                    }
-                }
             }
+
         } catch (ArrayIndexOutOfBoundsException ex) {
-            System.out.println("exception[setSelection] : " + ex.getMessage());
             //ignore : No of components differ in Jdk 1.7
         }
     }

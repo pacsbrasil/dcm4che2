@@ -37,59 +37,43 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package in.raster.mayam.models;
+package in.raster.mayam.delegates;
+
+import in.raster.mayam.context.ApplicationContext;
+import java.io.File;
 
 /**
  *
  * @author Devishree
- * @version 2.0
+ * @version 2.1
  */
-public class InstanceDisplayModel {
+public class TileLayoutThread extends Thread {
 
-    String serUid;
-    String iuid;
-    int instanceNo;
-    boolean isVideo;
+    int i = -1;
+    boolean isForward = true;
+    boolean terminate = false;
 
-    public InstanceDisplayModel(String serUid, String iuid, int instanceNo, boolean isVideo) {
-        this.serUid = serUid;
-        this.iuid = iuid;
-        this.instanceNo = instanceNo;
-        this.isVideo = isVideo;
+    public TileLayoutThread() {
     }
 
-    public InstanceDisplayModel() {
+    @Override
+    public void run() {
+        do {
+            i++;
+            if (i < 0 || i > ApplicationContext.layeredCanvas.imgpanel.getTotalInstance() - 1) {
+                ApplicationContext.buffer.makeMeWait1();
+            } else if (!ApplicationContext.buffer.isImageExist(i)) {
+                ApplicationContext.buffer.put(i, DicomImageReader.readDicomFile(new File(ApplicationContext.layeredCanvas.imgpanel.getFileLocation(i))));
+            }
+        } while (!terminate);
+        System.out.println("tile termination");
     }
 
-    public int getInstanceNo() {
-        return instanceNo;
+    public void setUpdateFrom(int updateFrom) {
+        i = updateFrom;
     }
 
-    public void setInstanceNo(int instanceNo) {
-        this.instanceNo = instanceNo;
-    }
-
-    public String getIuid() {
-        return iuid;
-    }
-
-    public void setIuid(String iuid) {
-        this.iuid = iuid;
-    }
-
-    public String getSerUid() {
-        return serUid;
-    }
-
-    public void setSerUid(String serUid) {
-        this.serUid = serUid;
-    }
-
-    public boolean isIsVideo() {
-        return isVideo;
-    }
-
-    public void setIsVideo(boolean isVideo) {
-        this.isVideo = isVideo;
+    public void terminateThread() {
+        terminate = true;
     }
 }

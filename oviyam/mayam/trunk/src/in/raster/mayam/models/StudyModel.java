@@ -39,6 +39,10 @@
  * ***** END LICENSE BLOCK ***** */
 package in.raster.mayam.models;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 
@@ -52,9 +56,12 @@ public class StudyModel {
     private String patientId;
     private String patientName;
     private String dob;
+    private String sex;
     private String accessionNo;
     private String studyDate;
     private String studyTime;
+    private String referredBy;
+    private String retAET;
     private String studyDescription;
     private String modalitiesInStudy;
     private String studyUID;
@@ -82,6 +89,10 @@ public class StudyModel {
     }
 
     public StudyModel(Dataset dataSet) {
+        SimpleDateFormat dateFormatter = new SimpleDateFormat("dd/MM/yyyy");
+        SimpleDateFormat dateParser = new SimpleDateFormat("yyyyMMdd");
+        SimpleDateFormat timeFormatter = new SimpleDateFormat("hh:mm:ss");
+        SimpleDateFormat timeParser = new SimpleDateFormat("hhmmss");
         studyUID = dataSet.getString(Tags.StudyInstanceUID);
         studyDescription = dataSet.getString(Tags.StudyDescription) != null ? dataSet.getString(Tags.StudyDescription) : "unknown";
         studyDate = dataSet.getString(Tags.StudyDate) != null ? dataSet.getString(Tags.StudyDate) : "unknown";
@@ -100,9 +111,22 @@ public class StudyModel {
         patientName = dataSet.getString(Tags.PatientName) != null ? dataSet.getString(Tags.PatientName) : "unknown";
         patientId = dataSet.getString(Tags.PatientID) != null ? dataSet.getString(Tags.PatientID) : "unknown";
         dob = dataSet.getString(Tags.PatientBirthDate) != null ? dataSet.getString(Tags.PatientBirthDate) : "unknown";
+        sex = dataSet.getString(Tags.PatientSex) != null ? dataSet.getString(Tags.PatientSex) : "unknown";
+        referredBy = dataSet.getString(Tags.ReferringPhysicianName) != null ? dataSet.getString(Tags.ReferringPhysicianName) : "unknown";
+        retAET = dataSet.getString(Tags.RetrieveAET) != null ? dataSet.getString(Tags.RetrieveAET) : "unknown";
         accessionNo = dataSet.getString(Tags.AccessionNumber) != null ? dataSet.getString(Tags.AccessionNumber) : "unknown";
         studyLevelInstances = dataSet.getString(Tags.NumberOfStudyRelatedInstances) != null ? dataSet.getString(Tags.NumberOfStudyRelatedInstances) : "unknown";
         numberOfSeries = dataSet.getString(Tags.NumberOfStudyRelatedSeries) != null ? dataSet.getString(Tags.NumberOfStudyRelatedSeries) : "unknown";
+        try {
+            studyDate = dateFormatter.format(dateParser.parse(dataSet.getString(Tags.StudyDate)));
+        } catch (ParseException ex) {
+            studyDate = "unknown";
+        }
+        try {
+            studyTime = timeFormatter.format(timeParser.parse(dataSet.getString(Tags.StudyTime)));
+        } catch (ParseException ex) {
+            studyTime = "unknown";
+        }
     }
 
     public String getAccessionNo() {
@@ -191,5 +215,29 @@ public class StudyModel {
 
     public void setStudyTime(String studyTime) {
         this.studyTime = studyTime;
+    }
+
+    public String getSex() {
+        return sex;
+    }
+
+    public void setSex(String sex) {
+        this.sex = sex;
+    }
+
+    public String getReferredBy() {
+        return referredBy;
+    }
+
+    public void setReferredBy(String referredBy) {
+        this.referredBy = referredBy;
+    }
+
+    public String getRetAET() {
+        return retAET;
+    }
+
+    public void setRetAET(String retAET) {
+        this.retAET = retAET;
     }
 }

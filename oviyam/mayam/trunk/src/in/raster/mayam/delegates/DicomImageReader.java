@@ -37,55 +37,56 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-package in.raster.mayam.form;
+package in.raster.mayam.delegates;
 
-import java.awt.Dimension;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
-import javax.swing.SwingConstants;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
+import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.Tag;
+import org.dcm4che2.image.OverlayUtils;
+import org.dcm4che2.io.DicomInputStream;
 
 /**
  *
  * @author Devishree
- * @version 2.0
+ * @version 2.1
  */
-public class Thumbnail extends JLabel {
+public class DicomImageReader {
 
-    public Thumbnail(String iuid) {
-        setPreferredSize(new Dimension(75, 75));
-        setName(iuid);
-        setFont(new java.awt.Font("Times", 0, 10));
-        setHorizontalAlignment(SwingConstants.CENTER);
-    }
+    public static BufferedImage readDicomFile(File dicomFile) {
 
-    public void setImage(BufferedImage image) {
+        ImageReader reader = (ImageReader) ImageIO.getImageReadersByFormatName("DICOM").next();
+        BufferedImage tempImage = null;
+        ImageInputStream iis = null;
         try {
-            setIcon(new ImageIcon(image));
-        } catch (NullPointerException ex) {
-            setDefaultImage();
-        }
-    }
-
-    public void readImage(String dest) {
-        try {
-            setIcon(new ImageIcon(ImageIO.read(new File(dest))));
+            iis = ImageIO.createImageInputStream(dicomFile);
+            reader.setInput(iis, false);
+            tempImage = reader.read(0);
+            DicomObject obj = new DicomInputStream(dicomFile).readDicomObject();
+            String overlayData = obj.getString(Tag.OverlayData);
+            if (overlayData != null && overlayData.length() > 0) {
+                tempImage = combineImages(tempImage, OverlayUtils.extractOverlay(obj, Tag.OverlayData, reader, "FFFFFF"));
+            }
         } catch (IOException ex) {
-            setDefaultImage();
+            Logger.getLogger(DicomImageReader.class.getName()).log(Level.SEVERE, null, ex);
         }
-
+        return tempImage;
     }
 
-    public void setVideoImage() {
-        setIcon(new ImageIcon(getClass().getResource("/in/raster/mayam/form/images/video.png")));
-    }
-
-    public void setDefaultImage() {
-        setIcon(new ImageIcon(getClass().getResource("/in/raster/mayam/form/images/blank.jpg")));
+    private static BufferedImage combineImages(BufferedImage tempImage, BufferedImage overlayImg) {
+        Graphics2D g2d = (Graphics2D) tempImage.getGraphics();
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2d.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
+        g2d.drawImage(overlayImg, 0, 0, null);
+        g2d.dispose();
+        return tempImage;
     }
 }

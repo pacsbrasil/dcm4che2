@@ -40,12 +40,14 @@
 package in.raster.mayam.listeners;
 
 import in.raster.mayam.context.ApplicationContext;
-import in.raster.mayam.delegates.CGetDelegate;
-import in.raster.mayam.delegates.ConstructThumbnails;
 import in.raster.mayam.delegates.QueryInstanceService;
+import in.raster.mayam.delegates.SeriesRetriever;
+import in.raster.mayam.delegates.ThumbnailWadoRetriever;
+import in.raster.mayam.delegates.WadoRetriever;
 import in.raster.mayam.form.ImagePreviewPanel;
 import in.raster.mayam.form.PreviewPanel;
 import in.raster.mayam.form.Thumbnail;
+import in.raster.mayam.form.ViewerPreviewPanel;
 import in.raster.mayam.models.*;
 import in.raster.mayam.models.treetable.TreeTable;
 import in.raster.mayam.models.treetable.TreeTableModelAdapter;
@@ -55,32 +57,16 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
-import java.io.IOException;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.imageio.ImageIO;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpression;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 import org.dcm4che2.data.UID;
-import org.dcm4che2.tool.dcm2xml.Dcm2Xml;
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 /**
  *
@@ -88,28 +74,23 @@ import org.xml.sax.SAXException;
  * @version 2.0
  */
 public class TreeTableMouseListener extends MouseAdapter {
-
-    //To format the display of date
-    DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
-    DateFormat timeFormat = new SimpleDateFormat("hhmmss");
-    DateFormat displayDateFormat = new SimpleDateFormat("dd/MM/yyyy");
-    DateFormat displayTimeFormat = new SimpleDateFormat("hh:mm:ss");
     //New variables
+
     private TreeTable treeTable = null;
     private ImagePreviewPanel imagePreviewPanel = null;
     private boolean wasDoubleClick = false;
-    String retrieveType;
     QueryInstanceService queryInstanceService = new QueryInstanceService();
     StudyModel studyDetails = null;
-    int pos = 0, size = 0;
     ArrayList<Series> allSeriesOfStudy = null;
-    ArrayList<InstanceDisplayModel> instanceModels = null;
-    InstanceDisplayModel[] threeInstances = null;
-    Thumbnail[] threeThumbnails = null;
     String[] patientInfo;
     Timer timer;
     ServerModel serverDetails = null;
     ArrayList<String> sopUidList = null;
+    HashMap<String, HashSet<String>> instances = null;
+    HashSet<String> videoInstances = null;
+    HashSet<String> multiframesInstances = null;
+    ExecutorService executor = Executors.newFixedThreadPool(3);
+    int pos = 0, size = 0;
 
     public TreeTableMouseListener(TreeTable treeTable) {
         this.treeTable = treeTable;
@@ -125,25 +106,31 @@ public class TreeTableMouseListener extends MouseAdapter {
         try {
             studyDetails = (StudyModel) ((TreeTableModelAdapter) treeTable.getModel()).getValueAt(treeTable.rowAtPoint(e.getPoint()), 11);
             allSeriesOfStudy = (ArrayList<Series>) ((TreeTableModelAdapter) treeTable.getModel()).getValueAt(treeTable.getSelectedRow(), 12);
-            patientInfo = constructPatientInfo();
+            patientInfo = constructPatientInfo(treeTable.rowAtPoint(e.getPoint()));
             setPatientInfo();
             serverDetails = ApplicationContext.databaseRef.getServerDetails(ApplicationContext.currentServer);
             if (e.getClickCount() == 2) {
                 wasDoubleClick = true;
                 if (ApplicationContext.isLocal) {
-                    String filePath = ApplicationContext.databaseRef.getFirstInstanceLocation(studyDetails.getStudyUID(), allSeriesOfStudy.get(0).getSeriesInstanceUID());
-                    if (!allSeriesOfStudy.get(0).isVideo()) {
-                        ApplicationContext.openImageView(filePath, studyDetails.getStudyUID(), patientInfo, 0);
-                    } else {
-                        ApplicationContext.openVideo(filePath, studyDetails.getStudyUID(), patientInfo);
-                    }
-                    showPreviews();
+                    createPreviewLocal();
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            String filePath = ApplicationContext.databaseRef.getFirstInstanceLocation(studyDetails.getStudyUID(), allSeriesOfStudy.get(0).getSeriesInstanceUID());
+                            ApplicationContext.createLayeredCanvas(filePath, studyDetails.getStudyUID(), 0, false);
+                            ApplicationContext.displayAllPreviews();
+                            ApplicationContext.createVideoPreviews(studyDetails.getStudyUID());
+                            ApplicationContext.setCorrespondingPreviews();
+                            ApplicationContext.setAllSeriesIdentification(studyDetails.getStudyUID());
+                            ApplicationContext.imgView.getImageToolbar().enableMultiSeriesTools();
+                            showPreviews();
+                        }
+                    });
                 } else {
                     CursorController.createListener(ApplicationContext.mainScreenObj, previewsThread).run();
                     Runnable retrieveThread = new Runnable() {
                         @Override
                         public void run() {
-                            retrieveType = ApplicationContext.databaseRef.getRetrieveType(ApplicationContext.currentServer);
                             retrieveStudyToLocal();
                         }
                     };
@@ -151,148 +138,126 @@ public class TreeTableMouseListener extends MouseAdapter {
                 }
             } else {
                 if (imagePreviewPanel != null) {
-                    Integer timeInterval = (Integer) Toolkit.getDefaultToolkit().getDesktopProperty("awt.multiClickInterval");
-                    timer = new Timer(timeInterval, CursorController.createListener(ApplicationContext.mainScreenObj, singleClickPreviewListener));
-                    timer.setRepeats(false);
-                    timer.start();
+                    if (treeTable.getSelectedRows().length > 1) {
+                        imagePreviewPanel.resetImagePreviewPanel();
+                    } else {
+                        Integer timeInterval = (Integer) Toolkit.getDefaultToolkit().getDesktopProperty("awt.multiClickInterval");
+                        timer = new Timer(timeInterval, CursorController.createListener(ApplicationContext.mainScreenObj, singleClickPreviewListener));
+                        timer.setRepeats(false);
+                        timer.start();
+                    }
                 }
             }
         } catch (NullPointerException npe) {
+            if (treeTable.getSelectedRows().length > 1) {
+                imagePreviewPanel.resetImagePreviewPanel();
+            } else {
+                int i = treeTable.getSelectedRow();
+                String studyUid = (String) ((TreeTableModelAdapter) ApplicationContext.currentTreeTable.getModel()).getValueAt(i, 10);
+                while (studyUid == null) {
+                    i--;
+                    studyUid = (String) ((TreeTableModelAdapter) ApplicationContext.currentTreeTable.getModel()).getValueAt(i, 10);
+                }
+                if (!studyUid.equals(imagePreviewPanel.getPreviousStudyUid())) {
+                    imagePreviewPanel.resetImagePreviewPanel();
+                }
+            }
             //Ignore - Null pointer exception occurs when user clicks the series information
         }
     }
 
-    public String[] constructPatientInfo() {
+    public String[] constructPatientInfo(int row) {
         String labelInfo[] = new String[5];
         pos = 0;
         size = 0;
         labelInfo[0] = studyDetails.getPatientName();
         labelInfo[1] = studyDetails.getPatientId();
         labelInfo[2] = studyDetails.getStudyDescription();
-        Date date = null, time = null;
-        try {
-            date = dateFormat.parse(studyDetails.getStudyDate().replace("-", ""));
-            time = timeFormat.parse(studyDetails.getStudyTime().replace(":", ""));
-        } catch (ParseException ex) {
-            // ignore the parse exception
-        }
-        try {
-            labelInfo[3] = displayDateFormat.format(date) + " " + displayTimeFormat.format(time);
-        } catch (NullPointerException nullPtr) {
-            labelInfo[3] = "Unknown";
-        }
-        labelInfo[4] = allSeriesOfStudy.size() + " Series";
+        labelInfo[3] = ((TreeTableModelAdapter) treeTable.getModel()).getValueAt(row, 6) + " " + ((StudyModel) ((TreeTableModelAdapter) treeTable.getModel()).getValueAt(row, 11)).getStudyTime();
+        labelInfo[4] = studyDetails.getNumberOfSeries() + " Series";
         return labelInfo;
     }
 
     private void constructSeriesByQuery() {
-        Series currentSeries;
+        instances = new HashMap<String, HashSet<String>>(0, 5);
+        videoInstances = new HashSet<String>(0, 1);
+        multiframesInstances = new HashSet<String>(0, 1);
         sopUidList = new ArrayList<String>();
-        for (int series = 0; series < allSeriesOfStudy.size(); series++) {
-            currentSeries = allSeriesOfStudy.get(series);
-            instanceModels = new ArrayList<InstanceDisplayModel>();
-            queryInstanceService.callFindWithQuery(studyDetails.getPatientId(), studyDetails.getStudyUID(), currentSeries.getSeriesInstanceUID(), ApplicationContext.currentQueryUrl);
-            Vector datasetVector = queryInstanceService.getDatasetVector();
-            for (int dataset = 0; dataset < datasetVector.size(); dataset++) {
-                Dataset instanceData = (Dataset) datasetVector.elementAt(dataset);
-                String sopClassUID = instanceData.getString(Tags.SOPClassUID);
-                if (!sopUidList.contains(sopClassUID)) {
-                    sopUidList.add(sopClassUID);
+        ThumbnailWadoRetriever thumbnailWadoRetriever = new ThumbnailWadoRetriever(studyDetails.getStudyUID(), serverDetails);
+        for (int i = 0; i < allSeriesOfStudy.size(); i++) {
+            NavigableMap<Integer, String> wadoInstances = new TreeMap<Integer, String>();
+            int multiframes = 0;
+            Thumbnail[] threeThumbnails = null;
+            Series currentSeries = allSeriesOfStudy.get(i);
+            queryInstanceService.callFindWithQuery(studyDetails.getPatientId(), studyDetails.getStudyUID(), allSeriesOfStudy.get(i).getSeriesInstanceUID(), ApplicationContext.currentQueryUrl);
+            for (int j = 0; j < queryInstanceService.getDatasetVector().size(); j++) {
+                Dataset instanceData = (Dataset) queryInstanceService.getDatasetVector().get(j);
+                if (!sopUidList.contains(instanceData.get(Tags.SOPClassUID))) {
+                    sopUidList.add(instanceData.getString(Tags.SOPClassUID));
                 }
                 if (instanceData.getInteger(Tags.NumberOfFrames) == null) {
-                    instanceModels.add(new InstanceDisplayModel(currentSeries.getSeriesInstanceUID(), instanceData.getString(Tags.SOPInstanceUID), instanceData.getInteger(Tags.InstanceNumber), false));
+                    wadoInstances.put(instanceData.getInteger(Tags.InstanceNumber) != null ? instanceData.getInteger(Tags.InstanceNumber) : 0, instanceData.getString(Tags.SeriesInstanceUID) + "," + instanceData.getString(Tags.SOPInstanceUID));
                 } else {
-                    InstanceDisplayModel[] multiframeInstances = new InstanceDisplayModel[1];
-                    if (sopClassUID.equals(UID.VideoEndoscopicImageStorage) || sopClassUID.equals(UID.VideoMicroscopicImageStorage) || sopClassUID.equals(UID.VideoPhotographicImageStorage)) {
-                        InstanceDisplayModel instance = new InstanceDisplayModel(currentSeries.getSeriesInstanceUID(), instanceData.getString(Tags.SOPInstanceUID), instanceData.getInteger(Tags.InstanceNumber), true);
-                        multiframeInstances[0] = instance;
+                    if (instanceData.getString(Tags.SOPClassUID).equals(UID.VideoEndoscopicImageStorage) || instanceData.getString(Tags.SOPClassUID).equals(UID.VideoMicroscopicImageStorage) || instanceData.getString(Tags.SOPClassUID).equals(UID.VideoPhotographicImageStorage)) {
                         currentSeries.setVideoStatus(true);
-                        constructSeriesPanel(currentSeries, "Video", instanceData.getInteger(Tags.NumberOfFrames), multiframeInstances);
+                        threeThumbnails = new Thumbnail[1];
+                        threeThumbnails[0] = new Thumbnail(instanceData.getString(Tags.SOPInstanceUID));
+                        constructSeriesPanelFromLocalDB(currentSeries, "Video-" + instanceData.getString(Tags.NumberOfFrames), 1, threeThumbnails, null);
+                        videoInstances.add(instanceData.getString(Tags.SeriesInstanceUID) + "," + instanceData.getString(Tags.SOPInstanceUID) + "," + instanceData.getString(Tags.NumberOfFrames));
+                        multiframes++;
                     } else {
+                        threeThumbnails = new Thumbnail[1];
                         currentSeries.setMultiframe(true);
                         currentSeries.setInstanceUID(instanceData.getString(Tags.SOPInstanceUID));
-                        InstanceDisplayModel instance = new InstanceDisplayModel(currentSeries.getSeriesInstanceUID(), instanceData.getString(Tags.SOPInstanceUID), instanceData.getInteger(Tags.InstanceNumber), false);
-                        multiframeInstances[0] = instance;
-                        ApplicationContext.retrieveDelegate.wado(studyDetails.getPatientId(), studyDetails.getStudyUID(), currentSeries.getSeriesInstanceUID(), instanceData.getString(Tags.SOPInstanceUID), serverDetails);
-                        constructSeriesPanel(currentSeries, "Multiframe", instanceData.getInteger(Tags.NumberOfFrames), multiframeInstances);
+                        thumbnailWadoRetriever.retrieveThumbnail(instanceData.getString(Tags.SeriesInstanceUID) + "," + instanceData.getString(Tags.SOPInstanceUID));
+                        threeThumbnails[0] = new Thumbnail(instanceData.getString(Tags.SOPInstanceUID));
+                        constructSeriesPanelFromLocalDB(currentSeries, "Multiframe-" + instanceData.getString(Tags.NumberOfFrames), 1, threeThumbnails, null);
+                        multiframesInstances.add(instanceData.getString(Tags.SeriesInstanceUID) + "," + instanceData.getString(Tags.SOPInstanceUID) + "," + instanceData.getString(Tags.NumberOfFrames));
+                        multiframes++;
                     }
                 }
             }
-            if (instanceModels.size() > 0) {
-                sortInstances(instanceModels);
-                if (instanceModels.size() >= 3) {
-                    ApplicationContext.retrieveDelegate.wado(studyDetails.getPatientId(), studyDetails.getStudyUID(), currentSeries.getSeriesInstanceUID(), instanceModels.get(0).getIuid(), serverDetails);
-                    ApplicationContext.retrieveDelegate.wado(studyDetails.getPatientId(), studyDetails.getStudyUID(), currentSeries.getSeriesInstanceUID(), instanceModels.get(instanceModels.size() / 2).getIuid(), serverDetails);
-                    ApplicationContext.retrieveDelegate.wado(studyDetails.getPatientId(), studyDetails.getStudyUID(), currentSeries.getSeriesInstanceUID(), instanceModels.get(instanceModels.size() - 1).getIuid(), serverDetails);
-                    threeInstances = new InstanceDisplayModel[3];
-                    threeInstances[0] = instanceModels.get(0);
-                    threeInstances[1] = instanceModels.get(instanceModels.size() / 2);
-                    threeInstances[2] = instanceModels.get(instanceModels.size() - 1);
+
+            if (multiframes < currentSeries.getSeriesRelatedInstance()) {
+                currentSeries.setSeriesRelatedInstance(currentSeries.getSeriesRelatedInstance() - multiframes);
+                if (wadoInstances.size() > 3) {
+                    threeThumbnails = new Thumbnail[3];
+                    thumbnailWadoRetriever.retrieveThumbnail(wadoInstances.firstEntry().getValue());
+                    thumbnailWadoRetriever.retrieveThumbnail(wadoInstances.get(wadoInstances.lastKey() / 2));
+                    thumbnailWadoRetriever.retrieveThumbnail(wadoInstances.lastEntry().getValue());
+                    threeThumbnails[0] = new Thumbnail(wadoInstances.firstEntry().getValue().split(",")[1]);
+                    threeThumbnails[1] = new Thumbnail(wadoInstances.get(wadoInstances.lastKey() / 2).split(",")[1]);
+                    threeThumbnails[2] = new Thumbnail(wadoInstances.lastEntry().getValue().split(",")[1]);
+
                 } else {
-                    threeInstances = new InstanceDisplayModel[instanceModels.size()];
-                    for (int i = 0; i < instanceModels.size(); i++) {
-                        ApplicationContext.retrieveDelegate.wado(studyDetails.getPatientId(), studyDetails.getStudyUID(), currentSeries.getSeriesInstanceUID(), instanceModels.get(i).getIuid(), serverDetails);
-                        threeInstances[i] = instanceModels.get(i);
+                    threeThumbnails = new Thumbnail[wadoInstances.size()];
+                    int k = 0;
+                    Set<Integer> keySet = wadoInstances.keySet();
+                    Iterator<Integer> iterator = keySet.iterator();
+                    while (iterator.hasNext()) {
+                        int key = iterator.next();
+                        thumbnailWadoRetriever.retrieveThumbnail(wadoInstances.get(key));
+                        threeThumbnails[k] = new Thumbnail(wadoInstances.get(key).split(",")[1]);
+                        k++;
                     }
                 }
-                constructSeriesPanel(currentSeries, currentSeries.getSeriesDesc(), instanceModels.size(), threeInstances);
+                constructSeriesPanelFromLocalDB(currentSeries, currentSeries.getSeriesDesc(), instances.size(), threeThumbnails, null);
+                HashSet<String> instancesToRetrieve = new HashSet<String>(0, 1);
+                instancesToRetrieve.addAll(wadoInstances.values());
+                instancesToRetrieve.addAll(multiframesInstances);
+                instances.put(currentSeries.getSeriesInstanceUID(), instancesToRetrieve);
             }
         }
     }
 
-    private void sortInstances(ArrayList<InstanceDisplayModel> instanceModels) {
-        Collections.sort(instanceModels, new Comparator() {
-            @Override
-            public int compare(Object t, Object t1) {
-                InstanceDisplayModel i1 = (InstanceDisplayModel) t;
-                InstanceDisplayModel i2 = (InstanceDisplayModel) t1;
-
-                if (new Integer(i1.getInstanceNo()) == null) {
-                    return (-1);
-                } else if (new Integer(i2.getInstanceNo()) == null) {
-                    return (1);
-                } else {
-                    int a = i1.getInstanceNo();
-                    int b = i2.getInstanceNo();
-                    int temp = (a == b ? 0 : (a > b ? 1 : -1));
-                    return temp;
-                }
-            }
-        });
-    }
-
-    public void constructSeriesPanel(Series series, String seriesDescription, int totalImgaes, InstanceDisplayModel[] instanceDisplayModels) {
+    public void constructSeriesPanelFromLocalDB(Series series, String seriesDescription, int totalImgaes, Thumbnail[] threeThumbnails, String dest) {
         if (!"PR".equals(series.getModality())) {
-            final PreviewPanel preview = new PreviewPanel(studyDetails.getStudyUID(), series.getSeriesInstanceUID(), seriesDescription, totalImgaes, instanceDisplayModels);
+            final PreviewPanel preview = new PreviewPanel(studyDetails.getStudyUID(), series.getSeriesInstanceUID(), seriesDescription, totalImgaes, threeThumbnails, dest);
             preview.setVisible(true);
             int height = preview.getTotalHeight();
             size += height + 5;
             imagePreviewPanel.addPreviewPanel(pos, height, preview, size);
             pos += height + 5;
-        }
-    }
-
-    public void constructSeriesPanelFromLocalDB(Series series, String seriesDescription, int totalImgaes) {
-        if (!"PR".equals(series.getModality())) {
-            final PreviewPanel preview = new PreviewPanel(studyDetails.getStudyUID(), series.getSeriesInstanceUID(), seriesDescription, totalImgaes, threeThumbnails);
-            preview.setVisible(true);
-            int height = preview.getTotalHeight();
-            size += height + 5;
-            imagePreviewPanel.addPreviewPanel(pos, height, preview, size);
-            pos += height + 5;
-        }
-    }
-
-    private void retrieveStudyToLocal() {
-        if (retrieveType.equalsIgnoreCase("C-Move")) {
-            ApplicationContext.retrieveDelegate.cMove(studyDetails.getPatientId(), studyDetails.getStudyUID(), studyDetails.getModalitiesInStudy(), allSeriesOfStudy, Integer.parseInt(studyDetails.getStudyLevelInstances()), patientInfo, ApplicationContext.currentQueryUrl);
-        } else if (retrieveType.equalsIgnoreCase("C-GET")) {
-            if (imagePreviewPanel == null) {
-                addSopClassList();
-            }
-            ApplicationContext.retrieveDelegate.cGet(studyDetails.getPatientId(), studyDetails.getStudyUID(), studyDetails.getModalitiesInStudy(), allSeriesOfStudy, Integer.parseInt(studyDetails.getStudyLevelInstances()), patientInfo, ApplicationContext.currentQueryUrl, sopUidList);
-        } else if (retrieveType.equalsIgnoreCase("WADO")) {
-            ApplicationContext.retrieveDelegate.wado(studyDetails.getPatientId(), studyDetails.getStudyUID(), studyDetails.getModalitiesInStudy(), allSeriesOfStudy, Integer.parseInt(studyDetails.getStudyLevelInstances()), patientInfo, ApplicationContext.currentServer, ApplicationContext.currentQueryUrl);
         }
     }
 
@@ -309,127 +274,37 @@ public class TreeTableMouseListener extends MouseAdapter {
     }
 
     private void constructSeriesByDB() {
-        File file;
-        String dest;
-        ConstructThumbnails constructThumbnails = null;
         for (int i = 0; i < allSeriesOfStudy.size(); i++) {
-            List<Instance> imageList = allSeriesOfStudy.get(i).getImageList();
-            if (!ApplicationContext.databaseRef.isLink(studyDetails.getStudyUID())) {
-                dest = new File(imageList.get(0).getFilepath()).getParent() + File.separator + "Thumbnails";
-            } else {
-                dest = ApplicationContext.getAppDirectory() + File.separator + "Thumbnails";
+            String dest = ApplicationContext.databaseRef.getThumbnailLocation(studyDetails.getStudyUID(), allSeriesOfStudy.get(i).getSeriesInstanceUID());
+            if (!dest.contains("Thumbnails")) {
+                dest += File.separator + "Thumbnails";
             }
+            Thumbnail[] threeThumbnails = null;
             if (!allSeriesOfStudy.get(i).isVideo()) {
-                constructThumbnails = new ConstructThumbnails(studyDetails.getStudyUID(), allSeriesOfStudy.get(i).getSeriesInstanceUID());
-                if (imageList.size() >= 3) {
-                    threeThumbnails = new Thumbnail[3];
-                    try {
-                        file = new File(dest + File.separator + imageList.get(0).getSop_iuid());
-                        threeThumbnails[0] = new Thumbnail(imageList.get(0).getSop_iuid());
-                        threeThumbnails[0].setImage(ImageIO.read(file));
-                    } catch (IOException ex) {
-                        threeThumbnails[0] = new Thumbnail(imageList.get(0).getSop_iuid());
-                        threeThumbnails[0].setDefaultImage();
-                    }
-                    try {
-                        file = new File(dest + File.separator + imageList.get(imageList.size() / 2).getSop_iuid());
-                        threeThumbnails[1] = new Thumbnail(imageList.get(imageList.size() / 2).getSop_iuid());
-                        threeThumbnails[1].setImage(ImageIO.read(file));
-                    } catch (IOException ex) {
-                        threeThumbnails[1] = new Thumbnail(imageList.get(imageList.size() / 2).getSop_iuid());
-                        threeThumbnails[1].setDefaultImage();
-                    }
-                    try {
-                        file = new File(dest + File.separator + imageList.get(imageList.size() - 1).getSop_iuid());
-                        threeThumbnails[2] = new Thumbnail(imageList.get(imageList.size() - 1).getSop_iuid());
-                        threeThumbnails[2].setImage(ImageIO.read(file));
-                    } catch (IOException ex) {
-                        threeThumbnails[2] = new Thumbnail(imageList.get(imageList.size() - 1).getSop_iuid());
-                        threeThumbnails[2].setDefaultImage();
-                    }
+                if (allSeriesOfStudy.get(i).getSeriesDesc().contains("Multiframe")) {
+                    threeThumbnails = new Thumbnail[1];
+                    threeThumbnails[0] = new Thumbnail(allSeriesOfStudy.get(i).getInstanceUID());
                 } else {
-                    threeThumbnails = new Thumbnail[imageList.size()];
+                    ArrayList<String> imageList = ApplicationContext.databaseRef.getInstanceUidList(studyDetails.getStudyUID(), allSeriesOfStudy.get(i).getSeriesInstanceUID());
                     for (int j = 0; j < imageList.size(); j++) {
-                        file = new File(dest + File.separator + imageList.get(j).getSop_iuid());
-                        try {
-                            threeThumbnails[j] = new Thumbnail(imageList.get(j).getSop_iuid());
-                            threeThumbnails[j].setImage(ImageIO.read(file));
-                        } catch (IOException ex) {
-                            threeThumbnails[j] = new Thumbnail(imageList.get(j).getSop_iuid());
-                            threeThumbnails[j].setDefaultImage();
+                        if (imageList.size() >= 3) {
+                            threeThumbnails = new Thumbnail[3];
+                            threeThumbnails[0] = new Thumbnail(imageList.get(0));
+                            threeThumbnails[1] = new Thumbnail(imageList.get(imageList.size() / 2));
+                            threeThumbnails[2] = new Thumbnail(imageList.get(imageList.size() - 1));
+                        } else {
+                            threeThumbnails = new Thumbnail[imageList.size()];
+                            for (int k = 0; k < imageList.size(); k++) {
+                                threeThumbnails[k] = new Thumbnail(imageList.get(k));
+                            }
                         }
                     }
                 }
             } else {
                 threeThumbnails = new Thumbnail[1];
-                threeThumbnails[0] = new Thumbnail(imageList.get(0).getSop_iuid());
-                threeThumbnails[0].setVideoImage();
-                DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-                DocumentBuilder dBuilder;
-                Document doc = null;
-                for (int j = 0; j < imageList.size(); j++) {
-                    if (!imageList.get(j).getFilepath().contains("_V")) {
-                        File videoFile = new File(imageList.get(j).getFilepath() + "_V" + File.separator + "video.xml");
-                        videoFile.getParentFile().mkdirs();
-                        try {
-                            videoFile.createNewFile();
-                        } catch (IOException ex) {
-                            Logger.getLogger(CGetDelegate.class.getName()).log(Level.SEVERE, null, ex);
-                        }
-                        Dcm2Xml.main(new String[]{imageList.get(j).getFilepath(), "-X", "-o", videoFile.getAbsolutePath()});
-                        try {
-                            dBuilder = dbFactory.newDocumentBuilder();
-                            doc = dBuilder.parse(imageList.get(j).getFilepath() + "_V" + File.separator + "video.xml");
-                            NodeList elementsByTagName1 = doc.getElementsByTagName("item");
-                            for (int k = 0; k < elementsByTagName1.getLength(); k++) {
-                                Node item = elementsByTagName1.item(k);
-                                NamedNodeMap attributes = item.getAttributes();
-                                if (attributes.getNamedItem("src") != null) {
-                                    Node namedItem = attributes.getNamedItem("src");
-                                    videoFile = new File(imageList.get(j).getFilepath() + "_V" + File.separator + namedItem.getNodeValue());
-                                    videoFile.renameTo(new File(videoFile.getAbsolutePath() + ".mpg"));
-                                    ApplicationContext.databaseRef.update("image", "FileStoreUrl", videoFile.getAbsolutePath() + ".mpg", "SopUID", imageList.get(j).getFilepath().substring(imageList.get(j).getFilepath().lastIndexOf(File.separator) + 1));
-                                }
-                            }
-                        } catch (IOException ex) {
-                            Logger.getLogger(CGetDelegate.class.getName()).log(Level.SEVERE, null, ex);
-                        } catch (ParserConfigurationException ex) {
-                            Logger.getLogger(CGetDelegate.class.getName()).log(Level.SEVERE, null, ex);
-                        } catch (SAXException ex) {
-                            Logger.getLogger(CGetDelegate.class.getName()).log(Level.SEVERE, null, ex);
-                        }
-                    }
-                }
-
-                try {
-                    dBuilder = dbFactory.newDocumentBuilder();
-                    doc = dBuilder.parse(imageList.get(0).getFilepath().split("_")[0] + "_V" + File.separator + "video.xml");
-                    XPathFactory xPathfactory = XPathFactory.newInstance();
-                    XPath xpath = xPathfactory.newXPath();
-                    XPathExpression expr = xpath.compile("//attr[@tag=\"00181063\"]");
-                    NodeList nl = (NodeList) expr.evaluate(doc, XPathConstants.NODESET);
-                    Node frameTime = nl.item(0);
-                    expr = xpath.compile("//attr[@tag=\"00280008\"]");
-                    nl = (NodeList) expr.evaluate(doc, XPathConstants.NODESET);
-                    Node numberOfFrames = nl.item(0);
-                    try {
-                        allSeriesOfStudy.get(i).setSeriesDesc("Video : " + (int) Math.floor((Double.parseDouble(numberOfFrames.getTextContent()) * (1000 / Double.parseDouble(frameTime.getTextContent()))) / 1000) + " Sec");
-                    } catch (NumberFormatException ex) {
-                        System.out.println("Illegal number format : " + ex.getMessage());
-                    }
-                    dBuilder = null;
-                    dbFactory = null;
-                } catch (IOException ex) {
-                    Logger.getLogger(TreeTableMouseListener.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (ParserConfigurationException ex) {
-                    Logger.getLogger(TreeTableMouseListener.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (SAXException ex) {
-                    Logger.getLogger(TreeTableMouseListener.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (XPathExpressionException ex) {
-                    Logger.getLogger(TreeTableMouseListener.class.getName()).log(Level.SEVERE, null, ex);
-                }
+                threeThumbnails[0] = new Thumbnail(allSeriesOfStudy.get(i).getInstanceUID());
             }
-            constructSeriesPanelFromLocalDB(allSeriesOfStudy.get(i), allSeriesOfStudy.get(i).getSeriesDesc(), allSeriesOfStudy.get(i).getSeriesRelatedInstance());
+            constructSeriesPanelFromLocalDB(allSeriesOfStudy.get(i), allSeriesOfStudy.get(i).getSeriesDesc(), allSeriesOfStudy.get(i).getSeriesRelatedInstance(), threeThumbnails, dest);
         }
     }
 
@@ -457,8 +332,7 @@ public class TreeTableMouseListener extends MouseAdapter {
             if (imagePreviewPanel != null) {
                 showPreviews();
             }
-            ApplicationContext.mainScreenObj.setProgressText("Downloading");
-            ApplicationContext.mainScreenObj.initializeProgressBar(Integer.parseInt(studyDetails.getStudyLevelInstances()) + Integer.parseInt(studyDetails.getNumberOfSeries()));
+            ApplicationContext.mainScreenObj.setProgressbarVisibility(true);
         }
     };
 
@@ -467,7 +341,6 @@ public class TreeTableMouseListener extends MouseAdapter {
         sopUidList = new ArrayList<String>();
         for (int series = 0; series < allSeriesOfStudy.size(); series++) {
             currentSeries = allSeriesOfStudy.get(series);
-            instanceModels = new ArrayList<InstanceDisplayModel>();
             queryInstanceService.callFindWithQuery(studyDetails.getPatientId(), studyDetails.getStudyUID(), currentSeries.getSeriesInstanceUID(), ApplicationContext.currentQueryUrl);
             Vector datasetVector = queryInstanceService.getDatasetVector();
             for (int dataset = 0; dataset < datasetVector.size(); dataset++) {
@@ -475,6 +348,194 @@ public class TreeTableMouseListener extends MouseAdapter {
                 if (!sopUidList.contains(instanceData.getString(Tags.SOPClassUID))) {
                     sopUidList.add(instanceData.getString(Tags.SOPClassUID));
                 }
+            }
+        }
+    }
+
+    private void retrieveStudyToLocal() {
+        if (!ApplicationContext.databaseRef.checkRecordExists("study", "StudyInstanceUID", studyDetails.getStudyUID())) {
+            ApplicationContext.mainScreenObj.setProgressText("Downloading");
+            ApplicationContext.mainScreenObj.initializeProgressBar(Integer.parseInt(studyDetails.getStudyLevelInstances()));
+            boolean previewsEnabled = ApplicationContext.databaseRef.isPreviewsEnabled(serverDetails.getDescription());
+            if (!previewsEnabled) {
+                doInstanceLevelQuery();
+            } else {
+                executor.submit(new ThumbnailWadoRetriever(studyDetails.getStudyUID(), instances, serverDetails));
+            }
+            if (serverDetails.getRetrieveType().equalsIgnoreCase("WADO")) {
+                if (!previewsEnabled) {
+                    executor.submit(new ThumbnailWadoRetriever(studyDetails.getStudyUID(), instances, serverDetails));
+                }
+                if (!instances.isEmpty()) {
+                    executor.submit(new WadoRetriever(studyDetails.getStudyUID(), instances, serverDetails, true, true));
+                }
+                if (!videoInstances.isEmpty()) {
+                    HashMap<String, HashSet<String>> videos = new HashMap<String, HashSet<String>>(0, 1);
+                    videos.put(allSeriesOfStudy.get(0).getSeriesInstanceUID(), videoInstances);
+                    executor.submit(new WadoRetriever(studyDetails.getStudyUID(), videos, serverDetails, false, instances.isEmpty()));
+                }
+            }
+            ImagePreviewPanel viewerPreview = new ImagePreviewPanel();
+            viewerPreview.setPatientInfo(patientInfo);
+            int position = 0, totalSize = 0;
+            for (int i = 0; i < allSeriesOfStudy.size(); i++) {
+                Series curr = allSeriesOfStudy.get(i);
+                if (!curr.isVideo()) {
+                    Iterator<String> iterator = multiframesInstances.iterator();
+                    while (iterator.hasNext()) {
+                        String next = iterator.next();
+                        if (curr.getSeriesInstanceUID().equals(next.split(",")[0])) {
+                            ViewerPreviewPanel multiframePanel = new ViewerPreviewPanel(studyDetails.getStudyUID(), curr, next.substring(next.indexOf(",", 0) + 1));
+                            multiframePanel.setVisible(true);
+                            multiframePanel.setName(String.valueOf(i));
+                            int h = multiframePanel.getTotalHeight();
+                            totalSize += h + 5;
+                            multiframePanel.setBounds(0, position, 230, h);
+                            viewerPreview.addViewerPanel(position, h, multiframePanel, totalSize);
+                            position += (h + 5);
+                        }
+                    }
+                    ViewerPreviewPanel viewerPreviewPanel = new ViewerPreviewPanel(studyDetails.getStudyUID(), curr, null);
+                    viewerPreviewPanel.setVisible(true);
+                    viewerPreviewPanel.setName(String.valueOf(i));
+                    int height = viewerPreviewPanel.getTotalHeight();
+                    totalSize += height + 5;
+                    viewerPreviewPanel.setBounds(0, position, 230, height);
+                    viewerPreview.addViewerPanel(position, height, viewerPreviewPanel, totalSize);
+                    position += (height + 5);
+                } else {
+                    Iterator<String> iterator = videoInstances.iterator();
+                    while (iterator.hasNext()) {
+                        String next = iterator.next();
+                        if (next.split(",")[0].equals(curr.getSeriesInstanceUID())) {
+                            ViewerPreviewPanel viewerPreviewPanel = new ViewerPreviewPanel(studyDetails.getStudyUID(), curr, next.substring(next.indexOf(",", 0) + 1));
+//                            viewerPreviewPanel.setSopUid(next.split(",")[1]);
+                            viewerPreviewPanel.setVisible(true);
+                            viewerPreviewPanel.setName(String.valueOf(i));
+                            int height = viewerPreviewPanel.getTotalHeight();
+                            totalSize += height + 5;
+                            viewerPreviewPanel.setBounds(0, position, 230, height);
+                            viewerPreview.addViewerPanel(position, height, viewerPreviewPanel, totalSize);
+                            position += (height + 5);
+                            viewerPreviewPanel.loadVideoImage();
+                        }
+                    }
+                }
+
+                if (serverDetails.getRetrieveType().equals("C-MOVE")) {
+                    if (i == 0) {
+                        executor.submit(new SeriesRetriever(new String[]{ApplicationContext.currentQueryUrl.getProtocol() + "://" + ApplicationContext.currentQueryUrl.getCalledAET() + "@" + ApplicationContext.currentQueryUrl.getHost() + ":" + ApplicationContext.currentQueryUrl.getPort(), "--dest", ApplicationContext.listenerDetails[0], "--pid", patientInfo[1], "--suid", studyDetails.getStudyUID(), "--Suid", curr.getSeriesInstanceUID()}, studyDetails.getStudyUID(), curr.getSeriesInstanceUID(), Integer.parseInt(studyDetails.getStudyLevelInstances()), true, !previewsEnabled, true));
+                    } else {
+                        executor.submit(new SeriesRetriever(new String[]{ApplicationContext.currentQueryUrl.getProtocol() + "://" + ApplicationContext.currentQueryUrl.getCalledAET() + "@" + ApplicationContext.currentQueryUrl.getHost() + ":" + ApplicationContext.currentQueryUrl.getPort(), "--dest", ApplicationContext.listenerDetails[0], "--pid", patientInfo[1], "--suid", studyDetails.getStudyUID(), "--Suid", curr.getSeriesInstanceUID()}, studyDetails.getStudyUID(), curr.getSeriesInstanceUID(), Integer.parseInt(studyDetails.getStudyLevelInstances()), false, !previewsEnabled, true));
+                    }
+                } else if (serverDetails.getRetrieveType().equalsIgnoreCase("C-GET")) {
+                    String[] cGetParam = constructCGetParam(curr.getSeriesInstanceUID());
+                    if (i == 0) {
+                        executor.submit(new SeriesRetriever(cGetParam, studyDetails.getStudyUID(), curr.getSeriesInstanceUID(), Integer.parseInt(studyDetails.getStudyLevelInstances()), true, !previewsEnabled, false));
+                    } else {
+                        executor.submit(new SeriesRetriever(cGetParam, studyDetails.getStudyUID(), curr.getSeriesInstanceUID(), Integer.parseInt(studyDetails.getStudyLevelInstances()), false, !previewsEnabled, false));
+                    }
+                }
+            }
+
+            ApplicationContext.ImageView(patientInfo[0], studyDetails.getStudyUID(), viewerPreview);
+            ApplicationContext.imgView.getImageToolbar().disableMultiSeriesTools();
+        } else if (ApplicationContext.mainScreenObj.getCurrentProgressValue() == 0) {
+            ApplicationContext.mainScreenObj.hideProgressBar();
+        }
+    }
+
+    private String[] constructCGetParam(String seriesInstanceUid) {
+        if (imagePreviewPanel == null) {
+            addSopClassList();
+        }
+        ArrayList<String> cgetParam = new ArrayList<String>();
+        cgetParam.add(ApplicationContext.currentQueryUrl.getCalledAET() + "@" + ApplicationContext.currentQueryUrl.getHost() + ":" + ApplicationContext.currentQueryUrl.getPort());
+        cgetParam.add("-L " + ApplicationContext.listenerDetails[0]);
+        cgetParam.add("-cget");
+        cgetParam.add("-I");
+        cgetParam.add("-qStudyInstanceUID=" + studyDetails.getStudyUID());
+        cgetParam.add("-qSeriesInstanceUID=" + seriesInstanceUid);
+        for (int i = 0; i < sopUidList.size(); i++) {
+            cgetParam.add("-cstore");
+            cgetParam.add(sopUidList.get(i) + ":" + UID.ExplicitVRLittleEndian);
+            if (sopUidList.contains(UID.VideoEndoscopicImageStorage) || sopUidList.contains(UID.VideoMicroscopicImageStorage) || sopUidList.contains(UID.VideoPhotographicImageStorage)) {
+                cgetParam.add(",");
+                cgetParam.add(sopUidList.get(i) + ":" + UID.MPEG2);
+                cgetParam.add(",");
+                cgetParam.add(sopUidList.get(i) + ":" + UID.MPEG2MainProfileHighLevel);
+                cgetParam.add(",");
+                cgetParam.add(sopUidList.get(i) + ":" + UID.MPEG4AVCH264HighProfileLevel41);
+                cgetParam.add(",");
+                cgetParam.add(sopUidList.get(i) + ":" + UID.MPEG4AVCH264BDCompatibleHighProfileLevel41);
+            }
+        }
+        cgetParam.add("-cstoredest");
+        cgetParam.add(ApplicationContext.listenerDetails[2]);
+        return cgetParam.toArray(new String[cgetParam.size()]);
+    }
+
+    public void createPreviewLocal() {
+        ImagePreviewPanel viewerPreview = new ImagePreviewPanel();
+        viewerPreview.setPatientInfo(patientInfo);
+        int position = 0, totalSize = 0;
+        for (int i = 0; i < allSeriesOfStudy.size(); i++) {
+            Series curr = allSeriesOfStudy.get(i);
+            if (!curr.isVideo()) {
+                ViewerPreviewPanel viewerPreviewPanel = null;
+                if (curr.getSeriesDesc().contains("Multiframe")) {
+                    viewerPreviewPanel = new ViewerPreviewPanel(studyDetails.getStudyUID(), curr, curr.getInstanceUID() + "," + curr.getSeriesRelatedInstance());
+                } else {
+                    viewerPreviewPanel = new ViewerPreviewPanel(studyDetails.getStudyUID(), curr, null);
+                }
+                viewerPreviewPanel.setVisible(true);
+                viewerPreviewPanel.setName(String.valueOf(i));
+                int height = viewerPreviewPanel.getTotalHeight();
+                totalSize += height + 5;
+                viewerPreviewPanel.setBounds(0, position, 230, height);
+                viewerPreview.addViewerPanel(position, height, viewerPreviewPanel, totalSize);
+                position += (height + 5);
+            } else {
+                ViewerPreviewPanel viewerPreviewPanel = new ViewerPreviewPanel(studyDetails.getStudyUID(), curr, curr.getInstanceUID() + "," + curr.getSeriesRelatedInstance());
+                viewerPreviewPanel.setSopUid(curr.getInstanceUID());
+                viewerPreviewPanel.setVisible(true);
+                viewerPreviewPanel.setName(String.valueOf(i));
+                int height = viewerPreviewPanel.getTotalHeight();
+                totalSize += height + 5;
+                viewerPreviewPanel.setBounds(0, position, 230, height);
+                viewerPreview.addViewerPanel(position, height, viewerPreviewPanel, totalSize);
+                position += (height + 5);
+                viewerPreviewPanel.loadVideoImage();
+            }
+        }
+        ApplicationContext.ImageView(patientInfo[0], studyDetails.getStudyUID(), viewerPreview);
+    }
+
+    private void doInstanceLevelQuery() {
+        instances = new HashMap<String, HashSet<String>>(0, 5);
+        videoInstances = new HashSet<String>(0, 1);
+        multiframesInstances = new HashSet<String>(0, 1);
+        QueryInstanceService queryInstanceService = new QueryInstanceService();
+        for (int i = 0; i < allSeriesOfStudy.size(); i++) {
+            HashSet<String> instanceList = new HashSet<String>(0, 5);
+            queryInstanceService.callFindWithQuery(studyDetails.getPatientId(), studyDetails.getStudyUID(), allSeriesOfStudy.get(i).getSeriesInstanceUID(), ApplicationContext.currentQueryUrl);
+            for (int j = 0; j < queryInstanceService.getDatasetVector().size(); j++) {
+                Dataset dataset = (Dataset) queryInstanceService.getDatasetVector().get(j);
+                if (dataset.getInteger(Tags.NumberOfFrames) != null) {
+                    if (dataset.getString(Tags.SOPClassUID).equals(UID.VideoEndoscopicImageStorage) || dataset.getString(Tags.SOPClassUID).equals(UID.VideoMicroscopicImageStorage) || dataset.getString(Tags.SOPClassUID).equals(UID.VideoPhotographicImageStorage)) {
+                        allSeriesOfStudy.get(i).setVideoStatus(true);
+                        videoInstances.add(dataset.getString(Tags.SeriesInstanceUID) + "," + dataset.getString(Tags.SOPInstanceUID) + "," + dataset.getString(Tags.NumberOfFrames));
+                    } else {
+                        multiframesInstances.add(dataset.getString(Tags.SeriesInstanceUID) + "," + dataset.getString(Tags.SOPInstanceUID) + "," + dataset.getString(Tags.NumberOfFrames));
+                    }
+                } else {
+                    instanceList.add(dataset.getString(Tags.SeriesInstanceUID) + "," + dataset.getString(Tags.SOPInstanceUID));
+                }
+            }
+            allSeriesOfStudy.get(i).setSeriesRelatedInstance(allSeriesOfStudy.get(i).getSeriesRelatedInstance() - multiframesInstances.size() - videoInstances.size());
+            instanceList.addAll(multiframesInstances);
+            if (!instanceList.isEmpty()) {
+                instances.put(allSeriesOfStudy.get(i).getSeriesInstanceUID(), instanceList);
             }
         }
     }

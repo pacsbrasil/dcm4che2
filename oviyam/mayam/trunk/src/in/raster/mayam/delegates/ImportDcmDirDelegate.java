@@ -42,39 +42,17 @@ package in.raster.mayam.delegates;
 import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.exception.CompressedDcmOnMacException;
 import in.raster.mayam.facade.Platform;
-import java.awt.Graphics2D;
-import java.awt.GraphicsConfiguration;
-import java.awt.GraphicsEnvironment;
-import java.awt.Image;
-import java.awt.RenderingHints;
-import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.ConcurrentModificationException;
 import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
-import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import org.dcm4che.dict.Tags;
 import org.dcm4che2.data.*;
-import org.dcm4che2.image.OverlayUtils;
 import org.dcm4che2.io.DicomInputStream;
-import org.dcm4che2.tool.dcm2xml.Dcm2Xml;
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 /**
  *
@@ -158,7 +136,6 @@ public class ImportDcmDirDelegate extends Thread {
             ApplicationContext.mainScreenObj.setProgressText("Importing");
             ApplicationContext.mainScreenObj.initializeProgressBar(absolutePathList.size());
             for (int i = 0; i < absolutePathList.size(); i++) {
-                ApplicationContext.mainScreenObj.incrementProgressValue();
                 File currentFile = new File(absolutePathList.get(i));
                 if (isDicomFile(currentFile)) {
                     importedFileCount++;
@@ -180,7 +157,6 @@ public class ImportDcmDirDelegate extends Thread {
 
     private void readAndImportDicomFile(File parseFile) throws CompressedDcmOnMacException {
         DicomInputStream dis = null;
-        File thumbnail = null;
         try {
             dis = new DicomInputStream(parseFile);
             DicomObject data = new BasicDicomObject();
@@ -189,86 +165,37 @@ public class ImportDcmDirDelegate extends Thread {
                 if (Platform.getCurrentPlatform().equals(Platform.MAC)) {
                     if (data.getString(Tags.TransferSyntaxUID).equalsIgnoreCase(TransferSyntax.ExplicitVRLittleEndian.uid()) || data.getString(Tags.TransferSyntaxUID).equalsIgnoreCase(TransferSyntax.ImplicitVRLittleEndian.uid())) {
                         if (saveAsLink) {
-                            thumbnail = new File(ApplicationContext.getAppDirectory() + File.separator + "Thumbnails");
-                            ApplicationContext.databaseRef.writeDatasetInfo(data, saveAsLink, parseFile.getAbsolutePath());
+                            ApplicationContext.databaseRef.writeDatasetInfo(data, saveAsLink, parseFile.getAbsolutePath(), true);
                         } else {
-                            thumbnail = new File(dest + File.separator + data.getString(Tags.StudyInstanceUID) + File.separator + data.getString(Tags.SeriesInstanceUID) + File.separator + "Thumbnails");
                             File destination = new File(dest + File.separator + data.getString(Tags.StudyInstanceUID) + File.separator + data.getString(Tags.SeriesInstanceUID));
                             if (!destination.exists()) {
                                 destination.mkdirs();
                             }
                             File destinationFile = new File(destination, data.getString(Tags.SOPInstanceUID));
                             copy(parseFile, destinationFile);
-                            ApplicationContext.databaseRef.writeDatasetInfo(data, saveAsLink, destinationFile.getAbsolutePath());
+                            ApplicationContext.databaseRef.writeDatasetInfo(data, saveAsLink, destinationFile.getAbsolutePath(), true);
                         }
                     } else {
                         throw new CompressedDcmOnMacException();
                     }
                 } else {
                     if (saveAsLink) {
-                        thumbnail = new File(ApplicationContext.getAppDirectory() + File.separator + "Thumbnails");
-                        ApplicationContext.databaseRef.writeDatasetInfo(data, saveAsLink, parseFile.getAbsolutePath());
+                        ApplicationContext.databaseRef.writeDatasetInfo(data, saveAsLink, parseFile.getAbsolutePath(), true);
                     } else {
-                        thumbnail = new File(dest + File.separator + data.getString(Tags.StudyInstanceUID) + File.separator + data.getString(Tags.SeriesInstanceUID) + File.separator + "Thumbnails");
                         File destination = new File(dest + File.separator + data.getString(Tags.StudyInstanceUID) + File.separator + data.getString(Tags.SeriesInstanceUID));
                         if (!destination.exists()) {
                             destination.mkdirs();
                         }
                         File destinationFile = new File(destination, data.getString(Tags.SOPInstanceUID));
                         copy(parseFile, destinationFile);
-                        ApplicationContext.databaseRef.writeDatasetInfo(data, saveAsLink, destinationFile.getAbsolutePath());
+                        ApplicationContext.databaseRef.writeDatasetInfo(data, saveAsLink, destinationFile.getAbsolutePath(), true);
                     }
-                }
-            }
-            if (!data.getString(Tags.SOPClassUID).equals(UID.VideoEndoscopicImageStorage) && !data.getString(Tags.SOPClassUID).equals(UID.VideoMicroscopicImageStorage) && !data.getString(Tags.SOPClassUID).equals(UID.VideoPhotographicImageStorage)) {
-                if (!thumbnail.exists()) {
-                    thumbnail.mkdirs();
-                }
-                createThumbnail(parseFile, new File(thumbnail + File.separator + data.getString(Tags.SOPInstanceUID)), data.getString(Tags.StudyInstanceUID), data.getString(Tags.SeriesInstanceUID), data.getString(Tags.SOPInstanceUID));
-            } else {
-                File videoFile = null;
-                if (!saveAsLink) {
-                    videoFile = new File(dest + File.separator + data.getString(Tags.StudyInstanceUID) + File.separator + data.getString(Tags.SeriesInstanceUID) + File.separator + data.getString(Tags.SOPInstanceUID) + "_V" + File.separator + "video.xml");
-                } else {
-                    videoFile = new File(ApplicationContext.getAppDirectory() + File.separator + "Videos" + File.separator + data.getString(Tags.SOPInstanceUID) + "_V" + File.separator + "video.xml");
-                }
-                videoFile.getParentFile().mkdirs();
-                try {
-                    videoFile.createNewFile();
-                } catch (IOException ex) {
-                    Logger.getLogger(CGetDelegate.class.getName()).log(Level.SEVERE, null, ex);
-                }
-                Dcm2Xml.main(new String[]{parseFile.getAbsolutePath(), "-X", "-o", videoFile.getAbsolutePath()});
-                DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-                DocumentBuilder dBuilder;
-                try {
-                    dBuilder = dbFactory.newDocumentBuilder();
-                    Document doc = dBuilder.parse(videoFile);
-                    NodeList elementsByTagName1 = doc.getElementsByTagName("item");
-                    for (int k = 0; k < elementsByTagName1.getLength(); k++) {
-                        Node item = elementsByTagName1.item(k);
-                        NamedNodeMap attributes = item.getAttributes();
-                        if (attributes.getNamedItem("src") != null) {
-                            Node namedItem = attributes.getNamedItem("src");
-                            videoFile = new File(videoFile.getParentFile() + File.separator + namedItem.getNodeValue());
-                            videoFile.renameTo(new File(videoFile.getAbsolutePath() + ".mpg"));
-                            ApplicationContext.databaseRef.update("image", "FileStoreUrl", videoFile.getAbsolutePath() + ".mpg", "SopUID", data.getString(Tags.SOPInstanceUID));
-                        }
-                    }
-                    dBuilder = null;
-                    dbFactory = null;
-                } catch (IOException ex) {
-                    Logger.getLogger(ImportDcmDirDelegate.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (ParserConfigurationException ex) {
-                    Logger.getLogger(ImportDcmDirDelegate.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (SAXException ex) {
-                    Logger.getLogger(ImportDcmDirDelegate.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         } catch (IOException ex) {
             ex.printStackTrace();
         } catch (NullPointerException ex) {
-//            System.out.println("Null in readAndImportDicomFile() : " + ex.getMessage());
+            //ignore
         } finally {
             if (dis != null) {
                 try {
@@ -323,80 +250,5 @@ public class ImportDcmDirDelegate extends Thread {
         } else {
             skip = true;
         }
-    }
-
-    private void createThumbnail(File srcFile, File destFile, String studyUid, String seriesUid, String sopUid) {
-        Image loadedImage;
-        int width = 60, height = 60;
-        BufferedImage currentBufferedImage = null, imageToWrite = null;
-        try {
-            iis = ImageIO.createImageInputStream(srcFile);
-            try {
-                iter = ImageIO.getImageReadersByFormatName("DICOM");
-                ImageReader reader = (ImageReader) iter.next();
-                reader.setInput(iis, false);
-                FileInputStream fis = new FileInputStream(srcFile);
-                DicomInputStream dis = new DicomInputStream(fis);
-                DicomObject obj = dis.readDicomObject();
-                if (reader.getNumImages(true) > 0) {
-                    currentBufferedImage = reader.read(0);
-                    String overlayData = obj.getString(Tag.OverlayData);
-                    if (overlayData != null && overlayData.length() > 0) {
-                        BufferedImage overlayImg = OverlayUtils.extractOverlay(obj, Tag.OverlayData, reader, "FFFFFF");
-                        combineImages(currentBufferedImage, overlayImg);
-                    }
-                }
-                int rows = obj.getInt(Tags.Rows);
-                int cols = obj.getInt(Tags.Columns);
-                if (rows != 0 && cols != 0) {
-                    if (rows < cols) {
-                        height = Math.min(rows, cols) * maxThumbwidth / Math.max(rows, cols);
-                        width = maxThumbwidth;
-                    } else {
-                        width = Math.min(rows, cols) * maxThumbwidth / Math.max(rows, cols);
-                        height = maxThumbwidth;
-                    }
-                }
-
-                if (reader.getNumImages(true) > 0) {
-                    loadedImage = new ImageIcon(currentBufferedImage).getImage();
-                    GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
-                    BufferedImage temp = gc.createCompatibleImage(width, height);
-                    Graphics2D g2 = temp.createGraphics();
-                    g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-                    g2.drawImage(loadedImage, 0, 0, temp.getWidth(), temp.getHeight(), null);
-                    imageToWrite = temp;
-                    g2.dispose();
-                }
-
-                if (obj.getString(Tags.SOPClassUID).equalsIgnoreCase("1.2.840.10008.5.1.4.1.1.104.1")) {
-                    loadedImage = new ImageIcon(getClass().getResource("/in/raster/mayam/form/images/pdficon.jpeg")).getImage();
-                    GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
-                    BufferedImage temp = gc.createCompatibleImage(loadedImage.getWidth(null), loadedImage.getHeight(null));
-                    Graphics2D g2 = temp.createGraphics();
-                    g2.drawImage(loadedImage, 0, 0, null);
-                    imageToWrite = temp;
-                }
-                ImageIO.write(imageToWrite, "jpeg", destFile);
-                ApplicationContext.databaseRef.updateThumbnailStatus(studyUid, seriesUid, sopUid);
-            } catch (ConcurrentModificationException cme) {
-            } catch (NullPointerException npe) {
-            } catch (NegativeArraySizeException nase) {
-            } catch (NoSuchElementException elementException) {
-            }
-        } catch (IOException ex) {
-            Logger.getLogger(ImportDcmDirDelegate.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (Exception ex) {
-        }
-    }
-
-    private void combineImages(BufferedImage currentBufferedImage, BufferedImage overlayImg) {
-        Graphics2D g2d = currentBufferedImage.createGraphics();
-        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                RenderingHints.VALUE_ANTIALIAS_ON);
-        g2d.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
-                RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
-        g2d.drawImage(overlayImg, 0, 0, null);
-        g2d.dispose();
     }
 }
