@@ -300,14 +300,14 @@ public class DatabaseHandler {
     }
 
     public synchronized void writeDatasetInfo(DicomObject dataset, boolean isLink, String filePath, boolean updateMainScreen) {
-//        try {      
-        insertPatientInfo(dataset, isLink, updateMainScreen);
-        insertStudyInfo(dataset, isLink);
-        insertSeriesInfo(dataset, updateMainScreen);
-        insertImageInfo(dataset, filePath, isLink, updateMainScreen);
-//        } catch (Exception e) {
-//            System.out.println("Exception : " + e.getMessage());
-//        }
+        try {
+            insertPatientInfo(dataset, isLink, updateMainScreen);
+            insertStudyInfo(dataset, isLink);
+            insertSeriesInfo(dataset, updateMainScreen);
+            insertImageInfo(dataset, filePath, isLink, updateMainScreen);
+        } catch (Exception e) {
+            System.out.println("Failed to update Patient info : " + e.getMessage());
+        }
         if (ApplicationContext.mainScreenObj != null) {
             if (dataset.getString(Tags.NumberOfFrames) != null) {
                 ApplicationContext.mainScreenObj.setProgressIndeterminate();
