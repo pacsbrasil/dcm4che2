@@ -57,8 +57,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -149,7 +147,7 @@ public class TreeTableMouseListener extends MouseAdapter {
                 }
             }
         } catch (NullPointerException npe) {
-            if (treeTable.getSelectedRows().length > 1) {
+            if (treeTable.getSelectedRows().length > 1) {  // To select multiple studies to delete
                 imagePreviewPanel.resetImagePreviewPanel();
             } else {
                 int i = treeTable.getSelectedRow();

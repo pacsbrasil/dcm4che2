@@ -555,7 +555,7 @@ public class MainScreen extends javax.swing.JFrame {
             }
             ApplicationContext.mainScreenObj.loadMatchingStudies();
             ApplicationContext.currentTreeTable.changeSelection(row, column, false, false);
-        } else if (isFocused() && e.getKeyChar() == KeyEvent.VK_DELETE) {
+        } else if (isFocused() && e.getKeyChar() == KeyEvent.VK_DELETE) { //To delete the selective studies
             int[] selectedRows = ApplicationContext.currentTreeTable.getSelectedRows();
             if (selectedRows.length > 0 && JOptionPane.showConfirmDialog(this, "Are you sure want to delete the selected studies?", "Delete Study", JOptionPane.YES_NO_OPTION) == 0) {
                 for (int i = 0; i < selectedRows.length; i++) {

@@ -304,7 +304,7 @@ public class ImagePanel extends javax.swing.JPanel {
                 e.printStackTrace();
             }
         } catch (Exception e) {
-//            System.out.println("Exception in readDicomFile() : " + e.getMessage());
+            System.out.println(e.getMessage());
         }
     }
 
