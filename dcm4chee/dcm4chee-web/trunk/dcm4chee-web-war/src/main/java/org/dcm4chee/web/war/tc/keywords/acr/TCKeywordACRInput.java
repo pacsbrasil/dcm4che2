@@ -242,6 +242,10 @@ public class TCKeywordACRInput extends AbstractTCKeywordInput {
     {
     	getModel().setObject(keywords);
     	((MultipleKeywordsTextModel)text.getModel()).setKeywordItems(keywords);
+    	if (keywords==null || keywords.isEmpty())
+    	{
+    		popup.resetSelection();
+    	}
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -540,6 +544,11 @@ public class TCKeywordACRInput extends AbstractTCKeywordInput {
             this.chooser = chooser;
             
             add(chooser);
+        }
+        
+        public void resetSelection()
+        {
+        	chooser.setKeyword(null);
         }
         
         @Override
