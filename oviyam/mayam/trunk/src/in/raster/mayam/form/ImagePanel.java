@@ -632,7 +632,7 @@ public class ImagePanel extends javax.swing.JPanel {
                             g.drawLine((int) (scoutLine1X1 + (originX / scale)), (int) (scoutLine1Y1 + (originY / scale)), (int) (scoutLine1X2 + (originX / scale)), (int) (scoutLine1Y2 + (originY / scale)));
                             g.drawLine((int) (scoutLine2X1 + (originX / scale)), (int) (scoutLine2Y1 + (originY / scale)), (int) (scoutLine2X2 + (originX / scale)), (int) (scoutLine2Y2 + (originY / scale)));
                         } else if (orientationLabel.equalsIgnoreCase("CORONAL")) {
-                            if (slope1 == slope2) {
+                            if (modality.equals("CT") || slope1 == slope2) {
                                 g.drawLine((int) (axis1LeftX + (originX / scale)), (int) (axis1LeftY + (originY / scale)), (int) (axis1RightX + (originX / scale)), (int) (axis1RightY + (originY / scale)));
                                 g.drawLine((int) (axis2LeftX + (originX / scale)), (int) (axis2LeftY + (originY / scale)), (int) (axis2RightX + (originX / scale)), (int) (axis2RightY + (originY / scale)));
                             }
@@ -1386,6 +1386,7 @@ public class ImagePanel extends javax.swing.JPanel {
 
     private void setImage(BufferedImage tempImage) {
         if (tempImage != null) {
+            this.instanceUID = instanceUidList.get(currentInstanceNo);
             currentbufferedimage = tempImage;
             currentScoutDetails = ApplicationContext.databaseRef.getScoutLineDetails(studyUID, seriesUID, instanceUidList.get(currentInstanceNo));
             isLocalizer = (currentScoutDetails.getImageType().equalsIgnoreCase("LOCALIZER")) ? true : false;
@@ -1411,18 +1412,14 @@ public class ImagePanel extends javax.swing.JPanel {
         currentScoutDetails = ApplicationContext.databaseRef.getScoutLineDetails(studyUID, seriesUID, instanceUidList.get(currentInstanceNo));
         canvas.getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(currentInstanceNo);
         canvas.getLayeredCanvas().textOverlay.getTextOverlayParam().setSlicePosition(currentScoutDetails.getSliceLocation());
-        if (displayScout) {
+        if (!isLocalizer && displayScout) {
             if (currentInstanceNo > 1) {
                 executor.submit(new LocalizerDelegate(true));
             } else {
                 executor.submit(new LocalizerDelegate(false));
             }
         }
-        try {
-            canvas.getLayeredCanvas().annotationPanel.setAnnotation(currentSeriesAnnotation.getInstanceAnnotation(currentInstanceNo));
-        } catch (NullPointerException ex) {
-            // ignore : Null pointer exception occurs if there is no annotaion for instance
-        }
+        canvas.getLayeredCanvas().annotationPanel.setAnnotation(currentSeriesAnnotation.getInstanceAnnotation(currentInstanceNo));
     }
 
     public void storeAnnotation() { //Adds new instance's annotaion
