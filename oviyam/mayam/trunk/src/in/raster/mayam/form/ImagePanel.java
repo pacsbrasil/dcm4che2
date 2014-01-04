@@ -1388,8 +1388,6 @@ public class ImagePanel extends javax.swing.JPanel {
         if (tempImage != null) {
             this.instanceUID = instanceUidList.get(currentInstanceNo);
             currentbufferedimage = tempImage;
-            currentScoutDetails = ApplicationContext.databaseRef.getScoutLineDetails(studyUID, seriesUID, instanceUidList.get(currentInstanceNo));
-            isLocalizer = (currentScoutDetails.getImageType().equalsIgnoreCase("LOCALIZER")) ? true : false;
             try {
                 if (cm != null) {
                     currentbufferedimage = new BufferedImage(cm, currentbufferedimage.getRaster(), false, null);
@@ -1401,7 +1399,7 @@ public class ImagePanel extends javax.swing.JPanel {
                     image = currentbufferedimage;
                 }
             } catch (Exception e) {
-                System.out.println("Exception in setImage() : " + currentInstanceNo);
+                System.out.println("Could not display image : " + currentInstanceNo);
             }
             updateCurrentInstance();
             repaint();
@@ -1412,11 +1410,17 @@ public class ImagePanel extends javax.swing.JPanel {
         currentScoutDetails = ApplicationContext.databaseRef.getScoutLineDetails(studyUID, seriesUID, instanceUidList.get(currentInstanceNo));
         canvas.getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(currentInstanceNo);
         canvas.getLayeredCanvas().textOverlay.getTextOverlayParam().setSlicePosition(currentScoutDetails.getSliceLocation());
-        if (!isLocalizer && displayScout) {
-            if (currentInstanceNo > 1) {
-                executor.submit(new LocalizerDelegate(true));
+        if (displayScout) {
+            currentScoutDetails = ApplicationContext.databaseRef.getScoutLineDetails(studyUID, seriesUID, instanceUidList.get(currentInstanceNo));
+            isLocalizer = (currentScoutDetails.getImageType().equalsIgnoreCase("LOCALIZER")) ? true : false;
+            if (!isLocalizer) {
+                if (currentInstanceNo > 1) {
+                    executor.submit(new LocalizerDelegate(true));
+                } else {
+                    executor.submit(new LocalizerDelegate(false));
+                }
             } else {
-                executor.submit(new LocalizerDelegate(false));
+                findOrientation();
             }
         }
         canvas.getLayeredCanvas().annotationPanel.setAnnotation(currentSeriesAnnotation.getInstanceAnnotation(currentInstanceNo));
