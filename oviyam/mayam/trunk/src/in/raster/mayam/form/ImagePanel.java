@@ -906,7 +906,7 @@ public class ImagePanel extends javax.swing.JPanel {
     }
 
     public void mousePressed(MouseEvent e) {
-        if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 2) {
+        if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 2 && !((LayeredCanvas) getParent().getParent()).annotationPanel.isAnnotationEnabled()) {
             if (scale == getOriginalScaleFacotor()) {
                 pixelMapping();
             } else {

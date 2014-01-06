@@ -40,7 +40,7 @@
 package in.raster.mayam.models;
 
 import java.io.Serializable;
-import java.util.ArrayList;
+import java.util.HashSet;
 
 /**
  *
@@ -50,57 +50,45 @@ import java.util.ArrayList;
  */
 public class Annotation implements Serializable {
 
-    private ArrayList<AnnotationObj> line;
-    private ArrayList<AnnotationObj> arrow;
-    private ArrayList<AnnotationObj> rect;
-    private ArrayList<AnnotationObj> ellipse;
-    private ArrayList<AnnotationObj> text;
+    private HashSet<AnnotationObj> line;
+    private HashSet<AnnotationObj> arrow;
+    private HashSet<AnnotationObj> rect;
+    private HashSet<AnnotationObj> ellipse;
+//    private ArrayList<AnnotationObj> text;
 
     //Construct the Annotation object
     public Annotation() {
-        line = new ArrayList<AnnotationObj>();
-        arrow = new ArrayList<AnnotationObj>();
-        rect = new ArrayList<AnnotationObj>();
-        ellipse = new ArrayList<AnnotationObj>();
     }
 
-    public ArrayList<AnnotationObj> getEllipse() {
+    public HashSet<AnnotationObj> getEllipse() {
         return ellipse;
     }
 
-    public void setEllipse(ArrayList<AnnotationObj> ellipse) {
+    public void setEllipse(HashSet<AnnotationObj> ellipse) {
         this.ellipse = ellipse;
     }
 
-    public ArrayList<AnnotationObj> getLine() {
+    public HashSet<AnnotationObj> getLine() {
         return line;
     }
 
-    public void setLine(ArrayList<AnnotationObj> line) {
+    public void setLine(HashSet<AnnotationObj> line) {
         this.line = line;
     }
 
-    public ArrayList<AnnotationObj> getArrow() {
+    public HashSet<AnnotationObj> getArrow() {
         return arrow;
     }
 
-    public void setArrow(ArrayList<AnnotationObj> arrow) {
+    public void setArrow(HashSet<AnnotationObj> arrow) {
         this.arrow = arrow;
     }
 
-    public ArrayList<AnnotationObj> getRect() {
+    public HashSet<AnnotationObj> getRect() {
         return rect;
     }
 
-    public void setRect(ArrayList<AnnotationObj> rect) {
+    public void setRect(HashSet<AnnotationObj> rect) {
         this.rect = rect;
-    }
-
-    public ArrayList<AnnotationObj> getText() {
-        return text;
-    }
-
-    public void setText(ArrayList<AnnotationObj> text) {
-        this.text = text;
     }
 }

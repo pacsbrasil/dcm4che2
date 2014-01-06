@@ -129,6 +129,8 @@ public class ImageToolbar extends javax.swing.JPanel {
             doRuler(true);
         } else if (e.getKeyCode() == KeyEvent.VK_T) {
             doPan();
+        } else if (e.getKeyCode() == KeyEvent.VK_DELETE) {
+            ApplicationContext.layeredCanvas.annotationPanel.deleteSelectedAnnotation();
         }
     }
 
@@ -264,7 +266,6 @@ public class ImageToolbar extends javax.swing.JPanel {
         arrowButton = new javax.swing.JButton();
         clearAllMeasurement = new javax.swing.JButton();
         deleteMeasurement = new javax.swing.JButton();
-        moveMeasurement = new javax.swing.JButton();
         annotationVisibility = new javax.swing.JButton();
         textOverlay = new javax.swing.JButton();
         reset = new javax.swing.JButton();
@@ -513,22 +514,6 @@ public class ImageToolbar extends javax.swing.JPanel {
             }
         });
         jToolBar1.add(deleteMeasurement);
-
-        moveMeasurement.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/annotation_selection.png"))); // NOI18N
-        moveMeasurement.setActionCommand("moveMeasurement");
-        toolsButtonGroup.add(moveMeasurement);
-        moveMeasurement.setDoubleBuffered(true);
-        moveMeasurement.setFocusable(false);
-        moveMeasurement.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        moveMeasurement.setPreferredSize(new java.awt.Dimension(45, 45));
-        moveMeasurement.setRequestFocusEnabled(false);
-        moveMeasurement.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        moveMeasurement.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                moveMeasurementActionPerformed(evt);
-            }
-        });
-        jToolBar1.add(moveMeasurement);
 
         annotationVisibility.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/annotation_overlay.png"))); // NOI18N
         toolsButtonGroup.add(annotationVisibility);
@@ -815,18 +800,6 @@ public class ImageToolbar extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_deleteMeasurementActionPerformed
 
-    private void moveMeasurementActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveMeasurementActionPerformed
-        toolsButtonGroup.clearSelection();
-        if (ApplicationContext.layeredCanvas.annotationPanel != null && ApplicationContext.layeredCanvas.imgpanel != null) {
-            ImagePanel.tool = "";
-            AnnotationPanel.tool = "";
-            ApplicationContext.layeredCanvas.annotationPanel.doMoveMeasurement();
-            toolsButtonGroup.setSelected(moveMeasurement.getModel(), AnnotationPanel.isMoveMeasurement());
-        } else {
-            JOptionPane.showMessageDialog(ImageToolbar.this, "Tile selected is not valid for this process");
-        }
-    }//GEN-LAST:event_moveMeasurementActionPerformed
-
     private void annotationVisibilityActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_annotationVisibilityActionPerformed
         if (ApplicationContext.layeredCanvas.annotationPanel != null) {
             ApplicationContext.layeredCanvas.annotationPanel.toggleAnnotation();
@@ -933,7 +906,6 @@ public class ImageToolbar extends javax.swing.JPanel {
     private javax.swing.JCheckBox loopCheckbox;
     private javax.swing.JSlider loopSlider;
     private javax.swing.JButton metaDataButton;
-    private javax.swing.JButton moveMeasurement;
     private javax.swing.JButton panButton;
     private javax.swing.JButton presetButton;
     private javax.swing.JButton probeButton;
@@ -998,10 +970,7 @@ public class ImageToolbar extends javax.swing.JPanel {
     public void setWindowingTool() {
         toolsButtonGroup.clearSelection();
         if (ApplicationContext.layeredCanvas.annotationPanel != null && ApplicationContext.layeredCanvas.imgpanel != null) {
-            ApplicationContext.layeredCanvas.annotationPanel.setAddLine(false);
-            ApplicationContext.layeredCanvas.annotationPanel.setAddArrow(false);
-            ApplicationContext.layeredCanvas.annotationPanel.setAddEllipse(false);
-            ApplicationContext.layeredCanvas.annotationPanel.setAddRect(false);
+            ApplicationContext.layeredCanvas.annotationPanel.disableAnnotations();
             ApplicationContext.layeredCanvas.annotationPanel.stopPanning();
             toolsButtonGroup.setSelected(windowing.getModel(), ApplicationContext.layeredCanvas.imgpanel.doWindowing());
         }
@@ -1050,10 +1019,7 @@ public class ImageToolbar extends javax.swing.JPanel {
     public void doPan() {
         toolsButtonGroup.clearSelection();
         if (ApplicationContext.layeredCanvas.annotationPanel != null && ApplicationContext.layeredCanvas.imgpanel != null) {
-            ApplicationContext.layeredCanvas.annotationPanel.setAddLine(false);
-            ApplicationContext.layeredCanvas.annotationPanel.setAddArrow(false);
-            ApplicationContext.layeredCanvas.annotationPanel.setAddEllipse(false);
-            ApplicationContext.layeredCanvas.annotationPanel.setAddRect(false);
+            ApplicationContext.layeredCanvas.annotationPanel.disableAnnotations();
             toolsButtonGroup.setSelected(panButton.getModel(), ApplicationContext.layeredCanvas.imgpanel.doPan());
         } else {
             JOptionPane.showMessageDialog(ImageToolbar.this, "Tile selected is not valid for this process");
@@ -1063,10 +1029,7 @@ public class ImageToolbar extends javax.swing.JPanel {
     public void doZoom() {
         toolsButtonGroup.clearSelection();
         if (ApplicationContext.layeredCanvas.annotationPanel != null && ApplicationContext.layeredCanvas.imgpanel != null) {
-            ApplicationContext.layeredCanvas.annotationPanel.setAddLine(false);
-            ApplicationContext.layeredCanvas.annotationPanel.setAddArrow(false);
-            ApplicationContext.layeredCanvas.annotationPanel.setAddEllipse(false);
-            ApplicationContext.layeredCanvas.annotationPanel.setAddRect(false);
+            ApplicationContext.layeredCanvas.annotationPanel.disableAnnotations();
             toolsButtonGroup.setSelected(zoomButton.getModel(), ApplicationContext.layeredCanvas.imgpanel.doZoom());
         } else {
             JOptionPane.showMessageDialog(ImageToolbar.this, "Tile selected is not valid for this process");
@@ -1177,10 +1140,7 @@ public class ImageToolbar extends javax.swing.JPanel {
         toolsButtonGroup.clearSelection();
         if (ApplicationContext.layeredCanvas.annotationPanel != null && ApplicationContext.layeredCanvas.imgpanel != null) {
             ApplicationContext.layeredCanvas.annotationPanel.stopPanning();
-            ApplicationContext.layeredCanvas.annotationPanel.setAddLine(false);
-            ApplicationContext.layeredCanvas.annotationPanel.setAddArrow(false);
-            ApplicationContext.layeredCanvas.annotationPanel.setAddEllipse(false);
-            ApplicationContext.layeredCanvas.annotationPanel.setAddRect(false);
+            ApplicationContext.layeredCanvas.annotationPanel.disableAnnotations();
             ApplicationContext.layeredCanvas.imgpanel.doStack();
             ApplicationContext.layeredCanvas.imgpanel.repaint();
             toolsButtonGroup.setSelected(stackButton.getModel(), ApplicationContext.layeredCanvas.imgpanel.isStackSelected());
@@ -1285,7 +1245,6 @@ public class ImageToolbar extends javax.swing.JPanel {
         ellipseButton.setEnabled(false);
         clearAllMeasurement.setEnabled(false);
         deleteMeasurement.setEnabled(false);
-        moveMeasurement.setEnabled(false);
         annotationVisibility.setEnabled(false);
         textOverlay.setEnabled(false);
         reset.setEnabled(false);
@@ -1311,7 +1270,6 @@ public class ImageToolbar extends javax.swing.JPanel {
         ellipseButton.setEnabled(true);
         clearAllMeasurement.setEnabled(true);
         deleteMeasurement.setEnabled(true);
-        moveMeasurement.setEnabled(true);
     }
 
     public void hideAnnotationTools() {
@@ -1321,7 +1279,6 @@ public class ImageToolbar extends javax.swing.JPanel {
         ellipseButton.setEnabled(false);
         clearAllMeasurement.setEnabled(false);
         deleteMeasurement.setEnabled(false);
-        moveMeasurement.setEnabled(false);
         String actionCommand = null;
         if (toolsButtonGroup != null && toolsButtonGroup.getSelection() != null) {
             actionCommand = toolsButtonGroup.getSelection().getActionCommand();
@@ -1364,7 +1321,6 @@ public class ImageToolbar extends javax.swing.JPanel {
         arrowButton.setToolTipText(ApplicationContext.currentBundle.getString("ImageView.arrowButton.toolTipText"));
         deleteMeasurement.setToolTipText(ApplicationContext.currentBundle.getString("ImageView.deleteSelectedMeasurementButton.toolTipText"));
         clearAllMeasurement.setToolTipText(ApplicationContext.currentBundle.getString("ImageView.deleteAllMeasurementButton.toolTipText"));
-        moveMeasurement.setToolTipText(ApplicationContext.currentBundle.getString("ImageView.moveMeasurementButton.toolTipText"));
         annotationVisibility.setToolTipText(ApplicationContext.currentBundle.getString("ImageView.annotaionOverlayButton.toolTipText"));
         textOverlay.setToolTipText(ApplicationContext.currentBundle.getString("ImageView.textOverlayButton.toolTipText"));
         reset.setToolTipText(ApplicationContext.currentBundle.getString("ImageView.resetButton.toolTipText"));
