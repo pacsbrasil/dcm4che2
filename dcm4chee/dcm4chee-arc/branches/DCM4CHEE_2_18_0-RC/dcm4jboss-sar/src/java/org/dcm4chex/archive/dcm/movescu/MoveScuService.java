@@ -146,6 +146,8 @@ public class MoveScuService extends AbstractScuService implements
     public void scheduleMove(String retrieveAET, String destAET,
             int priority, String pid, String studyIUID, String seriesIUID,
             String[] sopIUIDs, long scheduledTime) {
+    	if (sopIUIDs != null && sopIUIDs.length < 1)
+    		sopIUIDs = null;
         MoveOrder moveOrder = new MoveOrder(retrieveAET, destAET, priority, pid,
                         studyIUID, seriesIUID, sopIUIDs);        
         moveOrder.processOrderProperties();
@@ -215,7 +217,8 @@ public class MoveScuService extends AbstractScuService implements
         }
         
         ActiveAssociation aa = openAssociation(aet,
-                UIDs.PatientRootQueryRetrieveInformationModelMOVE);
+                UIDs.PatientRootQueryRetrieveInformationModelMOVE,
+                AssociationFactory.getInstance().newExtNegotiation(UIDs.PatientRootQueryRetrieveInformationModelMOVE, new byte[]{1}));
         
         try {
             invokeDimse(aa, order);
