@@ -60,9 +60,13 @@ public class CheckOneDayBehaviour extends AjaxFormSubmitBehavior {
 
     private SimpleDateTimeField dtfStart;
     private SimpleDateTimeField dtfEnd;
-    private Date oldStart;
+    private Date oldStart, newEnd;
     
-    public CheckOneDayBehaviour(SimpleDateTimeField dtfStart, SimpleDateTimeField dtfEnd, String event) {
+    public void setNewEnd(long t) {
+		this.newEnd = new Date(t);
+	}
+
+	public CheckOneDayBehaviour(SimpleDateTimeField dtfStart, SimpleDateTimeField dtfEnd, String event) {
         super(event);
         this.dtfStart = dtfStart;
         this.dtfEnd = dtfEnd;
@@ -85,8 +89,8 @@ public class CheckOneDayBehaviour extends AjaxFormSubmitBehavior {
     }
 
     private void setEndDate(AjaxRequestTarget target) {
-        Date startDate = dtfStart.getModelObject();
-        Date endDate = dtfEnd.getModelObject();
+        Date startDate = newEnd == null ? dtfStart.getModelObject() : newEnd;
+        Date endDate = newEnd == null ? dtfEnd.getModelObject() : null;
         IModel<Date> mEnd = dtfEnd.getModel();
         if (startDate != null && (endDate == null || endDate.equals(oldStart))) {
             Calendar cal = Calendar.getInstance();
@@ -95,6 +99,7 @@ public class CheckOneDayBehaviour extends AjaxFormSubmitBehavior {
             mEnd.setObject(cal.getTime());
             target.addComponent(dtfStart);
             target.addComponent(dtfEnd);
+            newEnd = null;
         }
     }
 

@@ -52,6 +52,7 @@ import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.form.AbstractTextComponent.ITextFormatProvider;
 import org.apache.wicket.markup.html.form.FormComponentPanel;
 import org.apache.wicket.model.IModel;
+import org.dcm4chee.web.common.behaviours.CheckOneDayBehaviour;
 import org.dcm4chee.web.common.util.DateUtils;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -65,7 +66,9 @@ import org.slf4j.LoggerFactory;
  */
 public class SimpleDateTimeField extends FormComponentPanel<Date> implements ITextFormatProvider {
 
-    private static final long serialVersionUID = 1L;
+    private static final long ONE_DAY_IN_MILLIS = 86400000l;
+
+	private static final long serialVersionUID = 1L;
     
     private boolean max;
     private DateTextField dateField;
@@ -89,13 +92,30 @@ public class SimpleDateTimeField extends FormComponentPanel<Date> implements ITe
                     @Override
                     public Date convertToObject(String value, Locale locale) {
                         if (value != null ) {
+                        	long t;
                         	if(value.length()==1 && Character.isDigit(value.charAt(0))) {
-	                            long t = System.currentTimeMillis() - 86400000l*(value.charAt(0)-0x30);
+	                            t = System.currentTimeMillis() - ONE_DAY_IN_MILLIS*(value.charAt(0)-0x30);
 	                            return new Date(t);
 	                        }
 	                        if (value.length()==2 && Character.isDigit(value.charAt(0)) && Character.isDigit(value.charAt(1))) {
-	                            long t = System.currentTimeMillis() - 86400000l*((value.charAt(0)-0x30)*10+value.charAt(1)-0x30);
+	                            t = System.currentTimeMillis() - ONE_DAY_IN_MILLIS*((value.charAt(0)-0x30)*10+value.charAt(1)-0x30);
 	                            return new Date(t);
+	                        }
+	                        int pos = value.indexOf('-');
+	                        if (pos != -1) {
+	                        	CheckOneDayBehaviour b = getCheckOneDayBehaviour();
+	                        	if (b != null) {
+	                        		long start = Long.parseLong(value.substring(0, pos));
+	                        		long end = ++pos == value.length() ? 0l : Long.parseLong(value.substring(pos));
+	                        		if (start < end) {
+	                        			t = start;
+	                        			start = end;
+	                        			end = t;
+	                        		}
+	                        		t = System.currentTimeMillis() - ONE_DAY_IN_MILLIS*start;
+	                        		b.setNewEnd(System.currentTimeMillis() - ONE_DAY_IN_MILLIS*end);
+	                        		return new Date(t);
+	                        	}
 	                        }
                         }
                         return super.convertToObject(value, locale);
@@ -211,7 +231,16 @@ public class SimpleDateTimeField extends FormComponentPanel<Date> implements ITe
         return DateUtils.getDatePattern(this);
     }
     
-    private class DateModel implements IModel<Date> {
+    public CheckOneDayBehaviour getCheckOneDayBehaviour() {
+		for (IBehavior b : dateField.getBehaviors()) {
+			if (b instanceof CheckOneDayBehaviour) {
+				return (CheckOneDayBehaviour) b;
+			}
+		}
+		return null;
+	}
+
+	private class DateModel implements IModel<Date> {
         
         private static final long serialVersionUID = 1L;
         
