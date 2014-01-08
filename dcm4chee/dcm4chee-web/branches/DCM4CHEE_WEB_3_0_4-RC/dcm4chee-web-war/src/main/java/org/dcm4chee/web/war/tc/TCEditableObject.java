@@ -205,11 +205,17 @@ public class TCEditableObject extends TCObject {
     }
     
     public void addKeyword(ITextOrCode keyword) {
-        addKeywordImpl(keyword);
+        if (addKeywordImpl(keyword))
+        {
+        	modified = true;
+        }
     }
 
     public void removeKeyword(ITextOrCode keyword) {
-        removeKeywordImpl(keyword);
+        if (removeKeywordImpl(keyword))
+        {
+        	modified = true;
+        }
     }
 
     public void setLevel(Level level) {
