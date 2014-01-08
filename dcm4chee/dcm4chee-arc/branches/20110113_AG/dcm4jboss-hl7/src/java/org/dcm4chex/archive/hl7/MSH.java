@@ -96,6 +96,7 @@ public class MSH {
     		+  sendingApplication + '@' + sendingFacility
     		+ "->" + receivingApplication + '@' + receivingFacility
     		+ ", pid=" +  processingID + ", vers=" +  versionID
+    		+ ", cid=" +  messageControlID
     		+ ", charset=" +  characterSet + "]";
     }
 }

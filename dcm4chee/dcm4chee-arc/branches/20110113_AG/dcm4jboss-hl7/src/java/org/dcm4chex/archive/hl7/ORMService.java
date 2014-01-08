@@ -108,7 +108,7 @@ public class ORMService extends AbstractHL7Service {
     
     private ObjectName deviceServiceName;
 
-    private String xslPath;
+    protected String xslPath;
 
     private String defaultStationAET = "UNKOWN";
 

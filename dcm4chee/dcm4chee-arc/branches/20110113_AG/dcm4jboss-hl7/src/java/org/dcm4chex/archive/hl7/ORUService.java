@@ -65,7 +65,7 @@ public class ORUService extends ORU_MDMService
     private static final int DEFAULT_STATUS_FIELD_NR = 10;//Default: Field 11 is OBSERV RESULT STATUS
     private static final String NO_RESULT_STATUS = "NO_OBSERV_RESULT_STATUS";
     private static final String NO_OBX = "NO_OBX";
-    private HashSet obxIgnoreStati = new HashSet();
+    protected HashSet obxIgnoreStati = new HashSet();
     private int obxStatusFieldNr = DEFAULT_STATUS_FIELD_NR;
     private int fetchSize;
     
@@ -129,7 +129,7 @@ public class ORUService extends ORU_MDMService
         }
     }
 
-    private String getOBXStatus(Document msg) {
+    protected String getOBXStatus(Document msg) {
         Element rootElement = msg.getRootElement();
 //        log.info("rootElement:"+rootElement);
         List obxs = rootElement.elements("OBX");
