@@ -80,12 +80,10 @@ public class TCDetailsDiagnosisTab extends TCDetailsTab {
 
                 if (yesno == null) 
                 {
-                    return getString("tc.yesno.unknown");
+                    yesno = YesNo.No;
                 }
-                else
-                {
-                    return getString("tc.yesno." + yesno.name().toLowerCase());
-                }
+                
+                return getString("tc.yesno." + yesno.name().toLowerCase());
             }
         }));
     }

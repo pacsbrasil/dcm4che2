@@ -80,6 +80,7 @@ import org.dcm4chee.web.common.markup.BaseForm;
 import org.dcm4chee.web.dao.tc.TCQueryFilter;
 import org.dcm4chee.web.dao.tc.TCQueryFilterKey;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue;
+import org.dcm4chee.web.dao.tc.TCQueryFilterValue.YesNo;
 import org.dcm4chee.web.war.common.AutoSelectInputTextBehaviour;
 import org.dcm4chee.web.war.tc.TCUtilities.NullDropDownItem;
 import org.dcm4chee.web.war.tc.widgets.TCAjaxComboBox;
@@ -259,8 +260,12 @@ public abstract class TCSearchPanel extends Panel {
 	                    filter.setPatientSex(patientSexChoice.getModelObject());
 	                    filter.setCategory(categoryChoice.getModelObject());
 	                    filter.setLevel(levelChoice.getModelObject());
-	                    filter.setDiagnosisConfirmed(diagnosisConfirmedChoice
-	                            .getModelObject());
+	                    
+	                    YesNo yesNo = diagnosisConfirmedChoice.getModelObject();
+	                    if (YesNo.Yes.equals(yesNo))
+	                    {
+	                    	filter.setDiagnosisConfirmed( yesNo );
+	                    }
 	                    
 	                    IDateSearchItem dateItem = dateBox.getModelObject();
 	                    if (dateItem==null) {
