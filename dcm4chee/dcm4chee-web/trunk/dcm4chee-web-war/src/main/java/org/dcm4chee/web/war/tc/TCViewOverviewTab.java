@@ -938,11 +938,11 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         }
         
         public void addKeyword() {
-            getTC().addKeywordImpl(createTemplateKeyword());
+            getTC().addKeyword(createTemplateKeyword());
         }
         
         public void removeKeyword(ITextOrCode keyword) {
-            getTC().removeKeywordImpl(keyword);
+            getTC().removeKeyword(keyword);
         }
         
         public void setKeywordAt(int index, ITextOrCode keyword) {

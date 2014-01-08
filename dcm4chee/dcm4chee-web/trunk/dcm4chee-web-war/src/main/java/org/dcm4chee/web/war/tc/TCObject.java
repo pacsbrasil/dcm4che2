@@ -1045,19 +1045,21 @@ public class TCObject implements Serializable {
         }
     }
     
-    protected void addKeywordImpl(ITextOrCode keyword) {
+    protected boolean addKeywordImpl(ITextOrCode keyword) {
         if (keywords==null) {
             keywords = new ArrayList<ITextOrCode>(2);
         }
         if (!keywords.contains(keyword)) {
-            keywords.add(keyword);
+            return keywords.add(keyword);
         }
+        return false;
     }
     
-    protected void removeKeywordImpl(ITextOrCode keyword) {
+    protected boolean removeKeywordImpl(ITextOrCode keyword) {
         if (keywords!=null) {
-            keywords.remove(keyword);
+            return keywords.remove(keyword);
         }
+        return false;
     }
     
     protected static <T extends Object> T convertValue(Object v, Class<T> valueClass) throws IllegalArgumentException
