@@ -235,7 +235,7 @@ public abstract class TCSearchPanel extends Panel {
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 try {
                 	try {
-                		findParent(TCPanel.class).getPopupManager().hideAllPopups(target);
+                		findParent(TCPanel.class).getPopupManager().hidePopups(target);
                 	}
                 	catch (Exception e) {
                 		log.error("Error while closing popups!", e);

@@ -578,7 +578,11 @@ public class TCKeywordACRInput extends AbstractTCKeywordInput {
         		{
                 	List<TCKeyword> keywords = new ArrayList<TCKeyword>();
         			keywords.addAll(getKeywordsAsList());
-        			keywords.addAll(selectedKeywords);
+        			for (TCKeyword keyword : selectedKeywords) {
+        				if (!keywords.contains(keyword)) {
+        					keywords.add(keyword);
+        				}
+        			}
         			setKeywordsAsList(keywords);
         		}
         	}

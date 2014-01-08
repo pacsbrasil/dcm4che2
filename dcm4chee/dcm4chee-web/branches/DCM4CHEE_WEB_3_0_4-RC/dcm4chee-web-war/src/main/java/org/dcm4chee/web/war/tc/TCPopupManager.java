@@ -3,6 +3,7 @@ package org.dcm4chee.web.war.tc;
 import java.awt.Point;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.wicket.Component;
@@ -36,10 +37,15 @@ public class TCPopupManager implements Serializable
         return globalHideOnOutsideClickHandler;
     }
     
-    public void hideAllPopups(AjaxRequestTarget target)
+    public void hidePopups(AjaxRequestTarget target, AbstractTCPopup...doNotHide)
     {
+    	List<AbstractTCPopup> list = doNotHide!=null && doNotHide.length>0 ?
+    			Arrays.asList( doNotHide ) : null;
+    			
     	for (AbstractTCPopup popup : popups) {
-    		popup.hide(target);
+    		if (list==null || !list.contains(popup)) {
+    			popup.hide(target);
+    		}
     	}
     }
         
@@ -48,7 +54,7 @@ public class TCPopupManager implements Serializable
         @Override
         protected void respond(AjaxRequestTarget target)
         {
-            hideAllPopups(target);
+            hidePopups(target);
         }
     }
     
@@ -179,7 +185,7 @@ public class TCPopupManager implements Serializable
         	TCPopupManager manager = getPopupManager();
             if (manager!=null)
             {            
-            	getPopupManager().hideAllPopups(target);
+            	getPopupManager().hidePopups(target, this);
             	
                 beforeShowing(target);
                 
