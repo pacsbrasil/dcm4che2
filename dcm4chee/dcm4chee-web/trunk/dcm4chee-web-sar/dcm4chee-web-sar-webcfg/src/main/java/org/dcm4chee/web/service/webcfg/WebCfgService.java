@@ -418,7 +418,8 @@ public class WebCfgService extends ServiceMBeanSupport implements
     }
     
     public void setTCForumIntegrationType(String type) {
-    	this.tcForumIntegrationType = type;
+    	this.tcForumIntegrationType = type!=null ?
+    			type.trim() : type;
     }
 
     public String getTCKeywordCatalogues() {
