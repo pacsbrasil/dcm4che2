@@ -294,6 +294,10 @@ public class TCKeywordTreeInput extends AbstractTCKeywordInput {
     {
     	getModel().setObject(keywords);
     	((MultipleKeywordsTextModel)text.getModel()).setKeywordItems(keywords);
+    	if (keywords==null || keywords.isEmpty())
+    	{
+    		popup.setSelectedNodes();
+    	}
     }
 
     private void ensurePathExpanded(Tree tree, TCKeywordNode node) {

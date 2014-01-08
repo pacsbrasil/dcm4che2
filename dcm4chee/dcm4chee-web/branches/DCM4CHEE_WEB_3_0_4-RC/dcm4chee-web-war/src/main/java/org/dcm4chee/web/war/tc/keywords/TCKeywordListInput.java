@@ -267,6 +267,10 @@ public class TCKeywordListInput extends AbstractTCKeywordInput {
     private void setKeywordsAsList(List<TCKeyword> keywords) {
         getModel().setObject(keywords);
         ((MultipleKeywordsTextModel)text.getModel()).setKeywordItems(keywords);
+        if (keywords==null || keywords.isEmpty())
+        {
+          	popup.resetSelection();
+        }
     }
 
     private class MultipleKeywordsTextModel extends MultipleItemsTextModel
@@ -411,6 +415,14 @@ public class TCKeywordListInput extends AbstractTCKeywordInput {
         	add(this.list=listCreator.createList());
         }
         
+		public void resetSelection()
+		{
+			if (listCreator!=null)
+			{
+				listCreator.updateSelection();
+			}
+		}
+		
         @Override
         public void beforeShowing(AjaxRequestTarget target)
         {
