@@ -180,7 +180,10 @@ public class TCPopupManager implements Serializable
         	TCPopupManager manager = getPopupManager();
             if (manager!=null)
             {            
-            	manager.hidePopups(target);
+            	if (manager.curPopupShown!=this)
+            	{
+            		manager.hidePopups(target);
+            	}
             	
                 beforeShowing(target);
                 
