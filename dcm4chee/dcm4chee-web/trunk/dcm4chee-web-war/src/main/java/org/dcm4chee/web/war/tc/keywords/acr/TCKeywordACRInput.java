@@ -295,6 +295,8 @@ public class TCKeywordACRInput extends AbstractTCKeywordInput {
         private TCKeyword pathologyKeyword;
 
         private String curPathologyTreeId;
+        
+        private Map<ACRKeywordNode, Tree> pathologyTrees;
 
         public ACRChooser(String id) {
             super(id, "acr-chooser", TCKeywordACRInput.this);
@@ -303,7 +305,7 @@ public class TCKeywordACRInput extends AbstractTCKeywordInput {
 
             ACRKeywordNode[] pathologyRoots = ACRCatalogue.getInstance()
                     .getPathologyRoots();
-            final Map<ACRKeywordNode, Tree> pathologyTrees = new HashMap<ACRKeywordNode, Tree>(
+            pathologyTrees = new HashMap<ACRKeywordNode, Tree>(
                     pathologyRoots.length);
             for (int i = 0; i < pathologyRoots.length; i++) {
                 final ACRKeywordNode pathologyRoot = pathologyRoots[i];
@@ -469,18 +471,29 @@ public class TCKeywordACRInput extends AbstractTCKeywordInput {
                 }
             }
 
+            Tree curPathologyTree = getCurrentPathologyTree();
             Tree anatomyTree = (Tree) get("anatomy-tree");
-            Tree pathologyTree = curPathologyTreeId != null ? (Tree) get(curPathologyTreeId)
-                    : null;
+            
+            ACRKeywordNode anatomyRoot = (ACRKeywordNode) anatomyTree.getModelObject().getRoot();
+            ACRKeywordNode pathologyRoot = anatomyKeyword!=null ?
+            		ACRCatalogue.getInstance().getPathologyRoot(anatomyRoot.findNode(anatomyKeyword)) :
+            			curPathologyTree!=null ? (ACRKeywordNode) curPathologyTree.getModelObject().getRoot() :
+            				ACRCatalogue.getInstance().getPathologyRoot( 
+            						(ACRKeywordNode) ACRCatalogue.getInstance().getAnatomyRoot().getChildAt(0) );
 
-            if (anatomyTree != null) {
-                setNodeSelected(anatomyTree, ((ACRKeywordNode) anatomyTree
-                        .getModelObject().getRoot()).findNode(anatomyKeyword));
+            setNodeSelected( anatomyTree, null );
+            if (anatomyKeyword != null) {
+                setNodeSelected(anatomyTree, anatomyRoot.findNode(anatomyKeyword));
             }
 
-            if (pathologyTree != null) {
-                setNodeSelected(pathologyTree, ((ACRKeywordNode) pathologyTree
-                        .getModelObject().getRoot()).findNode(pathologyKeyword));
+            for (Tree tree : pathologyTrees.values()) {
+            	if (pathologyKeyword!=null && tree.getModelObject().getRoot().equals( pathologyRoot ) ) {
+            		setNodeSelected( tree, pathologyRoot.findNode( pathologyKeyword ) );
+            		setPathologyTreeVisible( tree );
+            	}
+            	else {
+            		setNodeSelected( tree, null );
+            	}
             }
 
             return new Component[] { get("anatomy-tree"),

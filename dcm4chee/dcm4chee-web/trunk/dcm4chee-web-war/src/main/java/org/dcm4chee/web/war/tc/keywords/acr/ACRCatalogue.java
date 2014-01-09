@@ -131,29 +131,43 @@ public class ACRCatalogue extends TCKeywordCatalogue {
         		selectedKeywords!=null?Arrays.asList(selectedKeywords):null);
     }
 
-    public TCKeyword findAnatomyKeywordByValue(String codeValue) {
-        ACRKeywordNode node = getAnatomyRoot().findNodeByCodeValue(codeValue);
+    public TCKeyword findAnatomyKeywordByValue(String anatomyValue) {
+        ACRKeywordNode node = getAnatomyRoot().findNodeByCodeValue(anatomyValue);
         return node != null ? node.getKeyword() : null;
     }
 
-    public TCKeyword findPathologyKeywordByValue(String codeValue) {
+    public TCKeyword findPathologyKeywordByValue(String anatomyValue, String pathologyValue) {
+    	if (anatomyValue!=null) {
+    		ACRKeywordNode node = getAnatomyRoot().findNodeByCodeValue(anatomyValue);
+    		if (node!=null) {
+    			ACRKeywordNode pathologyRoot = getPathologyRoot( node );
+    			if (pathologyRoot!=null) {
+    				ACRKeywordNode pathologyNode = pathologyRoot.findNodeByCodeValue( pathologyValue );
+    				if (pathologyNode!=null) {
+    					return pathologyNode.getKeyword();
+    				}
+    			}
+    		}
+    	}
+    	
         for (ACRKeywordNode pathologyRoot : getPathologyRoots()) {
-            ACRKeywordNode node = pathologyRoot.findNodeByCodeValue(codeValue);
+            ACRKeywordNode node = pathologyRoot.findNodeByCodeValue(pathologyValue);
             if (node != null) {
                 return node.getKeyword();
             }
         }
+        
         return null;
     }
 
     @Override
     public TCKeyword findKeyword(String codeValue) {
         if (codeValue != null) {
-            TCKeyword anatomyKeyword = findAnatomyKeywordByValue(ACRKeyword
-                    .getAnatomyCodeValue(codeValue));
+        	String anatomyValue = ACRKeyword.getAnatomyCodeValue(codeValue);
+            TCKeyword anatomyKeyword = findAnatomyKeywordByValue(anatomyValue);
 
-            TCKeyword pathologyKeyword = findPathologyKeywordByValue(ACRKeyword
-                    .getPathologyCodeValue(codeValue));
+            TCKeyword pathologyKeyword = findPathologyKeywordByValue(anatomyValue,
+            		ACRKeyword.getPathologyCodeValue(codeValue));
 
             if (anatomyKeyword != null && pathologyKeyword != null) {
                 return new ACRKeyword(anatomyKeyword, pathologyKeyword);
