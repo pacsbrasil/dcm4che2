@@ -42,16 +42,6 @@
      <return-type>java.lang.String</return-type>
 	</operation>
    <operation impact="ACTION">
-     <description>Send a single echo request to the specified AE title.</description>
-     <name>echo</name>
-     <parameter>
-       <description>AE title to test</description>
-       <name>aeTitle</name>
-       <type>java.lang.String</type>
-     </parameter>
-     <return-type>java.lang.String</return-type>
-	</operation>
-   <operation impact="ACTION">
      <description>Send an echo request to the specified AE title, for the specified number of times.</description>
      <name>echo</name>
      <parameter>
