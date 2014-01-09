@@ -74,8 +74,6 @@ function hidePopup(popupId)
 
 function hidePopup(popupId, hideOnOutsideClickCallbackUrl)
 {	
-	$(document).off('click.tc-popup', handlePopupOutsideClick);
-	
 	$("[id='" + popupId + "']").fadeOut('slow', function() {
 		$("[id='" + popupId + "']").css({'left':'0','top':'0'});
 	});
@@ -111,11 +109,14 @@ function handlePopupOutsideClick(event)
 
 function shouldHandlePopupOutsideClick(event)
 {
+	var popupShown = false;
 	var mouseOverPopup = false;
 	$('.tc-popup').each(function() {
 		var popupId = $(this).attr('id');
 		if (popupId!=null) {
 			if (isPopupShown(popupId)) {
+				popupShown = true;
+				
 				var popupPosition = $(this).offset();
 				var popupWidth = $(this).width();
 				var popupHeight = $(this).height();
@@ -134,7 +135,7 @@ function shouldHandlePopupOutsideClick(event)
 		}
 	});
 	
-	return !mouseOverPopup;
+	return popupShown && !mouseOverPopup;
 }
 
 function shouldHandlePopupMouseOut(event, popupId)

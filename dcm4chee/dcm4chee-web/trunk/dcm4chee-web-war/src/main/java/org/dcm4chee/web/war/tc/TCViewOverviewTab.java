@@ -306,7 +306,7 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
                 removeBtn.setVisible(index>0);
                 
                 TCInput keywordInput = TCUtilities.createInput("tc-view-overview-keyword-input", 
-                        TCQueryFilterKey.Keyword, item.getModelObject(), true);
+                        TCQueryFilterKey.Keyword, item.getModelObject(), false);
                 keywordInput.addChangeListener(
                         new ValueChangeListener() {
                             @Override

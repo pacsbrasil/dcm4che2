@@ -2,9 +2,6 @@ package org.dcm4chee.web.war.tc;
 
 import java.awt.Point;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AbstractDefaultAjaxBehavior;
@@ -23,11 +20,12 @@ import org.slf4j.LoggerFactory;
  * @version $Revision$ $Date$
  * @since Dec 13, 2011
  */
+@SuppressWarnings("serial")
 public class TCPopupManager implements Serializable
 {
     private static Logger log = LoggerFactory.getLogger(TCPopupManager.class);
 
-    private List<AbstractTCPopup> popups = new ArrayList<AbstractTCPopup>(5);
+    private AbstractTCPopup curPopupShown;
     
     private HideOnOutsideClickBehavior globalHideOnOutsideClickHandler =
         new HideOnOutsideClickBehavior();
@@ -37,16 +35,12 @@ public class TCPopupManager implements Serializable
         return globalHideOnOutsideClickHandler;
     }
     
-    public void hidePopups(AjaxRequestTarget target, AbstractTCPopup...doNotHide)
+    public void hidePopups(AjaxRequestTarget target)
     {
-    	List<AbstractTCPopup> list = doNotHide!=null && doNotHide.length>0 ?
-    			Arrays.asList( doNotHide ) : null;
-    			
-    	for (AbstractTCPopup popup : popups) {
-    		if (list==null || !list.contains(popup))
-    		{
-    			popup.hide(target);
-    		}
+    	if (curPopupShown!=null)
+    	{
+    		curPopupShown.hide(target);
+    		curPopupShown = null;
     	}
     }
         
@@ -186,7 +180,7 @@ public class TCPopupManager implements Serializable
         	TCPopupManager manager = getPopupManager();
             if (manager!=null)
             {            
-            	getPopupManager().hidePopups(target, this);
+            	manager.hidePopups(target);
             	
                 beforeShowing(target);
                 
@@ -254,10 +248,7 @@ public class TCPopupManager implements Serializable
                 TCPopupManager popupManager = getPopupManager();
                 if (popupManager!=null)
                 {
-	                if (!popupManager.popups.contains(this))
-	                {
-	                	popupManager.popups.add(this);
-	                }
+	                popupManager.curPopupShown = this;
                 }
                 
                 target.appendJavascript(getShowPopupJavascript(position));
@@ -272,9 +263,13 @@ public class TCPopupManager implements Serializable
         {
             try
             {
-                if (target==null)
-                {
+                if (target==null) {
                     target = AjaxRequestTarget.get();
+                }
+                
+                TCPopupManager manager = getPopupManager();
+                if (manager!=null) {
+                	manager.curPopupShown = null;
                 }
 
                 target.appendJavascript(getHidePopupJavascript());
