@@ -429,6 +429,11 @@
       <priority value="INFO"/>
    </category>
 
+  <!-- Limit the org.apache.wicket.Component category to avoid 'Markup id set on a component that is usually not rendered into markup.' messages from wicket -->
+  <category name="org.apache.wicket.Component">
+    <priority value="ERROR"/>
+  </category>
+
    <!-- To see ignored unhandled exceptions from listener in handleNotification -->
    <category name="org.jboss.mx.util.JBossNotificationBroadcasterSupport">
      <priority value="DEBUG"/>
