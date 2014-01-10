@@ -69,8 +69,8 @@ import org.dcm4chee.web.dao.tc.TCQueryFilterValue;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue.Category;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue.Level;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue.PatientSex;
-import org.dcm4chee.web.dao.tc.TCQueryFilterValue.PatientSpecies;
 import org.dcm4chee.web.dao.tc.TCQueryFilterValue.YesNo;
+import org.dcm4chee.web.war.config.delegate.WebCfgDelegate;
 import org.dcm4chee.web.war.tc.TCInput.ValueChangeListener;
 import org.dcm4chee.web.war.tc.TCObject.TextOrCode;
 import org.dcm4chee.web.war.tc.TCUtilities.NullDropDownItem;
@@ -622,6 +622,22 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         patientAgeRow.add(patientAgeMonthSpinner);
         
         // PATIENT SPECIES
+        List<String> ethnicGroups = WebCfgDelegate.getInstance().getTCEthnicGroups();
+        boolean ethnicGroupsAvailable = ethnicGroups!=null && !ethnicGroups.isEmpty();
+        SelfUpdatingTextField patientSpeciesField = new SelfUpdatingTextField("tc-view-overview-patientrace-value-label", 
+        		new Model<String>() {
+		        	@Override
+		        	public String getObject() {
+		        		return getStringValue(TCQueryFilterKey.PatientSpecies);
+		        	}
+		            @Override
+		            public void setObject(String text) {
+		            	if (isEditing()) {
+		            		getTC().setPatientSpecies(text);
+		            	}
+		            }
+				}     
+        );
         final WebMarkupContainer patientSpeciesRow = new WebMarkupContainer("tc-view-overview-patientrace-row") {
         	@Override
         	public boolean isVisible() {
@@ -631,36 +647,29 @@ public class TCViewOverviewTab extends AbstractEditableTCViewTab
         };
         patientSpeciesRow.add(new Label("tc-view-overview-patientrace-label", 
                 new InternalStringResourceModel("tc.patient.species.text")));
-        patientSpeciesRow.add(new TextField<String>("tc-view-overview-patientrace-value-label", new Model<String>() {
-	        	@Override
-	        	public String getObject() {
-	        		return getStringValue(TCQueryFilterKey.PatientSpecies);
-	        	}
-        	}     
-        ).add(readonlyModifier).setVisible(!isEditing()));
-        patientSpeciesRow.add(TCUtilities.createEnumEditableComboBox(
-                "tc-view-overview-patientrace-select", new Model<String>() {
-                	@Override
-                	public String getObject() {
-                		return getTC().getValueAsLocalizedString(
-                				TCQueryFilterKey.PatientSpecies, TCViewOverviewTab.this);
-                	}
-                	@Override
-                	public void setObject(String value) {
-                		String committedValue = value;
-                		String tmp = null;
-                		for (PatientSpecies species : PatientSpecies.values()) {
-                			tmp = getString("tc.patient.species."+species.name().toLowerCase());
-                			if (tmp!=null && tmp.equalsIgnoreCase(value)) {
-                				committedValue = species.name();
-                			}
-                		}
-                		getTC().setValue(TCQueryFilterKey.PatientSpecies, committedValue);
-                	}
-                },
-                Arrays.asList(TCQueryFilterValue.PatientSpecies.values()), true,
-                "tc.patient.species", NullDropDownItem.Undefined, null).add(readonlyModifier).setVisible(isEditing()));
+        patientSpeciesRow.add(patientSpeciesField);        
+        patientSpeciesRow.add(
+        	TCUtilities.createEditableComboBox( "tc-view-overview-patientrace-select", 
+        				new Model<String>() {
+		                	@Override
+		                	public String getObject() {
+		                		return getTC().getValueAsLocalizedString(
+		                				TCQueryFilterKey.PatientSpecies, TCViewOverviewTab.this);
+		                	}
+		                	@Override
+		                	public void setObject(String value) {
+		                		getTC().setValue(TCQueryFilterKey.PatientSpecies, value);
+		                	}
+		                },
+		                ethnicGroups, NullDropDownItem.Undefined, null)
+		    .add(readonlyModifier).setVisible(isEditing() && ethnicGroupsAvailable)
+		);
         
+        patientSpeciesField.setVisible( !isEditing() || !ethnicGroupsAvailable );
+        if (!isEditing()) {
+        	patientSpeciesField.add( readonlyModifier );
+        }
+
         // MODALITIES
         final WebMarkupContainer modalitiesRow = new WebMarkupContainer("tc-view-overview-modalities-row") {
         	@Override

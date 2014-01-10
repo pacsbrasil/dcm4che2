@@ -369,6 +369,35 @@ public class TCUtilities
         return cbox;
     }
     
+    public static TCEditableComboBox createEditableComboBox(
+            final String id, IModel<String> selectedValue, List<String> options,
+            final NullDropDownItem nullItem, final TCChangeListener<String> l) {
+        TCEditableComboBox cbox = new TCEditableComboBox(id, options, selectedValue, null) {
+            private static final long serialVersionUID = 1L;
+            @Override
+            protected String getNullValidKey() {
+                if (nullItem!=null)
+                {
+                    return nullItem.getKey();
+                }
+                return null;
+            }
+            @Override
+            protected void valueChanged(String value)
+            {
+                if (l!=null)
+                {
+                    l.valueChanged(value);
+                }
+            }
+        };
+
+        cbox.setNullValid(nullItem!=null && 
+                !NullDropDownItem.NotValid.equals(nullItem));
+
+        return cbox;
+    }
+    
     public static <T extends Enum<T>> DropDownChoice<T> createEnumDropDownChoice(
             final String id, IModel<T> model, List<T> options,
             boolean localizeValues, final String localizePrefix) {
