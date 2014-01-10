@@ -40,6 +40,7 @@ package org.dcm4chee.web.war.tc;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 
@@ -107,8 +108,10 @@ public class TCLinksView extends Panel
     private boolean editing;
     
     private String selectedUID;
+
     private Component linkBtn;
-        
+    private Component searchField;
+
     public TCLinksView(final String id, 
     		IModel<? extends TCObject> model, 
     		final TCAttributeVisibilityStrategy attrVisibility,
@@ -324,27 +327,103 @@ public class TCLinksView extends Panel
 			.add(new ImageSizeBehaviour(16,16,"vertical-align:middle;margin:5px;"))
         );
         
+        final ListModel<Instance> searchModel = new ListModel<Instance>(new ArrayList<Instance>());
+        final WebMarkupContainer searchResults = new WebMarkupContainer("link-search-case-results");
+        
+        // link case search result
+        search.add(new Label("link-search-case-label",
+        		TCUtilities.getLocalizedString("tc.links.search.case.text")));
+        
         // link relationship
         final TCAjaxComboBox<TCLinkRelationship> relationshipCBox = 
         		new TCAjaxComboBox<TCLinkRelationship>(
         		"link-search-relationship-select", 
         		Arrays.asList(TCLinkRelationship.values()),
         		TCLinkRelationship.RELATES_TO) {
+        	private final int MAX_RESULTS = 20;
+            final EnumSet<TCLinkRelationship> patientCases = EnumSet.of(
+            		TCLinkRelationship.ANTERIOR, TCLinkRelationship.POSTERIOR);
+            final EnumSet<TCLinkRelationship> searchCases = 
+            		EnumSet.complementOf(patientCases);
         	@Override
         	protected TCLinkRelationship convertValue(String value) throws Exception {
         		return TCLinkRelationship.valueOfLocalized(value);
+        	}
+        	@Override
+        	protected void valueChanged(TCLinkRelationship value, TCLinkRelationship oldValue, AjaxRequestTarget target) {
+	        	boolean changedToSearchCases = patientCases.contains(oldValue) && searchCases.contains(value);
+	        	boolean changedToPatientCases = patientCases.contains(value) && searchCases.contains(oldValue);
+	        	
+	        	if (changedToSearchCases || changedToPatientCases) {
+	        		if (target!=null) {
+		        		target.addComponent(searchField);
+		        		target.appendJavascript("$('#"+searchField.getMarkupId(true)+"').textfield();");
+		        	}
+		        	
+	        		if (changedToPatientCases) {
+		        		try {
+							TCEditableObject tc = getEditableTC();
+							if (tc==null) {
+								log.warn("Unable to create/add teaching-file link: Teaching-File not editable!");
+							}
+							else {
+								List<Instance> result = Collections.emptyList();
+			        	        TCQueryLocal dao = (TCQueryLocal) JNDIUtils
+			        	                .lookup(TCQueryLocal.JNDI_NAME);
+			        	        
+			                    List<String> roles = StudyPermissionHelper.get()
+			                            .applyStudyPermissions() ? StudyPermissionHelper.get()
+			                            .getDicomRoles() : null;
+			
+			        	        result = dao.findInstancesOfPatient(tc.getPatientId(), tc.getPatientIdIssuer(), 
+			        	        		roles, WebCfgDelegate.getInstance().getTCRestrictedSourceAETList());
+			        	        
+		        	        	if (result.size()>MAX_RESULTS) {
+		        	        		result = result.subList(0, MAX_RESULTS);
+		        	        	}
+		        	        	
+		        	        	String iuid = tc.getInstanceUID();
+		        	        	for (Iterator<Instance> it=result.iterator(); it.hasNext();) {
+		        	        		if (iuid.equals(it.next().getSOPInstanceUID())) {
+		        	        			it.remove();
+		        	        			break;
+		        	        		}
+		        	        	}
+		        	        	
+		        	        	searchModel.setObject(result);
+		        	        	
+			        	        if (selectedUID!=null) {
+			        	        	boolean containsSelectedUID = false;
+			        	        	for (Instance i : result) {
+			        	        		if (selectedUID.equals(i.getSOPInstanceUID())) {
+			        	        			containsSelectedUID = true;
+			        	        			break;
+			        	        		}
+			        	        	}
+			        	        	if (!containsSelectedUID) {
+			        	        		selectedUID = null;
+			        	        	}
+			        	        }
+
+		        	        	if (target!=null) {
+		        	        		target.addComponent(searchResults);
+		        	        		target.addComponent(linkBtn);
+		        	        		target.appendJavascript("$('#"+linkBtn.getMarkupId(true)+"').button();");
+		        	        		target.appendJavascript("$('#"+searchResults.getMarkupId(true)+"').menu();");
+		        	        	}
+							}
+		        		}
+		        		catch (Exception e) {
+		        			log.error(null, e);
+		        		}
+	        		}
+	        	}
         	}
         };
         search.add(new Label("link-search-relationship-label",
         		TCUtilities.getLocalizedString("tc.links.search.relationship.text")));
         search.add(relationshipCBox);
-        
-        // link case search result
-        search.add(new Label("link-search-case-label",
-        		TCUtilities.getLocalizedString("tc.links.search.case.text")));
-        
-        final ListModel<Instance> searchModel = new ListModel<Instance>(new ArrayList<Instance>());
-        final WebMarkupContainer searchResults = new WebMarkupContainer("link-search-case-results");
+                
         final ListView<Instance> searchResultsList = new ListView<Instance>("link-search-case-results-list", searchModel) {
         	@Override
         	protected void populateItem(final ListItem<Instance> item) {
@@ -381,7 +460,7 @@ public class TCLinksView extends Panel
         search.add(searchResults);
         
         // link case search/input
-        search.add(new SelfUpdatingTextField("link-search-case-input", "") {
+        search.add((searchField=new SelfUpdatingTextField("link-search-case-input", "") {
         	private final int MAX_RESULTS = 50;
         	private volatile String currentSearchString = null;
         	private TCQueryFilter filter = new TCQueryFilter();
@@ -397,6 +476,12 @@ public class TCLinksView extends Panel
         	@Override
         	protected IAjaxCallDecorator getUpdateDecorator() {
         		return cursorDecorator;
+        	}
+        	@Override
+        	public boolean isVisible() {
+        		TCLinkRelationship relationship = relationshipCBox.getModelObject();
+        		return !TCLinkRelationship.ANTERIOR.equals(relationship) &&
+        				!TCLinkRelationship.POSTERIOR.equals(relationship);
         	}
         	@Override
         	protected void onComponentTag(ComponentTag tag) {
@@ -443,11 +528,19 @@ public class TCLinksView extends Panel
         			
         	        if (stringEqualsIgnoreCase(currentSearchString, searchString)) {
         	        	if (result.size()>MAX_RESULTS) {
-        	        		searchModel.setObject(result.subList(0, MAX_RESULTS));
+        	        		result = result.subList(0, MAX_RESULTS);
         	        	}
-        	        	else {
-        	        		searchModel.setObject(result);
+        	        	
+        	        	String iuid = getEditableTC().getInstanceUID();
+        	        	for (Iterator<Instance> it=result.iterator(); it.hasNext();) {
+        	        		if (iuid.equals(it.next().getSOPInstanceUID())) {
+        	        			it.remove();
+        	        			break;
+        	        		}
         	        	}
+        	        	
+        	        	searchModel.setObject(result);
+        	        	
         	        	if (target!=null) {
         	        		target.addComponent(searchResults);
         	        		target.addComponent(linkBtn);
@@ -463,7 +556,7 @@ public class TCLinksView extends Panel
         	private boolean stringEqualsIgnoreCase(String s1, String s2) {
         		return s1==s2 || (s1!=null && s2!=null && s1.equalsIgnoreCase(s2));
         	}
-        });
+        }).setOutputMarkupId(true).setOutputMarkupPlaceholderTag(true));
         
         // link comment
         final TextArea<String> commentArea = new SelfUpdatingTextArea("link-search-comment-area", new Model<String>());
