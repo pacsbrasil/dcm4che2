@@ -342,6 +342,77 @@ public class TCQueryBean implements TCQueryLocal {
 
         return instances;
     }
+    
+    public List<Instance> findInstancesOfPatient(
+    		String patientId, String issuerOfPatientId, 
+    		List<String> roles, List<String> restrictedSourceAETs)
+    {
+        if (roles != null && roles.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        boolean doStudyPermissionCheck = roles != null;
+        boolean doSourceAETCheck = restrictedSourceAETs != null
+                && !restrictedSourceAETs.isEmpty();
+
+        StringBuilder sb = new StringBuilder(64);
+        sb.append(" FROM Instance instance");
+        sb.append(" LEFT JOIN FETCH instance.series series");
+        sb.append(" LEFT JOIN FETCH series.study s");
+        sb.append(" LEFT JOIN FETCH s.patient p");
+        sb.append(" LEFT JOIN FETCH instance.conceptNameCode sr_code");
+        sb.append(" WHERE (instance.sopClassUID = '1.2.840.10008.5.1.4.1.1.88.11')");
+        sb.append(" AND (sr_code.codeValue = 'TCE006')");
+        sb.append(" AND (sr_code.codingSchemeDesignator = 'IHERADTF')");
+        sb.append(" AND (p.patientID = :patID)");
+        
+        if (issuerOfPatientId!=null) {
+        	sb.append(" AND (p.issuerOfPatientID = :issuerOfPatID)");
+        }
+
+        if (doSourceAETCheck) {
+            sb.append(" AND (series.sourceAET IN (");
+            for (int i = 0; i < restrictedSourceAETs.size(); i++) {
+                if (i > 0) {
+                    sb.append(",");
+                }
+
+                sb.append("'").append(restrictedSourceAETs.get(i)).append("'");
+            }
+            sb.append("))");
+        }
+
+        if (doStudyPermissionCheck) {
+            QueryUtil.appendDicomSecurityFilter(sb);
+        }
+
+        Query query = em.createQuery(sb.toString());
+        
+        query.setParameter("patID", patientId);
+        
+        if (issuerOfPatientId!=null) {
+        	query.setParameter("issuerOfPatID", issuerOfPatientId);
+        }
+        
+        if (doStudyPermissionCheck) {
+            query.setParameter("roles", roles);
+        }
+
+        log.info("Executing teaching-file query: " + query.toString());
+        log.info("Restricted to aets: " + restrictedSourceAETs);
+
+        List<Instance> instances = query.getResultList();
+
+        if (instances != null) {
+            for (Instance instance : instances) {
+                join(instance);
+            }
+
+            log.info(instances.size() + " matching teaching-files found!");
+        }
+
+        return instances;
+    }    		
 
     public Study findStudyByUID(String stuid) {
         Query q = em.createQuery("SELECT DISTINCT study FROM Study AS study LEFT JOIN FETCH study.series s LEFT JOIN FETCH s.instances WHERE study.studyInstanceUID = :stuid");

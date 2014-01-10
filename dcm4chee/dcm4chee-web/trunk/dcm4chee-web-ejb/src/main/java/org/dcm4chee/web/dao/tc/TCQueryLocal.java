@@ -65,6 +65,10 @@ public interface TCQueryLocal {
     List<Instance> findMatchingInstances(String searchString,
             List<String> roles, List<String> restrictedSourceAETs);
     
+    List<Instance> findInstancesOfPatient(
+    		String patientId, String issuerOfPatientId,
+    		List<String> roles, List<String> restrictedSourceAETs);
+    
     Study findStudyByUID(String stuid);
     
     Series findSeriesByUID(String suid);

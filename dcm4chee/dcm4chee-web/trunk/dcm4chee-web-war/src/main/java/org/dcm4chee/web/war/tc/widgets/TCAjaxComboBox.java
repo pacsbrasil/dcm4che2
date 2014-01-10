@@ -89,6 +89,10 @@ public abstract class TCAjaxComboBox<T extends Serializable> extends TCComboBox<
 		 return !TCUtilities.equals(oldValue, newValue);
 	}
 	
+	protected void valueChanged(T newValue, T oldValue, AjaxRequestTarget target) {
+		valueChanged( newValue );
+	}
+	
     private class SelectionChangedBehavior extends AbstractDefaultAjaxBehavior {
 		@SuppressWarnings("unchecked")
 		@Override
@@ -102,8 +106,9 @@ public abstract class TCAjaxComboBox<T extends Serializable> extends TCComboBox<
 	    		}
 
 	    		if (shallCommitValue((T)getDefaultModelObject(), value, target)) {
+	    			T oldValue = getModelObject();
 	    			setDefaultModelObject(value);
-		    		valueChanged(value);
+		    		valueChanged(value, oldValue, target);
 	    		}
 			}
 			catch (Exception e) {
