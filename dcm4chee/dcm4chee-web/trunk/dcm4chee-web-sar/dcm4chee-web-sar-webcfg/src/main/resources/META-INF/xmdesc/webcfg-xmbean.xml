@@ -718,6 +718,21 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getTCEthnicGroups"
+      setMethod="setTCEthnicGroups">
+      <description><![CDATA[List of possible ethnic groups.<br/>
+        Each ethnic group must be written into a new line.<br/>
+        NONE is used for an empty list.
+      ]]></description>
+      <name>TCEthnicGroups</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="
+         NONE
+         "/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getTCKeywordCataloguesPath"
       setMethod="setTCKeywordCataloguesPath">
       <description><![CDATA[
@@ -1262,6 +1277,11 @@
    <operation impact="ACTION">
       <description>Get list of matching teaching-file source AETs</description>
       <name>getTCRestrictedSourceAETList</name>
+      <return-type>java.util.List</return-type>
+   </operation>
+   <operation impact="ACTION">
+      <description>Get list of ethnic group options</description>
+      <name>getTCEthnicGroupsAsList</name>
       <return-type>java.util.List</return-type>
    </operation>
    <operation impact="ACTION">

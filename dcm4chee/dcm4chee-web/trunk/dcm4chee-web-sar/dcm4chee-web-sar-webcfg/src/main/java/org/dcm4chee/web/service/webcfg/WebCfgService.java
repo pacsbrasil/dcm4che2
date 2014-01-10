@@ -149,6 +149,7 @@ public class WebCfgService extends ServiceMBeanSupport implements
     private Map<String, String> tcKeywordCataloguesExclusive = new LinkedHashMap<String, String>();
     private List<String> tcRestrictedSrcAETs = new ArrayList<String>();
     private List<String> tcRestrictedAttributes = new ArrayList<String>();
+    private List<String> tcEthnicGroups = new ArrayList<String>();
     private boolean tcEditOnDoubleClick;
     private boolean tcMultipleKeywordSearch;
     private boolean tcMultipleKeywordORConcat;
@@ -479,6 +480,26 @@ public class WebCfgService extends ServiceMBeanSupport implements
         updateList(tcRestrictedSrcAETs, s, "|");
     }
     
+    public List<String> getTCEthnicGroupsAsList()
+    {
+    	return Collections.unmodifiableList( tcEthnicGroups );
+    }
+    
+    public String getTCEthnicGroups()
+    {
+    	String s = listAsString(tcEthnicGroups, NEWLINE);
+    	if (s==null || s.equals(NONE)) {
+    		return NONE+NEWLINE;
+    	}
+    	return s;
+    }
+    
+    public void setTCEthnicGroups( String ethnicGroups )
+    {
+    	updateList( tcEthnicGroups, ethnicGroups!=null ?
+    			ethnicGroups.trim() : ethnicGroups, NEWLINE );
+    }
+        
     public boolean isTCEditOnDoubleClick() {
         return tcEditOnDoubleClick;
     }

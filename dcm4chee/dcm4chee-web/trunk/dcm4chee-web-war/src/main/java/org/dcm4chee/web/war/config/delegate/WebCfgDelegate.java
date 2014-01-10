@@ -40,10 +40,8 @@ package org.dcm4chee.web.war.config.delegate;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -325,6 +323,10 @@ public class WebCfgDelegate extends BaseCfgDelegate {
 
     public List<String> getTCRestrictedSourceAETList() {
         return getStringList("getTCRestrictedSourceAETList");
+    }
+    
+    public List<String> getTCEthnicGroups() {
+    	return getStringList("getTCEthnicGroupsAsList");
     }
     
     public Map<String, String> getTCKeywordCataloguesAsString() {
