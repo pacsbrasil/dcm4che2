@@ -215,13 +215,17 @@ public class MainPage extends SecureWicketPage {
             		webProperties.getProperty("Implementation-Title",""),
             		webProperties.getProperty("Implementation-Build", ""),
             		webProperties.getProperty("SCM-Revision", ""),
-            		pacsManifest.getMainAttributes().getValue("Implementation-Title"),
-            		pacsManifest.getMainAttributes().getValue("Implementation-Version"),
-            		pacsManifest.getMainAttributes().getValue("Implementation-Vendor"),
-            		dcmManifest.getMainAttributes().getValue("Implementation-Title"),
-            		dcmManifest.getMainAttributes().getValue("Implementation-Version"),
-            		dcmManifest.getMainAttributes().getValue("Implementation-Vendor")
+            		getManifestValue(pacsManifest, "Implementation-Title", "-"),
+            		getManifestValue(pacsManifest, "Implementation-Version", "-"),
+            		getManifestValue(pacsManifest, "Implementation-Vendor", "-"),
+            		getManifestValue(dcmManifest, "Implementation-Title", "-"),
+            		getManifestValue(dcmManifest, "Implementation-Version", "-"),
+            		getManifestValue(dcmManifest, "Implementation-Vendor", "-"),
             })).setEscapeModelStrings(false));
+        }
+        
+        private String getManifestValue(Manifest m, String attrName, String defValue) {
+        	return m == null ? defValue : m.getMainAttributes().getValue(attrName);
         }
     }
 
