@@ -196,20 +196,23 @@ public class MainPage extends SecureWicketPage {
             try {
                 webProperties.load(((BaseWicketApplication) getApplication()).getServletContext().getResourceAsStream("/META-INF/MANIFEST.MF"));
             } catch (IOException e) {
-                log.error("Could not retrieve properties from /META-INF/MANIFEST.MF for web application", e);
+                log.warn("Could not retrieve properties from /META-INF/MANIFEST.MF for web application");
+                log.debug("StackTrace:", e);
             }
             try {
                  dcmManifest = new java.util.jar.JarFile(new java.io.File(
                 		Class.forName("org.dcm4che.data.Dataset").getProtectionDomain().getCodeSource().getLocation().toExternalForm().substring(6))).getManifest();
             } catch (Exception e) {
-                log.error("Could not retrieve properties from /META-INF/MANIFEST.MF for DICOM library", e);
+                log.warn("Could not retrieve properties from /META-INF/MANIFEST.MF for DICOM library");
+                log.debug("StackTrace:", e);
             }
             try {
                 pacsManifest = new java.util.jar.JarFile(new java.io.File(
                 		Class.forName("org.dcm4chex.archive.dcm.DcmServerService").getProtectionDomain()
                 		.getCodeSource().getLocation().toExternalForm().substring(6))).getManifest();
             } catch (Exception e) {
-                log.error("Could not retrieve properties from /META-INF/MANIFEST.MF for archive application", e);
+                log.warn("Could not retrieve properties from /META-INF/MANIFEST.MF for archive application");
+                log.debug("StackTrace:", e);
             }
             add(new Label("content", new StringResourceModel("template", this, null, new Object[] {
             		webProperties.getProperty("Implementation-Title",""),
