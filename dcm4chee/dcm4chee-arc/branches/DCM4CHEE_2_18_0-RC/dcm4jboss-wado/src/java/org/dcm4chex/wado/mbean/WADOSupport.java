@@ -165,9 +165,9 @@ public class WADOSupport implements NotificationListener {
             CONTENT_TYPE_DICOM, CONTENT_TYPE_DICOM_XML,
             CONTENT_TYPE_HTML, CONTENT_TYPE_XHTML, CONTENT_TYPE_XML, CONTENT_TYPE_PLAIN,
             CONTENT_TYPE_MPEG);
-    
+
     private static final String SUBJECT_CONTEXT_KEY = "javax.security.auth.Subject.container";
-    
+
     private static final String[] COMPRESSED_TRANSFER_SYNTAXES = {
         UIDs.JPEGBaseline, UIDs.JPEGExtended, UIDs.JPEGLossless14, UIDs.JPEGLossless,
         UIDs.JPEGLSLossless, UIDs.JPEGLSLossy, UIDs.JPEG2000Lossless, UIDs.JPEG2000Lossy,
@@ -175,30 +175,30 @@ public class WADOSupport implements NotificationListener {
     };
 
     private static final String ERROR_INVALID_SIMPLE_FRAME_LIST =
-        "Error: simpleFrameList parameter is invalid! Must be a comma " +
-        "separated list of positive integer strings in ascending order.";
+            "Error: simpleFrameList parameter is invalid! Must be a comma " +
+                    "separated list of positive integer strings in ascending order.";
 
     private static final String ERROR_INVALID_CALCULATED_FRAME_LIST =
-        "Error: calculatedFrameList parameter is invalid! Must be a comma " +
-        "separated list of triples of integer strings, defining " +
-        "non-overlapping ranges of frame numbers.";
+            "Error: calculatedFrameList parameter is invalid! Must be a comma " +
+                    "separated list of triples of integer strings, defining " +
+                    "non-overlapping ranges of frame numbers.";
 
     private static final String ERROR_SIMPLE_AND_CALCULATED_FRAME_LIST =
-        "Error: use of simpleFrameList and calculatedFrameList parameter" +
-        " are mutually exclusive.";
+            "Error: use of simpleFrameList and calculatedFrameList parameter" +
+                    " are mutually exclusive.";
 
     public static final String EVENT_TYPE_OBJECT_STORED = 
-        "org.dcm4chex.archive.dcm.storescp";
+            "org.dcm4chex.archive.dcm.storescp";
 
     public static final NotificationFilter NOTIF_FILTER = 
             new NotificationFilter() {
         private static final long serialVersionUID = -7557458153348143439L;
-    
+
         public boolean isNotificationEnabled(Notification notif) {
             return EVENT_TYPE_OBJECT_STORED.equals(notif.getType());
         }
     };
-    
+
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(WADOSupport.class);
 
     private static final DcmObjectFactory dof = DcmObjectFactory.getInstance();
@@ -246,14 +246,14 @@ public class WADOSupport implements NotificationListener {
     private boolean disableCache;
 
     private boolean renderOverlays = false;
-    
+
     private static final Map<String, String> waitIUIDs = Collections.synchronizedMap(new HashMap<String, String>());
     private static final Map<String, List<String>> moveSeriesIUIDs = Collections.synchronizedMap(new HashMap<String, List<String>>());
-    
+
     private long fetchTimeout;
     private String destAET;
     private boolean useSeriesLevelFetch;
-    
+
     private boolean jpgWriterSupportsByteColormap;
     private boolean jpgWriterSupportsShortColormap;
 
@@ -280,7 +280,7 @@ public class WADOSupport implements NotificationListener {
     public void setJpgWriterSupportsShortColormap(boolean b) {
         this.jpgWriterSupportsShortColormap = b;
     }
-    
+
     public WADOSupport(MBeanServer mbServer) {
         if (server != null) {
             server = mbServer;
@@ -318,7 +318,7 @@ public class WADOSupport implements NotificationListener {
      * @throws PolicyContextException
      */
     public WADOResponseObject getWADOObject(WADORequestObject req)
-    throws Exception {
+            throws Exception {
         log.info("Get WADO object for " + req.getObjectUID());
         Dataset objectDs = null;
         QueryCmd cmd = null;
@@ -332,15 +332,15 @@ public class WADOSupport implements NotificationListener {
         // Try to short-circuit the case where we want to retrieve
         // an existing icon - we dont need to query the database for that
         if( !disableCache && req.getContentTypes() != null &&
-             (req.getContentTypes().contains(CONTENT_TYPE_JPEG) || 
-                     req.getContentTypes().contains(CONTENT_TYPE_PNG) || 
-                     req.getContentTypes().contains(CONTENT_TYPE_PNG16))) {
+                (req.getContentTypes().contains(CONTENT_TYPE_JPEG) || 
+                        req.getContentTypes().contains(CONTENT_TYPE_PNG) || 
+                        req.getContentTypes().contains(CONTENT_TYPE_PNG16))) {
             WADOResponseObject scResp = tryToShortCircuitIconCacheLookup(req);
             if(scResp != null) {
                 return scResp;
             }
         }
-        
+
         try {
             Dataset dsQ = dof.newDataset();
             dsQ.putUI(Tags.SOPInstanceUID, req.getObjectUID());
@@ -377,7 +377,7 @@ public class WADOSupport implements NotificationListener {
             return new WADOStreamResponseObjectImpl(null, CONTENT_TYPE_HTML,
                     HttpServletResponse.SC_NOT_ACCEPTABLE,
                     "Requested object can not be served as requested content type! Requested contentType(s):"
-                    + req.getRequest().getParameter("contentType"));
+                            + req.getRequest().getParameter("contentType"));
         }
         req.setObjectInfo(objectDs);
         if (CONTENT_TYPE_JPEG.equals(contentType) || CONTENT_TYPE_PNG.equals(contentType)
@@ -396,13 +396,13 @@ public class WADOSupport implements NotificationListener {
                     log.debug("Dicom object not found: " + req);
                 return new WADOStreamResponseObjectImpl(null, contentType,
                         HttpServletResponse.SC_NOT_FOUND,
-                "DICOM object not found!");
+                        "DICOM object not found!");
             }
         } catch (IOException x) {
             log.error("Exception in getWADOObject: " + x.getMessage(), x);
             return new WADOStreamResponseObjectImpl(null, contentType,
                     HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-            "Unexpected error! Cant get file");
+                    "Unexpected error! Cant get file");
         } catch (NeedRedirectionException nre) {
             return handleNeedRedirectException(req, contentType, nre);
         }
@@ -432,7 +432,7 @@ public class WADOSupport implements NotificationListener {
             resp = new WADOStreamResponseObjectImpl(null, CONTENT_TYPE_DICOM,
                     HttpServletResponse.SC_NOT_IMPLEMENTED,
                     "This method is not implemented for requested (preferred) content type!"
-                    + contentType);
+                            + contentType);
         }
         return resp;
     }
@@ -452,16 +452,16 @@ public class WADOSupport implements NotificationListener {
             String contentType = req.getContentTypes().contains(CONTENT_TYPE_JPEG) ? CONTENT_TYPE_JPEG : 
                 req.getContentTypes().contains(CONTENT_TYPE_PNG) ? CONTENT_TYPE_PNG : CONTENT_TYPE_PNG16;
             File file = WADOCacheImpl.getWADOCache().getImageFile(req.getStudyUID(),
-                            req.getSeriesUID(), req.getObjectUID(),
-                            req.getRows(),req.getColumns(), req.getRegion(),
-                            req.getWindowWidth(), req.getWindowCenter(),
-                            req.getImageQuality(), contentType, suffix);
+                    req.getSeriesUID(), req.getObjectUID(),
+                    req.getRows(),req.getColumns(), req.getRegion(),
+                    req.getWindowWidth(), req.getWindowCenter(),
+                    req.getImageQuality(), contentType, suffix);
             if(file != null) {
                 if(log.isDebugEnabled())
                     log.debug("short-circuit sucessful!: " + file);
                 return new WADOStreamResponseObjectImpl(
-                            new FileInputStream(file), contentType,
-                            HttpServletResponse.SC_OK, null);
+                        new FileInputStream(file), contentType,
+                        HttpServletResponse.SC_OK, null);
             }
 
             log.debug("no luck trying to short circuit icon lookup, following regular procedure");
@@ -483,7 +483,7 @@ public class WADOSupport implements NotificationListener {
             log.warn("WADO request is already redirected! Return 'NOT FOUND' to avoid circular redirect!\n(Maybe a filesystem was removed from filesystem management but already exists in database!)");
             return new WADOStreamResponseObjectImpl(null, contentType,
                     HttpServletResponse.SC_NOT_FOUND,
-            "Object not found (Circular redirect found)!");
+                    "Object not found (Circular redirect found)!");
         }
         if (!WADOCacheImpl.getWADOCache().isClientRedirect()) {
             return getRemoteWADOObject(nre.getExternalRetrieveAET(), req);
@@ -495,13 +495,13 @@ public class WADOSupport implements NotificationListener {
     }
 
     private boolean hasPermission(WADORequestObject req)
-    throws PolicyContextException, RemoteException, Exception {
+            throws PolicyContextException, RemoteException, Exception {
         if ( req.getRemoteUser() == null || req.isStudyPermissionCheckDisabled() ) {
             log.debug("StudyPermission check disabled!");
             return true;
         }
         Subject subject = (Subject) PolicyContext
-        .getContext(SUBJECT_CONTEXT_KEY);
+                .getContext(SUBJECT_CONTEXT_KEY);
         return getStudyPermissionManager().hasPermission(req.getStudyUID(),
                 StudyPermissionDTO.READ_ACTION, subject);
     }
@@ -574,13 +574,13 @@ public class WADOSupport implements NotificationListener {
                     log.debug("Dicom object not found: " + req);
                 return new WADOStreamResponseObjectImpl(null,
                         CONTENT_TYPE_DICOM, HttpServletResponse.SC_NOT_FOUND,
-                "DICOM object not found!");
+                        "DICOM object not found!");
             }
         } catch (IOException x) {
             log.error("Exception in handleDicom: " + x.getMessage(), x);
             return new WADOStreamResponseObjectImpl(null, CONTENT_TYPE_DICOM,
                     HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-            "Unexpected error! Cant get dicom object");
+                    "Unexpected error! Cant get dicom object");
         } catch (NeedRedirectionException nre) {
             return handleNeedRedirectException(req, CONTENT_TYPE_DICOM, nre);
         }
@@ -602,13 +602,13 @@ public class WADOSupport implements NotificationListener {
                 return new WADOStreamResponseObjectImpl(null,
                         CONTENT_TYPE_DICOM,
                         HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                "Unexpected error! Cant get dicom object");
+                        "Unexpected error! Cant get dicom object");
             }
         }
         return getUpdatedInstance(req, checkTransferSyntax(req
                 .getTransferSyntax()));
     }
-    
+
     private WADOResponseObject handleEncaps(File file, String contentType) {
         try {
             InputStream is = new BufferedInputStream( new FileInputStream(file) );
@@ -730,7 +730,7 @@ public class WADOSupport implements NotificationListener {
             log.error("Failed to get updated DICOM file", e);
             return new WADOStreamResponseObjectImpl(null, CONTENT_TYPE_DICOM,
                     HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-            "Unexpected error! Cant get updated dicom object");
+                    "Unexpected error! Cant get updated dicom object");
         }
     }
 
@@ -777,7 +777,7 @@ public class WADOSupport implements NotificationListener {
                         columns, frame, region, windowWidth, windowCenter, contentType);
                 return new WADOImageResponseObjectImpl(bi, WADOCacheImpl.getWADOCache(), 
                         imageQuality != null ? imageQuality : WADOCacheImpl.getWADOCache().getImageQuality(),
-                        contentType, HttpServletResponse.SC_OK, "Info: Caching disabled!");
+                                contentType, HttpServletResponse.SC_OK, "Info: Caching disabled!");
             } else {
                 File file = getImage(studyUID, seriesUID, instanceUID, rows, columns,
                         frame, region, windowWidth, windowCenter,
@@ -791,7 +791,7 @@ public class WADOSupport implements NotificationListener {
                 } else {
                     return new WADOStreamResponseObjectImpl(null,
                             contentType, HttpServletResponse.SC_NOT_FOUND,
-                    "DICOM object not found!");
+                            "DICOM object not found!");
                 }
             }
         } catch (NeedRedirectionException nre) {
@@ -799,7 +799,7 @@ public class WADOSupport implements NotificationListener {
         } catch (NoImageException x1) {
             return new WADOStreamResponseObjectImpl(null, contentType,
                     HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-            "Cant get jpeg from requested object");
+                    "Cant get jpeg from requested object");
         } catch (ImageCachingException x1) {
             return new WADOImageResponseObjectImpl(x1.getImage(), WADOCacheImpl.getWADOCache(), 
                     imageQuality != null ? imageQuality : WADOCacheImpl.getWADOCache().getImageQuality(),
@@ -808,7 +808,7 @@ public class WADOSupport implements NotificationListener {
             log.error("Exception in handleJpg: " + x.getMessage(), x);
             return new WADOStreamResponseObjectImpl(null, contentType,
                     HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-            "Unexpected error! Cant get jpeg");
+                    "Unexpected error! Cant get jpeg");
         }
     }
 
@@ -839,8 +839,8 @@ public class WADOSupport implements NotificationListener {
     public File getImage(String studyUID, String seriesUID, String instanceUID,
             String rows, String columns, int frame, String region,
             String windowWidth, String windowCenter, String imageQuality, String contentType)
-    throws IOException, NeedRedirectionException, NoImageException,
-    ImageCachingException {
+                    throws IOException, NeedRedirectionException, NoImageException,
+                    ImageCachingException {
         WADOCache cache = WADOCacheImpl.getWADOCache();
         File file;
         BufferedImage bi = null;
@@ -850,7 +850,7 @@ public class WADOSupport implements NotificationListener {
             suffix = "-" + frame;
         else
             frame = 0;
-        
+
         file = cache.getImageFile(studyUID, seriesUID, instanceUID, rows,
                 columns, region, windowWidth, windowCenter, imageQuality,
                 contentType, suffix);
@@ -933,7 +933,7 @@ public class WADOSupport implements NotificationListener {
             log.error("Failed to get DICOM file", e);
             return new WADOStreamResponseObjectImpl(null, contentType,
                     HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-            "Unexpected error! Cant get dicom object");
+                    "Unexpected error! Cant get dicom object");
         }
     }
 
@@ -1023,9 +1023,9 @@ public class WADOSupport implements NotificationListener {
     }
 
     private TransformerHandler getTransformerHandler(String xslt)
-    throws TransformerConfigurationException {
+            throws TransformerConfigurationException {
         SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory
-        .newInstance();
+                .newInstance();
         TransformerHandler th;
         if (xslt != null && !xslt.equalsIgnoreCase(NONE)) {
             Templates stylesheet;
@@ -1076,14 +1076,14 @@ public class WADOSupport implements NotificationListener {
             dicomObject = server.invoke(queryRetrieveScpName, "locateInstance",
                     new Object[] { instanceUID,  studyUID},
                     new String[] { String.class.getName(),
-                            String.class.getName() });
+                    String.class.getName() });
 
         } catch (Exception e) {
             if (e.getCause() instanceof UnknownAETException) {
                 //Indicate NeedRedirect with unknown external retrieve AET
                 throw new NeedRedirectionException(
                         "Can't redirect WADO request to external retrieve AET! Unknown AET:"
-                        +e.getCause().getMessage(), null);
+                                +e.getCause().getMessage(), null);
             }
             log.error("Failed to get DICOM file:" + instanceUID, e);
         }
@@ -1171,13 +1171,13 @@ public class WADOSupport implements NotificationListener {
             server.invoke(getMoveScuServiceName(), "scheduleMove", 
                     new Object[] { retrAET, destAET, 0, null, studyUID, seriesUID, iuids, 0 },
                     new String[] { String.class.getName(), String.class.getName(), int.class.getName(), 
-                                    String.class.getName(), String.class.getName(), String.class.getName(), 
-                                    String[].class.getName(), long.class.getName() });
+                String.class.getName(), String.class.getName(), String.class.getName(), 
+                String[].class.getName(), long.class.getName() });
         } catch (Exception x) {
             log.warn("Scheduling C-MOVE failed!", x);
             throw new NeedRedirectionException("Requested object is not locally available and can't be fetched from remote system!", null);
         }
-        
+
     }
     private String[] getIUIDsToFetch(String seriesUID, String retrAET) {
         ArrayList<String> iuids = new ArrayList<String>();
@@ -1269,7 +1269,7 @@ public class WADOSupport implements NotificationListener {
                 log.debug("redirect url:" + url);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             String authHeader = (String) req.getRequestHeaders().get(
-            "Authorization");
+                    "Authorization");
             if (authHeader != null) {
                 conn.addRequestProperty("Authorization", authHeader);
             }
@@ -1306,7 +1306,7 @@ public class WADOSupport implements NotificationListener {
                     CONTENT_TYPE_JPEG,
                     HttpServletResponse.SC_NOT_FOUND,
                     "Redirect to find requested object failed! (Can't connect to remote WADO service:"
-                    + url + ")!");
+                            + url + ")!");
         }
     }
 
@@ -1405,7 +1405,7 @@ public class WADOSupport implements NotificationListener {
         FileMetaInfo fmi = data.getFileMetaInfo();
         if (fmi == null)
             return false;
-        
+
         String tsuid = fmi.getTransferSyntaxUID();
         for (String ctsuid : COMPRESSED_TRANSFER_SYNTAXES)
             if (ctsuid.equals(tsuid))
@@ -1459,78 +1459,78 @@ public class WADOSupport implements NotificationListener {
             w = (int) (h * aspectRatio + .5f);
         }
         boolean needRGB = !jpgWriterSupportsByteColormap ||
-                    !jpgWriterSupportsShortColormap && bi.getColorModel().getPixelSize() > 8 ||
-                    bi.getColorModel().getColorSpace() instanceof SimpleYBRColorSpace;
-        boolean rescale = w != bi.getWidth() || h != bi.getHeight();
-        log.debug("Image contentType:"+contentType);
-        if (CONTENT_TYPE_JPEG.equals(contentType)) {
-            if (!needRGB && !rescale)
-                return bi;
-            if (needRGB || bi.getSampleModel() instanceof BandedSampleModel) {
-                log.debug("Convert BufferedImage to TYPE_INT_RGB!");
-                // convert YBR to RGB to workaround jai-imageio-core issue #173:
-                // CLibJPEGImageWriter ignores CororSpace != sRGB
-                // convert RGB color-by-plane to TYPE_INT_RGB, otherwise
-                // scaleOp.filter(bi, null) will throw
-                // ImagingOpException("Unable to transform src image")
-                BufferedImage tmp = new BufferedImage(bi.getWidth(),
-                        bi.getHeight(), BufferedImage.TYPE_INT_RGB);
-                Graphics2D g = tmp.createGraphics();
-                try {
-                    g.drawImage(bi, 0, 0, null);
-                } finally {
-                    g.dispose();
-                }
-                bi = tmp;
-            }
-        } else if (CONTENT_TYPE_PNG.equals(contentType)) {
-            BufferedImage tmp = new BufferedImage(bi.getWidth(),
-                    bi.getHeight(), BufferedImage.TYPE_INT_RGB);
-            Graphics2D g = tmp.createGraphics();
-            try {
-                g.drawImage(bi, 0, 0, null);
-            } finally {
-                g.dispose();
-            }
-            bi = tmp;
-        } else { //PNG16
-            showMinMaxHist(bi, "Original:");
-            if (bi.getData().getNumBands() == 1) {
-                int pixSize = bi.getColorModel().getPixelSize() > 8 ? 16 : 8;
-                log.debug("Convert to "+pixSize+"bit GRAY BufferedImage for PNG!");
-                BufferedImage tmp = new BufferedImage(bi.getWidth(), bi.getHeight(), 
-                        pixSize == 16 ? BufferedImage.TYPE_USHORT_GRAY : BufferedImage.TYPE_BYTE_GRAY);
-                if (pixSize == 8) {
+                !jpgWriterSupportsShortColormap && bi.getColorModel().getPixelSize() > 8 ||
+                bi.getColorModel().getColorSpace() instanceof SimpleYBRColorSpace;
+                boolean rescale = w != bi.getWidth() || h != bi.getHeight();
+                log.debug("Image contentType:"+contentType);
+                if (CONTENT_TYPE_JPEG.equals(contentType)) {
+                    if (!needRGB && !rescale)
+                        return bi;
+                    if (needRGB || bi.getSampleModel() instanceof BandedSampleModel) {
+                        log.debug("Convert BufferedImage to TYPE_INT_RGB!");
+                        // convert YBR to RGB to workaround jai-imageio-core issue #173:
+                        // CLibJPEGImageWriter ignores CororSpace != sRGB
+                        // convert RGB color-by-plane to TYPE_INT_RGB, otherwise
+                        // scaleOp.filter(bi, null) will throw
+                        // ImagingOpException("Unable to transform src image")
+                        BufferedImage tmp = new BufferedImage(bi.getWidth(),
+                                bi.getHeight(), BufferedImage.TYPE_INT_RGB);
+                        Graphics2D g = tmp.createGraphics();
+                        try {
+                            g.drawImage(bi, 0, 0, null);
+                        } finally {
+                            g.dispose();
+                        }
+                        bi = tmp;
+                    }
+                } else if (CONTENT_TYPE_PNG.equals(contentType)) {
+                    BufferedImage tmp = new BufferedImage(bi.getWidth(),
+                            bi.getHeight(), BufferedImage.TYPE_INT_RGB);
                     Graphics2D g = tmp.createGraphics();
                     try {
                         g.drawImage(bi, 0, 0, null);
                     } finally {
                         g.dispose();
                     }
-                } else {
-                    WritableRaster r = tmp.getRaster();
-                    Raster data = bi.getData();
-                    for (int x = data.getMinX(), xLen = x+data.getWidth(); x < xLen ; x++) {
-                        for (int y = data.getMinY(), yLen = y+data.getHeight(); y < yLen ; y++) {
-                            r.setSample(x, y, 0, data.getSample(x, y, 0));
+                    bi = tmp;
+                } else { //PNG16
+                    showMinMaxHist(bi, "Original:");
+                    if (bi.getData().getNumBands() == 1) {
+                        int pixSize = bi.getColorModel().getPixelSize() > 8 ? 16 : 8;
+                        log.debug("Convert to "+pixSize+"bit GRAY BufferedImage for PNG!");
+                        BufferedImage tmp = new BufferedImage(bi.getWidth(), bi.getHeight(), 
+                                pixSize == 16 ? BufferedImage.TYPE_USHORT_GRAY : BufferedImage.TYPE_BYTE_GRAY);
+                        if (pixSize == 8) {
+                            Graphics2D g = tmp.createGraphics();
+                            try {
+                                g.drawImage(bi, 0, 0, null);
+                            } finally {
+                                g.dispose();
+                            }
+                        } else {
+                            WritableRaster r = tmp.getRaster();
+                            Raster data = bi.getData();
+                            for (int x = data.getMinX(), xLen = x+data.getWidth(); x < xLen ; x++) {
+                                for (int y = data.getMinY(), yLen = y+data.getHeight(); y < yLen ; y++) {
+                                    r.setSample(x, y, 0, data.getSample(x, y, 0));
+                                }
+                            }
                         }
+                        bi = tmp;
+                        showMinMaxHist(bi, "Converted:");
+                    } else {
+                        log.debug("########### PNG: use original BufferedImage! numBands > 1");
                     }
                 }
-                bi = tmp;
-                showMinMaxHist(bi, "Converted:");
-            } else {
-                log.debug("########### PNG: use original BufferedImage! numBands > 1");
-            }
-        }
-        if (!rescale)
-            return bi;
+                if (!rescale)
+                    return bi;
 
-        AffineTransform scale = AffineTransform.getScaleInstance(
-                (double) w / bi.getWidth(), (double) h / bi.getHeight());
-        AffineTransformOp scaleOp = new AffineTransformOp(scale,
-                AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
-        BufferedImage biDest = scaleOp.filter(bi, null);
-        return biDest;
+                AffineTransform scale = AffineTransform.getScaleInstance(
+                        (double) w / bi.getWidth(), (double) h / bi.getHeight());
+                AffineTransformOp scaleOp = new AffineTransformOp(scale,
+                        AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+                BufferedImage biDest = scaleOp.filter(bi, null);
+                return biDest;
     }
 
     private void showMinMaxHist(BufferedImage bi, String msg) {
@@ -1562,7 +1562,7 @@ public class WADOSupport implements NotificationListener {
         }
     }
 
-        /**
+    /**
      * Merge the overlays into the buffered image.
      *
      * The overlay implementation is minimal.
@@ -1597,13 +1597,12 @@ public class WADOSupport implements NotificationListener {
                 int oBitPosition = getInt(ds, group, Tags.OverlayBitPosition, -1);
                 int oRows = getInt(ds, group, Tags.OverlayRows, -1);
                 int oCols = getInt(ds, group, Tags.OverlayColumns, -1);
-                int[] oOrigin = getInts(ds, group, Tags.OverlayOrigin);
                 int oBitsAllocated = getInt(ds, group, Tags.OverlayBitsAllocated, -1);
                 String oType = getString(ds, group, Tags.OverlayType);
                 int oNumberOfFrames = getInt(ds, group, Tags.NumberOfFramesInOverlay, 1);
                 int oFrameStart = getInt(ds, group, Tags.ImageFrameOrigin, 1) - 1;
                 int oFrameEnd = oFrameStart + oNumberOfFrames;
-    
+
                 if (oBitPosition == -1 &&
                         oBitsAllocated == -1 &&
                         oRows == -1 &&
@@ -1611,111 +1610,37 @@ public class WADOSupport implements NotificationListener {
                     log.trace("No overlay data associated with image for group {}", group);
                     continue;
                 }
-    
-    
+
+
                 if ("R".equals(oType)) {
                     log.debug("Overlay ROI bitmap, not doing anything");
                     continue;
                 }
-    
+
                 if ((oBitsAllocated != 1) && (oBitPosition != 0)) {
                     log.debug("Overlay: {}  OldStyle bitPostion {}", group, oBitPosition);
                     oldStyleOverlayPlanes.add(oBitPosition);
                     continue;
                 }
-    
+
                 if ("GR".indexOf(oType) < 0) {
                     log.warn("mergeOverlays(): Overlay Type {} not supported", oType);
                     continue;
                 }
-    
-                int oX1 = 0;
-                int oY1 = 0;
-                if (oOrigin != null) {
-                    oX1 = oOrigin[1] - 1;
-                    oY1 = oOrigin[0] - 1;
-                }
-    
+
+
+
                 log.debug("Overlay: {} OverlayType: {}", group, oType);
                 log.debug("Overlay: {} OverlayRows: {}", group, oRows);
                 log.debug("Overlay: {} OverlayColumns: {}", group, oCols);
-                log.debug("Overlay: {} OverlayOrigin: {} {}", new Object[]{group, oX1, oY1});
                 log.debug("Overlay: {} for Frames: [{}, {})", new Object[]{group, oFrameStart, oFrameEnd});
-    
+
                 if (!((oFrameStart <= frame) && (frame < oFrameEnd))) {
                     log.debug("Overlay: frame {} not in range, skipping", frame);
                     continue;
                 }
-    
-                int oFrameOffset = frame - oFrameStart;
-                int bitOffset = oFrameOffset * oRows * oCols;
-                int byteOffset = bitOffset / 8;  // dont round up!
-                int numBits = oRows * oCols;
-                int numBytes = (numBits + 7) / 8; // round up!
-    
-                log.debug("Overlay: {} bitOffset: {}", group, bitOffset);
-                log.debug("Overlay: {} byteOffset: {}", group, byteOffset);
-                log.debug("Overlay: {} numBits: {}", group, numBits);
-                log.debug("Overlay: {} numBytes: {}", group, numBytes);
-    
-                ByteBuffer bb = ds.get(groupedTag(group, Tags.OverlayData)).getByteBuffer();
-                if (bb.limit() == 0) {
-                    log.warn("Overlay: {} Missing overlay data! Skipped.", group);
-                    continue;
-                }
-                log.debug("Overlay: {} ByteBuffer: {}", group, bb);
-                log.debug("Overlay: {} ByteBuffer ByteOrder: {}", group, (bb.order() == ByteOrder.BIG_ENDIAN) ? "BigEndian" : "LittleEndian");
-    
-    
-                IndexColorModel icm = new IndexColorModel(1, 2, icmColorValues, icmColorValues, icmColorValues, 0);
-                BufferedImage overBi = new BufferedImage(oCols, oRows, BufferedImage.TYPE_BYTE_BINARY, icm);
-                DataBufferByte dataBufferByte = (DataBufferByte) overBi.getRaster().getDataBuffer();
-    
-    
-                byte[] dest = dataBufferByte.getData();
-    
-                // java awt cant even handle non byte packed lines
-                // so if a line lenght is not a multiple of 8, it gets really slow
-                int packedRowBits = (oCols + 7) & (~7);
-                log.debug("packed row bits: {}", packedRowBits);
-    
-                if(packedRowBits == oCols) {
-                    // overlay is 8-bit padded, we can do it fast
-                    for (int i = 0; i < numBytes; i++) {
-                        int idx = bb.get(byteOffset + i) & 0xFF;
-                        dest[i] = bitSwapLut[idx];
-                    }
-                } else {
-                    // no joy, slow version
-                    int packedRowBytes = packedRowBits / 8;
-                    for (int y = 0; y < oRows; y++) {
-                        int rowBitOffset = bitOffset + y * oCols;
-                        int rowByteOffset = rowBitOffset / 8;
-                        int packedRowByteOffset = y * packedRowBytes;
-                        int bitsToMove = (rowBitOffset % 8);
-                        if(bitsToMove != 0) {
-                            for (int i = 0, size = packedRowBytes - 1; i < size; i++) {
-                                int inOffset = rowByteOffset + i;
-                                int b1 = bb.get(inOffset) & 0xFF;
-                                int b2 = bb.get(inOffset + 1) & 0xFF;
-                                int rc = ((b1 >> bitsToMove) ^
-                                        ((b2 << (8 - bitsToMove)) & 0xFF));
-                                dest[packedRowByteOffset + i] = bitSwapLut[rc];
-                            }
-                        } else {
-                            for(int i = 0, size=packedRowBytes - 1; i < size; i++) {
-                                int inOffset = rowByteOffset + i;
-                                int b1 = bb.get(inOffset) & 0xFF;
-                                dest[packedRowByteOffset + i] = bitSwapLut[b1];
-                            }
-                        }
-                    }
-                }
-    
-    
-                log.debug("Overlay: {} BufferedImage: {}", group, overBi);
-                Graphics2D gBi = bi.createGraphics();
-                gBi.drawImage(overBi, oX1, oY1, null);
+
+                applyOverlay(frame, bi.getRaster(), ds, group, WHITE);
             } catch (Exception x) {
                 log.warn("Render overlay failed! skipped frame:"+frame+" group:"+group+"!  Enable DEBUG log level to get stacktrace");
                 log.debug("Reason for skipped overlay:",x);
@@ -1769,6 +1694,72 @@ public class WADOSupport implements NotificationListener {
 
         log.info("mergeOverlays(): {}ms", t2 -t1);
     }
+
+    private static void applyOverlay(int frame, WritableRaster raster,
+            Dataset attrs, int gg0000, int pixelValue) {
+
+        int imageFrameOrigin = attrs.getInt(Tags.ImageFrameOrigin | gg0000, 1);
+        int framesInOverlay = attrs.getInt(Tags.NumberOfFramesInOverlay
+                | gg0000, 1);
+        int ovlyFrameIndex = frame - imageFrameOrigin + 1;
+        if (ovlyFrameIndex < 0 || ovlyFrameIndex >= framesInOverlay)
+            return;
+
+        int tagOverlayRows = Tags.OverlayRows | gg0000;
+        int tagOverlayColumns = Tags.OverlayColumns | gg0000;
+        int tagOverlayData = Tags.OverlayData | gg0000;
+        int tagOverlayOrigin = Tags.OverlayOrigin | gg0000;
+
+        int ovlyRows = attrs.getInt(tagOverlayRows, -1);
+        int ovlyColumns = attrs.getInt(tagOverlayColumns, -1);
+        int[] ovlyOrigin = attrs.getInts(tagOverlayOrigin);
+        byte[] ovlyData = null;
+
+        ovlyData = attrs.get(tagOverlayData).getByteBuffer().array();
+
+        if (ovlyData == null)
+            throw new IllegalArgumentException("Missing " + gg0000
+                    + " Overlay Data");
+
+        if (ovlyRows <= 0)
+            throw new IllegalArgumentException(gg0000 + " Overlay Rows ["
+                    + ovlyRows + "]");
+        if (ovlyColumns <= 0)
+            throw new IllegalArgumentException(gg0000 + " Overlay Columns ["
+                    + ovlyColumns + "]");
+        if (ovlyOrigin == null)
+            throw new IllegalArgumentException("Missing " + gg0000
+                    + " Overlay Origin");
+        if (ovlyOrigin.length != 2)
+            throw new IllegalArgumentException(gg0000 + " Overlay Origin "
+                    + Arrays.toString(ovlyOrigin));
+
+        int x0 = ovlyOrigin[1] - 1;
+        int y0 = ovlyOrigin[0] - 1;
+
+        int ovlyLen = ovlyRows * ovlyColumns;
+        int ovlyOff = ovlyLen * ovlyFrameIndex;
+        for (int i = ovlyOff >>> 3, end = (ovlyOff + ovlyLen + 7) >>> 3; i < end; i++) {
+            int ovlyBits = ovlyData[i] & 0xff;
+            for (int j = 0; (ovlyBits >>> j) != 0; j++) {
+                if ((ovlyBits & (1 << j)) == 0)
+                    continue;
+
+                int ovlyIndex = ((i << 3) + j) - ovlyOff;
+                if (ovlyIndex >= ovlyLen)
+                    continue;
+
+                int y = y0 + ovlyIndex / ovlyColumns;
+                int x = x0 + ovlyIndex % ovlyColumns;
+                try {
+                    raster.setSample(x, y, 0, pixelValue);
+                } catch (ArrayIndexOutOfBoundsException ignore) {
+                }
+            }
+        }
+    }
+
+    private static final int WHITE = 0xFFFFFFFF;
 
     private static final byte[] icmColorValues = new byte[]{(byte) 0x00, (byte) 0xFF};
     private static final byte[] bitSwapLut = makeBitSwapLut();
@@ -1904,7 +1895,7 @@ public class WADOSupport implements NotificationListener {
     public void setDisableCache(boolean disableCache) {
         this.disableCache = disableCache;
     }
-    
+
     /**
      * @return Returns the useTransferSyntaxOfFileAsDefault.
      */
@@ -1932,7 +1923,7 @@ public class WADOSupport implements NotificationListener {
         }
         return imageSopCuids;
     }
-    
+
     public void reconfigure() {
         imageSopCuids = null;
     }
@@ -1976,7 +1967,7 @@ public class WADOSupport implements NotificationListener {
             encapsSopCuids.clear();
         }
     }
-  
+
     /**
      * @return Returns the sopCuids for mpeg2 support.
      */
@@ -1995,7 +1986,7 @@ public class WADOSupport implements NotificationListener {
             videoSopCuids.clear();
         }
     }
-    
+
     /**
      * 
      */
@@ -2064,15 +2055,15 @@ public class WADOSupport implements NotificationListener {
 
     private ContentManager getContentManager() throws Exception {
         ContentManagerHome home = (ContentManagerHome) EJBHomeFactory
-        .getFactory().lookup(ContentManagerHome.class,
-                ContentManagerHome.JNDI_NAME);
+                .getFactory().lookup(ContentManagerHome.class,
+                        ContentManagerHome.JNDI_NAME);
         return home.create();
     }
 
     private StudyPermissionManager getStudyPermissionManager() throws Exception {
         StudyPermissionManagerHome home = (StudyPermissionManagerHome) EJBHomeFactory
-        .getFactory().lookup(StudyPermissionManagerHome.class,
-                StudyPermissionManagerHome.JNDI_NAME);
+                .getFactory().lookup(StudyPermissionManagerHome.class,
+                        StudyPermissionManagerHome.JNDI_NAME);
         return home.create();
     }
 
