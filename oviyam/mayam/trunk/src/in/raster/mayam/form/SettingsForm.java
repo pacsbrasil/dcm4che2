@@ -61,7 +61,6 @@ import java.awt.Toolkit;
 import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.Locale;
-import java.util.ResourceBundle;
 import java.util.Vector;
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -217,12 +216,12 @@ public class SettingsForm extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(listenerAetTxt, javax.swing.GroupLayout.PREFERRED_SIZE, 177, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(listenerPortLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(4, 4, 4)
+                .addComponent(listenerPortLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(listenerPortTxt, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addComponent(saveListenerBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(70, Short.MAX_VALUE))
+                .addComponent(saveListenerBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(20, 20, 20))
         );
         listenerPanelLayout.setVerticalGroup(
             listenerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -285,13 +284,13 @@ public class SettingsForm extends javax.swing.JFrame {
             .addGroup(serversPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(serversPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane4)
+                    .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 661, Short.MAX_VALUE)
                     .addGroup(serversPanelLayout.createSequentialGroup()
-                        .addComponent(addServerBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(deleteServerBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(verifyServerBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(addServerBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(deleteServerBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(verifyServerBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -374,11 +373,11 @@ public class SettingsForm extends javax.swing.JFrame {
             .addGroup(queryButtonsPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(queryButtonsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane2)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 649, Short.MAX_VALUE)
                     .addGroup(queryButtonsPanelLayout.createSequentialGroup()
-                        .addComponent(addButton, javax.swing.GroupLayout.PREFERRED_SIZE, 66, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(addButton, javax.swing.GroupLayout.PREFERRED_SIZE, 105, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(deleteButton)
+                        .addComponent(deleteButton, javax.swing.GroupLayout.PREFERRED_SIZE, 105, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -516,8 +515,8 @@ public class SettingsForm extends javax.swing.JFrame {
             themesPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(themesPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(selectThemeLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
+                .addComponent(selectThemeLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(themesPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(themeCombo, javax.swing.GroupLayout.PREFERRED_SIZE, 167, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(saveThemeBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -601,9 +600,9 @@ public class SettingsForm extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(presetsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(presetsPanelLayout.createSequentialGroup()
-                        .addComponent(addPreset, javax.swing.GroupLayout.PREFERRED_SIZE, 61, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(deletePreset)
+                        .addComponent(addPreset, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(deletePreset, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(presetModalityLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -730,7 +729,7 @@ public class SettingsForm extends javax.swing.JFrame {
             ApplicationContext.databaseRef.insertPreset(presetModel, presetModel.getModality());
             setPresetTableModel();
         } else {
-            JOptionPane.showMessageDialog(this, "Please configure a modality", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showOptionDialog(this, ApplicationContext.currentBundle.getString("SettingsForm.addPresetError.text"), ApplicationContext.currentBundle.getString("ErrorTitles.text"), JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
         }
     }//GEN-LAST:event_addPresetActionPerformed
 
@@ -761,12 +760,12 @@ public class SettingsForm extends javax.swing.JFrame {
             DcmURL url = ApplicationContext.communicationDelegate.constructURL((String) serverListTable.getValueAt(serverListTable.getSelectedRow(), 1), (String) serverListTable.getValueAt(serverListTable.getSelectedRow(), 2), Integer.parseInt((String) serverListTable.getValueAt(serverListTable.getSelectedRow(), 3)));
             boolean result = ApplicationContext.communicationDelegate.verifyServer(url);
             if (result) {
-                JOptionPane.showMessageDialog(rootPane, "Echo dicom://" + (String) serverListTable.getValueAt(serverListTable.getSelectedRow(), 1) + "@" + (String) serverListTable.getValueAt(serverListTable.getSelectedRow(), 2) + ":" + (String) serverListTable.getValueAt(serverListTable.getSelectedRow(), 3) + " successfully!", "Echo Result", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showOptionDialog(rootPane, "Echo dicom://" + (String) serverListTable.getValueAt(serverListTable.getSelectedRow(), 1) + "@" + (String) serverListTable.getValueAt(serverListTable.getSelectedRow(), 2) + ":" + (String) serverListTable.getValueAt(serverListTable.getSelectedRow(), 3) + " " + ApplicationContext.currentBundle.getString("MainScreen.verifyServerSuccess.text") + "!", ApplicationContext.currentBundle.getString("MainScreen.verifyServer.title.text"), JOptionPane.OK_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
             } else {
-                JOptionPane.showMessageDialog(rootPane, "Echo dicom://" + (String) serverListTable.getValueAt(serverListTable.getSelectedRow(), 1) + "@" + (String) serverListTable.getValueAt(serverListTable.getSelectedRow(), 2) + ":" + (String) serverListTable.getValueAt(serverListTable.getSelectedRow(), 3) + " not successfully!", "Echo Result", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showOptionDialog(rootPane, "Echo dicom://" + (String) serverListTable.getValueAt(serverListTable.getSelectedRow(), 1) + "@" + (String) serverListTable.getValueAt(serverListTable.getSelectedRow(), 2) + ":" + (String) serverListTable.getValueAt(serverListTable.getSelectedRow(), 3) + " " + ApplicationContext.currentBundle.getString("MainScreen.verifyServerFailiure.text") + "!", ApplicationContext.currentBundle.getString("MainScreen.verifyServer.title.text"), JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
             }
         } else {
-            JOptionPane.showMessageDialog(this, "Please select a server to verify!", "Cannot Verify Server", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showOptionDialog(rootPane, ApplicationContext.currentBundle.getString("SettingsForm.verifyServerError.text"), ApplicationContext.currentBundle.getString("ErrorTitles.text"), JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
         }
     }//GEN-LAST:event_verifyServerBtnActionPerformed
 
@@ -775,19 +774,19 @@ public class SettingsForm extends javax.swing.JFrame {
     }//GEN-LAST:event_deleteServerBtnActionPerformed
 
     private void addServerBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addServerBtnActionPerformed
-        ServerModel serverModel = new ServerModel("Description", "AETITLE", "localhost", 104, "C-MOVE", "wado", 8080, "http", "");
+        ServerModel serverModel = new ServerModel("Description", ApplicationContext.currentBundle.getString("Preferences.servers.aeTitleColumn.text"), "localhost", 104, "C-MOVE", "wado", 8080, "http", "");
         if (!ApplicationContext.databaseRef.checkRecordExists("servers", "logicalname", "Description")) {
             ApplicationContext.databaseRef.insertServer(serverModel);
             setServerListTableModel();
         } else {
-            JOptionPane.showMessageDialog(this, "Server '" + serverModel.getDescription() + "' " + " already exist", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showOptionDialog(this, serverModel.getDescription() + " " + ApplicationContext.currentBundle.getString("SettingsForm.addServerFailiure.text"), ApplicationContext.currentBundle.getString("ErrorTitles.text"), JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
         }
     }//GEN-LAST:event_addServerBtnActionPerformed
 
     private void saveListenerBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveListenerBtnActionPerformed
         ApplicationContext.databaseRef.updateListener(listenerAetTxt.getText(), listenerPortTxt.getText());
         ApplicationContext.listenerDetails = ApplicationContext.databaseRef.getListenerDetails();
-        JOptionPane.showMessageDialog(this, "Lisetner Details updated", "Modify Listener", JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showOptionDialog(this, ApplicationContext.currentBundle.getString("SettingsForm.updateListener.text"), ApplicationContext.currentBundle.getString("SettingsForm.updateListener.title.text"), JOptionPane.OK_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
         ApplicationContext.stopListening();
         ApplicationContext.startListening();
     }//GEN-LAST:event_saveListenerBtnActionPerformed
@@ -795,8 +794,7 @@ public class SettingsForm extends javax.swing.JFrame {
     private void updateLanguageButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateLanguageButtonActionPerformed
         ApplicationContext.databaseRef.updateDefaultLocale(localeTextField.getText());
         String[] appLocale = ApplicationContext.databaseRef.getActiveLanguage();
-        ApplicationContext.currentLocale = new Locale(appLocale[2], appLocale[0]);
-        ApplicationContext.currentBundle = ResourceBundle.getBundle("in/raster/mayam/form/i18n/Bundle", ApplicationContext.currentLocale);
+        ApplicationContext.setCurrentLocale(new Locale(appLocale[2], appLocale[0]));
         ApplicationContext.mainScreenObj.applyLocaleChange();
     }//GEN-LAST:event_updateLanguageButtonActionPerformed
 
@@ -923,10 +921,6 @@ public class SettingsForm extends javax.swing.JFrame {
     private javax.swing.JRadioButton wadoRadioBtn;
     // End of variables declaration//GEN-END:variables
 
-    public static SettingsForm getSettingsObject() {
-        return ApplicationContext.mainScreenObj.settingsForm;
-    }
-
     public void setServerListTableModel() {
         ServerTableModel model = new ServerTableModel();
         model.setData(ApplicationContext.databaseRef.getServerList());
@@ -981,41 +975,41 @@ public class SettingsForm extends javax.swing.JFrame {
     private void deleteServer() {
         if (serverListTable.getSelectedRow() != -1) {
             String serverName = serverListTable.getValueAt(serverListTable.getSelectedRow(), 0).toString();
-            int isDelete = JOptionPane.showConfirmDialog(rootPane, "Are you sure want to delete server " + serverName + "?", "Delete Server", JOptionPane.YES_NO_OPTION);
+            int isDelete = JOptionPane.showOptionDialog(this, ApplicationContext.currentBundle.getString("SettingsForm.deleteServerConfirmation.text") + " '" + serverName + "'?", ApplicationContext.currentBundle.getString("SettingsForm.deleteServer.title.text"), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("YesButtons.text"), ApplicationContext.currentBundle.getString("NoButtons.text")}, "default");
             if (isDelete == 0) {
                 ApplicationContext.databaseRef.deleteServer(((ServerTableModel) serverListTable.getModel()).getRow(serverListTable.getSelectedRow()));
                 setServerListTableModel();
                 ApplicationContext.mainScreenObj.removeTab(serverName);
             }
         } else {
-            JOptionPane.showMessageDialog(this, "Please select a server to delete!", "Cannot Delete Server", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showOptionDialog(this, ApplicationContext.currentBundle.getString("SettingsForm.deleteServerError.text"), ApplicationContext.currentBundle.getString("ErrorTitles.text"), JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
         }
     }
 
     private void deleteButton() {
         if (buttonListTable.getSelectedRow() != -1) {
             String buttonName = buttonListTable.getValueAt(buttonListTable.getSelectedRow(), 0).toString();
-            int isDelete = JOptionPane.showConfirmDialog(rootPane, "Are you sure want to delete button " + buttonName + "?", "Delete Button", JOptionPane.YES_NO_OPTION);
+            int isDelete = JOptionPane.showOptionDialog(this, ApplicationContext.currentBundle.getString("SettingsForm.deleteButtonConfirmation.text") + " '" + buttonName + "'?", ApplicationContext.currentBundle.getString("SettingsForm.deleteButton.title.text"), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("YesButtons.text"), ApplicationContext.currentBundle.getString("NoButtons.text")}, "default");
             if (isDelete == 0) {
                 ApplicationContext.databaseRef.deleteButton(buttonName);
                 setButtonListTableModel(ApplicationContext.databaseRef.getAllQueryButtons());
             }
             ApplicationContext.mainScreenObj.createButtonsDelegate.loadButtons();
         } else {
-            JOptionPane.showMessageDialog(this, "Please select a valid button to delete!", "Cannot Delete Button", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showOptionDialog(this, ApplicationContext.currentBundle.getString("SettingsForm.deleteButtonError.text"), ApplicationContext.currentBundle.getString("ErrorTitles.text"), JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
         }
     }
 
     private void deletePreset() {
         if (presetListTable.getSelectedRow() != -1) {
             String presetName = (String) presetListTable.getValueAt(presetListTable.getSelectedRow(), 0);
-            int isDelete = JOptionPane.showConfirmDialog(this, "Are you sure want to delete preset " + presetName + "?", "Delete Button", JOptionPane.YES_NO_OPTION);
+            int isDelete = JOptionPane.showOptionDialog(this, ApplicationContext.currentBundle.getString("SettingsForm.deletePresetConfirmation.text") + " '" + presetName + "'?", ApplicationContext.currentBundle.getString("SettingsForm.deletePreset.title.text"), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("YesButtons.text"), ApplicationContext.currentBundle.getString("NoButtons.text")}, "default");
             if (isDelete == 0) {
                 ApplicationContext.databaseRef.deletePreset(((PresetTableModel) presetListTable.getModel()).getRow(presetListTable.getSelectedRow()));
                 setPresetTableModel();
             }
         } else {
-            JOptionPane.showMessageDialog(this, "Please select a valid preset to delete!", "Cannot Delete Preset", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showOptionDialog(this, ApplicationContext.currentBundle.getString("SettingForm.deletePresetError.text"), ApplicationContext.currentBundle.getString("ErrorTitles.text"), JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
         }
     }
 

@@ -101,7 +101,6 @@ public class ImageView extends javax.swing.JFrame {
                     }
                     imageToolbar.setWindowing();
                 } catch (NullPointerException npe) {
-                    System.out.println("Null pointer exception : " + npe.getMessage());
                     //Null pointer exception occurs when the first time the tab was opened
                 }
             }
@@ -206,7 +205,11 @@ public class ImageView extends javax.swing.JFrame {
                         }
                     }
                 }
-                writeToFile(panel.getName(), ((LayeredCanvas) ((JPanel) panel.getComponent(0)).getComponent(0)).imgpanel.getSeriesLocation());
+                try {
+                    writeToFile(panel.getName(), ((LayeredCanvas) ((JPanel) panel.getComponent(0)).getComponent(0)).imgpanel.getSeriesLocation());
+                } catch (ArrayIndexOutOfBoundsException ex) {
+                    //ignore exception occurs if the study is video and it was played using the default media player.
+                }
             } else {
                 ((VideoPanel) panel).stopTimer();
                 EmbeddedMediaPlayerComponent mediaPlayerComp = (EmbeddedMediaPlayerComponent) ((JPanel) panel.getComponent(0)).getComponent(0);

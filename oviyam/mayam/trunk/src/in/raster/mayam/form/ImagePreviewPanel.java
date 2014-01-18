@@ -96,7 +96,7 @@ public class ImagePreviewPanel extends javax.swing.JPanel {
         );
         containerLayout.setVerticalGroup(
             containerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 369, Short.MAX_VALUE)
+            .addGap(0, 421, Short.MAX_VALUE)
         );
 
         seriesScrollPane.setViewportView(container);
@@ -108,7 +108,7 @@ public class ImagePreviewPanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(seriesScrollPane)
+                    .addComponent(seriesScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 202, Short.MAX_VALUE)
                     .addComponent(patientDetailsLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -116,9 +116,9 @@ public class ImagePreviewPanel extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(6, 6, 6)
-                .addComponent(patientDetailsLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 66, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(seriesScrollPane)
+                .addComponent(patientDetailsLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(seriesScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 423, Short.MAX_VALUE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -282,7 +282,7 @@ public class ImagePreviewPanel extends javax.swing.JPanel {
     public void setVideoIdentification(VideoPanel comp) {
         for (int j = 0; j < parent.getComponentCount(); j++) {
             ((ViewerPreviewPanel) parent.getComponent(j)).clearSelectedInstances();
-            if (((ViewerPreviewPanel) parent.getComponent(j)).getSopUid().equals(comp.getComponent(0).getName())) {
+            if (((ViewerPreviewPanel) parent.getComponent(j)).getSopUid() != null && ((ViewerPreviewPanel) parent.getComponent(j)).getSopUid().equals(comp.getComponent(0).getName())) {
                 ((ViewerPreviewPanel) parent.getComponent(j)).setSelectedInstance(0);
                 break;
             }

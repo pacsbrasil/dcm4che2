@@ -55,6 +55,7 @@ import in.raster.mayam.models.QueryInformation;
 import in.raster.mayam.models.treetable.TreeTable;
 import in.raster.mayam.util.database.DatabaseHandler;
 import java.awt.Color;
+import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GraphicsDevice;
@@ -88,7 +89,7 @@ public class ApplicationContext {
     //Reference Objects and Variables    
 
     public static MainScreen mainScreenObj = null;
-    public static Locale currentLocale = null;
+    private static Locale currentLocale = null;
     public static ResourceBundle currentBundle = null;
     public static DatabaseHandler databaseRef = DatabaseHandler.getInstance();
     public static CommunicationDelegate communicationDelegate = new CommunicationDelegate();
@@ -241,23 +242,39 @@ public class ApplicationContext {
                     imgView.getImageToolbar().setWindowing();
                     break;
                 } else {
-                    VideoPanel videoPanel = new VideoPanel();
-                    videoPanel.setName(studyInstanceUID);
-                    EmbeddedMediaPlayerComponent mediaPlayerComp = new EmbeddedMediaListPlayerComponent();
                     try {
-                        mediaPlayerComp = new EmbeddedMediaListPlayerComponent();
-                    } catch (NoClassDefFoundError ex) {
+                        VideoPanel videoPanel = new VideoPanel();
+                        videoPanel.setName(studyInstanceUID);
+                        EmbeddedMediaPlayerComponent mediaPlayerComp = null;
+                        try {
+                            mediaPlayerComp = new EmbeddedMediaListPlayerComponent();
+                        } catch (NoClassDefFoundError ex) {
+                            //ignore
+                        }
+                        videoPanel.setMediaPlayer(mediaPlayerComp);
+                        videoPanel.setUniqueIdentifier(filePath.substring(filePath.split("_")[0].lastIndexOf(File.separator) + 1, filePath.indexOf("_")));
+                        videoPanel.setBorder(BorderFactory.createLineBorder(new Color(255, 138, 0)));
+                        ((JSplitPane) tabbedPane.getComponentAt(i)).setRightComponent(videoPanel);
+                        mediaPlayerComp.getMediaPlayer().playMedia(filePath);
+                        videoPanel.startTimer();
+                        ApplicationContext.imgView.getImageToolbar().disableImageTools();
+                        setVideoThumbnailIdentification(studyInstanceUID);
+                        selectedPanel = videoPanel;
+                        break;
+                    } catch (Exception ex) {
+                        if (Desktop.isDesktopSupported()) {
+                            try {
+                                if (tabbedPane == null || tabbedPane.getTabCount() <= 1) {
+                                    imgView.setVisible(false);
+                                    imgView.dispose();
+                                    imgView = null;
+                                }
+                                Desktop.getDesktop().open(new File(filePath));
+                            } catch (IOException ex1) {
+                                Logger.getLogger(ApplicationContext.class.getName()).log(Level.SEVERE, null, ex1);
+                            }
+                        }
                     }
-                    videoPanel.setMediaPlayer(mediaPlayerComp);
-                    videoPanel.setUniqueIdentifier(filePath.substring(filePath.split("_")[0].lastIndexOf(File.separator) + 1, filePath.indexOf("_")));
-                    videoPanel.setBorder(BorderFactory.createLineBorder(new Color(255, 138, 0)));
-                    ((JSplitPane) tabbedPane.getComponentAt(i)).setRightComponent(videoPanel);
-                    mediaPlayerComp.getMediaPlayer().playMedia(filePath);
-                    videoPanel.startTimer();
-                    ApplicationContext.imgView.getImageToolbar().disableImageTools();
-                    setVideoThumbnailIdentification(studyInstanceUID);
-                    selectedPanel = videoPanel;
-                    break;
                 }
             }
         }
@@ -266,21 +283,30 @@ public class ApplicationContext {
     public static void createVideoCanvas(String studyUid, String iuid) {
         for (int i = 0; i < tabbedPane.getTabCount(); i++) {
             if (((JPanel) ((JSplitPane) tabbedPane.getComponentAt(i)).getRightComponent()).getName().equals(studyUid) && ((JPanel) ((JSplitPane) tabbedPane.getComponentAt(i)).getRightComponent()).getComponentCount() == 0) {
-                VideoPanel videoPanel = new VideoPanel();
-                videoPanel.setName(studyUid);
-                EmbeddedMediaPlayerComponent mediaPlayerComp = new EmbeddedMediaListPlayerComponent();
                 try {
-                    mediaPlayerComp = new EmbeddedMediaListPlayerComponent();
-                } catch (NoClassDefFoundError ex) {
+                    VideoPanel videoPanel = new VideoPanel();
+                    videoPanel.setName(studyUid);
+                    EmbeddedMediaPlayerComponent mediaPlayerComp = null;
+                    try {
+                        mediaPlayerComp = new EmbeddedMediaListPlayerComponent();
+                    } catch (NoClassDefFoundError ex) {
+                    }
+                    videoPanel.setMediaPlayer(mediaPlayerComp);
+                    videoPanel.setUniqueIdentifier(iuid);
+                    videoPanel.setBorder(BorderFactory.createLineBorder(new Color(255, 138, 0)));
+                    ((JSplitPane) tabbedPane.getComponentAt(i)).setRightComponent(videoPanel);
+                    ApplicationContext.imgView.getImageToolbar().disableImageTools();
+                    setVideoThumbnailIdentification(studyUid);
+                    selectedPanel = videoPanel;
+                    break;
+                } catch (Exception e) {
+                    if (tabbedPane == null || tabbedPane.getTabCount() <= 1) {
+                        imgView.setVisible(false);
+                        imgView.dispose();
+                        imgView = null;
+                        selectedPanel = null;
+                    }
                 }
-                videoPanel.setMediaPlayer(mediaPlayerComp);
-                videoPanel.setUniqueIdentifier(iuid);
-                videoPanel.setBorder(BorderFactory.createLineBorder(new Color(255, 138, 0)));
-                ((JSplitPane) tabbedPane.getComponentAt(i)).setRightComponent(videoPanel);
-                ApplicationContext.imgView.getImageToolbar().disableImageTools();
-                setVideoThumbnailIdentification(studyUid);
-                selectedPanel = videoPanel;
-                break;
             }
         }
     }
@@ -316,7 +342,6 @@ public class ApplicationContext {
                     break;
                 }
             } catch (NullPointerException ex) {
-                System.out.println("null in set correspondingpreview");
                 //Occurs when there is no layered canvas i.e video file
             }
         }
@@ -344,7 +369,6 @@ public class ApplicationContext {
                     break;
                 }
             } catch (NullPointerException ex) {
-                System.out.println("Null pointer ex in set all series identification");
                 //ignore : Occurs when there is no layered canvas i.e video file
             }
         }
@@ -394,5 +418,10 @@ public class ApplicationContext {
     public static void stopListening() {
         System.out.println("Stop server listening on port " + rcvDelegate.getPort());
         rcvDelegate.stop();
+    }
+
+    public static void setCurrentLocale(Locale currentLocale) {
+        ApplicationContext.currentLocale = currentLocale;
+        ApplicationContext.currentBundle = ResourceBundle.getBundle("in/raster/mayam/form/i18n/Bundle", currentLocale);
     }
 }

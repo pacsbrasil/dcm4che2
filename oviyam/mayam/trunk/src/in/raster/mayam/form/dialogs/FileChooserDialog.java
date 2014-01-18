@@ -39,6 +39,7 @@
  * ***** END LICENSE BLOCK ***** */
 package in.raster.mayam.form.dialogs;
 
+import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.delegates.ImportDcmDirDelegate;
 import java.io.File;
 
@@ -64,6 +65,7 @@ public class FileChooserDialog extends javax.swing.JDialog {
     public FileChooserDialog(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        setTitle(ApplicationContext.currentBundle.getString("MainScreen.importMenuItem.text"));
         setCurrentDirectory();
     }
 

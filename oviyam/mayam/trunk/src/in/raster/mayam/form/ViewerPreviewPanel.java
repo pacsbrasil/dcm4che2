@@ -88,32 +88,12 @@ public class ViewerPreviewPanel extends javax.swing.JPanel {
     int labelPanelHeight;
     MouseAdapter mouseClickAdapter1 = null;
     boolean isMultiframe = false, isVideo = false;
-    String sopUid;
+    String sopUid = null;
     ArrayList<Integer> selectedInstances = new ArrayList<Integer>(0);
 
     /**
      * Creates new form ViewerPreviewPanel
      */
-    public ViewerPreviewPanel(String studyInstanceUid, String seriesInstanceUid, String seriesDescription, int totalImages, Thumbnail[] thumbnails, boolean isMultiframe, String instanceUid, boolean isVideo) {
-        initComponents();
-        this.studyInstanceUid = studyInstanceUid;
-        this.seriesInstanceUid = seriesInstanceUid;
-        this.seriesDescription = seriesDescription;
-        this.totalImages = totalImages;
-        if (totalImages == 0) {
-            totalImages = 1;
-        }
-        this.thumbnails = thumbnails;
-        this.SeriesLabel.setText(seriesDescription);
-        this.selectedButton = three;
-        this.isMultiframe = isMultiframe;
-        this.sopUid = instanceUid;
-        this.isVideo = isVideo;
-        setLayout(null);
-        createComponents();
-        addMouseAdapter();
-    }
-
     public ViewerPreviewPanel(String StudyUid, Series series, String instanceUid) {
         initComponents();
         this.studyInstanceUid = StudyUid;
@@ -126,12 +106,15 @@ public class ViewerPreviewPanel extends javax.swing.JPanel {
         totalImages = isVideo || isMultiframe ? 1 : series.getSeriesRelatedInstance();
         if (!isVideo) {
             if (!isMultiframe) {
-                SeriesLabel.setText(seriesDescription + "-Images: " + series.getSeriesRelatedInstance());
+                SeriesLabel.setText(seriesDescription);
+                SeriesLabel.setToolTipText(seriesDescription);
+                totalImagesLbl.setText(totalImages + " Imgs");
             } else {
-                SeriesLabel.setText("Multiframe-Frames: " + instanceUid.split(",")[1]);
+                SeriesLabel.setText("Multiframe");
+                totalImagesLbl.setText(instanceUid.split(",")[1] + " Frames");
             }
         } else {
-            SeriesLabel.setText("");
+            SeriesLabel.setText("Video");
         }
         setLayout(null);
         constructComponents();
@@ -150,6 +133,7 @@ public class ViewerPreviewPanel extends javax.swing.JPanel {
         labelPanel = new javax.swing.JPanel();
         button = new javax.swing.JButton();
         imagePanel = new javax.swing.JPanel();
+        totalImagesLbl = new javax.swing.JLabel();
 
         SeriesLabel.setFont(ApplicationContext.textFont);
         SeriesLabel.setText("jLabel1");
@@ -178,6 +162,9 @@ public class ViewerPreviewPanel extends javax.swing.JPanel {
             .addGap(0, 70, Short.MAX_VALUE)
         );
 
+        totalImagesLbl.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        totalImagesLbl.setText("0 sec");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -185,7 +172,10 @@ public class ViewerPreviewPanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(SeriesLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(SeriesLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(totalImagesLbl))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(labelPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -193,13 +183,15 @@ public class ViewerPreviewPanel extends javax.swing.JPanel {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(button)
                         .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(SeriesLabel)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(SeriesLabel)
+                    .addComponent(totalImagesLbl))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(button)
@@ -214,54 +206,40 @@ public class ViewerPreviewPanel extends javax.swing.JPanel {
     private javax.swing.JButton button;
     private javax.swing.JPanel imagePanel;
     private javax.swing.JPanel labelPanel;
+    private javax.swing.JLabel totalImagesLbl;
     // End of variables declaration//GEN-END:variables
 
     private void constructComponents() {
-        SeriesLabel.setBounds(0, 0, 220, 20);
-        labelPanelHeight = 9;
-        labelPanel.setLayout(null);
-        button.setBounds(207, 21, 14, 14);
-        int xPos = 0, yPos = 0;
-        for (int l = 0; l < totalImages; l++) {
-            JLabel label = new JLabel(" ");
-            label.setOpaque(true);
-            label.setBounds(xPos, yPos, 5, 5);
-            if (xPos + 7 < 200) {
-                xPos += 7;
-            } else {
-                xPos = 0;
-                yPos += 7;
-                labelPanelHeight += 7;
-            }
-            labelList.add(label);
-            labelPanel.add(label);
-            labelPanel.setBounds(0, 23, 205, labelPanelHeight);
-        }
-        colorLabels(selectedButton);
-        imagePanel.setLayout(null);
-        imagePanel.setBounds(0, 23 + labelPanelHeight + 5, 230, 76);
-        totalHeight = 23 + labelPanelHeight + 76 + 5;
-        selectedInstances.add(0);
-    }
-
-    private void createComponents() {
-        SeriesLabel.setBounds(0, 0, 220, 20);
-        labelPanelHeight = 9;
-        labelPanel.setLayout(null);
-        button.setBounds(207, 21, 14, 14);
-        if (totalImages > 3) {
-            button.setName(three);
-            button.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    performButtonAction();
-                }
-            });
+        int charSize = 9, width = 230;
+        if (SeriesLabel.getText().length() * charSize + 80 < width) {
+            SeriesLabel.setBounds(0, 0, SeriesLabel.getText().length() * charSize, 20);
+            totalImagesLbl.setBounds(SeriesLabel.getWidth() + 1, 0, width - SeriesLabel.getWidth(), 20);
         } else {
-            button.setIcon(imgAll);
-            colorLabels(all);
+            SeriesLabel.setBounds(0, 0, 150, 20);
+            totalImagesLbl.setBounds(151, 0, 80, 20);
         }
+        totalHeight = 22;
 
+//        int charSize = 9, width = 230, lblWidth = SeriesLabel.getText().length() * charSize;
+//        if (lblWidth > width) {
+//            JLabel tmpLbl = new JLabel(SeriesLabel.getText().substring(width / charSize));
+//            SeriesLabel.setText(SeriesLabel.getText().substring(0, width / charSize));
+//            SeriesLabel.setBounds(0, 0, width, 20);
+//            tmpLbl.setBounds(0, 22, tmpLbl.getText().length() * charSize, 20);
+//            tmpLbl.setVisible(true);
+//            totalImagesLbl.setBounds(tmpLbl.getWidth(), 22, width - tmpLbl.getWidth() + 1, 20);
+//            totalHeight = SeriesLabel.getHeight() + 2 + tmpLbl.getHeight() + 2;
+//            add(tmpLbl);
+//        } else {
+//            SeriesLabel.setBounds(0, 0, lblWidth, 20);
+//            totalImagesLbl.setBounds(lblWidth, 0, width - SeriesLabel.getWidth(), 20);
+//            totalHeight = 22;
+//        }
+
+
+        labelPanelHeight = 9;
+        labelPanel.setLayout(null);
+        button.setBounds(207, totalHeight + 3, 14, 14);
         int xPos = 0, yPos = 0;
         for (int l = 0; l < totalImages; l++) {
             JLabel label = new JLabel(" ");
@@ -276,13 +254,13 @@ public class ViewerPreviewPanel extends javax.swing.JPanel {
             }
             labelList.add(label);
             labelPanel.add(label);
-            labelPanel.setBounds(0, 23, 205, labelPanelHeight);
+            labelPanel.setBounds(0, totalHeight + 5, 205, labelPanelHeight);
         }
+        totalHeight += labelPanelHeight;
         colorLabels(selectedButton);
         imagePanel.setLayout(null);
-        int imagePanelHeight = loadThreePreviewImages();
-        imagePanel.setBounds(0, 23 + labelPanelHeight + 5, 230, imagePanelHeight);
-        totalHeight = 23 + labelPanelHeight + imagePanelHeight + 5;
+        imagePanel.setBounds(0, totalHeight + 10, 230, 76);
+        totalHeight += imagePanel.getHeight() + 5;
         selectedInstances.add(0);
     }
 
@@ -605,7 +583,6 @@ public class ViewerPreviewPanel extends javax.swing.JPanel {
             for (int i = 0; i < instanceUidList.size(); i++) {
                 thumbnails[i] = new Thumbnail(instanceUidList.get(i));
                 try {
-//                    thumbnails[i].setImage(ImageIO.read(new File(thumbnailLocation + File.separator + "Thumbnails" + File.separator + instanceUidList.get(i))));
                     thumbnails[i].setImage(ImageIO.read(new File(thumbnailLocation + File.separator + instanceUidList.get(i))));
                 } catch (IOException ex) {
                     thumbnails[i].setDefaultImage();
@@ -689,7 +666,6 @@ public class ViewerPreviewPanel extends javax.swing.JPanel {
                 fileLocation += File.separator + "Thumbnails";
             }
             try {
-//                thumbnails[0].setImage(ImageIO.read(new File(fileLocation + File.separator + "Thumbnails" + File.separator + sopUid)));
                 thumbnails[0].setImage(ImageIO.read(new File(fileLocation + File.separator + sopUid)));
             } catch (IOException ex) {
                 thumbnails[0].setDefaultImage();
@@ -715,18 +691,7 @@ public class ViewerPreviewPanel extends javax.swing.JPanel {
         if (isVideo) {
             String fileLocation = ApplicationContext.databaseRef.getFileLocation(studyInstanceUid, seriesInstanceUid, sopUid);
             File videoFile = null;
-            if (!fileLocation.contains("_V")) {
-                videoFile = new File(fileLocation + "_V" + File.separator + "video.xml");
-                videoFile.getParentFile().mkdirs();
-                try {
-                    videoFile.createNewFile();
-                } catch (IOException ex) {
-                    Logger.getLogger(ViewerPreviewPanel.class.getName()).log(Level.SEVERE, null, ex);
-                }
-                Dcm2Xml.main(new String[]{fileLocation, "-X", "-o", videoFile.getAbsolutePath()});
-            } else {
-                videoFile = new File(new File(fileLocation).getParentFile().getParent(), "video.xml");
-            }
+            videoFile = new File(new File(fileLocation).getParentFile().getParent(), "video.xml");
             try {
                 Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(videoFile);
                 NodeList elementsByTagName1 = doc.getElementsByTagName("item");
@@ -745,7 +710,7 @@ public class ViewerPreviewPanel extends javax.swing.JPanel {
                 expr = xPath.compile("//attr[@tag=\"00280008\"]");
                 nl = (NodeList) expr.evaluate(doc, XPathConstants.NODESET);
                 Node numberOfFrames = nl.item(0);
-                SeriesLabel.setText("Video : " + (int) Math.floor((Double.parseDouble(numberOfFrames.getTextContent()) * (1000 / Double.parseDouble(frameTime.getTextContent()))) / 1000) + " Sec");
+                totalImagesLbl.setText((int) Math.floor((Double.parseDouble(numberOfFrames.getTextContent()) * (1000 / Double.parseDouble(frameTime.getTextContent()))) / 1000) + " Sec");
             } catch (ParserConfigurationException ex) {
                 Logger.getLogger(ViewerPreviewPanel.class.getName()).log(Level.SEVERE, null, ex);
             } catch (SAXException ex) {

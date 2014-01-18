@@ -140,8 +140,8 @@ public class ApplicationFacade {
         if (splash != null) {
             splash.setVisible(false);
         }
-        JOptionPane.showMessageDialog(null, exitString, "Application Error", JOptionPane.ERROR_MESSAGE);
-        System.exit(1);
+        JOptionPane.showOptionDialog(null, exitString, ApplicationContext.currentBundle.getString("ApplicationFacade.applicationerror.title.text"), JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
+        System.exit(0);
     }
 
     public static void hideSplash() {

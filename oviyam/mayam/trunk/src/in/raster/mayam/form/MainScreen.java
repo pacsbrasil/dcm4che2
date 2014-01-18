@@ -557,7 +557,7 @@ public class MainScreen extends javax.swing.JFrame {
             ApplicationContext.currentTreeTable.changeSelection(row, column, false, false);
         } else if (isFocused() && e.getKeyChar() == KeyEvent.VK_DELETE) { //To delete the selective studies
             int[] selectedRows = ApplicationContext.currentTreeTable.getSelectedRows();
-            if (selectedRows.length > 0 && JOptionPane.showConfirmDialog(this, "Are you sure want to delete the selected studies?", "Delete Study", JOptionPane.YES_NO_OPTION) == 0) {
+            if (selectedRows.length > 0 && JOptionPane.showOptionDialog(rootPane, ApplicationContext.currentBundle.getString("MainScreen.deleteStudyConfirmation.text"), ApplicationContext.currentBundle.getString("MainScreen.deleteStudyConfirmation.title.text"), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("YesButtons.text"), ApplicationContext.currentBundle.getString("NoButtons.text")}, "default") == 0) {
                 for (int i = 0; i < selectedRows.length; i++) {
                     String studyUid = (String) ((TreeTableModelAdapter) ApplicationContext.currentTreeTable.getModel()).getValueAt(selectedRows[i], 10);
 
@@ -652,7 +652,7 @@ public class MainScreen extends javax.swing.JFrame {
         ActionListener resetListener = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                int isReset = JOptionPane.showConfirmDialog(rootPane, "Do you want to reset the local database?", "Reset", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                int isReset = JOptionPane.showOptionDialog(rootPane, ApplicationContext.currentBundle.getString("MainScreen.resetDBConfirmation.text"), ApplicationContext.currentBundle.getString("MainScreen.resetDBConfirmation.title.text"), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("YesButtons.text"), ApplicationContext.currentBundle.getString("NoButtons.text")}, "default");
                 if (isReset == 0) {
                     ApplicationContext.databaseRef.rebuild();
                     if (serverTab.getSelectedIndex() == 0) {

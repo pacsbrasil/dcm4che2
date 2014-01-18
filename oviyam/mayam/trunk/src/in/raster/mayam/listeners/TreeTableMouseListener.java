@@ -120,7 +120,11 @@ public class TreeTableMouseListener extends MouseAdapter {
                             ApplicationContext.createVideoPreviews(studyDetails.getStudyUID());
                             ApplicationContext.setCorrespondingPreviews();
                             ApplicationContext.setAllSeriesIdentification(studyDetails.getStudyUID());
-                            ApplicationContext.imgView.getImageToolbar().enableMultiSeriesTools();
+                            try {
+                                ApplicationContext.imgView.getImageToolbar().enableMultiSeriesTools();
+                            } catch (NullPointerException ex) {
+                                //ignore : null pointer exception occurs if the study is video and it was played using the default media player.
+                            }
                             showPreviews();
                         }
                     });
@@ -200,7 +204,7 @@ public class TreeTableMouseListener extends MouseAdapter {
                         currentSeries.setVideoStatus(true);
                         threeThumbnails = new Thumbnail[1];
                         threeThumbnails[0] = new Thumbnail(instanceData.getString(Tags.SOPInstanceUID));
-                        constructSeriesPanelFromLocalDB(currentSeries, "Video-" + instanceData.getString(Tags.NumberOfFrames), 1, threeThumbnails, null);
+                        constructSeriesPanelFromLocalDB(currentSeries, "Video:" + instanceData.getString(Tags.NumberOfFrames) + " Frames", 1, threeThumbnails, null);
                         videoInstances.add(instanceData.getString(Tags.SeriesInstanceUID) + "," + instanceData.getString(Tags.SOPInstanceUID) + "," + instanceData.getString(Tags.NumberOfFrames));
                         multiframes++;
                     } else {
@@ -209,13 +213,12 @@ public class TreeTableMouseListener extends MouseAdapter {
                         currentSeries.setInstanceUID(instanceData.getString(Tags.SOPInstanceUID));
                         thumbnailWadoRetriever.retrieveThumbnail(instanceData.getString(Tags.SeriesInstanceUID) + "," + instanceData.getString(Tags.SOPInstanceUID));
                         threeThumbnails[0] = new Thumbnail(instanceData.getString(Tags.SOPInstanceUID));
-                        constructSeriesPanelFromLocalDB(currentSeries, "Multiframe-" + instanceData.getString(Tags.NumberOfFrames), 1, threeThumbnails, null);
+                        constructSeriesPanelFromLocalDB(currentSeries, "Multiframe:" + instanceData.getString(Tags.NumberOfFrames) + " Frames", 1, threeThumbnails, null);
                         multiframesInstances.add(instanceData.getString(Tags.SeriesInstanceUID) + "," + instanceData.getString(Tags.SOPInstanceUID) + "," + instanceData.getString(Tags.NumberOfFrames));
                         multiframes++;
                     }
                 }
             }
-
             if (multiframes < currentSeries.getSeriesRelatedInstance()) {
                 currentSeries.setSeriesRelatedInstance(currentSeries.getSeriesRelatedInstance() - multiframes);
                 if (wadoInstances.size() > 3) {
@@ -239,7 +242,7 @@ public class TreeTableMouseListener extends MouseAdapter {
                         k++;
                     }
                 }
-                constructSeriesPanelFromLocalDB(currentSeries, currentSeries.getSeriesDesc(), instances.size(), threeThumbnails, null);
+                constructSeriesPanelFromLocalDB(currentSeries, currentSeries.getSeriesDesc(), wadoInstances.size(), threeThumbnails, null);
                 HashSet<String> instancesToRetrieve = new HashSet<String>(0, 1);
                 instancesToRetrieve.addAll(wadoInstances.values());
                 instancesToRetrieve.addAll(multiframesInstances);
@@ -495,7 +498,6 @@ public class TreeTableMouseListener extends MouseAdapter {
                 position += (height + 5);
             } else {
                 ViewerPreviewPanel viewerPreviewPanel = new ViewerPreviewPanel(studyDetails.getStudyUID(), curr, curr.getInstanceUID() + "," + curr.getSeriesRelatedInstance());
-                viewerPreviewPanel.setSopUid(curr.getInstanceUID());
                 viewerPreviewPanel.setVisible(true);
                 viewerPreviewPanel.setName(String.valueOf(i));
                 int height = viewerPreviewPanel.getTotalHeight();

@@ -39,12 +39,9 @@
  * ***** END LICENSE BLOCK ***** */
 package in.raster.mayam.models;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 
@@ -106,9 +103,6 @@ public class Series {
         } catch (Exception ex) {
             seriesDate = "unknown";
         }
-
-//        seriesDate = dataset.getString(Tags.SeriesDate) != null ? dataset.getString(Tags.SeriesDate) : "";
-//        seriesTime = dataset.getString(Tags.SeriesTime) != null ? dataset.getString(Tags.SeriesTime) : "";
         this.institutionName = dataset.getString(Tags.InstitutionName) != null ? dataset.getString(Tags.InstitutionName) : "";
         this.seriesRelatedInstance = dataset.getInteger(Tags.NumberOfSeriesRelatedInstances);
     }

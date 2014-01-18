@@ -41,6 +41,7 @@ package in.raster.mayam.form;
 
 import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.models.Series;
+import java.awt.Color;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -67,9 +68,12 @@ public class PreviewPanel extends javax.swing.JPanel {
         this.seriesInstanceUid = seriesInstanceUid;
         initComponents();
         if (!seriesDescription.contains("Multiframe") && !seriesDescription.contains("Video")) {
-            seriesLabel.setText(seriesDescription + ", Images:" + totalImages);
-        } else {
             seriesLabel.setText(seriesDescription);
+            seriesLabel.setToolTipText(seriesDescription);
+            totalImagesLbl.setText(totalImages + " Imgs");
+        } else {
+            seriesLabel.setText(seriesDescription.split(":")[0]);
+            totalImagesLbl.setText(seriesDescription.split(":")[1]);
         }
         this.threeThumbnails = threeThumbnails;
         if (dest == null) {
@@ -94,6 +98,7 @@ public class PreviewPanel extends javax.swing.JPanel {
 
         imagePanel = new javax.swing.JPanel();
         seriesLabel = new javax.swing.JLabel();
+        totalImagesLbl = new javax.swing.JLabel();
 
         javax.swing.GroupLayout imagePanelLayout = new javax.swing.GroupLayout(imagePanel);
         imagePanel.setLayout(imagePanelLayout);
@@ -106,8 +111,10 @@ public class PreviewPanel extends javax.swing.JPanel {
             .addGap(0, 100, Short.MAX_VALUE)
         );
 
-        seriesLabel.setFont(ApplicationContext.textFont);
         seriesLabel.setText("Series Info");
+
+        totalImagesLbl.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        totalImagesLbl.setText("jLabel1");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -116,15 +123,22 @@ public class PreviewPanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(seriesLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 178, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(imagePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(51, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(imagePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 39, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(seriesLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(totalImagesLbl)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(seriesLabel)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(seriesLabel)
+                    .addComponent(totalImagesLbl))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(imagePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(20, Short.MAX_VALUE))
@@ -133,13 +147,40 @@ public class PreviewPanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel imagePanel;
     private javax.swing.JLabel seriesLabel;
+    private javax.swing.JLabel totalImagesLbl;
     // End of variables declaration//GEN-END:variables
 
     private void createComponents() {
-        seriesLabel.setBounds(0, 0, 220, 20);
+        int charSize = 9, width = 220;
+        if ((seriesLabel.getText().length() * charSize) + 80 < width) {
+            seriesLabel.setBounds(0, 0, seriesLabel.getText().length() * charSize, 20);
+            totalImagesLbl.setBounds(seriesLabel.getWidth() + 1, 0, width - seriesLabel.getWidth(), 20);
+        } else {
+            seriesLabel.setBounds(0, 0, 150, 20);
+            totalImagesLbl.setBounds(151, 0, 80, 20);
+        }
+        totalHeight = 22;
+
+//        int charSize = 9;
+//        int width = 230;
+//        int lblWidth = seriesLabel.getText().length() * charSize;
+//        if (lblWidth >= width) {
+//            JLabel tmpLbl = new JLabel(seriesLabel.getText().substring(width / charSize));
+//            seriesLabel.setText(seriesLabel.getText().substring(0, width / charSize));
+//            seriesLabel.setBounds(0, 0, width, 20);
+//            tmpLbl.setBounds(0, 22, tmpLbl.getText().length() * charSize, 20);
+//            tmpLbl.setVisible(true);
+//            totalImagesLbl.setBounds(tmpLbl.getWidth(), 22, width - tmpLbl.getWidth() + 1, 20);
+//            totalHeight = seriesLabel.getHeight() + 2 + tmpLbl.getHeight() + 2;
+//            add(tmpLbl);
+//        } else {
+//            seriesLabel.setBounds(0, 0, lblWidth, 20);
+//            totalImagesLbl.setBounds(lblWidth, 0, width - seriesLabel.getWidth(), 20);
+//            totalHeight = 22;
+//        }
         int imgPanelHeight = 76;
         loadThumbnails();
-        totalHeight = 23 + imgPanelHeight;
+        totalHeight += imgPanelHeight;
     }
 
     public void loadThumbnails() {
@@ -156,7 +197,7 @@ public class PreviewPanel extends javax.swing.JPanel {
             imagePanel.add(threeThumbnails[i]);
             xPos += 76;
         }
-        imagePanel.setBounds(0, seriesLabel.getHeight() + 5, 220, 76);
+        imagePanel.setBounds(0, totalHeight + 5, 220, 76);
     }
 
     public int getTotalHeight() {

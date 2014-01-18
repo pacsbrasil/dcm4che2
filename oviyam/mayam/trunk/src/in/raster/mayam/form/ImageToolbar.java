@@ -144,7 +144,6 @@ public class ImageToolbar extends javax.swing.JPanel {
                 ((LayeredCanvas) ((JPanel) panel.getComponent(i)).getComponent(0)).imgpanel.buffer.terminateThread();
                 ((LayeredCanvas) ((JPanel) panel.getComponent(i)).getComponent(0)).imgpanel.shutDown();
             } catch (NullPointerException ex) {
-                System.out.println("May be tile layout choosen");
             }
         }
         if (ApplicationContext.buffer != null) {
@@ -197,7 +196,6 @@ public class ImageToolbar extends javax.swing.JPanel {
         ApplicationContext.layeredCanvas = canvas;
         ApplicationContext.buffer = new Buffer(canvas.imgpanel);
         ApplicationContext.buffer.setBufferSize((row * col) + (row * col) + (row * col));
-//        ApplicationContext.buffer.createThread(instanceUidList.size() - (row * col) - 1);        
         ApplicationContext.buffer.createThread(-1);
         TextOverlayParam textOverlayParam = canvas.imgpanel.getTextOverlayParam();
         canvas.imgpanel.setIsNormal(false);
@@ -686,7 +684,7 @@ public class ImageToolbar extends javax.swing.JPanel {
             ApplicationContext.layeredCanvas.annotationPanel.stopPanning();
             probeButton.setSelected(ApplicationContext.layeredCanvas.imgpanel.probe());
         } else {
-            JOptionPane.showMessageDialog(ImageToolbar.this, "Tile selected is not valid for this process");
+            JOptionPane.showOptionDialog(this, ApplicationContext.currentBundle.getString("ImageView.invalidToolSelection.text"), ApplicationContext.currentBundle.getString("ErrorTitles.text"), JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
         }
     }//GEN-LAST:event_probeButtonActionPerformed
 
@@ -786,7 +784,7 @@ public class ImageToolbar extends javax.swing.JPanel {
         if (ApplicationContext.layeredCanvas.annotationPanel != null) {
             ApplicationContext.layeredCanvas.annotationPanel.clearAllMeasurement();
         } else {
-            JOptionPane.showMessageDialog(ImageToolbar.this, "Tile selected is not valid for this process");
+            JOptionPane.showOptionDialog(this, ApplicationContext.currentBundle.getString("ImageView.invalidToolSelection.text"), ApplicationContext.currentBundle.getString("ErrorTitles.text"), JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
         }
     }//GEN-LAST:event_clearAllMeasurementActionPerformed
 
@@ -796,7 +794,7 @@ public class ImageToolbar extends javax.swing.JPanel {
             ApplicationContext.layeredCanvas.annotationPanel.doDeleteMeasurement();
             toolsButtonGroup.setSelected(deleteMeasurement.getModel(), ApplicationContext.layeredCanvas.annotationPanel.isDeleteMeasurement());
         } else {
-            JOptionPane.showMessageDialog(ImageToolbar.this, "Tile selected is not valid for this process");
+            JOptionPane.showOptionDialog(this, ApplicationContext.currentBundle.getString("ImageView.invalidToolSelection.text"), ApplicationContext.currentBundle.getString("ErrorTitles.text"), JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
         }
     }//GEN-LAST:event_deleteMeasurementActionPerformed
 
@@ -805,7 +803,7 @@ public class ImageToolbar extends javax.swing.JPanel {
             ApplicationContext.layeredCanvas.annotationPanel.toggleAnnotation();
             setAnnotationToolsStatus();
         } else {
-            JOptionPane.showMessageDialog(ImageToolbar.this, "Tile selected is not valid for this process");
+            JOptionPane.showOptionDialog(this, ApplicationContext.currentBundle.getString("ImageView.invalidToolSelection.text"), ApplicationContext.currentBundle.getString("ErrorTitles.text"), JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
         }
     }//GEN-LAST:event_annotationVisibilityActionPerformed
 
@@ -830,7 +828,7 @@ public class ImageToolbar extends javax.swing.JPanel {
             Display.alignScreen(jpegConvertor);
             jpegConvertor.setVisible(true);
         } else {
-            JOptionPane.showMessageDialog(this, "Tile selected is not valid for this process");
+            JOptionPane.showOptionDialog(this, ApplicationContext.currentBundle.getString("ImageView.invalidToolSelection.text"), ApplicationContext.currentBundle.getString("ErrorTitles.text"), JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
         }
     }//GEN-LAST:event_exportButtonActionPerformed
 
@@ -841,7 +839,7 @@ public class ImageToolbar extends javax.swing.JPanel {
             Display.alignScreen(dicomTagsViewer);
             dicomTagsViewer.setVisible(true);
         } else {
-            JOptionPane.showMessageDialog(this, "Tile selected is not valid for this process");
+            JOptionPane.showOptionDialog(this, ApplicationContext.currentBundle.getString("ImageView.invalidToolSelection.text"), ApplicationContext.currentBundle.getString("ErrorTitles.text"), JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
         }
     }//GEN-LAST:event_metaDataButtonActionPerformed
 
@@ -961,7 +959,7 @@ public class ImageToolbar extends javax.swing.JPanel {
                     ApplicationContext.layeredCanvas.textOverlay.toggleTextOverlay();
 
                 } else {
-                    JOptionPane.showMessageDialog(ImageToolbar.this, "Tile selected is not valid for this process");
+                    JOptionPane.showOptionDialog(ImageToolbar.this, ApplicationContext.currentBundle.getString("ImageView.invalidToolSelection.text"), ApplicationContext.currentBundle.getString("ErrorTitles.text"), JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
                 }
             }
         });
@@ -1012,7 +1010,7 @@ public class ImageToolbar extends javax.swing.JPanel {
             }
             this.setComponentPopupMenu(jPopupMenu1);
         } else {
-            JOptionPane.showMessageDialog(this, "Tile selected is not valid for this process");
+            JOptionPane.showOptionDialog(this, ApplicationContext.currentBundle.getString("ImageView.invalidToolSelection.text"), ApplicationContext.currentBundle.getString("ErrorTitles.text"), JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
         }
     }
 
@@ -1022,7 +1020,7 @@ public class ImageToolbar extends javax.swing.JPanel {
             ApplicationContext.layeredCanvas.annotationPanel.disableAnnotations();
             toolsButtonGroup.setSelected(panButton.getModel(), ApplicationContext.layeredCanvas.imgpanel.doPan());
         } else {
-            JOptionPane.showMessageDialog(ImageToolbar.this, "Tile selected is not valid for this process");
+            JOptionPane.showOptionDialog(this, ApplicationContext.currentBundle.getString("ImageView.invalidToolSelection.text"), ApplicationContext.currentBundle.getString("ErrorTitles.text"), JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
         }
     }
 
@@ -1032,7 +1030,7 @@ public class ImageToolbar extends javax.swing.JPanel {
             ApplicationContext.layeredCanvas.annotationPanel.disableAnnotations();
             toolsButtonGroup.setSelected(zoomButton.getModel(), ApplicationContext.layeredCanvas.imgpanel.doZoom());
         } else {
-            JOptionPane.showMessageDialog(ImageToolbar.this, "Tile selected is not valid for this process");
+            JOptionPane.showOptionDialog(this, ApplicationContext.currentBundle.getString("ImageView.invalidToolSelection.text"), ApplicationContext.currentBundle.getString("ErrorTitles.text"), JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
         }
     }
 
@@ -1064,7 +1062,7 @@ public class ImageToolbar extends javax.swing.JPanel {
                 toolsButtonGroup.setSelected(rulerButton.getModel(), true);
             }
         } else {
-            JOptionPane.showMessageDialog(ImageToolbar.this, "Tile selected is not valid for this process");
+            JOptionPane.showOptionDialog(this, ApplicationContext.currentBundle.getString("ImageView.invalidToolSelection.text"), ApplicationContext.currentBundle.getString("ErrorTitles.text"), JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
         }
     }
 
@@ -1084,7 +1082,7 @@ public class ImageToolbar extends javax.swing.JPanel {
             }
             toolsButtonGroup.setSelected(rectangleButton.getModel(), true);
         } else {
-            JOptionPane.showMessageDialog(ImageToolbar.this, "Tile selected is not valid for this process");
+            JOptionPane.showOptionDialog(this, ApplicationContext.currentBundle.getString("ImageView.invalidToolSelection.text"), ApplicationContext.currentBundle.getString("ErrorTitles.text"), JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
         }
     }
 
@@ -1104,7 +1102,7 @@ public class ImageToolbar extends javax.swing.JPanel {
             }
             toolsButtonGroup.setSelected(ellipseButton.getModel(), true);
         } else {
-            JOptionPane.showMessageDialog(ImageToolbar.this, "Tile selected is not valid for this process");
+            JOptionPane.showOptionDialog(this, ApplicationContext.currentBundle.getString("ImageView.invalidToolSelection.text"), ApplicationContext.currentBundle.getString("ErrorTitles.text"), JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
         }
     }
 
@@ -1145,7 +1143,7 @@ public class ImageToolbar extends javax.swing.JPanel {
             ApplicationContext.layeredCanvas.imgpanel.repaint();
             toolsButtonGroup.setSelected(stackButton.getModel(), ApplicationContext.layeredCanvas.imgpanel.isStackSelected());
         } else {
-            JOptionPane.showMessageDialog(ImageToolbar.this, "Tile selected is not valid for this process");
+            JOptionPane.showOptionDialog(this, ApplicationContext.currentBundle.getString("ImageView.invalidToolSelection.text"), ApplicationContext.currentBundle.getString("ErrorTitles.text"), JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
         }
     }
 
@@ -1190,7 +1188,7 @@ public class ImageToolbar extends javax.swing.JPanel {
         if (ApplicationContext.layeredCanvas.annotationPanel != null && ApplicationContext.layeredCanvas.imgpanel != null) {
             ApplicationContext.layeredCanvas.textOverlay.toggleTextOverlay();
         } else {
-            JOptionPane.showMessageDialog(ImageToolbar.this, "Tile selected is not valid for this process");
+            JOptionPane.showOptionDialog(this, ApplicationContext.currentBundle.getString("ImageView.invalidToolSelection.text"), ApplicationContext.currentBundle.getString("ErrorTitles.text"), JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
         }
     }
 

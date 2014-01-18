@@ -504,10 +504,10 @@ public class QueryButtonSettings extends javax.swing.JDialog {
                 setVisible(false);
                 dispose();
             } else {
-                JOptionPane.showMessageDialog(null, "Button '" + buttonText.getText() + "' already exist", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showOptionDialog(null, "'" + buttonText.getText() + "' " + ApplicationContext.currentBundle.getString("SettingsForm.addServerFailiure.text"), ApplicationContext.currentBundle.getString("ErrorTitles.text"), JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
             }
         } else {
-            JOptionPane.showMessageDialog(null, "Please specify the button name", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showOptionDialog(null, ApplicationContext.currentBundle.getString("SettingsForm.specifyButtonNameErr.text"), ApplicationContext.currentBundle.getString("ErrorTitles.text"), JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
         }
     }
 

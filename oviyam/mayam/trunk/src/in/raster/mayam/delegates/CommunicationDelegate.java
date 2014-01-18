@@ -61,25 +61,6 @@ public class CommunicationDelegate {
     ArrayList<StudySeriesMatch> studySeriesMatchs = new ArrayList<StudySeriesMatch>();
 
     /*
-     * Consturcts the URL using server details and verifies for server status
-     */
-    public DcmURL validateServer(int selectedServer, String serverName) {
-        if (selectedServer != 0) {
-            ServerModel serverdetails = ApplicationContext.databaseRef.getServerDetails(serverName);
-            DcmURL url = constructURL(serverdetails.getAeTitle(), serverdetails.getHostName(), serverdetails.getPort());
-            boolean echoresult = verifyServer(url);
-            if (echoresult) {
-                return url;
-            } else {
-                JOptionPane.showMessageDialog(ApplicationContext.mainScreenObj, "Selected server not available!", "Query Result", JOptionPane.ERROR_MESSAGE);
-            }
-        } else {
-            JOptionPane.showMessageDialog(ApplicationContext.mainScreenObj, "Please select a server", "Query Result", JOptionPane.ERROR_MESSAGE);
-        }
-        return null;
-    }
-
-    /*
      * Verifies the server was alive or not
      */
     public boolean verifyServer(DcmURL url) {
@@ -143,10 +124,10 @@ public class CommunicationDelegate {
         studySeriesMatchs = new ArrayList<StudySeriesMatch>();
         boolean serverStatus = verifyServer(url);
         if (!serverStatus) {
-            JOptionPane.showMessageDialog(ApplicationContext.mainScreenObj, "Failed to establish association with  " + ApplicationContext.currentServer, "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showOptionDialog(ApplicationContext.mainScreenObj, ApplicationContext.currentBundle.getString("MainScreen.echoFailiure.text") + " '" + ApplicationContext.currentServer + "'", ApplicationContext.currentBundle.getString("ErrorTitles.text"), JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
         } else {
             if (queryParam.getPatientId().equals("") && queryParam.getPatientName().equals("") && queryParam.getBirthDate().equals("") && queryParam.getSearchDate().equals("") && queryParam.getModality().equals("") && queryParam.getSearchTime().equals("") && queryParam.getAccessionNo().equals("") && queryParam.getStudyDescription().equals("") && queryParam.getReferringPhysicianName().equals("")) {
-                doQuery = JOptionPane.showConfirmDialog(ApplicationContext.mainScreenObj, "No search criteria entered. The search may take long time.Do you really want to proceed?", "", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                doQuery = JOptionPane.showOptionDialog(ApplicationContext.mainScreenObj, ApplicationContext.currentBundle.getString("MainScreen.noSearchCriteriaFound.text"), "", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("YesButtons.text"), ApplicationContext.currentBundle.getString("NoButtons.text")}, "default");
             }
             if (doQuery == 0) {
                 QueryService qs = new QueryService();

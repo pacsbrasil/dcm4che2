@@ -195,6 +195,7 @@ public class JpegConvertorDelegate {
 
     private void seriesExportAsJpegProcess(boolean multiframe, File inputDicomFile, String outputPath, String outputFileName, ColorModel cm, OutputStream output) throws IOException {
         File outputJpegFile = null;
+        ImageIO.scanForPlugins();
         ImageInputStream iis = ImageIO.createImageInputStream(inputDicomFile);
         BufferedImage jpegImage = null;
         Iterator<ImageReader> iterator = ImageIO.getImageReadersByFormatName("DICOM");

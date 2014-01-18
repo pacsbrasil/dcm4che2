@@ -203,6 +203,7 @@ public class DatabaseHandler {
                 conn.createStatement().execute("alter table image add column SOPClassUID varchar(255)");
                 conn.createStatement().execute("update miscellaneous set JNLPRetrieveType='C-GET',AllowDynamicRetrieveType=false");
                 conn.createStatement().execute("update listener set StorageLocation='" + ApplicationContext.getAppDirectory() + File.separator + "archive'");
+                addNewLocale("it_IT");
             }
             conn.commit();
         } catch (SQLException ex) {
@@ -276,6 +277,7 @@ public class DatabaseHandler {
     public void insertDefaultLocales() throws SQLException {
         conn.createStatement().execute("insert into locale (countrycode,country,languagecode,language,localeid,status) values('GB','United Kingdom','en','English','en_GB',true)");
         addNewLocale("ta_IN");
+        addNewLocale("it_IT");
     }
 
     private void addNewLocale(String localeid) throws SQLException {
@@ -378,7 +380,6 @@ public class DatabaseHandler {
     }
 
     public void insertImageInfo(DicomObject dataset, String filePath, boolean isLink, boolean updateMainScreen) {
-//        try {
         if (!(checkRecordExists("image", "SopUID", dataset.getString(Tags.SOPInstanceUID)))) {
             boolean multiframe = false;
             int totalFrame = 0;
@@ -418,12 +419,14 @@ public class DatabaseHandler {
             try {
                 conn.createStatement().executeUpdate("insert into image(SopUID,SOPClassUID,InstanceNo,multiframe,totalframe,SendStatus,ForwardDateTime,ReceivedDateTime,ReceiveStatus,FileStoreUrl,SliceLocation,EncapsulatedDocument,ThumbnailStatus,FrameOfReferenceUID,ImagePosition,ImageOrientation,ImageType,PixelSpacing,SliceThickness,NoOfRows,NoOfColumns,ReferencedSopUid,PatientId,StudyInstanceUID,SeriesInstanceUID) values('" + dataset.getString(Tags.SOPInstanceUID) + "','" + dataset.getString(Tags.SOPClassUID) + "'," + dataset.getInt(Tags.InstanceNumber) + ",'" + multiframe + "','" + totalFrame + "','" + "partial" + "','" + " " + "','" + " " + "','" + "partial" + "','" + filePath + "'," + sliceLoc + ",'" + encapsulatedPDF + "',false,'" + frameOfRefUid + "','" + imgPos + "','" + imgOrientation + "','" + image_type + "','" + pixelSpacing + "','" + sliceThickness + "'," + row + "," + columns + ",'" + referSopInsUid.trim() + "','" + dataset.getString(Tags.PatientID) + "','" + dataset.getString(Tags.StudyInstanceUID) + "','" + dataset.getString(Tags.SeriesInstanceUID) + "')");
                 conn.commit();
-                if (ApplicationContext.mainScreenObj != null && updateMainScreen || (!ApplicationContext.isJnlp && !ApplicationContext.mainScreenObj.isInProgress())) {
-                    if (dataset.getString(Tags.SOPClassUID).equals(UID.VideoEndoscopicImageStorage) || dataset.getString(Tags.SOPClassUID).equals(UID.VideoMicroscopicImageStorage) || dataset.getString(Tags.SOPClassUID).equals(UID.VideoPhotographicImageStorage)) {
+                boolean isVideo = false;
+                 if (dataset.getString(Tags.SOPClassUID).equals(UID.VideoEndoscopicImageStorage) || dataset.getString(Tags.SOPClassUID).equals(UID.VideoMicroscopicImageStorage) || dataset.getString(Tags.SOPClassUID).equals(UID.VideoPhotographicImageStorage)) {
                         String storeLoc = isLink ? ApplicationContext.getAppDirectory() + File.separator + "Videos" + File.separator + dataset.getString(Tags.SOPInstanceUID) + "_V" : new File(filePath).getParentFile() + File.separator + dataset.getString(Tags.SOPInstanceUID) + "_V";
                         ApplicationContext.convertVideo(filePath, storeLoc, dataset.getString(Tags.SOPInstanceUID));
-                        SwingUtilities.invokeLater(refresher);
-                    } else {
+                        isVideo = true;
+                    }
+                if (ApplicationContext.mainScreenObj != null && updateMainScreen || (!ApplicationContext.isJnlp && !ApplicationContext.mainScreenObj.isInProgress())) {
+                    if(!isVideo) {
                         String storeLoc = isLink ? ApplicationContext.getAppDirectory() + File.separator + "Thumbnails" + File.separator + dataset.getString(Tags.StudyInstanceUID) + File.separator + dataset.getString(Tags.SOPInstanceUID) : filePath.substring(0, filePath.lastIndexOf(File.separator)) + File.separator + "Thumbnails" + File.separator + dataset.getString(Tags.SOPInstanceUID);
                         executor.submit(new ThumbnailConstructor(filePath, storeLoc));
                         update("image", "ThumbnailStatus", true, "SopUID", dataset.getString(Tags.SOPInstanceUID));
@@ -437,8 +440,6 @@ public class DatabaseHandler {
                 System.out.println("Exception in inserting image info " + ex.getMessage());
             }
         }
-//        } catch (Exception e) {
-//        }
     }
     //Accessing Data  
 
@@ -833,9 +834,9 @@ public class DatabaseHandler {
                 img.setTotalNumFrames(totalFrames);
                 if (img.getSopClassUid() != null && (img.getSopClassUid().equals(UID.VideoEndoscopicImageStorage) || img.getSopClassUid().equals(UID.VideoMicroscopicImageStorage) || img.getSopClassUid().equals(UID.VideoPhotographicImageStorage))) {
                     series.setVideoStatus(true);
-                    series.setSeriesDesc("Video");
+                    series.setSeriesDesc("Video:"+totalFrames+" Frames");
                 } else {
-                    series.setSeriesDesc("Multiframe : " + totalFrames + " Frames");
+                    series.setSeriesDesc("Multiframe:" + totalFrames + " Frames");
                 }
                 series.getImageList().add(img);
                 arr.add(series);

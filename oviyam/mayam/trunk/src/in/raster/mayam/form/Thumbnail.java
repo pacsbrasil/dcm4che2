@@ -75,7 +75,7 @@ public class Thumbnail extends JLabel {
     public void readImage(String dest) {
         try {
             setIcon(new ImageIcon(ImageIO.read(new File(dest))));
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             setDefaultImage();
         }
 

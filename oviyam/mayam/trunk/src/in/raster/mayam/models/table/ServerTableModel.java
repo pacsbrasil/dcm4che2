@@ -149,7 +149,7 @@ public class ServerTableModel extends AbstractTableModel {
                     ApplicationContext.mainScreenObj.addOrEditServer(prevName, row.getDescription());
                 } else {
                     row.setDescription(prevName);
-                    JOptionPane.showMessageDialog(null, "Server already exist", "Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showOptionDialog(null, "'"+aValue+"' "+ApplicationContext.currentBundle.getString("SettingsForm.addServerFailiure.text"), ApplicationContext.currentBundle.getString("ErrorTitles.text"), JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
                 }
                 break;
             case 1:

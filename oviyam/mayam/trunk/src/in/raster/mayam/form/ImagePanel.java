@@ -268,6 +268,7 @@ public class ImagePanel extends javax.swing.JPanel {
     private void readDicomFile(File selFile) {
         try {
             fileLocation = selFile.getParent();
+            ImageIO.scanForPlugins();
             ImageInputStream iis = ImageIO.createImageInputStream(selFile);
             reader = (ImageReader) ImageIO.getImageReadersByFormatName("DICOM").next();
             reader.setInput(iis, false);

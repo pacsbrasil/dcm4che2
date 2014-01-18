@@ -42,6 +42,7 @@ package in.raster.mayam.delegates;
 import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.form.VideoPanel;
 import in.raster.mayam.models.ServerModel;
+import java.awt.Desktop;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -83,7 +84,6 @@ public class WadoRetriever implements Runnable {
     }
 
     private void doDownloadSeries() {
-//        boolean firstSeries = true, isVideo = false;
         boolean isVideo = false;
         String firstInstanceWithSOPCls = null;
         Iterator<String> iterator = instances.keySet().iterator();
@@ -107,10 +107,22 @@ public class WadoRetriever implements Runnable {
             }
             ApplicationContext.displayPreview(studyUid, seriesUid);
         }
-        ApplicationContext.createVideoPreviews(studyUid);
+        try {
+            ApplicationContext.createVideoPreviews(studyUid);
+        } catch (Exception e) {
+            //ignore : exception occurs if the study is video and it was played using the default media player.
+        }
         showSeries();
         if (isVideo) {
-            ((VideoPanel) ApplicationContext.selectedPanel).playMedia(ApplicationContext.databaseRef.getFileLocation(firstInstanceWithSOPCls.split(",")[0]));
+            try {
+                ((VideoPanel) ApplicationContext.selectedPanel).playMedia(ApplicationContext.databaseRef.getFileLocation(firstInstanceWithSOPCls.split(",")[0]));
+            } catch (Exception ex) {
+                try {
+                    Desktop.getDesktop().open(new File(ApplicationContext.databaseRef.getFileLocation(firstInstanceWithSOPCls.split(",")[0])));
+                } catch (IOException ex1) {
+                    Logger.getLogger(WadoRetriever.class.getName()).log(Level.SEVERE, null, ex1);
+                }
+            }
         }
     }
 
@@ -201,13 +213,21 @@ public class WadoRetriever implements Runnable {
     }
 
     private void showSeries() {
-        ApplicationContext.databaseRef.update("study", "DownloadStatus", true, "StudyInstanceUID", studyUid);
-        ApplicationContext.imgView.getImageToolbar().enableMultiSeriesTools();
-        ApplicationContext.databaseRef.updateStudies(studyUid);
-        if (ApplicationContext.mainScreenObj != null && !ApplicationContext.databaseRef.isDownloadPending()) {
-            ApplicationContext.mainScreenObj.hideProgressBar();
+        try {
+            ApplicationContext.databaseRef.update("study", "DownloadStatus", true, "StudyInstanceUID", studyUid);
+            try {
+                ApplicationContext.imgView.getImageToolbar().enableMultiSeriesTools();
+            } catch (Exception ex) {
+                //ignore : exception occurs if the study is video and it was played using the default media player.
+            }
+            ApplicationContext.databaseRef.updateStudies(studyUid);
+            if (ApplicationContext.mainScreenObj != null && !ApplicationContext.databaseRef.isDownloadPending()) {
+                ApplicationContext.mainScreenObj.hideProgressBar();
+            }
+            ApplicationContext.setCorrespondingPreviews();
+            ApplicationContext.setAllSeriesIdentification(studyUid);
+        } catch (Exception ex) {
+            //ignore : exception occurs if the study is video and it was played using the default media player.
         }
-        ApplicationContext.setCorrespondingPreviews();
-        ApplicationContext.setAllSeriesIdentification(studyUid);
     }
 }

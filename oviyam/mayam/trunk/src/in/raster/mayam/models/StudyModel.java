@@ -119,12 +119,12 @@ public class StudyModel {
         numberOfSeries = dataSet.getString(Tags.NumberOfStudyRelatedSeries) != null ? dataSet.getString(Tags.NumberOfStudyRelatedSeries) : "unknown";
         try {
             studyDate = dateFormatter.format(dateParser.parse(dataSet.getString(Tags.StudyDate)));
-        } catch (ParseException ex) {
+        } catch (Exception ex) {
             studyDate = "unknown";
         }
         try {
             studyTime = timeFormatter.format(timeParser.parse(dataSet.getString(Tags.StudyTime)));
-        } catch (ParseException ex) {
+        } catch (Exception ex) {
             studyTime = "unknown";
         }
     }

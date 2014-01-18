@@ -104,7 +104,7 @@ public class ImportDcmDirDelegate extends Thread {
                 return;
             }
         } else {
-            JOptionPane.showMessageDialog(ApplicationContext.mainScreenObj, "Please select a valid DICOM File", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showOptionDialog(ApplicationContext.mainScreenObj, ApplicationContext.currentBundle.getString("MainScreen.importFailiure.text"), ApplicationContext.currentBundle.getString("ErrorTitles.text"), JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
         }
     }
 
@@ -133,7 +133,7 @@ public class ImportDcmDirDelegate extends Thread {
         getAbsolutePathArray();
         checkIsLink();
         if (!skip) {
-            ApplicationContext.mainScreenObj.setProgressText("Importing");
+            ApplicationContext.mainScreenObj.setProgressText(ApplicationContext.currentBundle.getString("MainScreen.importingProgressLabel.text"));
             ApplicationContext.mainScreenObj.initializeProgressBar(absolutePathList.size());
             for (int i = 0; i < absolutePathList.size(); i++) {
                 File currentFile = new File(absolutePathList.get(i));
@@ -149,7 +149,7 @@ public class ImportDcmDirDelegate extends Thread {
                     ApplicationContext.mainScreenObj.refreshLocalDB();
                 }
             });
-            JOptionPane.showMessageDialog(ApplicationContext.mainScreenObj, importedFileCount + " Files imported", "Import", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showOptionDialog(ApplicationContext.mainScreenObj, importedFileCount + " " + ApplicationContext.currentBundle.getString("MainScreen.import.filesCopied.text"), ApplicationContext.currentBundle.getString("MainScreen.importMenuItem.text"), JOptionPane.OK_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
         } else {
             return;
         }
@@ -242,7 +242,7 @@ public class ImportDcmDirDelegate extends Thread {
     }
 
     public void checkIsLink() {
-        int link = JOptionPane.showOptionDialog(null, "Do you want to copy or link files?", "Copy or link", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, new String[]{"   Copy   ", "   Link   "}, "default");
+        int link = JOptionPane.showOptionDialog(null, ApplicationContext.currentBundle.getString("MainScreen.importConfirmation.text"), ApplicationContext.currentBundle.getString("MainScreen.importConfirmation.title.text"), JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("MainScreen.import.copy.text"), ApplicationContext.currentBundle.getString("MainScreen.import.link.text")}, "default");
         if (link == 0) {
             saveAsLink = false;
         } else if (link == 1) {

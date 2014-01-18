@@ -83,9 +83,9 @@ public class ServerTabListener extends MouseAdapter {
                 DcmURL url = ApplicationContext.communicationDelegate.constructURL(serverdetails.getAeTitle(), serverdetails.getHostName(), serverdetails.getPort());
                 boolean result = ApplicationContext.communicationDelegate.verifyServer(url);
                 if (result) {
-                    JOptionPane.showMessageDialog(ApplicationContext.mainScreenObj, "Echo dicom://" + serverdetails.getAeTitle() + "@" + serverdetails.getHostName() + ":" + serverdetails.getPort() + " successfully!", "Echo Result", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showOptionDialog(ApplicationContext.mainScreenObj, "Echo dicom://" + serverdetails.getAeTitle() + "@" + serverdetails.getHostName() + ":" + serverdetails.getPort() +" "+  ApplicationContext.currentBundle.getString("MainScreen.verifyServerSuccess.text"), ApplicationContext.currentBundle.getString("MainScreen.verifyServer.title.text"), JOptionPane.OK_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
                 } else {
-                    JOptionPane.showMessageDialog(ApplicationContext.mainScreenObj, "Echo dicom://" + serverdetails.getAeTitle() + "@" + serverdetails.getHostName() + ":" + serverdetails.getPort() + " not successfully!", "Echo Result", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showOptionDialog(ApplicationContext.mainScreenObj, "Echo dicom://" + serverdetails.getAeTitle() + "@" + serverdetails.getHostName() + ":" + serverdetails.getPort() +" "+  ApplicationContext.currentBundle.getString("MainScreen.verifyServerFailiure.text"), ApplicationContext.currentBundle.getString("MainScreen.verifyServer.title.text"), JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
                 }
             }
         });
