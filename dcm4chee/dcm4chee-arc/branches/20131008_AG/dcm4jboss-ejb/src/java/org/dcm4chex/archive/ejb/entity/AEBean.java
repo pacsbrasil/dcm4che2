@@ -39,8 +39,13 @@
 
 package org.dcm4chex.archive.ejb.entity;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import javax.ejb.CreateException;
 import javax.ejb.EntityBean;
+import javax.ejb.FinderException;
 
 import org.apache.log4j.Logger;
 import org.dcm4chex.archive.ejb.interfaces.AEDTO;
@@ -77,6 +82,9 @@ import org.dcm4chex.archive.ejb.interfaces.AEDTO;
  *      strategy="on-find"
  *      eager-load-group="*"
  *             
+ * @jboss.query signature="java.util.Collection ejbSelectGeneric(java.lang.String jbossQl, java.lang.Object[] args)"
+ *              dynamic="true" strategy="on-load" page-size="20"
+ *              eager-load-group="*"
  * 
  */
 public abstract class AEBean implements EntityBean {
@@ -351,6 +359,29 @@ public abstract class AEBean implements EntityBean {
         }
         return "dicom-tls";
     }
+
+    /**
+     * @ejb.select query="" transaction-type="Supports"
+     */
+    public abstract Collection ejbSelectGeneric(String jbossQl, Object[] args) throws FinderException;
     
-    
+    /**    
+     * @ejb.home-method
+     */
+    public Collection ejbHomeListByAETAndPort(Collection aets, int port) throws FinderException {
+    	if ( aets == null || aets.size() == 0 ) {
+    		throw new IllegalArgumentException("Request must include at least 1 ae title");
+    	}
+    	StringBuffer jbossQl = new StringBuffer();
+    	jbossQl.append("SELECT OBJECT(a) FROM AE AS a WHERE a.port = ?1 AND a.title IN(");
+    	for ( int i = 1; i < aets.size(); i++ ) {
+    		jbossQl.append("?").append(i + 1).append(", ");
+    	}
+    	jbossQl.append("?").append(aets.size() + 1).append(")");
+    	
+    	List<Object> values = new ArrayList<Object>();
+    	values.add(port);
+    	values.addAll(aets);
+    	return ejbSelectGeneric(jbossQl.toString(), values.toArray(new Object[values.size()]));
+    }
 }
