@@ -211,7 +211,9 @@ $.widget( "ui.combobox", {
 						url += '&';
 					}
 
-					url += 'selectedValue=' + $(input).val();
+					var val = $(input).val();		
+					
+					url += 'selectedValue=' + escape(val);
 					
 					wicketAjaxGet(url,function(){},function(){});
 					
@@ -229,7 +231,9 @@ $.widget( "ui.combobox", {
 						url += '&';
 					}
 
-					url += 'selectedValue=' + $(input).val();
+					var val = $(input).val();		
+					
+					url += 'selectedValue=' + escape(val);
 					
 					wicketAjaxGet(url,function(){},function(){});
 					

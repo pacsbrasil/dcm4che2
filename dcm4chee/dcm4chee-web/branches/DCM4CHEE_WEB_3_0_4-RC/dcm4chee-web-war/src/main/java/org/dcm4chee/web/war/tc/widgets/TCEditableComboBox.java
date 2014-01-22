@@ -88,14 +88,6 @@ public class TCEditableComboBox extends DropDownChoice<Serializable> implements 
 		@Override
     	public void respond(AjaxRequestTarget target) {
     		String value = RequestCycle.get().getRequest().getParameter("selectedValue");
-    		if (value!=null) {
-    			try {
-    				value = new String(value.getBytes("ISO-8859-1"), "UTF-8");
-    			}
-    			catch (Exception e) {
-    				log.error(null, e);
-    			}
-    		}
     		TCEditableComboBox.this.setDefaultModelObject(value);
     		valueChanged(value);
     	}
