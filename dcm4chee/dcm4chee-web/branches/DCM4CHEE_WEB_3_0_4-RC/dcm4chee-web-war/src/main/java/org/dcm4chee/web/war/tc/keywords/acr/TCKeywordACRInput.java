@@ -487,8 +487,10 @@ public class TCKeywordACRInput extends AbstractTCKeywordInput {
             }
 
             for (Tree tree : pathologyTrees.values()) {
-            	if (pathologyKeyword!=null && tree.getModelObject().getRoot().equals( pathologyRoot ) ) {
-            		setNodeSelected( tree, pathologyRoot.findNode( pathologyKeyword ) );
+            	if (tree.getModelObject().getRoot().equals( pathologyRoot ) ) {
+            		if ( pathologyKeyword!=null ) {
+            			setNodeSelected( tree, pathologyRoot.findNode( pathologyKeyword ) );
+            		}
             		setPathologyTreeVisible( tree );
             	}
             	else {
