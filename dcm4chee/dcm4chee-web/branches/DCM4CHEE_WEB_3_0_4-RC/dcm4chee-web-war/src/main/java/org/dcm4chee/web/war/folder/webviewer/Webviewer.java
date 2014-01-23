@@ -229,7 +229,10 @@ public class Webviewer  {
             	if ( model instanceof TCModel && 
             			!provider.supportStructuredReport() )
             	{
-            		return provider.getUrlForStudy( ((TCModel)model).getStudyInstanceUID() );
+            		if ( provider.supportStudyLevel() )
+            		{
+            			return provider.getUrlForStudy( ((TCModel)model).getStudyInstanceUID() );
+            		}
             	}
                 if (provider.supportInstanceLevel()) {
                     String iuid = ((InstanceModel) model).getSOPInstanceUID();
