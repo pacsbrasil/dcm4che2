@@ -65,6 +65,7 @@ import org.dcm4chee.web.war.folder.model.InstanceModel;
 import org.dcm4chee.web.war.folder.model.PatientModel;
 import org.dcm4chee.web.war.folder.model.SeriesModel;
 import org.dcm4chee.web.war.folder.model.StudyModel;
+import org.dcm4chee.web.war.tc.TCModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -222,6 +223,14 @@ public class Webviewer  {
                 }
                 break;
             case AbstractDicomModel.INSTANCE_LEVEL:
+            	// WEB-1109: if we want to open a teaching-file (i.e referenced images) within
+            	// an external viewer but the viewer doesn't support SR parsing/loading, just
+            	// open whole study
+            	if ( model instanceof TCModel && 
+            			!provider.supportStructuredReport() )
+            	{
+            		return provider.getUrlForStudy( ((TCModel)model).getStudyInstanceUID() );
+            	}
                 if (provider.supportInstanceLevel()) {
                     String iuid = ((InstanceModel) model).getSOPInstanceUID();
                     String cuid = ((InstanceModel) model).getSopClassUID();
