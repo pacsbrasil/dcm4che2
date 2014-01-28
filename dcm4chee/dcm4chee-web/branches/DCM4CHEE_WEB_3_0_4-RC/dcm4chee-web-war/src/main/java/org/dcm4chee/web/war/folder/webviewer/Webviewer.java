@@ -153,15 +153,19 @@ public class Webviewer  {
 		PopupSettings ps = new PopupSettings(){
 			@Override
 			public String getPopupJavaScript(){
-				StringBuilder sb = new StringBuilder();
-				sb.append("xmlHttp = new XMLHttpRequest();")
-				.append("xmlHttp.open( 'GET', '").append(url).append("', true );")
-				.append("xmlHttp.send( null );return false;");
-				return sb.toString();
+				return getSendHttpRequestJavascript(url)+"return false;";
 			}
 		};
 		return ps;
 	}
+    public static String getSendHttpRequestJavascript(final String url) {
+			StringBuilder sb = new StringBuilder();
+			sb.append("xmlHttp = new XMLHttpRequest();")
+			.append("xmlHttp.open( 'GET', '").append(url).append("&zz=").append("'+new Date().getTime(), true );")
+			.append("xmlHttp.send( null );");
+			return sb.toString();
+	}
+
 
 	private static AbstractLink getWebviewerSelectionPageLink(final AbstractDicomModel model, final WebviewerLinkProvider[] providers, final ModalWindow modalWindow,
     		final WebviewerLinkClickedCallback callback) {

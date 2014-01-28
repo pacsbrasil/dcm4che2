@@ -59,7 +59,7 @@ import org.dcm4chee.web.war.folder.webviewer.Webviewer.WebviewerLinkClickedCallb
  * @since May 24, 2011
  */
 public class WebviewerSelectionPage extends SecureSessionCheckPage {
-    
+
     public WebviewerSelectionPage(AbstractDicomModel model, WebviewerLinkProvider[] providers, final ModalWindow modalWindow,
     		final WebviewerLinkClickedCallback callback) {
         super();        
@@ -69,14 +69,13 @@ public class WebviewerSelectionPage extends SecureSessionCheckPage {
         add(rv);
         WebMarkupContainer mc;
         for (int i = 0 ; i < providers.length ; i++) {
-            String url = Webviewer.getUrlForModel(model, providers[i]);
+            final WebviewerLinkProvider provider = providers[i];
+            final String url = Webviewer.getUrlForModel(model, provider);
             if (url != null) {
                 mc = new WebMarkupContainer(rv.newChildId());
-                ExternalLink link = new ExternalLink("link", url, providers[i].getName());
-                if (providers[i].hasOwnWindow()) {
-                	link.setPopupSettings(Webviewer.getPopupSettingsForDirectGET(url));
-                } else {
-                    link.setPopupSettings(new PopupSettings(PageMap.forName(providers[i].getName()), 
+                ExternalLink link = new ExternalLink("link", url, provider.getName());
+                if (!provider.hasOwnWindow()) {
+                    link.setPopupSettings(new PopupSettings(PageMap.forName(provider.getName()), 
                         PopupSettings.RESIZABLE|PopupSettings.SCROLLBARS));
                 }
                 if (modalWindow != null || callback!=null) {
@@ -92,6 +91,15 @@ public class WebviewerSelectionPage extends SecureSessionCheckPage {
                             	callback.linkClicked(target);
                             }
                         }
+                    	@Override
+                    	protected CharSequence generateCallbackScript(CharSequence partialCall) {
+                    		CharSequence script = super.generateCallbackScript(partialCall);
+                    		if (provider.hasOwnWindow()) {
+                    			script = Webviewer.getSendHttpRequestJavascript(url)+script+"return false;";
+                    		}
+                    		return script;
+                    	}
+
                     });
                 }
 
@@ -100,4 +108,5 @@ public class WebviewerSelectionPage extends SecureSessionCheckPage {
             }
         }
     }
+
 }
