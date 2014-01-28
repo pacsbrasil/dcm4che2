@@ -1,6 +1,9 @@
 /*
     Base CSS for dark rooms
 */
+
+iframe.external {background-color: #ffffff;}
+
 input, select, textarea {background: #666666; color: #aaaaaa; border-style: solid; border-width: 1px; border-color: #888888}
 input[disabled] { background-color: #446666; }
 button { background-color: #999999;
