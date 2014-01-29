@@ -304,9 +304,11 @@ public class ImageSelectionWindow extends ModalWindow {
         
         private final class InstanceListView extends PageableListView<InstanceModel> {
             private static final long serialVersionUID = 1L;
-
+            private final int maxPerPage, nrOfInstances;
             public InstanceListView(String id, IModel<List<InstanceModel>> instances, int maxRows) {
                 super(id, instances, maxRows);
+                this.maxPerPage = maxRows;
+                nrOfInstances = instances.getObject().size();
             }
 
             @Override
@@ -336,8 +338,14 @@ public class ImageSelectionWindow extends ModalWindow {
                     private static final long serialVersionUID = 1L;
                     public void onRendered(Component c) {
                         super.onRendered(c);
-                        if ((item.getIndex()+1) % numCols == 0)
-                            c.getResponse().write("</tr><tr>");
+                        int idx = item.getIndex()+1;
+                        if (idx % numCols == 0) {
+                        	if (idx % maxPerPage != 0)
+                        		c.getResponse().write("</tr><tr>");
+                        } else if (idx == nrOfInstances) {
+                            int remainCols = numCols - idx % numCols;
+                        	c.getResponse().write("<td class='imageSelect' colSpan='"+remainCols+"'></td>");
+                        }
                     }
                 });
             }

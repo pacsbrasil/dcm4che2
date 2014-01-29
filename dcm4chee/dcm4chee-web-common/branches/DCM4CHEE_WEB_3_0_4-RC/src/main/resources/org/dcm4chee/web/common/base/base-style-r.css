@@ -10,7 +10,8 @@ button { background-color: #999999;
 	border-top-color: #555555; border-left-color: #555555; 
 	border-radius: 3px;}
 
-body { font-family: Verdana, sans-serif; font-size: 12px; background-color: #111111;}
+body { font-family: Verdana, sans-serif; font-size: 12px; background-color: #111111; color: #aaaaaa;}
+body.white {background-color: #ffffff; color: black;}
 
 h1 { font-size: 26px; margin-bottom:18px; }
 h1.ph1 { font-size: 21px; margin-bottom:18px; }
@@ -198,6 +199,7 @@ div.imageSelectWindow { background-color: #111111;, color: #aaaaaa; }
 table.search-table input.IE_DEFAULT_SUBMIT {color: #444444; background-color: #444444; border: none; width: 1px; height: 1px; }
 
 div.imageSelectWindow div.msgWindow_header { background-color: #446666; color: #eeeeee; padding: 5px}
+div.imageSelectWindow table.folded-table tr { background-color: #111111; color: #eeeeee; }
 div.imageSelectWindow table.folded-table tr.series { background-color: #54B291; color: black; }
 div.imageSelectWindow table.folded-table td.imageSelect{ background-color: #111111; color: #aaaaaa; }
 
