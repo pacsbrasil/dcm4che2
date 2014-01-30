@@ -145,10 +145,10 @@ public abstract class ContentItemBean implements EntityBean {
         if (s != null) {
             AttributeFilter filter = AttributeFilter.getInstanceAttributeFilter(null);
             int maxLength = filter.getContentItemTextValueMaxLength();
-            if (s.length() > maxLength )
-                s = s.substring(0, maxLength);
             if (filter.isICase(Tags.TextValue))
                 s = s.toUpperCase();
+            if (s.length() > maxLength )
+                s = s.substring(0, maxLength);
         }
         setTextValue(s);
         return null;
