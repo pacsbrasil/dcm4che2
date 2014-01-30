@@ -55,7 +55,7 @@ import org.dcm4che.net.Dimse;
  * @author  gunter.zeilinger@tiani.com
  * @version 1.0.0
  */
-class DimseImpl implements Dimse {
+public class DimseImpl implements Dimse {
 
     protected static final DcmObjectFactory objFact =
             DcmObjectFactory.getInstance();
