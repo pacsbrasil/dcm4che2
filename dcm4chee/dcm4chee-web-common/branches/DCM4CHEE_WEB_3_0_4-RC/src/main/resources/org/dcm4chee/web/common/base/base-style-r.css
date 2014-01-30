@@ -159,12 +159,12 @@ table.folded-table tr.patient_selected { background-color: orange; color: black;
 table.folded-table tr.expand { background-color: #444444; color: white; }
 
 div.dicomobjectpanel { border: thin; border-width: 1px; border-style: inset; border-color: #AAAAAA; }
-table.dicomobject { background: #FFFFFF; color: black; width: 100%; }
+table.dicomobject { background: #111111; color: #eeeeee; width: 100%; }
 
 .invalid { background: #EEBBAA; }
 
 .msgWindow { background-color: #446666; color: white; width: 100% ; height: 100%; text-align: center;}
-.msgWindow_header { background-color: #54B291; }
+.msgWindow_header { background-color: #54B291; color: black;}
 .msgWindow_content { height: 63%; width: 90%;position: absolute; left: 5%; top: 40px; }
 .msgWindow-msg { width:90%; position: absolute; left: 5%; top: 45%; }
 .msgWindow-button { width: 50%; position: absolute; left: 25%; top: 80%; }
@@ -205,6 +205,7 @@ div.imageSelectWindow table.folded-table td.imageSelect{ background-color: #1111
 
 .longText { max-width: 300px; overflow: hidden; white-space: nowrap; }
 
-.export_succeed {color: black; background: none #77bb77 !important;}
-.export_running {color:black;}
-.export_failed {color: black;}
+.export_succeed {color: black !important; background: none #77bb77 !important;}
+.export_running {color: black !important;}
+.export_failed {color: black !important;}
+.export_nop {color: white !important;}
