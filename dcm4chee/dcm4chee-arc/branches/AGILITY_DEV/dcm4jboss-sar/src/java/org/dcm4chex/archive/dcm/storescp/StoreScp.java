@@ -630,15 +630,13 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     }
                 }
             } else {
-                String fsgrpid = service.selectFileSystemGroup(callingAET, ds);
-                fsDTO = service.selectStorageFileSystem(fsgrpid);
-                retrieveAET = fsDTO.getRetrieveAET();
-                availability = Availability.toString(fsDTO.getAvailability());
-                File baseDir = FileUtils.toFile(fsDTO.getDirectoryPath());
-                file = makeFile(baseDir, ds, callingAET);
-
-                md5sum = compressAndStoreFile(parser, activeAssoc, ds, rq, file, iuid, baseDir, calledAET);
-                filePath = file.getPath().substring(baseDir.getPath().length() + 1).replace(File.separatorChar, '/');
+                StoreFileResults storeFileResults = doStoreFileActions(activeAssoc, ds, parser, iuid, rq);
+                fsDTO = storeFileResults.fileSystemDTO;
+                retrieveAET = storeFileResults.retrieveAET;
+                availability = storeFileResults.availability;
+                file = storeFileResults.file;
+                md5sum = storeFileResults.md5sum;
+                filePath = storeFileResults.filePath;
 
                 perfMon.stop(activeAssoc, rq, 
                         PerfCounterEnum.C_STORE_SCP_OBJ_STORE);
@@ -750,6 +748,28 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         }
     }
 
+    protected StoreFileResults doStoreFileActions(ActiveAssociation activeAssociation, Dataset ds, DcmParser parser, String iuid, Dimse rq) throws Exception {
+        StoreFileResults results = new StoreFileResults();
+        results.fileSystemDTO = getStorageFileSystem(activeAssociation, ds);
+        results.retrieveAET = results.fileSystemDTO.getRetrieveAET();
+        results.availability = Availability.toString(results.fileSystemDTO.getAvailability());
+        File baseDir = FileUtils.toFile(results.fileSystemDTO.getDirectoryPath());
+        results.file = makeFile(baseDir, ds, activeAssociation.getAssociation().getCallingAET());
+        results.md5sum = compressAndStoreFile(parser, activeAssociation, ds, rq, results.file, iuid, baseDir, activeAssociation.getAssociation().getCalledAET());        
+        results.filePath = results.file.getPath().substring(baseDir.getPath().length() + 1).replace(File.separatorChar, '/');
+        
+        return results;
+    }
+
+    public class StoreFileResults {
+        public FileSystemDTO fileSystemDTO;
+        public String retrieveAET;
+        public String availability;
+        public File file;
+        public byte[] md5sum;
+        public String filePath;
+    }
+    
     protected byte[] compressAndStoreFile(DcmParser parser, ActiveAssociation activeAssoc, Dataset ds, Dimse rq, File file, String iuid, 
             File baseDir, String callingAET) throws Exception {
 
@@ -807,7 +827,6 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             // Don't delete or recreate the file for the second write. By default storeToFile will open the file for writing
             // configured for overwrite instead of append.
             md5sum = storeToFile(fileParser, fileDs, file, compressCmd, getByteBuffer(assoc));					 					 
-
         }
 
         return md5sum;
@@ -1163,9 +1182,10 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         return store;
     }
 
-    File makeFile(File basedir, Dataset ds, String callingAET) throws Exception {
+    protected File makeFile(File basedir, Dataset ds, String callingAET) throws Exception {
         Calendar date = Calendar.getInstance();
         StringBuffer filePath = new StringBuffer();
+        
         if( sourceAETInFilePath && callingAET != null) {
             filePath.append(callingAET);
             filePath.append(File.separatorChar);
@@ -1436,4 +1456,10 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     protected void doAfterSeriesIsStored(Storage store, Association assoc, SeriesStored seriesStored) throws Exception {
         return;
     }
+    
+    protected FileSystemDTO getStorageFileSystem(ActiveAssociation activeAssociation, Dataset dataset) throws Exception {
+        String fsgrpid = service.selectFileSystemGroup(activeAssociation.getAssociation().getCallingAET(), dataset);
+        return service.selectStorageFileSystem(fsgrpid);     
+    }
+    
 }
