@@ -1237,7 +1237,7 @@ public class WADOSupport implements NotificationListener {
                         baseURL.getPort(), baseURL.getPath()+sbQuery);
             } else {
                 url = new URL(reqURL.getProtocol(), aedto.getHostName(), 
-                        reqURL.getPort(), reqURL.getFile());
+                        reqURL.getPort(), reqURL.getFile()+"&"+REDIRECT_PARAM+"=true");
             }
         } catch (MalformedURLException e) {
             log.error("Malformed redirect URL to remote AET:" + aedto + " wadoURL:"
