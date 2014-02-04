@@ -1726,7 +1726,9 @@ public class QueryRetrieveScpService extends AbstractScpService {
 
     private FileDTO getLocalFileDTO(FileDTO[] fileDTOs, File[] resolvedFile) {
         ArrayList<Long> failedFSpks = new ArrayList<Long>();
-        for (FileDTO dto : fileDTOs) {
+        FileDTO dto;
+        for ( int i = 0 ; i < fileDTOs.length ;  ) {
+            dto = fileDTOs[i++];
             if (dto.getAvailability() <= Availability.NEARLINE && 
                     isLocalRetrieveAET(dto.getRetrieveAET()) && 
                     !failedFSpks.contains(dto.getFileSystemPk())) {
@@ -1736,7 +1738,13 @@ public class QueryRetrieveScpService extends AbstractScpService {
                         resolvedFile[0] = f;
                 } catch (Exception x) {
                     failedFSpks.add(dto.getFileSystemPk());
-                    log.warn("File can't be read! try another one. fileDTO:"+dto);
+                    if ( i < fileDTOs.length ) {
+                        log.warn("File can't be read! try another one. fileDTO:"+dto);
+                        log.debug("Reason:"+x.getMessage(), x);
+                    } else {
+                        log.warn("File can't be read! fileDTO:"+dto);
+                        log.info("Reason:"+x.getMessage(), x);
+                    }
                     continue;
                 }
                 return dto;

@@ -180,6 +180,7 @@ public class TarRetrieverService extends ServiceMBeanSupport {
             throws IOException, VerifyTarException {
         if (!fsID.startsWith("tar:")) {
             if ("true".equals(System.getProperty("tarretriever.dontcheck.protocol", "false"))) {
+                log.info("Protocol is not 'tar:' but tarretriever.dontcheck.protocol is set to true!");
                 if (fsID.length() < 4 || fsID.charAt(3) != ':') {
                     throw new IllegalArgumentException(
                             "Not a tar file system: " + fsID + " (length of protocol must be 3!)");
