@@ -1592,6 +1592,7 @@ public class WADOSupport implements NotificationListener {
 
         ArrayList<Integer> oldStyleOverlayPlanes = new ArrayList<Integer>();
 
+        int white = ((1 << ds.getInt(Tags.BitsStored, -1)) - 1);
         for (int group = 0; group < 0x20; group += 2) {
             try {
                 int gg0000 = group << 16;
@@ -1641,7 +1642,7 @@ public class WADOSupport implements NotificationListener {
                     continue;
                 }
 
-                applyOverlay(frame, bi.getRaster(), ds, gg0000, WHITE);
+                applyOverlay(frame, bi.getRaster(), ds, gg0000, white);
             } catch (Exception x) {
                 log.warn("Render overlay failed! skipped frame:"+frame+" group:"+group+"!  Enable DEBUG log level to get stacktrace");
                 log.debug("Reason for skipped overlay:",x);
@@ -1761,8 +1762,6 @@ public class WADOSupport implements NotificationListener {
             }
         }
     }
-
-    private static final int WHITE = 0xFFFFFFFF;
 
     public ObjectName getQueryRetrieveScpName() {
         return queryRetrieveScpName;
