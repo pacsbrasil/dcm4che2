@@ -1594,13 +1594,14 @@ public class WADOSupport implements NotificationListener {
 
         for (int group = 0; group < 0x20; group += 2) {
             try {
-                int oBitPosition = getInt(ds, group, Tags.OverlayBitPosition, -1);
-                int oRows = getInt(ds, group, Tags.OverlayRows, -1);
-                int oCols = getInt(ds, group, Tags.OverlayColumns, -1);
-                int oBitsAllocated = getInt(ds, group, Tags.OverlayBitsAllocated, -1);
-                String oType = getString(ds, group, Tags.OverlayType);
-                int oNumberOfFrames = getInt(ds, group, Tags.NumberOfFramesInOverlay, 1);
-                int oFrameStart = getInt(ds, group, Tags.ImageFrameOrigin, 1) - 1;
+                int gg0000 = group << 16;
+                int oBitPosition = ds.getInt(Tags.OverlayBitPosition | gg0000, -1);
+                int oRows = ds.getInt(Tags.OverlayRows | gg0000, -1);
+                int oCols = ds.getInt(Tags.OverlayColumns | gg0000, -1);
+                int oBitsAllocated = ds.getInt(Tags.OverlayBitsAllocated | gg0000, -1);
+                String oType = ds.getString(Tags.OverlayType | gg0000);
+                int oNumberOfFrames = ds.getInt(Tags.NumberOfFramesInOverlay | gg0000, 1);
+                int oFrameStart = ds.getInt(Tags.ImageFrameOrigin | gg0000, 1) - 1;
                 int oFrameEnd = oFrameStart + oNumberOfFrames;
 
                 if (oBitPosition == -1 &&
@@ -1640,7 +1641,7 @@ public class WADOSupport implements NotificationListener {
                     continue;
                 }
 
-                applyOverlay(frame, bi.getRaster(), ds, group, WHITE);
+                applyOverlay(frame, bi.getRaster(), ds, gg0000, WHITE);
             } catch (Exception x) {
                 log.warn("Render overlay failed! skipped frame:"+frame+" group:"+group+"!  Enable DEBUG log level to get stacktrace");
                 log.debug("Reason for skipped overlay:",x);
@@ -1739,6 +1740,7 @@ public class WADOSupport implements NotificationListener {
 
         int ovlyLen = ovlyRows * ovlyColumns;
         int ovlyOff = ovlyLen * ovlyFrameIndex;
+        int numBands = raster.getNumBands();
         for (int i = ovlyOff >>> 3, end = (ovlyOff + ovlyLen + 7) >>> 3; i < end; i++) {
             int ovlyBits = ovlyData[i] & 0xff;
             for (int j = 0; (ovlyBits >>> j) != 0; j++) {
@@ -1752,7 +1754,8 @@ public class WADOSupport implements NotificationListener {
                 int y = y0 + ovlyIndex / ovlyColumns;
                 int x = x0 + ovlyIndex % ovlyColumns;
                 try {
-                    raster.setSample(x, y, 0, pixelValue);
+                    for (int b = 0 ; b < numBands ; b++)
+                        raster.setSample(x, y, b, pixelValue);
                 } catch (ArrayIndexOutOfBoundsException ignore) {
                 }
             }
@@ -1760,44 +1763,6 @@ public class WADOSupport implements NotificationListener {
     }
 
     private static final int WHITE = 0xFFFFFFFF;
-
-    private static final byte[] icmColorValues = new byte[]{(byte) 0x00, (byte) 0xFF};
-    private static final byte[] bitSwapLut = makeBitSwapLut();
-
-    private static final byte[] makeBitSwapLut() {
-        byte[] rc = new byte[256];
-        for (int i = 0; i < 256; i++) {
-            rc[i] = byte_reverse(i);
-        }
-        return rc;
-    }
-
-    // reverse the bits in a byte
-    private static final byte byte_reverse(int b) {
-        int out = 0;
-        for (int i = 0; i < 8; i++) {
-            out = (out << 1) | ((b >> i) & 1);
-        }
-        return (byte) out;
-    }
-
-    private static final int groupedTag(int group, int tag) {
-        int x = group << 16;
-        return tag + x;
-    }
-
-    private static final int getInt(Dataset ds, int group, int tag, int def) {
-        return ds.getInt(groupedTag(group, tag), def);
-    }
-
-    private static final int[] getInts(Dataset ds, int group, int tag) {
-        return ds.getInts(groupedTag(group, tag));
-    }
-
-    private static final String getString(Dataset ds, int group, int tag) {
-        return ds.getString(groupedTag(group, tag));
-    }
-
 
     public ObjectName getQueryRetrieveScpName() {
         return queryRetrieveScpName;
