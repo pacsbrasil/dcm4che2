@@ -150,6 +150,8 @@ table.dicomobject { background: #FFFFFF; color: black; width: 100%; }
 .invalid { background: #EEBBAA; }
 
 .msgWindow { background-color: #A0D8C4; width: 100% ; height: 100%; text-align: center;}
+.msgWindow a:link { text-decoration:none; font-weight:bold; color:#000000; }
+.msgWindow a:visited { text-decoration:none; font-weight:bold; color:#000000; }
 .msgWindow_header { background-color: #54B291; }
 .msgWindow_content { height: 63%; width: 90%;position: absolute; left: 5%; top: 40px; }
 .msgWindow-msg { width:90%; position: absolute; left: 5%; top: 45%; }
