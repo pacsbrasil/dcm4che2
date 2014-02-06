@@ -62,7 +62,6 @@ import org.dcm4che.data.DcmElement;
 import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.net.DcmServiceException;
-import org.dcm4che2.soundex.FuzzyStr;
 import org.dcm4chex.archive.common.DatasetUtils;
 import org.dcm4chex.archive.common.PatientMatching;
 import org.dcm4chex.archive.common.PrivateTags;
@@ -979,23 +978,28 @@ public abstract class PatientBean implements EntityBean {
 
     private boolean containsPID(String pid, String issuer, DcmElement opidsq,
             AttributeFilter filter) {
+        if (pid == null || issuer == null) {
+            return false;
+        }        
         for (int i = 0, n = opidsq.countItems(); i < n; i++) {
             Dataset opid = opidsq.getItem(i);
-            if (filter.getString(opid, Tags.PatientID)
-                    .equals(pid)
-                && filter.getString(opid, Tags.IssuerOfPatientID)
-                    .equals(issuer)) {
-                    return true;
+            if (pid.equals(filter.getString(opid, Tags.PatientID))
+                    && issuer.equals(filter.getString(opid,
+                            Tags.IssuerOfPatientID))) {
+                return true;
             }
         }
         return false;
     }
 
     private Dataset findOtherPIDByIssuer(String issuer, DcmElement opidsq) {
+        if (issuer == null) {
+            return null;
+        }
         for (int i = 0, n = opidsq.countItems(); i < n; i++) {
             Dataset opid = opidsq.getItem(i);
-            if (opid.getString(Tags.IssuerOfPatientID).equals(issuer)) {
-                    return opid;
+            if (issuer.equals(opid.getString(Tags.IssuerOfPatientID))) {
+                return opid;
             }
         }
         return null;
