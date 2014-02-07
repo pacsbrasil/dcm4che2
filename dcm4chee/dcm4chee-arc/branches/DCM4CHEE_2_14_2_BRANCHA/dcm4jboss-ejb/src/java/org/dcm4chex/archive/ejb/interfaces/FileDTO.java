@@ -72,6 +72,8 @@ public final class FileDTO implements Serializable {
     private long size;
 
     private byte[] md5;
+    
+    private byte[] origMd5;
 
     private int status;
 
@@ -146,6 +148,10 @@ public final class FileDTO implements Serializable {
 
     public final String getMd5String() {
         return MD5.toString(md5);
+    }
+
+    public final String getOrigMd5String() {
+        return MD5.toString(origMd5);
     }
 
     /**
@@ -238,4 +244,19 @@ public final class FileDTO implements Serializable {
     public void setSopClassUID(String sopClassUID) {
         this.sopCuid = sopClassUID;
     }
+
+    /**
+     * @return Returns the origMd5.
+     */
+	public byte[] getOrigMd5() {
+		return origMd5;
+	}
+
+    /**
+     * @param origMd5
+     *            The origMd5 to set.
+     */
+	public void setOrigMd5(byte[] origMd5) {
+		this.origMd5 = origMd5;
+	}
 }
