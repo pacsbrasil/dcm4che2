@@ -865,7 +865,8 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         for (int i = 0, n = duplicates.size(); i < n; ++i) {
             FileDTO dto = (FileDTO) duplicates.get(i);
             if (storeDuplicateIfDiffMD5
-                    && !Arrays.equals(md5sum, dto.getFileMd5()))
+                    && !(Arrays.equals(md5sum, dto.getFileMd5())
+                    || Arrays.equals(md5sum, dto.getOrigMd5())))
                 continue;
             if (storeDuplicateIfDiffHost
                     && !service.isFileSystemGroupLocalAccessable(
