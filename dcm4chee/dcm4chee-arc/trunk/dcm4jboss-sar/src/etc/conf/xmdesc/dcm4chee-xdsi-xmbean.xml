@@ -91,9 +91,10 @@
       </descriptors>
    </attribute>
    <attribute access="read-write" getMethod="getAutoPublishStudyDeletedPDFFile" setMethod="setAutoPublishStudyDeletedPDFFile">
-      <description><![CDATA[PDF File or 'TEXT' to mark a published study as deleted.<br />
+      <description><![CDATA[PDF or text (.txt) File or 'TEXT' to mark a published study as deleted.<br />
       		A relative path name is resolved relative to dcm4chee_home/server/default/.<br />
-      		With TEXT a simple text/plain document will be registered for a deleted study.  
+      		With TEXT a simple text/plain document will be registered for a deleted study. <br />
+      		Content: Study has been removed from Source PACS System! 
       	]]>
       </description>
       <name>AutoPublishStudyDeletedPDFFile</name>

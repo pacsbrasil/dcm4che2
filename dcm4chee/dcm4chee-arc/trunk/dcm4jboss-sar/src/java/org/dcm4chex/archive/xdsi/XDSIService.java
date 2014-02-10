@@ -1367,13 +1367,14 @@ public class XDSIService extends ServiceMBeanSupport implements NotificationList
         if (this.autoPublishStudyDeletedPDFFile != null) {
             File pdfFile = FileUtils.resolve(this.autoPublishStudyDeletedPDFFile);
             if (pdfFile.isFile()) {
-                return new XDSIFileDocument(pdfFile, "application/pdf", DOCUMENT_ID, kos.getString(Tags.SOPInstanceUID));
+                return new XDSIFileDocument(pdfFile, pdfFile.getName().endsWith(".txt") ? "text/plain" : "application/pdf", 
+                        DOCUMENT_ID, kos.getString(Tags.SOPInstanceUID));
             } else {
                 log.warn("autoPublishStudyDeletedPDFFile does not exist! use TEXT as fallback!");
             }
         }
-        String content ="Manifest deprecated!\nDocumentEntryUUID:"+docUID+"\nStudy Instance UID:"+mdProps.getProperty(STUDY_INSTANCE_UID);
-        return new XDSIByteArrayDocument(content, "text/plain", DOCUMENT_ID, kos.getString(Tags.SOPInstanceUID));
+        return new XDSIByteArrayDocument("Study has been removed from Source PACS System!", "text/plain", 
+                DOCUMENT_ID, kos.getString(Tags.SOPInstanceUID));
     }
     
     private void setPatInfo(Dataset kos, String v) {
