@@ -354,6 +354,7 @@ CREATE TABLE files (
 	filepath		VARCHAR(254) NOT NULL,
 	file_tsuid      VARCHAR(254) NOT NULL,
 	file_md5        VARCHAR(254),
+  orig_md5        VARCHAR(254),
 	file_size       BIGINT,
 	file_status     INTEGER,
 	md5_check_time	TIMESTAMP,
