@@ -110,6 +110,7 @@ public class FileBeanTest extends ServletTestCase {
                 TSUID,
                 SIZE,
                 MD5,
+                MD5,
                 0,
                 null,
                 fs);

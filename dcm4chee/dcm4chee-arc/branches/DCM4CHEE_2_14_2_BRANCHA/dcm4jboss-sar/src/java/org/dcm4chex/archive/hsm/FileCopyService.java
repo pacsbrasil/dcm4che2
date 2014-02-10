@@ -237,8 +237,11 @@ public class FileCopyService extends AbstractFileCopyService {
                         throw new IOException(prompt);
                     }
                 }
+                byte[] origMd5sum0 = finfo.origMd5 != null ? MD5Utils
+                        .toBytes(finfo.origMd5) : null;
                 storage.storeFile(finfo.sopIUID, finfo.tsUID, destPath,
-                        finfo.fileID, (int) finfo.size, md5sum0, fileStatus);
+                        finfo.fileID, (int) finfo.size, md5sum0,
+                        origMd5sum0, fileStatus);
                 iter.remove();
             } catch (Exception e) {
                 dst.delete();
@@ -310,8 +313,11 @@ public class FileCopyService extends AbstractFileCopyService {
         for (int i = 0; i < tarEntryNames.length; i++) {
             String fileId = tarPath + '!' + tarEntryNames[i];
             FileInfo finfo = fileInfos.get(i);
+            byte[] origMd5sum = finfo.origMd5 != null ? MD5Utils
+                    .toBytes(finfo.origMd5) : null;
             storage.storeFile(finfo.sopIUID, finfo.tsUID, destPath, fileId,
-                    (int) finfo.size, MD5.toBytes(finfo.md5), fileStatus);
+                    (int) finfo.size, MD5.toBytes(finfo.md5), origMd5sum,
+                    fileStatus);
         }
     }
     

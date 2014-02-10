@@ -235,6 +235,7 @@ public class RetrieveCmd extends BaseReadCmd {
                     Types.VARCHAR,      // File.fileMd5Field
                     Types.INTEGER,      // File.fileSize
                     Types.INTEGER,      // File.fileStatus
+                    Types.VARCHAR       // File.origMd5Field
                     }
                 : new int[] {
                     blobAccessType,     // Instance.encodedAttributes
@@ -258,6 +259,7 @@ public class RetrieveCmd extends BaseReadCmd {
                     Types.VARCHAR,      // File.fileMd5Field
                     Types.INTEGER,      // File.fileSize
                     Types.INTEGER,      // File.fileStatus
+                    Types.VARCHAR       // File.origMd5Field
                     });
         this.sqlCmd = sql;
     }
@@ -336,6 +338,7 @@ public class RetrieveCmd extends BaseReadCmd {
         info.md5 = rs.getString(13);
         info.size = rs.getInt(14);
         info.status = rs.getInt(15);
+        info.origMd5 = rs.getString(16);
         FileInfo seriesFileInfo = getCachedSeriesAttrs(info.seriesIUID);
         if (seriesFileInfo == null) {
             if (log.isDebugEnabled()) {
@@ -436,6 +439,7 @@ public class RetrieveCmd extends BaseReadCmd {
         info.md5 = rs.getString(19);
         info.size = rs.getInt(20);
         info.status = rs.getInt(21);
+        info.origMd5 = rs.getString(22);
         addFileInfo(result, instPk, info.sopIUID, info);
     }
 
@@ -521,7 +525,8 @@ public class RetrieveCmd extends BaseReadCmd {
                         "File.fileTsuid",               // (12)
                         "File.fileMd5Field",            // (13)
                         "File.fileSize",                // (14)
-                        "File.fileStatus"               // (15)
+                        "File.fileStatus",              // (15)
+                        "File.origMd5Field"             // (16)
                         }
                 : new String[] { 
                         "Instance.encodedAttributes",   // (1)
@@ -544,7 +549,8 @@ public class RetrieveCmd extends BaseReadCmd {
                         "File.fileTsuid",               // (18)
                         "File.fileMd5Field",            // (19)
                         "File.fileSize",                // (20)
-                        "File.fileStatus"               // (21)
+                        "File.fileStatus",              // (21)
+                        "File.origMd5Field"             // (22)
                         };
         }
 

@@ -101,6 +101,8 @@ public class FileInfo implements Serializable {
     public String tsUID = null;
 
     public String md5 = null;
+    
+    public String origMd5 = null;
 
     public long size = 0;
 
@@ -116,7 +118,7 @@ public class FileInfo implements Serializable {
             String studyIUID, String seriesIUID, byte[] studyAttrs, byte[] seriesAttrs,
             byte[] instAttrs, String sopIUID, String sopCUID,
             String extRetrieveAET, String fileRetrieveAET, int availability,
-            String basedir, String fileID, String tsUID, String md5, long size,
+            String basedir, String fileID, String tsUID, String md5, String origMd5, long size,
             int status) {
         this.pk = pk;
         this.patID = patID;
@@ -136,6 +138,7 @@ public class FileInfo implements Serializable {
         this.fileID = fileID;
         this.tsUID = tsUID;
         this.md5 = md5;
+        this.origMd5 = origMd5;
         this.size = size;
         this.status = status;
     }

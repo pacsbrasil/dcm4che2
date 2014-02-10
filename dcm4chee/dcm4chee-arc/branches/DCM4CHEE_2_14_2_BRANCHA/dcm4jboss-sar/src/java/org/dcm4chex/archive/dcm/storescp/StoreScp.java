@@ -634,7 +634,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                     PerfCounterEnum.C_STORE_SCP_OBJ_REGISTER_DB);
             long fileLength = file != null ? file.length() : 0L;
             Dataset coercedElements = updateDB(store, ds, fsDTO.getPk(),
-                    filePath, fileLength, md5sum,
+                    filePath, fileLength, md5sum, md5sum,
                     newSeries);
             seriesStored = setSeriesStored(ds, assoc, callingAET, fsDTO,
 					seriesStored, newSeries, seriuid);
@@ -865,8 +865,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
         for (int i = 0, n = duplicates.size(); i < n; ++i) {
             FileDTO dto = (FileDTO) duplicates.get(i);
             if (storeDuplicateIfDiffMD5
-                    && !(Arrays.equals(md5sum, dto.getFileMd5())
-                    || Arrays.equals(md5sum, dto.getOrigMd5())))
+                    && !Arrays.equals(md5sum, dto.getFileMd5()))
                 continue;
             if (storeDuplicateIfDiffHost
                     && !service.isFileSystemGroupLocalAccessable(
@@ -891,7 +890,7 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
     }
 
     protected Dataset updateDB(Storage storage, Dataset ds, long fspk,
-            String filePath, long fileLength, byte[] md5,
+            String filePath, long fileLength, byte[] md5, byte[] origMd5,
             boolean updateStudyAccessTime) throws DcmServiceException,
             CreateException, HomeFactoryException, IOException {
         int retry = 0;
@@ -900,11 +899,11 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
                 if (serializeDBUpdate) {
                     synchronized (storage) {
                         return storage.store(ds, fspk, filePath, fileLength,
-                                md5, updateStudyAccessTime);
+                                md5, origMd5, updateStudyAccessTime);
                     }
                 } else {
                     return storage.store(ds, fspk, filePath, fileLength,
-                            md5, updateStudyAccessTime);
+                            md5, origMd5, updateStudyAccessTime);
                 }
             } catch (Exception e) {
                 ++retry;

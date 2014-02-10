@@ -181,7 +181,7 @@ public abstract class StorageBean implements SessionBean {
      */
     public org.dcm4che.data.Dataset store(org.dcm4che.data.Dataset ds,
             long fspk, java.lang.String fileid, long size, byte[] md5,
-            boolean updateStudyAccessTime)
+            byte[] origMd5, boolean updateStudyAccessTime)
     throws DcmServiceException {
         FileMetaInfo fmi = ds.getFileMetaInfo();
         final String iuid = fmi.getMediaStorageSOPInstanceUID();
@@ -198,8 +198,8 @@ public abstract class StorageBean implements SessionBean {
             } catch (ObjectNotFoundException onfe) {
                 instance = instHome.create(ds, getSeries(ds, coercedElements));
             }
-            FileLocal file = fileHome.create(fileid, tsuid, size, md5, 0,
-                    instance, fs);
+            FileLocal file = fileHome.create(fileid, tsuid, size, md5,
+            		origMd5, 0, instance, fs);
             instance.setAvailability(fs.getAvailability());
             instance.addRetrieveAET(fs.getRetrieveAET());
             instance.setInstanceStatus(RECEIVED);
@@ -364,12 +364,12 @@ public abstract class StorageBean implements SessionBean {
      */
     public void storeFile(java.lang.String iuid, java.lang.String tsuid,
             java.lang.String dirpath, java.lang.String fileid,
-            int size, byte[] md5, int status)
+            int size, byte[] md5, byte[] origMd5, int status)
             throws CreateException, FinderException
     {
         FileSystemLocal fs = fileSystemHome.findByDirectoryPath(dirpath);
         InstanceLocal instance = instHome.findBySopIuid(iuid);
-        fileHome.create(fileid, tsuid, size, md5, status, instance, fs);    	
+        fileHome.create(fileid, tsuid, size, md5, origMd5, status, instance, fs);    	
     }
 
     private SeriesLocal getSeries(Dataset ds, Dataset coercedElements)
