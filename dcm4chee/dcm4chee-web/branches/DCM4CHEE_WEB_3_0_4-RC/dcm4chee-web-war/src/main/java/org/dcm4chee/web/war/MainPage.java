@@ -224,6 +224,7 @@ public class MainPage extends SecureWicketPage {
             		getManifestValue(dcmManifest, "Implementation-Title", "-"),
             		getManifestValue(dcmManifest, "Implementation-Version", "-"),
             		getManifestValue(dcmManifest, "Implementation-Vendor", "-"),
+            		webProperties.getProperty("Implementation-Build", "2.18.x").substring(0, 6)
             })).setEscapeModelStrings(false));
         }
         
