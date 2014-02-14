@@ -21,9 +21,7 @@
      getMethod="getDestination" 
      setMethod="setDestination">
       <description><![CDATA[Destination file system or NONE to disable the
-        service. The file system name can be suffixed by 
-        '!'<i>from</i>'-'<i>to</i> to defer copying outside a particular time
-        interval, and/or prefixed by a condition 
+        service. The file system name can be prefixed by a condition 
         '[calling'['!']'='<i>aeTitle</i>['|'..]']' to limit/exclude copying 
         to/of series received from modalities with specified AE title(s).
         If the file system name is a tar URI (tar:<Directory/Mount Point>),
