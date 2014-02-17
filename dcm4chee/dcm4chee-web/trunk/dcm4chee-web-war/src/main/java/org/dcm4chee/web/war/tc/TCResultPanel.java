@@ -91,6 +91,7 @@ import org.dcm4chee.icons.behaviours.ImageSizeBehaviour;
 import org.dcm4chee.web.common.base.BaseWicketPage;
 import org.dcm4chee.web.common.behaviours.TooltipBehaviour;
 import org.dcm4chee.web.common.markup.modal.MessageWindow;
+import org.dcm4chee.web.common.secure.SecureSessionCheckPage;
 import org.dcm4chee.web.common.secure.SecurityBehavior;
 import org.dcm4chee.web.common.webview.link.WebviewerLinkProvider;
 import org.dcm4chee.web.dao.folder.StudyListLocal;
@@ -636,14 +637,12 @@ public class TCResultPanel extends Panel {
         return s.length() > maxlen ? s.substring(0, maxlen)+".." : s;
     }
 
-    private static class TCStudyListPage extends WebPage {
+    private static class TCStudyListPage extends SecureSessionCheckPage {
         private String stuid;
         private String patid;
         private String issuerOfPatId;
         private StudyListPage studyListPage;
         private ViewPort viewPort;
-        private static final ResourceReference baseCSS = new CompressedResourceReference(
-        		BaseWicketPage.class, "base-style.css");
         private static final ResourceReference folderCSS = new CompressedResourceReference(
                 StudyListPage.class, "folder-style.css");
         
@@ -680,9 +679,6 @@ public class TCResultPanel extends Panel {
                 
             };
             add(studyListPage);
-            if (baseCSS != null) {
-                add(CSSPackageResource.getHeaderContribution(baseCSS));
-            }
             if (folderCSS != null) {
                 add(CSSPackageResource.getHeaderContribution(folderCSS));
             }
