@@ -385,27 +385,27 @@ public class StgCmtScuScpService extends AbstractScpService implements
                 item.putUI(Tags.RefSOPInstanceUID, fileInfo[0].sopIUID);
                 
             }
-            queueStgCmtOrder(calling, called, actionInfo, false);
+            queueStgCmtOrder(calling, called, actionInfo, false, 0);
         }
         return fileInfos.length;
     }
     
     public void onInstancesRetrieved(String moveScp, String moveDest,
-            Dataset actionInfo) throws Exception {
+            Dataset actionInfo, int delay) throws Exception {
         if (actionInfo.get(Tags.RefSOPSeq).countItems() > 0) {
             String stgCmtScp = requestStgCmtFromAETs.get(moveDest);
             if (stgCmtScp != null)
-                queueStgCmtOrder(moveScp, stgCmtScp, actionInfo, false);
+                queueStgCmtOrder(moveScp, stgCmtScp, actionInfo, false, delay);
         }
     }
 
     void queueStgCmtOrder(String calling, String called,
-            Dataset actionInfo, boolean scpRole) throws Exception {
+            Dataset actionInfo, boolean scpRole, int delay) throws Exception {
         if (calling == null || calling.trim().length() == 0) 
             calling = calledAETs[0];
         StgCmtOrder order = new StgCmtOrder(calling, called, actionInfo, scpRole);
         order.processOrderProperties();
-        jmsDelegate.queue(queueName, order, 0, 0);
+        jmsDelegate.queue(queueName, order, 0, System.currentTimeMillis() + (long)delay);
     }
 
     protected void startService() throws Exception {

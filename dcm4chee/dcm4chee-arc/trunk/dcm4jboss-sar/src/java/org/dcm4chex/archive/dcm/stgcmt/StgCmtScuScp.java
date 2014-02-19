@@ -101,7 +101,7 @@ public class StgCmtScuScp extends DcmServiceBase {
         final String aet = a.getCallingAET();
         try {
             AEDTO aeData = service.queryAEData(aet, a.getSocket().getInetAddress());
-            service.queueStgCmtOrder(a.getCalledAET(), aet, data, true);
+            service.queueStgCmtOrder(a.getCalledAET(), aet, data, true, 0);
         } catch (UnknownAETException e) {
             throw new DcmServiceException(Status.MoveDestinationUnknown, aet);
         } catch (Exception e) {

@@ -59,6 +59,17 @@
       </descriptors>
    </attribute>
    <attribute access="read-write"
+      getMethod="getDelay"
+      setMethod="setDelay">
+      <description>Delay of sending StgCmt request in ms. This can be used to avoid DB deadlocks (SeriesStored.commit and StgCmt update)
+      </description>
+      <name>Delay</name>
+      <type>int</type>
+      <descriptors>
+         <value value="0"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write"
       getMethod="getStgCmtServiceName"
       setMethod="setStgCmtServiceName">
       <description>Used internally. Do NOT modify.

@@ -71,6 +71,7 @@ public class StgCmtScuBySeriesStoredService extends ServiceMBeanSupport {
     
     private Map<String, String> rqStgCmtOnReceiveFromAETs = new HashMap<String, String>();
     private String noStgCmtIfExternalRetrieveAET;
+    private int delay;
     
     private NotificationListener seriesStoredListener;
 
@@ -128,6 +129,14 @@ public class StgCmtScuBySeriesStoredService extends ServiceMBeanSupport {
 
     public void setNoStgCmtIfExternalRetrieveAET(String s) {
         this.noStgCmtIfExternalRetrieveAET = NONE.equals(s) ? null : s;
+    }
+
+    public int getDelay() {
+        return delay;
+    }
+
+    public void setDelay(int delay) {
+        this.delay = delay;
     }
 
     private void updateSeriesStoredListener() throws InstanceNotFoundException, ListenerNotFoundException {
@@ -190,11 +199,11 @@ public class StgCmtScuBySeriesStoredService extends ServiceMBeanSupport {
                     aet = aet.substring(++pos);
                 }
                 try {
-                    log.info("Queue StgCmt Order! calling:"+callingAet+" called:"+aet);
+                    log.info("Queue StgCmt Order! calling:"+callingAet+" called:"+aet+" Delay:"+delay);
                     server.invoke(stgCmtServiceName, "onInstancesRetrieved", new Object[] {
-                            callingAet, aet, actionInfo }, new String[] {
+                            callingAet, aet, actionInfo, delay }, new String[] {
                             String.class.getName(), String.class.getName(),
-                            Dataset.class.getName() });
+                            Dataset.class.getName(), int.class.getName() });
                 } catch (Exception x) {
                     log.error("Failed to queue StorageCommit Order! calledAet:"+aet, x);
                     log.debug(actionInfo);

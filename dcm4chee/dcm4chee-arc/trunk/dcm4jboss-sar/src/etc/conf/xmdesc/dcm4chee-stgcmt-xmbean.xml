@@ -392,6 +392,11 @@
         <name>actionInfo</name>
         <type>org.dcm4che.data.Dataset</type>
       </parameter>
+      <parameter>
+        <description>Delay of sending StgCmt in ms.</description>
+        <name>Delay</name>
+        <type>int</type>
+      </parameter>
       <return-type>void</return-type>
    </operation>
 
