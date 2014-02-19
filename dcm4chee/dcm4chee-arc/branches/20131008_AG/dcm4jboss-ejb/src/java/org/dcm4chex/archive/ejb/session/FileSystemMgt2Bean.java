@@ -917,7 +917,7 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
                     if (fSrc != null) {
                         if (keepSrcFiles) { 
                             fileHome.create(dto.getFilePath(), fSrc.getFileTsuid(), 
-                                fSrc.getFileSize(), fSrc.getFileMd5(), 
+                                fSrc.getFileSize(), fSrc.getFileMd5(), fSrc.getOrigMd5(), 
                                 destFileStatus == null ? fSrc.getFileStatus() : destFileStatus.intValue(), 
                                 fSrc.getInstance(), fsDest);
                         } else {

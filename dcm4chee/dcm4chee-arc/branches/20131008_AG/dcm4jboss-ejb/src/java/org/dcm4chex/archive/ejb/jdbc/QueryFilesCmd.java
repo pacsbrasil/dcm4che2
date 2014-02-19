@@ -56,12 +56,12 @@ import org.dcm4chex.archive.ejb.interfaces.MD5;
 public final class QueryFilesCmd extends BaseReadCmd {
 
     private static final String QueryFilesByUIDCmd = "SELECT f.pk, f.filepath, f.file_md5, f.file_status, "
-            + "fs.fs_group_id, fs.dirpath, fs.retrieve_aet, fs.availability, fs.user_info, i.sop_cuid, i.sop_iuid "
+            + "f.orig_md5, fs.fs_group_id, fs.dirpath, fs.retrieve_aet, fs.availability, fs.user_info, i.sop_cuid, i.sop_iuid "
             + "FROM files f, filesystem fs, instance i "
             + "WHERE f.filesystem_fk = fs.pk AND f.instance_fk = i.pk AND i.sop_iuid=?";
 
     private static final String QueryLinkedFilesCmd = "SELECT f.pk, f.filepath, f.file_md5, f.file_status, "
-            + "fs.fs_group_id, fs.dirpath, fs.retrieve_aet, fs.availability, fs.user_info, i.sop_cuid, i.sop_iuid "
+            + "f.orig_md5, fs.fs_group_id, fs.dirpath, fs.retrieve_aet, fs.availability, fs.user_info, i.sop_cuid, i.sop_iuid "
             + "FROM files f, filesystem fs, instance i, files f2 "
             + "WHERE f.filesystem_fk = fs.pk AND f.instance_fk = i.pk AND f.instance_fk = f2.instance_fk and f2.pk=?";
 
@@ -87,13 +87,14 @@ public final class QueryFilesCmd extends BaseReadCmd {
         dto.setFilePath(rs.getString(2));
         dto.setFileMd5(MD5.toBytes(rs.getString(3)));
         dto.setFileStatus(rs.getInt(4));
-        dto.setFileSystemGroupID(rs.getString(5));
-        dto.setDirectoryPath(rs.getString(6));
-        dto.setRetrieveAET(rs.getString(7));
-        dto.setAvailability(rs.getInt(8));
-        dto.setUserInfo(rs.getString(9));
-        dto.setSopClassUID(rs.getString(10));
-        dto.setSopInstanceUID(rs.getString(11));
+        dto.setOrigMd5(MD5.toBytes(rs.getString(5)));
+        dto.setFileSystemGroupID(rs.getString(6));
+        dto.setDirectoryPath(rs.getString(7));
+        dto.setRetrieveAET(rs.getString(8));
+        dto.setAvailability(rs.getInt(9));
+        dto.setUserInfo(rs.getString(10));
+        dto.setSopClassUID(rs.getString(11));
+        dto.setSopInstanceUID(rs.getString(12));
         return dto;
     }
 
