@@ -49,6 +49,7 @@
 	<property name="jboss.jar" value="${jboss.conf}/lib/jboss.jar"/>
 	<property name="jboss-common.jar" value="${jboss.home}/lib/jboss-common.jar"/>
 	<property name="jboss-common-jdbc-wrapper.jar" value="${jboss.conf}/lib/jboss-common-jdbc-wrapper.jar"/>		
+	<property name="slf4j-api.jar" value="${dcm4che14.home}/lib/slf4j-api-1.6.1.jar"/>
 
 	<property name="src.java" value="${basedir}/src/java"/>
 	<property name="src.res" value="${basedir}/src/resources"/>
@@ -90,6 +91,7 @@
         <pathelement location="${getopt.jar}"/>
         <pathelement location="${dcm4che.jar}"/>
         <pathelement location="${src.etc}/common/lib/dcm4che-soundex-2.0.25.jar"/>
+		<pathelement location="${slf4j-api.jar}" />
     </path>
 
     <path id="jboss.client.path">
