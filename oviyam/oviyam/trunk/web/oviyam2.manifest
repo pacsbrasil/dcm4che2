@@ -81,6 +81,8 @@ js/lib/smartslider.js
 js/lib/jqcontextmenu.js
 js/i18n/Bundle.js
 js/layout.js
+js/Annotation.js
+js/shapes.js
 
 images/three.png
 images/all.png
@@ -107,6 +109,7 @@ images/metadata.png
 images/ruler.png
 images/overlay_spinner.gif
 css/images/ui-bg_highlight-hard_100_f9f9f9_1x100.png
+css/images/selected.png
 
 
 NETWORK:

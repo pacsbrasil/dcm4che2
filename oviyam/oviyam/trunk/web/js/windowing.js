@@ -21,6 +21,7 @@ var canvas;
 var ctx;
 var myImageData;
 var winEnabled = false;
+var originX,originY;
 
 String.prototype.replaceAll = function(pcFrom, pcTo){
     var i = this.indexOf(pcFrom);
@@ -43,9 +44,9 @@ function mouseDownHandler(evt)
     if(imageLoaded==1)
     {
         mouseLocX = evt.pageX - parent.jcanvas.offsetLeft;
-        mouseLocX = parseInt(mouseLocX / zoomPercent);
+        mouseLocX = parseInt((mouseLocX / zoomPercent)-originX);
         mouseLocY = evt.pageY - parent.jcanvas.offsetTop;
-        mouseLocY = parseInt(mouseLocY / zoomPercent);
+        mouseLocY = parseInt((mouseLocY / zoomPercent)-originY);
     }
 
     evt.preventDefault();
@@ -68,10 +69,10 @@ function mousemoveHandler(evt)
     {
         if(parent.imageLoaded==1)
         {
-            mouseLocX1 = evt.pageX - jcanvas.offsetLeft;
-            mouseLocX1 = parseInt(mouseLocX1 / zoomPercent);
-            mouseLocY1 = evt.pageY - jcanvas.offsetTop;
-            mouseLocY1 = parseInt(mouseLocY1 / zoomPercent);
+            mouseLocX1 = evt.pageX - parent.jcanvas.offsetLeft;
+            mouseLocX1 = parseInt((mouseLocX1-originX) / zoomPercent);
+            mouseLocY1 = evt.pageY - parent.jcanvas.offsetTop;
+            mouseLocY1 = parseInt((mouseLocY1-originY) / zoomPercent);
 
             if(mouseLocX1>=0&&mouseLocY1>=0&&mouseLocX1<column&&mouseLocY1<row)
             {
@@ -189,6 +190,11 @@ function loadDicom() {
     if(moveEnabled) {
         var mvDiv = jQuery('#move').get(0);
         stopMove(mvDiv);
+    }
+    
+    //Stop measure if enabled
+    if(measureEnabled) {
+    	doMeasurement(jQuery('#ruler').get(0));
     }
 
     var imgSize = jQuery(jcanvas).parent().parent().find('#imageSize').html().substring(11).split("x");
@@ -355,6 +361,15 @@ function genImage()
 
     var sw = jcanvas.width;
     var sh = jcanvas.height;
+    var xScale = sw / column;
+    var yScale = sh / row;
+    
+    var scaleFac = Math.min(xScale,yScale);	
+	var dw = (scaleFac * column);
+	var dh = (scaleFac*row); 
+	
+	originX = (sw-dw)/2;
+	originY = (sh-dh)/2;
 
     tmpCanvas.width = column;
     tmpCanvas.height = row;
@@ -380,9 +395,7 @@ function genImage()
     }
 
     tmpCxt.putImageData(myImageData, 0,0);
-    //ctx.scale(1.5,1.5);
-    ctx.drawImage(tmpCanvas, 0, 0, column, row, 0, 0, sw, sh);
-    //ctx.drawImage(tmpCanvas, 0, 0, tmpCanvas.width , tmpCanvas.height, 0, 0, sw, sh);
+    ctx.drawImage(tmpCanvas, 0, 0, column, row, originX, originY, dw, dh);
 }
 
 function urlHandler(transaction, results) {
@@ -481,4 +494,36 @@ function retrieveImage1(studyUID, seriesUID, instanceUID) {
         }
     };
     xhr.send();
+}
+
+function constructWadoUrl() { // Load the dicom file if wado url is null
+    //stop zoom if zoom enabled
+    if(zoomEnabled) {
+        var zDiv = jQuery('#zoomIn').get(0);
+        stopZoom(zDiv);
+    }
+
+    // stop move if move enabled
+    if(moveEnabled) {
+        var mvDiv = jQuery('#move').get(0);
+        stopMove(mvDiv);
+    }
+
+    var imgSize = jQuery(jcanvas).parent().parent().find('#imageSize').html().substring(11).split("x");
+    row = parseInt(imgSize[1]);
+    column = parseInt(imgSize[0]);
+    var queryString = jQuery(jcanvas).parent().parent().find("#frameSrc").html();
+    var seriesUID = getParameter(queryString, 'seriesUID');
+
+    var sql = "select study.StudyInstanceUID, ServerURL, SeriesInstanceUID from study, series where study.StudyInstanceUID = series.StudyInstanceUID and SeriesInstanceUID = '" + seriesUID + "';";
+    var myDb = initDB();
+    
+    myDb.transaction(function(tx) {
+        tx.executeSql(sql, [], urlHandler, errorHandler);
+    });  
+}
+
+function getPixelAt(x,y) {
+	var t = (y*column)+x;
+	return huLookupTable[pixelBuffer[t]];
 }

@@ -181,6 +181,10 @@ function moveCanvas(moveDiv) {
     if(winEnabled) {
         stopWLAdjustment();
     }
+    
+    if(measureEnabled) {
+    	doMeasurement(jQuery('#ruler').get(0));
+    }
 
     var canvas = jQuery(jcanvas).parent().children().get(2);
     var tCanvas = jQuery(jcanvas).get(0);
@@ -313,6 +317,11 @@ function startZoom(zoomDiv) {
     if(winEnabled) {
         stopWLAdjustment();
     }
+    
+    if(measureEnabled) {
+    	doMeasurement(jQuery('#ruler').get(0));
+    }
+
 
     if(!zoomEnabled) {
         zoomEnabled = true;
@@ -680,6 +689,11 @@ function doStack(stackDiv) {
 
     if(!scrollImages) {
         scrollImages = true;
+        
+       if(measureEnabled) {
+	    	doMeasurement(jQuery('#ruler').get(0));
+	   }
+
 
         startStack(stkCanvas);
 

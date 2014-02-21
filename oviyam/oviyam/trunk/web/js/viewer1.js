@@ -686,12 +686,7 @@ function isCompatible() {
 }
 
 function showImage(src, currCanvas) {
-    //var img = document.createElement("img");
-    //img.src = jQuery('#' + src.replace(/\./g,'_'), window.parent.document).attr('src');
-
     var img1 = jQuery('#' + src.replace(/\./g,'_'), window.parent.document).get(0);
-    //console.log(src);
-
     var canvas = null;
     if(currCanvas == null) {
         canvas = document.getElementById('imageCanvas');
@@ -713,40 +708,31 @@ function showImage(src, currCanvas) {
         nativeColumns = parseInt(tmpImgSize[0]);
         nativeRows = parseInt(tmpImgSize[1]);
     }
+    
+    var xScale = vWidth / nativeColumns;
+    var yScale = vHeight / nativeRows;
+    
+    var scaleFac = Math.min(xScale,yScale);	
+	var dw = (scaleFac * nativeColumns);
+	var dh = (scaleFac*nativeRows); 
+	
+	var sx = (vWidth-dw)/2;
+	var sy = (vHeight-dh)/2;
+	
+	canvas.width = vWidth;
+    canvas.height = vHeight;
+    canvas.style.width = vWidth;
+    canvas.style.height = vHeight;      
 
-    var wRatio = vWidth / nativeColumns * 100;
-    var hRatio = vHeight / nativeRows * 100;
-    var zoomRatio = Math.round(Math.min(wRatio, hRatio)) / 100;
-
-    // if(zoomRatio < 1.0) {
-    var sw = parseInt(nativeColumns * zoomRatio);
-    var sh = parseInt(nativeRows * zoomRatio);
-
-    canvas.width = sw;
-    canvas.height = sh;
-    canvas.style.width = sw;
-    canvas.style.height = sh;
-
-    jQuery("#zoomPercent").html('Zoom: ' + parseInt(zoomRatio * 100) + '%');
-
-    /*} else {
-        canvas.width = nativeColumns;
-        canvas.height = nativeRows;
-        $("#zoomPercent").html('Zoom: 100%');
-    }*/
-
+    jQuery("#zoomPercent").html('Zoom: ' + parseInt(scaleFac * 100) + '%');    
+    
     if(img1.complete) {
-        context.drawImage(img1, 0, 0, canvas.width, canvas.height);
+        context.drawImage(img1,sx,sy,dw,dh);
     } else {
         jQuery.sleep(2, function() {
-            context.drawImage(img1, 0, 0, canvas.width, canvas.height);
+            context.drawImage(img1,sx,sy,dw,dh);
         });
     }
-
-    /*  if(nativeRows <= canvas.height) {
-        var top = (canvas.parentNode.offsetHeight-canvas.height) / 2;
-        canvas.style.marginTop = parseInt(top) + "px";
-    }*/
 
     var top = (canvas.parentNode.offsetHeight-canvas.height) / 2;
     canvas.style.marginTop = parseInt(top) + "px";
@@ -756,11 +742,11 @@ function showImage(src, currCanvas) {
 
     for(var j=0; j<jQuery(canvas).siblings().length; j++) {
         var tmpCanvas = jQuery(canvas).siblings().get(j);
-        if(tmpCanvas != null) {
-            tmpCanvas.width = sw;
-            tmpCanvas.height = sh;
-            tmpCanvas.style.width = sw;
-            tmpCanvas.style.height = sh;
+        if(tmpCanvas != null) {           
+            tmpCanvas.width = vWidth;
+            tmpCanvas.height = vHeight;
+            tmpCanvas.style.width = vWidth;
+            tmpCanvas.style.height = vHeight;
             tmpCanvas.style.marginTop = parseInt(top) + "px";
             tmpCanvas.style.marginLeft = parseInt(left) + "px";
         }

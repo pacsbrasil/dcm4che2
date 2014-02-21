@@ -117,6 +117,18 @@
                 padding: 2px;
                 font-size: 80%;
             }
+            
+            .cmenuItem {
+            	color: #FFF !important;
+            	padding-left: 5px !important;
+            	text-align: left;
+            	font-size: 13px;            	
+            }
+            
+            .cmenuItem:hover {
+            	background: #0099FF;
+            	background-image: none !important;
+            }           
 
         </style>
 
@@ -143,65 +155,92 @@
             }
         </style>
 
-		<script type="text/javascript">
+	<script type="text/javascript">
 		jQuery(document).ready(function() {
-    jQuery("#loopSlider").slider({
-        max:1000,
-        value:500
-    });
-    jQuery("#loopSlider").bind("slidechange", function(event, ui) {
-        loopSpeed = parseInt(1000 - ui.value);
-        doLoop(jQuery('#loopChkBox').is(':checked'));
-    });
+   		jQuery("#loopSlider").slider({
+        	max:1000,
+        	value:500
+    	});
+		jQuery("#loopSlider").bind("slidechange", function(event, ui) {
+		    loopSpeed = parseInt(1000 - ui.value);
+		    doLoop(jQuery('#loopChkBox').is(':checked'));
+		});
 
-    jQuery("#preset").combobox({
-    	selected: function(event, ui) {
-            changePreset(ui.item.value);
+		jQuery("#preset").combobox({
+			selected: function(event, ui) {
+		        changePreset(ui.item.value);
+			}
+		});
+
+		jQuery("#presetDiv input").attr('disabled',true);
+		jQuery("#presetDiv input").attr('size', '10');
+		jQuery("#presetDiv a").css('visibility', 'hidden');
+
+		jQuery('#containerBox .toolbarButton').hover(function() {
+		    var selected = jQuery('#containerBox').find('.current');
+		    jQuery(selected).attr('class', 'toolbarButton');
+		    jQuery(selected).children().attr('class', 'imgOff');
+		    jQuery(this).attr('class', 'toolbarButton current');
+		    jQuery(this).children().attr('class', 'imgOn');
+		    jQuery(this).css('cursor', 'pointer');
+		}, function() {
+		    var selected = jQuery('#containerBox').find('.current');
+		    jQuery(selected).attr('class', 'toolbarButton');
+		    jQuery(selected).children().attr('class', 'imgOff');
+		    jQuery(this).css('cursor', 'auto');
+		});
+
+	    showSyncSeries();
+
+		var changeTooltipPosition = function(event) {
+		    var tooltipX = event.pageX - 8;
+		    var tooltipY = event.pageY + 8;
+		    jQuery('div.tooltip').css({
+		        top: tooltipY,
+		        left: tooltipX
+		    });
+		};
+
+		var showTooltip = function(event) {
+		    jQuery('div.tooltip').remove();
+		    jQuery('<div class="tooltip">3D module not installed!!!</div>').appendTo('body');
+		    changeTooltipPosition(event);
+		};
+
+		var hideTooltip = function() {
+		    jQuery('div.tooltip').remove();
+		};
+
+    	jQuery('#containerBox').css('background-color', jQuery('#westPane').css('background-color'));
+    	
+    	jQuery("#ruler").contextMenu({menu: 'rulerContext'});
+    	var timer = null;
+    	var mouseup = false;
+    	
+    	jQuery('#ruler').mousedown(function(evt) {
+    		mouseup = false;
+    		if(evt.which==1) {
+    			timer = setTimeout(showRuler,1000);
+    			jQuery(this).mouseup(function(evt){
+    				mouseup = true;
+    				clearTimeout(timer);
+    				measureOn();
+    			});
+    		}
+    	}); 
+    	
+    	function showRuler() {
+    		if(!mouseup) {
+    			jQuery('#rulerContext').show();
+    			jQuery('#ruler').unbind('mouseup');
+    		}
     	}
-    });
+    	
+    	jQuery(document).mousedown(function() {
+    		jQuery('.contextMenu').hide();
+    	});
 
-    jQuery("#presetDiv input").attr('disabled',true);
-    jQuery("#presetDiv input").attr('size', '10');
-    jQuery("#presetDiv a").css('visibility', 'hidden');
-
-    jQuery('#containerBox .toolbarButton').hover(function() {
-        var selected = jQuery('#containerBox').find('.current');
-        jQuery(selected).attr('class', 'toolbarButton');
-        jQuery(selected).children().attr('class', 'imgOff');
-        jQuery(this).attr('class', 'toolbarButton current');
-        jQuery(this).children().attr('class', 'imgOn');
-        jQuery(this).css('cursor', 'pointer');
-    }, function() {
-        var selected = jQuery('#containerBox').find('.current');
-        jQuery(selected).attr('class', 'toolbarButton');
-        jQuery(selected).children().attr('class', 'imgOff');
-        jQuery(this).css('cursor', 'auto');
-    });
-
-    showSyncSeries();
-
-    var changeTooltipPosition = function(event) {
-        var tooltipX = event.pageX - 8;
-        var tooltipY = event.pageY + 8;
-        jQuery('div.tooltip').css({
-            top: tooltipY,
-            left: tooltipX
-        });
-    };
-
-    var showTooltip = function(event) {
-        jQuery('div.tooltip').remove();
-        jQuery('<div class="tooltip">3D module not installed!!!</div>').appendTo('body');
-        changeTooltipPosition(event);
-    };
-
-    var hideTooltip = function() {
-        jQuery('div.tooltip').remove();
-    };
-
-    jQuery('#containerBox').css('background-color', jQuery('#westPane').css('background-color'));
-
-});  // for document.ready
+		});  // for document.ready
 	
 		</script>
 	 </head>
@@ -265,8 +304,15 @@
             <div class="toolbarButton" align="center" id="metaData" onclick="showMetaData()">
                 <img src="images/metadata.png" id="lblMetadata" class="imgOff" alt="View meta-data" title="View Meta-data">
             </div>
-            <div class="toggleButton" align="center" id="ruler" onclick="doMeasurement(this)">
+            <div class="toggleButton" align="center" id="ruler">
                 <img src="images/ruler.png" id="lblLines" class="imgOff" alt="Draw measurement lines" title="Draw Measurement Lines">
+                	<ul id="rulerContext" class="contextMenu" style="width:82px; position: fixed; background:#000;">
+                		<li><a id="line" href="#" class="selected cmenuItem" onclick="setTool(this,'ruler')">Ruler</a></li>
+                		<li><a href="#" class="cmenuItem" onclick="setTool(this,'rect')">Rectangle</a></li>
+                		<li><a href="#" class="cmenuItem" onclick="setTool(this,'oval')">Oval</a></li>
+                		<li type='separator' style="height: 2px; background-color: #00CC66;"></li>
+                		<li><a href="#" class="cmenuItem" onclick="reset()">Delete All</a></li>
+                	</ul>
             </div>
 
             <div id="presetDiv" align="center">
