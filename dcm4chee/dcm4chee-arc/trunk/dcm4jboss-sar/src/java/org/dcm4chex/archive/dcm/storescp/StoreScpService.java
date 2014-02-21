@@ -924,7 +924,7 @@ public class StoreScpService extends AbstractScpService {
             ds.setPrivateCreatorID(null);
             String filePath = fileDTO.getFilePath();
             scp.updateDB(store, ds, sourceAET, fileDTO.getFileSystemPk(), filePath, fileDTO.getFileSize(),
-                    fileDTO.getFileMd5(), fileDTO.getFileStatus(), true, false, false);
+                    fileDTO.getFileMd5(), fileDTO.getOrigMd5(), fileDTO.getFileStatus(), true, false, false);
         } else {
             log.info("Import of file "+fileDTO+" ignored! Duplicate already exists!");
             if (deleteFileIfDuplicateExists) {

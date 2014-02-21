@@ -199,16 +199,16 @@ public abstract class StorageBean implements SessionBean {
      * @ejb.interface-method
      */
     public org.dcm4che.data.Dataset store(org.dcm4che.data.Dataset ds, String currentCallingAET,
-            long fspk, java.lang.String fileid, long size, byte[] md5, int fileStatus,
+            long fspk, java.lang.String fileid, long size, byte[] md5, byte[] origMd5, int fileStatus,
             boolean updateStudyAccessTime, boolean clearExternalRetrieveAET, boolean dontChangeReceivedStatus, PatientMatching matching) throws DcmServiceException, NonUniquePatientIDException {
-    	return store(ds, currentCallingAET, fspk, fileid, size, md5, fileStatus, updateStudyAccessTime, 
+    	return store(ds, currentCallingAET, fspk, fileid, size, md5, origMd5, fileStatus, updateStudyAccessTime, 
     	        clearExternalRetrieveAET, dontChangeReceivedStatus, matching, true);
     }
     /**
      * @ejb.interface-method
      */
     public org.dcm4che.data.Dataset store(org.dcm4che.data.Dataset ds, String currentCallingAET,
-            long fspk, java.lang.String fileid, long size, byte[] md5, int fileStatus,
+            long fspk, java.lang.String fileid, long size, byte[] md5, byte[] origMd5, int fileStatus,
             boolean updateStudyAccessTime, boolean clearExternalRetrieveAET, boolean dontChangeReceivedStatus, PatientMatching matching,
             boolean canRollback) throws DcmServiceException, NonUniquePatientIDException {
         FileMetaInfo fmi = ds.getFileMetaInfo();
@@ -242,7 +242,7 @@ public abstract class StorageBean implements SessionBean {
             }
             if (fspk != -1) {
                 FileSystemLocal fs = fileSystemHome.findByPrimaryKey(new Long(fspk));
-                fileHome.create(fileid, tsuid, size, md5, fileStatus, instance, fs);
+                fileHome.create(fileid, tsuid, size, md5, origMd5, fileStatus, instance, fs);
                 instance.setAvailability(Math.min(fs.getAvailability(), prevAvailability));
                 instance.addRetrieveAET(fs.getRetrieveAET());
                 if (updateStudyAccessTime) {
@@ -501,12 +501,12 @@ public abstract class StorageBean implements SessionBean {
      */
     public void storeFile(java.lang.String iuid, java.lang.String tsuid,
             java.lang.String dirpath, java.lang.String fileid,
-            int size, byte[] md5, int status)
+            int size, byte[] md5, byte[] origMd5, int status)
             throws CreateException, FinderException
     {
         FileSystemLocal fs = fileSystemHome.findByDirectoryPath(dirpath);
         InstanceLocal instance = instHome.findBySopIuid(iuid);
-        fileHome.create(fileid, tsuid, size, md5, status, instance, fs);    	
+        fileHome.create(fileid, tsuid, size, md5, origMd5, status, instance, fs);    	
     }
 
     private SeriesLocal getSeries(PatientMatching matching, Dataset ds,

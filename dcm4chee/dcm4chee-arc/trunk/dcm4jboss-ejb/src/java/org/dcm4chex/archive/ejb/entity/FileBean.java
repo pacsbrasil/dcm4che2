@@ -211,6 +211,17 @@ public abstract class FileBean implements EntityBean {
     public abstract void setFileMd5Field(String md5);
 
     /**
+	 * MD5 checksum of the original file (as it was received, before
+	 * compression) as hex string
+	 * 
+     * @ejb.interface-method
+	 * @ejb.persistence column-name="orig_md5"
+	 */
+    public abstract String getOrigMd5Field();
+
+    public abstract void setOrigMd5Field(String md5);
+
+    /**
      * @ejb.interface-method
      * @ejb.persistence column-name="file_status"
      */
@@ -235,6 +246,22 @@ public abstract class FileBean implements EntityBean {
      */
     public void setFileMd5(byte[] md5) {
         setFileMd5Field(MD5.toString(md5));
+    }
+
+    /**
+     * Original MD5 checksum in binary format
+     * 
+     * @ejb.interface-method
+     */
+    public byte[] getOrigMd5() {
+        return MD5.toBytes(getOrigMd5Field());
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public void setOrigMd5(byte[] md5) {
+        setOrigMd5Field(MD5.toString(md5));
     }
 
     /**
@@ -307,6 +334,7 @@ public abstract class FileBean implements EntityBean {
         retval.setFileTsuid(getFileTsuid());
         retval.setFileSize(getFileSize());
         retval.setFileMd5(getFileMd5());
+        retval.setOrigMd5(getOrigMd5());
         retval.setFileStatus(getFileStatus());
         
         InstanceLocal inst = getInstance();
@@ -336,18 +364,19 @@ public abstract class FileBean implements EntityBean {
      * 
      * @ejb.create-method
      */
-    public Long ejbCreate(String path, String tsuid, long size, byte[] md5,
+    public Long ejbCreate(String path, String tsuid, long size, byte[] md5, byte[] origMd5,
     		int status, InstanceLocal instance, FileSystemLocal filesystem)
             throws CreateException {
         setFilePath(path);
         setFileTsuid(tsuid);
         setFileSize(size);
         setFileMd5(md5);
+        setOrigMd5(origMd5);
         setFileStatus(status);
         return null;
     }
 
-    public void ejbPostCreate(String path, String tsuid, long size, byte[] md5,
+    public void ejbPostCreate(String path, String tsuid, long size, byte[] md5, byte[] origMd5,
     		int status, InstanceLocal instance, FileSystemLocal filesystem)
             throws CreateException {
         setInstance(instance);

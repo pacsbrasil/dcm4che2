@@ -87,6 +87,8 @@ public class FileInfo implements Serializable, Comparable<FileInfo> {
     public String tsUID = null;
 
     public String md5 = null;
+    
+    public String origMd5 = null;
 
     public long size = 0;
 

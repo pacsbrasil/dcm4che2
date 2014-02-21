@@ -419,6 +419,7 @@ CREATE TABLE files (
     filepath        VARCHAR(255) NOT NULL,
     file_tsuid      VARCHAR(255) NOT NULL,
     file_md5        VARCHAR(255),
+    orig_md5        VARCHAR(255),
     file_size       NUMERIC(18,0),
     file_status     INTEGER NOT NULL,
     md5_check_time  TIMESTAMP,

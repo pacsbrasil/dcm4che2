@@ -221,6 +221,7 @@ public class RetrieveCmd extends BaseReadCmd {
                     Types.VARCHAR,      // File.fileMd5Field
                     Types.INTEGER,      // File.fileSize
                     Types.INTEGER,      // File.fileStatus
+                    Types.VARCHAR       // File.origMd5Field
                     }
                 : new int[] {
                     blobAccessType,     // Instance.encodedAttributes
@@ -245,7 +246,8 @@ public class RetrieveCmd extends BaseReadCmd {
                     Types.VARCHAR,      // File.fileMd5Field
                     Types.INTEGER,      // File.fileSize
                     Types.INTEGER,      // File.fileStatus
-                    Types.TIMESTAMP     // Series.updatedTime
+                    Types.TIMESTAMP,    // Series.updatedTime
+                    Types.VARCHAR       // File.origMd5Field
                     });
         this.sqlCmd = sql;
     }
@@ -330,6 +332,7 @@ public class RetrieveCmd extends BaseReadCmd {
         info.md5 = rs.getString(14);
         info.size = rs.getInt(15);
         info.status = rs.getInt(16);
+        info.origMd5 = rs.getString(17);
         FileInfo seriesFileInfo = getCachedSeriesAttrs(info.seriesIUID);
         if (seriesFileInfo == null) {
             if (log.isDebugEnabled()) {
@@ -454,6 +457,7 @@ public class RetrieveCmd extends BaseReadCmd {
         info.md5 = rs.getString(20);
         info.size = rs.getInt(21);
         info.status = rs.getInt(22);
+        info.origMd5 = rs.getString(24);
         addFileInfo(result, instPk, info.sopIUID, info);
     }
 
@@ -540,7 +544,8 @@ public class RetrieveCmd extends BaseReadCmd {
                         "File.fileTsuid",               // (13)
                         "File.fileMd5Field",            // (14)
                         "File.fileSize",                // (15)
-                        "File.fileStatus"               // (16)
+                        "File.fileStatus",              // (16)
+                        "File.origMd5Field"             // (17)
                         }
                 : new String[] { 
                         "Instance.encodedAttributes",   // (1)
@@ -565,7 +570,8 @@ public class RetrieveCmd extends BaseReadCmd {
                         "File.fileMd5Field",            // (20)
                         "File.fileSize",                // (21)
                         "File.fileStatus",              // (22)
-                        "Series.updatedTime"            // (23)
+                        "Series.updatedTime",           // (23)
+                        "File.origMd5Field"             // (24)
                         };
         }
 
