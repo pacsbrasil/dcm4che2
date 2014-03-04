@@ -191,15 +191,6 @@ public class MessageWindow extends AutoOpenModalWindow {
         this.setErrorMessage(x, useCauseAsDetail);
         show(target);
     }
-    private HeaderContributor getBaseCSSHeaderContributor() {
-        Page page = this.getPage();
-        if (page instanceof SecureSessionCheckPage) {
-            return ((SecureSessionCheckPage) page).getBaseCSSHeaderContributor();
-        } else {
-            return CSSPackageResource.getHeaderContribution(SecureSessionCheckPage.BASE_CSS);
-        }
-    }
-
 
     public class MessagePage extends WebPage {
         private static final long serialVersionUID = 0L;

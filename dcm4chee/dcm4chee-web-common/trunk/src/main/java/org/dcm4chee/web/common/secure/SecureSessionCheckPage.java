@@ -84,7 +84,7 @@ public class SecureSessionCheckPage extends SecureWebPage {
         init();
     }
 
-    public IModel<ResourceReference> getBaseCSSModel() {
+    public static IModel<ResourceReference> getBaseCSSModel() {
         IModel<ResourceReference> cssModel = Session.get().getMetaData(BASE_CSS_MODEL_MKEY);
         if (cssModel == null) {
             cssModel = new Model<ResourceReference>(Boolean.parseBoolean(System.getProperty(SYSTEM_PROPERTY_READINGROOM)) ? 
@@ -94,7 +94,7 @@ public class SecureSessionCheckPage extends SecureWebPage {
         return cssModel;
     }
     
-    public HeaderContributor getBaseCSSHeaderContributor() {
+    public static HeaderContributor getBaseCSSHeaderContributor() {
         return new HeaderContributor(new IHeaderContributor() {
                 private static final long serialVersionUID = 1L;
 

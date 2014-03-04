@@ -217,22 +217,13 @@ public abstract class ConfirmationWindow<T> extends ModalWindow {
         return state;
     }
     
-    private HeaderContributor getBaseCSSHeaderContributor() {
-        Page page = this.getPage();
-        if (page instanceof SecureSessionCheckPage) {
-            return ((SecureSessionCheckPage) page).getBaseCSSHeaderContributor();
-        } else {
-            return CSSPackageResource.getHeaderContribution(SecureSessionCheckPage.BASE_CSS);
-        }
-    }
-
     public void setImage(ResourceReference image) {
     	messageWindowPanel.replace(new Image("warnImg", image));
     }
 
     public class ConfirmPage extends WebPage {
         public ConfirmPage() {
-            add(getBaseCSSHeaderContributor());
+            add(SecureSessionCheckPage.getBaseCSSHeaderContributor());
             add(messageWindowPanel);
         }
     }

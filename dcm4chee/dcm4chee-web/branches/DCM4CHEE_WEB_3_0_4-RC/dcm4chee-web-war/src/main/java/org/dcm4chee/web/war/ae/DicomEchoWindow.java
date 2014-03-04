@@ -159,15 +159,6 @@ public class DicomEchoWindow extends ModalWindow {
         return false;
     }
 
-    private HeaderContributor getBaseCSSHeaderContributor() {
-        Page page = this.getPage();
-        if (page instanceof SecureSessionCheckPage) {
-            return ((SecureSessionCheckPage) page).getBaseCSSHeaderContributor();
-        } else {
-            return CSSPackageResource.getHeaderContribution(SecureSessionCheckPage.BASE_CSS);
-        }
-    }
-
     public class DicomEchoPage extends SecureSessionCheckPage {
     
         private static final long serialVersionUID = 1L;
@@ -213,7 +204,7 @@ public class DicomEchoWindow extends ModalWindow {
             
         public DicomEchoPage() {
             super();
-            add(getBaseCSSHeaderContributor());
+            add(SecureSessionCheckPage.getBaseCSSHeaderContributor());
             if (DicomEchoWindow.CSS != null)
                 add(CSSPackageResource.getHeaderContribution(DicomEchoWindow.CSS));
     
