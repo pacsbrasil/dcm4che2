@@ -1329,11 +1329,12 @@ public class QueryRetrieveScpService extends AbstractScpService {
             Dataset stgCmtActionInfo) {
         try {
             server.invoke(stgCmtScuScpName, "onInstancesRetrieved",
-                    new Object[] { moveScp, moveDest, stgCmtActionInfo },
+                    new Object[] { moveScp, moveDest, stgCmtActionInfo, 0 },
                     new String[] {
                             String.class.getName(),
                             String.class.getName(),
-                            Dataset.class.getName()
+                            Dataset.class.getName(),
+                            int.class.getName()
                     });
         } catch (JMException e) {
             log.error("Failed to invoke onInstancesRetrieved", e);
