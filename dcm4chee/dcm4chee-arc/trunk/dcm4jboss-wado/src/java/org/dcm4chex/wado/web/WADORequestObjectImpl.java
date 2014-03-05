@@ -438,12 +438,12 @@ public class WADORequestObjectImpl extends BasicRequestObjectImpl implements
     }
     
     private boolean checkUIDs() {
-        // studyUID and seriesUID are not used in query! So check UID only if length > 1 to allow short URLs
-        if (studyUID.length() > 1 && !isUID(studyUID)) { 
+        // studyUID and seriesUID are not used in query! So check UID only if length > 2 to allow short URLs
+        if (studyUID.length() > 2 && !isUID(studyUID)) { 
             this.setErrorMsg("Invalid studyUID parameter!");
             return false;
         }
-        if (seriesUID.length() > 1 && !isUID(seriesUID)) {
+        if (seriesUID.length() > 2 && !isUID(seriesUID)) {
             this.setErrorMsg("Invalid seriesUID parameter!");
             return false;
         }
