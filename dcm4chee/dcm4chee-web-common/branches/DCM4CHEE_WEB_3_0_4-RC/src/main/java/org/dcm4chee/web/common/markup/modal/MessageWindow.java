@@ -196,7 +196,7 @@ public class MessageWindow extends AutoOpenModalWindow {
         private static final long serialVersionUID = 0L;
 
         public MessagePage() {
-            add(getBaseCSSHeaderContributor());
+            add(SecureSessionCheckPage.getBaseCSSHeaderContributor());
             add(new Label("msg", new AbstractReadOnlyModel<String>(){
 
                 private static final long serialVersionUID = 1L;
