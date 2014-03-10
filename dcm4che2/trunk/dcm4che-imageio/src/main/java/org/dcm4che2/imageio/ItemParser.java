@@ -351,7 +351,13 @@ public class ItemParser implements StreamSegmentMapper {
         return data;
     }
 
-	protected int getFrameLength(int frame) throws IOException {
+    /**
+     * Gets the frame length for the given frame - note that the segmented frame size is incorrect, in general, so use this method instead.
+     * @param frame
+     * @return length of the frame.
+     * @throws IOException
+     */
+	public int getFrameLength(int frame) throws IOException {
 		Item item = getFirstItemOfFrame(frame);
         int frameSize = item.length;
         int firstItemOfNextFrameIndex = frame + 1 < numberOfFrames
