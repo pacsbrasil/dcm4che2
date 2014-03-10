@@ -52,8 +52,17 @@ public class DicomStreamMetaData extends IIOMetadata {
     
     private DicomObject dicomObject;
     boolean isFileMetaInfoIncluded = true;
+    boolean pixelData = false;
     
-    @Override
+    public boolean isPixelData() {
+		return pixelData;
+	}
+
+	public void setPixelData(boolean pixelData) {
+		this.pixelData = pixelData;
+	}
+
+	@Override
     public Node getAsTree(String formatName) {
          throw new UnsupportedOperationException();
     }

@@ -311,6 +311,7 @@ public class DicomImageReader extends ImageReader {
         pmi = ds.getString(Tag.PhotometricInterpretation);
 
         if (dis.tag() == Tag.PixelData) {
+        	streamMetaData.setPixelData(true);
             if (frames == 0)
                 frames = 1;
             swapByteOrder = bigEndian && dis.vr() == VR.OW
@@ -771,6 +772,20 @@ public class DicomImageReader extends ImageReader {
         iis.read(ret);
         return ret;
     }
+    
+    /**
+     * Gets the correct frame length for the given instance - can be used instead of the  
+     * @param imageIndex
+     * @return
+     * @throws IOException
+     */
+    public int getFrameLength(int imageIndex) throws IOException {
+    	initImageReader(imageIndex);
+    	if( compressed) {
+    		return itemParser.getFrameLength(imageIndex);
+    	}
+    	return calculateFrameLength();
+    }
 
     /**
      * Before read image stream, seek the right frame position first.
@@ -792,7 +807,7 @@ public class DicomImageReader extends ImageReader {
         return frameLen;
     }
     /**
-     * Get the ImageInputStream to read. 
+     * Get the ImageInputStream to read.  Use getFrameLength to get the length of the frame to read. 
      * @return
      */
     public ImageInputStream getImageInputStream(int imageIndex, ImageReadParam param)
