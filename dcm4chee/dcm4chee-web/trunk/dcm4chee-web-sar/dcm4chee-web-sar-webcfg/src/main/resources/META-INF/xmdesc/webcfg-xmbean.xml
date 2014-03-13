@@ -164,19 +164,12 @@
            DigitalXRayImageStorageForProcessing
            DigitalMammographyXRayImageStorageForPresentation
            DigitalMammographyXRayImageStorageForProcessing
-           DigitalIntraOralXRayImageStorageForPresentation
-           DigitalIntraOralXRayImageStorageForProcessing
            CTImageStorage
            EnhancedCTImageStorage
-           UltrasoundMultiFrameImageStorage
            MRImageStorage
            EnhancedMRImageStorage
            UltrasoundImageStorage
            SecondaryCaptureImageStorage
-           MultiFrameSingleBitSecondaryCaptureImageStorage
-           MultiFrameGrayscaleByteSecondaryCaptureImageStorage
-           MultiFrameGrayscaleWordSecondaryCaptureImageStorage
-           MultiFrameTrueColorSecondaryCaptureImageStorage
            XRayAngiographicImageStorage
            EnhancedXAImageStorage
            XRayRadiofluoroscopicImageStorage
@@ -193,11 +186,9 @@
            HardcopyGrayscaleImageStorageSOPClassRetired
            HardcopyColorImageStorageSOPClassRetired
            NuclearMedicineImageStorageRetired
-           UltrasoundMultiFrameImageStorageRetired
            UltrasoundImageStorageRetired
            XRayAngiographicBiPlaneImageStorageRetired
            VLImageStorageTrialRetired
-           VLMultiFrameImageStorageTrialRetired
            "/>
       </descriptors>
    </attribute>
@@ -232,7 +223,6 @@
       <type>java.lang.String</type>
       <descriptors>
          <value value="
-           TwelveLeadECGWaveformStorage
            GeneralECGWaveformStorage
            AmbulatoryECGWaveformStorage
            HemodynamicWaveformStorage
@@ -788,9 +778,11 @@
       getMethod="getTCRestrictedAttributes"
       setMethod="setTCRestrictedAttributes">
       <description><![CDATA[
-        List of teaching-file attributes which are unavailable/hidden
-        if training-mode is on OR the authenticated user doesn't has
-        the permission to view restricted attributes.<br/>
+        List of teaching-file attributes which are hidden in<br/>
+        1) the modal teaching-file dialog and the teaching-file details view, if
+        training mode is on.<br/>
+        2) the bookmarkable teaching-file case page, unless the authenticated
+        user has been assigned the 'Teaching-Files: View All Attributes' permission.<br/>
         <br/>
         Possible values/attributes are: Title, Abstract, AcquisitionModality,
         Anatomy, AuthorAffiliation, AuthorContact, AuthorName, Category, Diagnosis,
