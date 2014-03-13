@@ -164,12 +164,19 @@
            DigitalXRayImageStorageForProcessing
            DigitalMammographyXRayImageStorageForPresentation
            DigitalMammographyXRayImageStorageForProcessing
+           DigitalIntraOralXRayImageStorageForPresentation
+           DigitalIntraOralXRayImageStorageForProcessing
            CTImageStorage
            EnhancedCTImageStorage
+           UltrasoundMultiFrameImageStorage
            MRImageStorage
            EnhancedMRImageStorage
            UltrasoundImageStorage
            SecondaryCaptureImageStorage
+           MultiFrameSingleBitSecondaryCaptureImageStorage
+           MultiFrameGrayscaleByteSecondaryCaptureImageStorage
+           MultiFrameGrayscaleWordSecondaryCaptureImageStorage
+           MultiFrameTrueColorSecondaryCaptureImageStorage
            XRayAngiographicImageStorage
            EnhancedXAImageStorage
            XRayRadiofluoroscopicImageStorage
@@ -186,9 +193,11 @@
            HardcopyGrayscaleImageStorageSOPClassRetired
            HardcopyColorImageStorageSOPClassRetired
            NuclearMedicineImageStorageRetired
+           UltrasoundMultiFrameImageStorageRetired
            UltrasoundImageStorageRetired
            XRayAngiographicBiPlaneImageStorageRetired
            VLImageStorageTrialRetired
+           VLMultiFrameImageStorageTrialRetired
            "/>
       </descriptors>
    </attribute>
@@ -223,6 +232,7 @@
       <type>java.lang.String</type>
       <descriptors>
          <value value="
+           TwelveLeadECGWaveformStorage
            GeneralECGWaveformStorage
            AmbulatoryECGWaveformStorage
            HemodynamicWaveformStorage
