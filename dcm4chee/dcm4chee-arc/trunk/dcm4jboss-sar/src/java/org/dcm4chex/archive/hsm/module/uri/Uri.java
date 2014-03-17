@@ -25,27 +25,9 @@ import java.io.File;
 import java.net.URISyntaxException;
 
 public class Uri {
-    private final class SCHEMES {
-        public final static int UNKNOWN = 0;
+	enum SCHEMES {UNKNOWN, FILE, CIFS, SSH, SFTP, RSH};
 
-        // Local
-        @SuppressWarnings("unused")
-        public final static int FILE = 1;
-
-        // SMB/CIFS
-        public final static int CIFS = 2;
-
-        // SSH/SCP
-        public final static int SSH = 3;
-
-        // SFTP
-        public final static int SFTP = 4;
-
-        // RSH/RCMD/RCP
-        public final static int RSH = 5;
-    }
-
-    public static int isUri(String uri) {
+    public static SCHEMES isUri(String uri) {
         if (uri.startsWith("ssh://") || uri.startsWith("scp://"))
             return SCHEMES.SSH;
         if (uri.startsWith("sftp://"))
@@ -61,13 +43,13 @@ public class Uri {
 
     protected static void copyFrom(String src, String dst, String identity) throws Exception {
         switch (isUri(src)) {
-        case SCHEMES.SSH:
+        case SSH:
             Ssh.scpCopyFrom(src, dst, identity);
             break;
-        case SCHEMES.SFTP:
+        case SFTP:
             Ssh.sftpCopyFrom(src, dst, identity);
             break;
-        case SCHEMES.CIFS:
+        case CIFS:
             Cifs.copyFrom(src, dst);
             break;
         default:
@@ -75,16 +57,16 @@ public class Uri {
         }
     }
 
-    protected static void copyTo(String src, String dstUrl, String dst, String identity) throws Exception {
+    protected static void copyTo(String src, String dstUrl, String dst, String identity, long retention, boolean setAccessTimeAfterSetReadonly) throws Exception {
         switch (isUri(dstUrl)) {
-        case SCHEMES.SSH:
-            Ssh.scpCopyTo(src, dstUrl, dst, identity);
+        case SSH:
+            Ssh.scpCopyTo(src, dstUrl, dst, identity, retention, setAccessTimeAfterSetReadonly);
             break;
-        case SCHEMES.SFTP:
-            Ssh.sftpCopyTo(src, dstUrl, dst, identity);
+        case SFTP:
+            Ssh.sftpCopyTo(src, dstUrl, dst, identity, retention, setAccessTimeAfterSetReadonly);
             break;
-        case SCHEMES.CIFS:
-            Cifs.copyTo(src, dstUrl + "/" + dst);
+        case CIFS:
+            Cifs.copyTo(src, dstUrl + "/" + dst, retention, setAccessTimeAfterSetReadonly);
             break;
         default:
             throw new URISyntaxException("Unknown URI:", dstUrl);
@@ -93,7 +75,7 @@ public class Uri {
 
     protected static void exec(String cmdUri, String identity) throws Exception {
         switch (isUri(cmdUri)) {
-        case SCHEMES.SSH:
+        case SSH:
             Ssh.exec(cmdUri, identity);
             break;
         default:
@@ -103,11 +85,11 @@ public class Uri {
 
     public static long exists(String uri, String identity) throws Exception {
         switch (isUri(uri)) {
-        case SCHEMES.SSH:
+        case SSH:
             return Ssh.scpFileLength(uri, identity);
-        case SCHEMES.SFTP:
+        case SFTP:
             return Ssh.sftpFileLength(uri, identity);
-        case SCHEMES.CIFS:
+        case CIFS:
             return Cifs.fileLength(uri);
         default:
             if (new File(uri).exists()) {

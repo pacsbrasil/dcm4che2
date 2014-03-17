@@ -46,11 +46,14 @@ import org.dcm4chex.archive.common.FileStatus;
 import org.dcm4chex.archive.hsm.module.AbstractHSMModule;
 import org.dcm4chex.archive.hsm.module.HSMException;
 import org.dcm4chex.archive.util.FileUtils;
-
 import org.apache.log4j.Logger;
 
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.StringTokenizer;
 
 //@formatter:off
 /**
@@ -94,6 +97,20 @@ public class HSMURIModule extends AbstractHSMModule {
     private int fileStoredStatus;
 
     private int fileNotStoredStatus;
+
+    private HashMap<String, Integer> extensionStatusMap = new HashMap<String, Integer>();
+
+    private Integer noStatusFileStatus;
+
+    private boolean setAccessTimeAfterSetReadonly;
+
+    private int[] retentionTime = new int[2];
+
+    private static final String CAL_FIELD_NAMES = "yMd";
+
+    private static final int[] CAL_FIELDS = new int[] { Calendar.YEAR, Calendar.MONTH, Calendar.DAY_OF_MONTH };
+
+    private static final String NEWLINE = System.getProperty("line.separator", "\n");
 
     public final void setCheckCommand(String cmd) {
         this.chkCmd = cmd;
@@ -154,6 +171,59 @@ public class HSMURIModule extends AbstractHSMModule {
         return sshPrivateKeyFile.getPath();
     }
 
+    public final String getStatusExtensions() {
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<String, Integer> entry : extensionStatusMap.entrySet()) {
+            sb.append(entry.getKey()).append("=").append(FileStatus.toString(entry.getValue())).append(NEWLINE);
+        }
+        sb.append(noStatusFileStatus == null ? NONE : FileStatus.toString(noStatusFileStatus));
+        return sb.toString();
+    }
+
+    public final void setStatusExtensions(String s) {
+        extensionStatusMap.clear();
+        noStatusFileStatus = null;
+        StringTokenizer st = new StringTokenizer(s, " \t\r\n;");
+        int pos;
+        String token;
+        while (st.hasMoreTokens()) {
+            token = st.nextToken().trim();
+            if ((pos = token.indexOf('=')) == -1) {
+                noStatusFileStatus = NONE.equals(token) ? null : FileStatus.toInt(token);
+            } else {
+                extensionStatusMap.put(token.substring(0, pos), FileStatus.toInt(token.substring(++pos)));
+            }
+        }
+    }
+
+    public String getRetentionTime() {
+        return (setAccessTimeAfterSetReadonly ? "+" : "") + String.valueOf(retentionTime[0])
+                + CAL_FIELD_NAMES.charAt(retentionTime[1]);
+    }
+
+    public void setRetentionTime(String s) {
+        int len = s.length();
+        setAccessTimeAfterSetReadonly = s.charAt(0) == '+';
+        retentionTime[0] = Integer.parseInt(s.substring(setAccessTimeAfterSetReadonly ? 1 : 0, --len));
+        if (retentionTime[0] == 0) {
+            retentionTime[1] = -1;
+        } else {
+            int idx = CAL_FIELD_NAMES.indexOf(s.charAt(len));
+            if (idx < 0 || idx > 2) {
+                throw new IllegalArgumentException("Last character must be 'y', 'M' or 'd'!");
+            }
+            retentionTime[1] = idx;
+        }
+    }
+
+    private long getRetentionDate() {
+        if (retentionTime[0] == 0)
+            return 0L;
+        Calendar c = Calendar.getInstance();
+        c.add(CAL_FIELDS[retentionTime[1]], retentionTime[0]);
+        return (c.getTimeInMillis() / 1000);
+    }
+
     @Override
     public File prepareHSMFile(String fsID, String filePath) {
         return new File(absOutgoingDir, new File(filePath).getName());
@@ -168,10 +238,10 @@ public class HSMURIModule extends AbstractHSMModule {
 
         try {
             log.info("Copy to URI: " + file.getPath() + " " + stripTarIdentifier(fsID) + " " + filePath);
-            Uri.copyTo(file.getPath(), stripTarIdentifier(fsID), filePath, absSshPrivateKeyFile.getPath());
+            Uri.copyTo(file.getPath(), stripTarIdentifier(fsID), filePath, absSshPrivateKeyFile.getPath(), getRetentionDate(), setAccessTimeAfterSetReadonly);
             return filePath;
         } catch (Exception e) {
-            throw new HSMException("copy failed...", e, HSMException.ERROR_ON_FILE_LEVEL);
+            throw new HSMException("copy failed...", e);
         } finally {
             log.info("M-DELETE " + file);
             file.delete();
@@ -184,20 +254,20 @@ public class HSMURIModule extends AbstractHSMModule {
 
     @Override
     public File fetchHSMFile(String fsID, String filePath) throws HSMException {
-        File tarFile;
         try {
             if (absIncomingDir.mkdirs()) {
                 log.info("M-WRITE " + absIncomingDir);
             }
+            File tarFile;
+            try {
             tarFile = File.createTempFile("hsm_", ".tar", absIncomingDir);
         } catch (IOException x) {
             throw new HSMException("Failed to create temp file in " + absIncomingDir, x);
         }
-        try {
             Uri.copyFrom(stripTarIdentifier(fsID) + '/' + filePath, tarFile.getPath(), absSshPrivateKeyFile.getPath());
             return tarFile;
         } catch (Exception e) {
-            throw new HSMException("fetch failed...", e, HSMException.ERROR_ON_FILE_LEVEL);
+            throw new HSMException("fetch failed...", e);
         }
     }
 
@@ -209,25 +279,29 @@ public class HSMURIModule extends AbstractHSMModule {
     @Override
     public Integer queryStatus(String fsID, String filePath, String userInfo) throws HSMException {
         try {
-            if (chkCmd.equals("NONE")) {
-                return Uri.exists(stripTarIdentifier(fsID) + '/' + filePath, absSshPrivateKeyFile.getPath()) > 0 ? fileStoredStatus
-                        : fileNotStoredStatus;
-            } else {
+            for (Map.Entry<String, Integer> entry : extensionStatusMap.entrySet()) {
+                if (Uri.exists(stripTarIdentifier(fsID) + '/' + filePath + entry.getKey(),
+                        absSshPrivateKeyFile.getPath()) >= 0) {
+                    if (!chkCmd.equals("NONE")) {
                 File tmpTarFile = fetchHSMFile(fsID, filePath);
                 String cmd = new String();
                 cmd = chkCmd + " " + tmpTarFile;
                 try {
                     this.doCommand(cmd, null, "URI queryStatus");
                     tmpTarFile.delete();
-                    return fileStoredStatus;
                 } catch (HSMException e) {
                     if (tmpTarFile.exists())
                         tmpTarFile.delete();
                     return fileNotStoredStatus;
                 }
             }
+                    return entry.getValue();
+                }
+            }
+            return noStatusFileStatus;
         } catch (Exception e) {
-            throw new HSMException("query failed...", e, HSMException.ERROR_ON_FILE_LEVEL);
+            throw new HSMException("query failed...", e);
         }
     }
+
 }

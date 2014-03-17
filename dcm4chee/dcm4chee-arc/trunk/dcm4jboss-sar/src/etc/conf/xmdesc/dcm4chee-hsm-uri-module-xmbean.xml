@@ -18,6 +18,21 @@
 	</constructor>
 
 	<!-- Attributes -->
+   <attribute access="read-write"
+      getMethod="getRetentionTime"
+      setMethod="setRetentionTime">
+      <description><![CDATA[Time in y (years), M (month) or d (days) a modification / deletion of a file is not permitted.<br/>
+        Use a leading '+' to set access time after the file is set ReadOnly. (default is before ; 
+        Please ensure that your filesystem/command allows setting access time when file is ReadOnly!) Set value to 0 to leave retention time as is.
+      ]]></description>
+      <name>RetentionTime</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="3y"/>
+      </descriptors>
+   </attribute>
+	
+	
 	<attribute access="read-write" getMethod="getDestinationFilePathFormat"
 		setMethod="setDestinationFilePathFormat">
 		<description><![CDATA[Destination file path, with 'yyyy' will be replaced by the current year, 'MM' by the current month, 'dd' by the current date, 'HH' by the current hour and 'mm' by the current minute.
@@ -54,6 +69,24 @@
 			<value value="tar-incoming" />
 		</descriptors>
 	</attribute>
+	  <attribute access="read-write" getMethod="getStatusExtensions" setMethod="setStatusExtensions">
+      <description><![CDATA[File extension to File Status mapping.<br/>
+                Used in queryStatus to get actual status of a file.
+                Enumerated status values: DEFAULT, TO_ARCHIVE, ARCHIVED, QUERY_HSM_FAILED<br/>
+                Format: &lt;extension&gt;=&lt;status&gt;<br/>
+                A entry without &lt;extension&gt;= is used if no file with configured extension exists.
+                This could also be set to NONE (do not change the file status).
+      ]]></description>
+      <name>StatusExtensions</name>
+      <type>java.lang.String</type>
+      <descriptors>
+         <value value="
+            .archived=ARCHIVED
+                NONE
+         "/>
+      </descriptors>
+   </attribute>
+	
 	<attribute access="read-write" getMethod="getCheckCommand"
 		setMethod="setCheckCommand">
 		<description><![CDATA[External command to verify stored tar-files.  Tar-file is retreived to local storage and CheckCommand is executed with tar-file as parameter.  CheckCommand should exit with ZERO on succes and non-ZERO on failure. Set to <code>NONE</code> to check for existance (and filesize larger 0) only.]]>

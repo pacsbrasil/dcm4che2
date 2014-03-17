@@ -59,12 +59,21 @@ public abstract class Cifs {
         }
     }
 
-    public static final void copyTo(final String source, final String destination) throws Exception {
+    public static final void copyTo(final String source, final String destination, final long retention, final boolean setAccessTimeAfterSetReadonly) throws Exception {
             String dDir = new SmbFile(destination).getParent();
             if (!new SmbFile(dDir).exists()) {
                 new SmbFile(dDir).mkdirs();
             }
-            copy(new FileInputStream(new File(source)), new SmbFileOutputStream(new SmbFile(destination)));
+            SmbFile file=new SmbFile(destination);
+            copy(new FileInputStream(new File(source)), new SmbFileOutputStream(file));
+            if (setAccessTimeAfterSetReadonly)
+                file.setReadOnly();
+            if (retention>0) {
+                file.setCreateTime(retention*1000);
+                file.setLastModified(retention*1000);
+            }
+            if (!setAccessTimeAfterSetReadonly)
+                file.setReadOnly();
     }
 
     public static final void copyFrom(final String source, final String destination) throws Exception {

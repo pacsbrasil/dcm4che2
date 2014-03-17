@@ -245,7 +245,7 @@ public class Ssh {
         }
     }
 
-    public static void scpCopyTo(String source, String destinationUrl, String destination, String identity)
+    public static void scpCopyTo(String source, String destinationUrl, String destination, String identity, long retention, boolean setAccessTimeAfterSetReadonly)
             throws URISyntaxException, JSchException, IOException {
         String basePath = getPath(destinationUrl, false);
 
@@ -260,7 +260,7 @@ public class Ssh {
             String dDir = new File(destination).getParent();
             String dFile = new File(destination).getName();
 
-            String command = "scp -t -r " + basePath;
+            String command = "scp "+(retention>0 ? "-p " :"")+"-t -r " + basePath;
             ((ChannelExec) channel).setCommand(command);
             out = channel.getOutputStream();
             in = channel.getInputStream();
@@ -290,7 +290,12 @@ public class Ssh {
 
             File _lfile = new File(source);
             long filesize = _lfile.length();
-            sendCommand(out, in, "C0644 " + filesize + " " + dFile + "\n");
+            if (retention>0) {
+                sendCommand(out, in, "T " + retention + " 0 " + retention + " 0\n");
+            }
+            
+//          sendCommand(out, in, "C"+(setAccessTimeAfterSetReadonly?"0444":"0755")+" " + filesize + " " + dFile + "\n");
+            sendCommand(out, in, "C0444 " + filesize + " " + dFile + "\n");
 
             fis = new FileInputStream(source);
             byte[] buf = new byte[1024];
@@ -460,7 +465,7 @@ public class Ssh {
         return filesize;
     }
 
-    public static void sftpCopyTo(String source, String destinationUrl, String destination, String identity)
+    public static void sftpCopyTo(String source, String destinationUrl, String destination, String identity, long retention, boolean setAccessTimeAfterSetReadonly)
             throws Exception {
         String basePath = getPath(destinationUrl, false);
 
@@ -491,6 +496,12 @@ public class Ssh {
             }
         }
         channelSftp.put(source, dFile);
+        if (setAccessTimeAfterSetReadonly)
+            channelSftp.chmod(292, dFile); 
+        if (retention>0)
+            channelSftp.setMtime(dFile, (int) retention);
+        if (!setAccessTimeAfterSetReadonly)
+            channelSftp.chmod(292, dFile); 
         channelSftp.disconnect();
         channel.disconnect();
         session.disconnect();
