@@ -4,7 +4,7 @@
   <parent>
         <artifactId>dcm4chee-web</artifactId>
         <groupId>dcm4che.dcm4chee</groupId>
-        <version>3.0.4-SNAPSHOT</version>
+        <version>3.0.4</version>
   </parent>
   <groupId>dcm4che.dcm4chee</groupId>
   <artifactId>dcm4chee-web-dist</artifactId>
