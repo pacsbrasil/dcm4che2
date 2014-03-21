@@ -5,12 +5,12 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>dcm4che.dcm4chee</groupId>
     <artifactId>dcm4chee-cleanup</artifactId>
-    <version>3.0.4-SNAPSHOT</version>
+    <version>3.0.4</version>
     <packaging>pom</packaging>
     <name>Dcm4chee File cleanup</name>
     <description>Service for cleanup duplicated files in online storage and trash</description>
     <properties>
-        <project.version>3.0.4-SNAPSHOT</project.version>
+        <project.version>3.0.4</project.version>
     </properties>
     <modules>
         <module>dcm4chee-cleanup-ejb</module>
