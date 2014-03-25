@@ -48,22 +48,11 @@ import org.dcm4chex.archive.ejb.interfaces.StudyLocal;
 public class UpdateDerivedFieldsUtils {
 
     public static void updateDerivedFieldsOf(StudyLocal study) {
-        study.updateNumberOfStudyRelatedSeries();
-        study.updateNumberOfStudyRelatedInstances();
-        study.updateRetrieveAETs();
-        study.updateExternalRetrieveAET();
-        study.updateFilesetId();
-        study.updateAvailability();
-        study.updateModalitiesInStudy();
-        study.updateSOPClassesInStudy();
+        study.updateDerivedFields();
     }
 
     public static void updateDerivedFieldsOf(SeriesLocal series) {
-        series.updateNumberOfSeriesRelatedInstances();
-        series.updateRetrieveAETs();
-        series.updateExternalRetrieveAET();
-        series.updateFilesetId();
-        series.updateAvailability();
+        series.updateDerivedFields();
     }
 
 }
