@@ -39,6 +39,7 @@
 
 package org.dcm4chex.archive.ejb.entity;
 
+import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -157,6 +158,80 @@ import org.dcm4chex.archive.util.DynamicQueryBuilder;
  * 
  */
 public abstract class SeriesBean implements EntityBean {
+    private class SeriesDerivedFieldsUpdater extends org.dcm4chex.archive.common.SeriesDerivedFieldsUpdater implements Serializable {
+        @Override
+        protected long getPk() {
+            return SeriesBean.this.getPk();
+        }
+
+        @Override
+        protected String getSeriesIuid() {
+            return SeriesBean.this.getSeriesIuid();
+        }
+
+        @Override
+        protected int getNumberOfSeriesRelatedInstances() {
+            return SeriesBean.this.getNumberOfSeriesRelatedInstances();
+        }
+
+        @Override
+        protected void setNumberOfSeriesRelatedInstances(int numI) {
+            SeriesBean.this.setNumberOfSeriesRelatedInstances(numI);
+        }
+
+        @Override
+        protected int deriveNumberOfSeriesRelatedInstances()
+                throws FinderException {
+            return ejbSelectNumberOfSeriesRelatedInstances(getPk());
+        }
+
+        @Override
+        protected void setRetrieveAETs(String aets) {
+            SeriesBean.this.setRetrieveAETs(aets);
+        }
+
+        @Override
+        protected String getRetrieveAETs() {
+            return SeriesBean.this.getRetrieveAETs();
+        }
+
+        @Override
+        protected Set<String> deriveInternalRetrieveAETs()
+                throws FinderException {
+            return ejbSelectInternalRetrieveAETs(getPk());
+        }
+
+        @Override
+        protected String getExternalRetrieveAET() {
+            return SeriesBean.this.getExternalRetrieveAET();
+        }
+
+        @Override
+        protected void setExternalRetrieveAET(String aet) {
+            SeriesBean.this.setExternalRetrieveAET(aet);
+        }
+
+        @Override
+        protected Set<String> deriveExternalRetrieveAETs()
+                throws FinderException {
+            return ejbSelectExternalRetrieveAETs(getPk());
+        }
+
+        @Override
+        protected int getAvailability() {
+            return SeriesBean.this.getAvailability();
+        }
+
+        @Override
+        protected void setAvailability(int availability) {
+            SeriesBean.this.setAvailability(availability);
+        }
+
+        @Override
+        protected int deriveAvailability() throws FinderException {
+            return ejbSelectAvailability(getPk());
+        }
+    }
 
     private static final Logger log = Logger.getLogger(SeriesBean.class);
 
@@ -168,6 +243,7 @@ public abstract class SeriesBean implements EntityBean {
 //    private FileSystemLocalHome fsHome;
 
     private final DynamicQueryBuilder dynamicQueryBuilder;
+    private final SeriesDerivedFieldsUpdater seriesDerivedFieldsUpdater;
 
     public SeriesBean() {
 		this(new DynamicQueryBuilder());
@@ -175,6 +251,8 @@ public abstract class SeriesBean implements EntityBean {
 
 	public SeriesBean(DynamicQueryBuilder dynamicQueryBuilder) {
 		this.dynamicQueryBuilder = dynamicQueryBuilder;
+        
+        this.seriesDerivedFieldsUpdater = new SeriesDerivedFieldsUpdater();
 	}
 
     public void setEntityContext(EntityContext ctx) {
@@ -784,34 +862,7 @@ public abstract class SeriesBean implements EntityBean {
      * @ejb.interface-method
      */
     public boolean updateRetrieveAETs() {
-        String aets = null;
-        int numI = getNumberOfSeriesRelatedInstances();
-        if (numI > 0) {
-            StringBuffer sb = new StringBuffer();
-            Long pk = getPk();
-            Set iAetSet;
-            try {
-//              iAetSet = getInternalRetrieveAETs(pk);
-                iAetSet = ejbSelectInternalRetrieveAETs(pk);
-            } catch (FinderException e) {
-                throw new EJBException(e);
-            }
-            Iterator it = iAetSet.iterator();
-            aets = (String) it.next();
-            while (aets != null && it.hasNext()) {
-                aets = AETs.common(aets, (String) it.next());
-            }
-            if (sb.length() > 0) {
-                sb.setLength(sb.length() - 1);
-                aets = sb.toString();
-            }
-        }
-        if (aets == null ? getRetrieveAETs() == null
-                         : aets.equals(getRetrieveAETs())) {
-            return false;
-        }
-        setRetrieveAETs(aets);
-        return true;
+        return seriesDerivedFieldsUpdater.updateRetrieveAETs();
     }
 
     /* Commented out: Does not work for instances which are only external
@@ -832,66 +883,30 @@ public abstract class SeriesBean implements EntityBean {
      * @ejb.interface-method
      */
     public boolean updateExternalRetrieveAET() {
-        String aet = null;
-        if (getNumberOfSeriesRelatedInstances() > 0) {
-            Set eAetSet;
-            try {
-                eAetSet = ejbSelectExternalRetrieveAETs(getPk());
-            } catch (FinderException e) {
-                throw new EJBException(e);
-            }
-            if (eAetSet.size() == 1)
-                aet = (String) eAetSet.iterator().next();
-        }
-        if (aet == null ? getExternalRetrieveAET() == null 
-                        : aet.equals(getExternalRetrieveAET())) {
-            return false;
-        }    	
-        setExternalRetrieveAET(aet);
-        return true;
+        return seriesDerivedFieldsUpdater.updateExternalRetrieveAET();
     }
 
     /**
      * @ejb.interface-method
      */
     public boolean updateAvailability() {
-        int availability;
-        try {
-            availability = getNumberOfSeriesRelatedInstances() > 0
-                    ? ejbSelectAvailability(getPk()) 
-                    : Availability.UNAVAILABLE;
-        } catch (FinderException e) {
-            throw new EJBException(e);
+        return seriesDerivedFieldsUpdater.updateAvailability();
         }
-        int prevAvailability = getAvailabilitySafe();
-        if (availability == prevAvailability) {
-            return false;
-        }
-        setAvailability(availability);
-        if (log.isDebugEnabled()) {
-            log.debug("update Availability of Series[pk=" + getPk()
-                    + ", uid=" + getSeriesIuid() + "] from " 
-                    + Availability.toString(prevAvailability) + " to "
-                    + Availability.toString(availability));
-        }
-        return true;
-    }
 
     /**
      * @ejb.interface-method
      */
     public boolean updateNumberOfSeriesRelatedInstances() {
-        int numI;
-        try {
-            numI = ejbSelectNumberOfSeriesRelatedInstances(getPk());
-        } catch (FinderException e) {
-            throw new EJBException(e);
+        return seriesDerivedFieldsUpdater
+                .updateNumberOfSeriesRelatedInstances();
         }
-        if (getNumberOfSeriesRelatedInstances() == numI) {
-            return false;
-        }
-        setNumberOfSeriesRelatedInstances(numI);
-        return true;
+
+    /**
+     * @ejb.interface-method
+     */
+    public void updateDerivedFields() {
+        seriesDerivedFieldsUpdater.updateDerivedFields();
+        updateFilesetId();
     }
 
     /**

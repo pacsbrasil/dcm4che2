@@ -39,6 +39,7 @@
 
 package org.dcm4chex.archive.ejb.entity;
 
+import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
@@ -155,12 +156,140 @@ import org.dcm4chex.archive.util.Convert;
  *
  */
 public abstract class StudyBean implements EntityBean {
+    private class StudyDerivedFieldsUpdater extends
+            org.dcm4chex.archive.common.StudyDerivedFieldsUpdater implements
+            Serializable {
+        @Override
+        protected int getNumberOfStudyRelatedInstances() {
+            return StudyBean.this.getNumberOfStudyRelatedInstances();
+        }
+
+        @Override
+        protected long getPk() {
+            return StudyBean.this.getPk();
+        }
+
+        @Override
+        protected String getStudyIuid() {
+            return StudyBean.this.getStudyIuid();
+        }
+
+        @Override
+        protected int getAvailability() {
+            return StudyBean.this.getAvailability();
+        }
+
+        @Override
+        protected int deriveAvailability() throws FinderException {
+            return ejbSelectAvailability(getPk());
+        }
+
+        @Override
+        protected void setAvailability(int availability) {
+            StudyBean.this.setAvailability(availability);
+        }
+
+        @Override
+        protected String getExternalRetrieveAET() {
+            return StudyBean.this.getExternalRetrieveAET();
+        }
+
+        @Override
+        protected void setExternalRetrieveAET(String aet) {
+            StudyBean.this.setExternalRetrieveAET(aet);
+        }
+
+        @Override
+        protected Set<String> deriveExternalRetrieveAETs() throws FinderException {
+            return ejbSelectExternalRetrieveAETs(getPk());
+        }
+
+        @Override
+        protected String getModalitiesInStudy() {
+            return StudyBean.this.getModalitiesInStudy();
+        }
+
+        @Override
+        protected void setModalitiesInStudy(String mds) {
+            StudyBean.this.setModalitiesInStudy(mds);
+        }
+
+        @Override
+        protected Set<String> deriveModalitiesInStudies() throws FinderException {
+            return ejbSelectModalityInStudies(getPk());
+        }
+
+        @Override
+        protected void setNumberOfStudyRelatedInstances(int numI) {
+            StudyBean.this.setNumberOfStudyRelatedInstances(numI);
+        }
+
+        @Override
+        protected int deriveNumberOfStudyRelatedInstances()
+                throws FinderException {
+            return ejbSelectNumberOfStudyRelatedInstances(getPk());
+        }
+
+        @Override
+        protected int getNumberOfStudyRelatedSeries() {
+            return StudyBean.this.getNumberOfStudyRelatedSeries();
+        }
+
+        @Override
+        protected void setNumberOfStudyRelatedSeries(int numS) {
+            StudyBean.this.setNumberOfStudyRelatedSeries(numS);
+        }
+
+        @Override
+        protected int deriveNumberOfStudyRelatedSeries() throws FinderException {
+            return ejbSelectNumberOfStudyRelatedSeries(getPk());
+        }
+
+        @Override
+        protected void setRetrieveAETs(String aets) {
+            StudyBean.this.setRetrieveAETs(aets);
+        }
+
+        @Override
+        protected String getRetrieveAETs() {
+            return StudyBean.this.getRetrieveAETs();
+        }
+
+        @Override
+        protected Set<String> deriveSeriesRetrieveAETs() throws FinderException {
+            return ejbSelectSeriesRetrieveAETs(getPk());
+        }
+
+        @Override
+        protected void setSopClassesInStudy(String uids) {
+            StudyBean.this.setSopClassesInStudy(uids);
+        }
+
+        @Override
+        protected String getSopClassesInStudy() {
+            return StudyBean.this.getSopClassesInStudy();
+        }
+
+        @Override
+        protected Set<String> deriveSOPClassesInStudies()
+                throws FinderException {
+            return ejbSelectSOPClassesInStudies(getPk());
+        }
+    }
 
     private static final Logger log = Logger.getLogger(StudyBean.class);
 
     private static final Class[] STRING_PARAM = new Class[] { String.class };
     
     private CodeLocalHome codeHome;
+    private StudyDerivedFieldsUpdater studyDerivedFieldsUpdater;
+
+    /**
+     * Default constructor. 
+     */
+    public StudyBean() {
+        studyDerivedFieldsUpdater = new StudyDerivedFieldsUpdater();
+    }
 
     public void setEntityContext(EntityContext ctx) {
         Context jndiCtx = null;
@@ -646,109 +775,44 @@ public abstract class StudyBean implements EntityBean {
      * @ejb.interface-method
      */
     public boolean updateRetrieveAETs() {
-        String aets = null;
-        if (getNumberOfStudyRelatedInstances() > 0) {
-            Set seriesAets;
-            try {
-                seriesAets = ejbSelectSeriesRetrieveAETs(getPk());
-            } catch (FinderException e) {
-                throw new EJBException(e);
-            }
-            Iterator it = seriesAets.iterator();
-            aets = (String) it.next();
-            while (aets != null && it.hasNext()) {
-                aets = AETs.common(aets, (String) it.next());
-            }
-        }
-        if (aets == null  ? getRetrieveAETs() == null
-                          : aets.equals(getRetrieveAETs())) {
-            return false;
-        }
-        setRetrieveAETs(aets);
-        return true;
+        return studyDerivedFieldsUpdater.updateRetrieveAETs();
     }
     
     /**
      * @ejb.interface-method
      */
     public boolean updateExternalRetrieveAET() {
-        String aet = null;
-        if (getNumberOfStudyRelatedInstances() > 0) {
-            Set eAetSet;
-            try {
-                eAetSet = ejbSelectExternalRetrieveAETs(getPk());
-            } catch (FinderException e) {
-                throw new EJBException(e);
-            }
-            if (eAetSet.size() == 1)
-                aet = (String) eAetSet.iterator().next();
-        }
-        if (aet == null ? getExternalRetrieveAET() == null 
-                : aet.equals(getExternalRetrieveAET())) {
-            return false;
-        }
-        setExternalRetrieveAET(aet);
-        return true;
+        return studyDerivedFieldsUpdater.updateExternalRetrieveAET();
     }
 
     /**
      * @ejb.interface-method
      */
     public boolean updateAvailability() {
-        int availability;
-        try {
-            availability = getNumberOfStudyRelatedInstances() > 0
-                    ? ejbSelectAvailability(getPk())
-                    : Availability.UNAVAILABLE;
-        } catch (FinderException e) {
-            throw new EJBException(e);
+        return studyDerivedFieldsUpdater.updateAvailability();
         }
-        int prevAvailability = getAvailabilitySafe();
-        if (availability == prevAvailability) {
-            return false;
-        }
-        setAvailability(availability);
-        if (log.isDebugEnabled()) {
-            log.debug("update Availability of Study[pk=" + getPk()
-                    + ", uid=" + getStudyIuid() + "] from " 
-                    + Availability.toString(prevAvailability) + " to "
-                    + Availability.toString(availability));
-        }
-        return true;
-    }
 
     /**
      * @ejb.interface-method
      */
     public boolean updateNumberOfStudyRelatedSeries() {
-        int numS;
-        try {
-            numS = ejbSelectNumberOfStudyRelatedSeries(getPk());
-        } catch (FinderException e) {
-            throw new EJBException(e);
+        return studyDerivedFieldsUpdater.updateNumberOfStudyRelatedSeries();
         }
-        if (getNumberOfStudyRelatedSeries() == numS) {
-            return false;
-        }
-        setNumberOfStudyRelatedSeries(numS);
-        return true;
-    }
 
     /**
      * @ejb.interface-method
      */
     public boolean updateNumberOfStudyRelatedInstances() {
-        int numI;
-        try {
-            numI = ejbSelectNumberOfStudyRelatedInstances(getPk());
-        } catch (FinderException e) {
-            throw new EJBException(e);
-        }
-        if (getNumberOfStudyRelatedInstances() == numI) {
-            return false;
-        }
-        setNumberOfStudyRelatedInstances(numI);
-        return true;
+        return studyDerivedFieldsUpdater
+                .updateNumberOfStudyRelatedInstances();
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public void updateDerivedFields() {
+        studyDerivedFieldsUpdater.updateDerivedFields();
+        updateFilesetId();
     }
 
     /**
@@ -792,61 +856,14 @@ public abstract class StudyBean implements EntityBean {
      * @ejb.interface-method
      */
     public boolean updateModalitiesInStudy() {
-        String mds = "";
-        if (getNumberOfStudyRelatedInstances() > 0) {
-            Set c;
-            try {
-                c = ejbSelectModalityInStudies(getPk());
-            } catch (FinderException e) {
-                throw new EJBException(e);
-            }
-            if (c.remove(null))
-                log.warn("Study[iuid=" + getStudyIuid()
-                        + "] contains Series with unspecified Modality");
-            if (!c.isEmpty()) {
-                Iterator it = c.iterator();
-                StringBuffer sb = new StringBuffer((String) it.next());
-                while (it.hasNext())
-                    sb.append('\\').append(it.next());
-                mds = sb.toString();
-            }
-        }
-        if (mds.equals(getModalitiesInStudy())) {
-            return false;
-        }
-        setModalitiesInStudy(mds);
-        return true;
+        return studyDerivedFieldsUpdater.updateModalitiesInStudy();
     }
 
     /** 
      * @ejb.interface-method
      */
     public boolean updateSOPClassesInStudy() {
-        Set newSet;
-        try {
-            newSet = ejbSelectSOPClassesInStudies(getPk());
-        } catch (FinderException e) {
-            throw new EJBException(e);
-        }
-        String oldStr = getSopClassesInStudy();
-        if (oldStr == null) {
-            if (newSet.isEmpty()) {
-                return false;
-            }
-        } else {
-            Set oldSet = new HashSet(
-                    Arrays.asList(StringUtils.split(oldStr, '\\')));
-            if (newSet.equals(oldSet)) {
-                return false;
-            }
-            if (newSet.isEmpty()) {
-                setSopClassesInStudy(null);
-                return true;
-            }
-        }
-        String [] newStrs = (String[]) newSet.toArray(new String[newSet.size()]);
-        setSopClassesInStudy(StringUtils.toString(newStrs, '\\'));
-        return true;
+        return studyDerivedFieldsUpdater.updateSOPClassesInStudy();
     }
 
     /**
