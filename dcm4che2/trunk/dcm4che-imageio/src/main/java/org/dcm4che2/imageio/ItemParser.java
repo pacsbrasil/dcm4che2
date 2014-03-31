@@ -370,6 +370,23 @@ public class ItemParser implements StreamSegmentMapper {
 	}   
 
     /**
+     * Fetch the offset and  length of the provided frame
+     *  
+     * @param frame
+     * @return
+     * @throws IOException
+     */
+    public long[] fetchFrameOffsetAndLength(int frame)
+    throws IOException {
+    	long offsetLength[] = new long [2];
+        int frameSize = getFrameLength(frame);
+        Item item = getFirstItemOfFrame(frame);
+        offsetLength [0] = item.startPos;
+        offsetLength [1] = frameSize;
+        return offsetLength;
+    }	
+	
+    /**
      * seekFrame to right frame in order for ImageInputStream to read 
      * @param siis
      * @param frame

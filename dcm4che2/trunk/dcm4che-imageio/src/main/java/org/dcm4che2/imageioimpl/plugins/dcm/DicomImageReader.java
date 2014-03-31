@@ -806,8 +806,46 @@ public class DicomImageReader extends ImageReader {
         iis.seek(offset);
         return frameLen;
     }
+       
+    
     /**
-     * Get the ImageInputStream to read.  Use getFrameLength to get the length of the frame to read. 
+     * Return the underlying Input set.
+     * 
+     * @return
+     */
+    public synchronized ImageInputStream getImageInputStream()	{
+    	return iis;
+    }
+     
+    
+    /**
+     * Fetch the offset and length of the given imageIndex
+     * 
+     * @param imageIndex
+     * @return
+     * @throws IOException
+     */
+    public synchronized long[] getImageInputStreamOffsetLength(int imageIndex) throws IOException	{
+    	readMetaData();
+        if (reader == null) {
+            if (compressed) {
+                ImageReaderFactory f = ImageReaderFactory.getInstance();
+                this.reader = f.getReaderForTransferSyntax(tsuid);
+                this.itemParser = new ItemParser(dis, iis, frames, tsuid);                
+            } else {
+                initRawImageReader();
+            }
+        }    
+        if (compressed) {
+        	return itemParser.fetchFrameOffsetAndLength(imageIndex);
+        }
+        long frameLen = calculateFrameLength();
+        long offsetp = pixelDataPos + imageIndex * (long) frameLen;
+        return new long[] {offsetp, frameLen};        
+    }
+    
+    /**
+     * Get the ImageInputStream to read. 
      * @return
      */
     public ImageInputStream getImageInputStream(int imageIndex, ImageReadParam param)
