@@ -67,6 +67,127 @@ import org.dcm4chex.archive.mbean.JMSDelegate;
  */
 public class MoveScuService extends AbstractScuService implements
         MessageListener {
+    /**
+     * A message listener that handles incoming {@link MoveOrder MoveOrders}.
+     */
+    protected class MessageListenerImpl implements MessageListener {
+        @Override
+        public void onMessage(Message message) {
+            try {
+                process((MoveOrder) ((ObjectMessage) message).getObject());
+            } catch (Throwable e) {
+                log.error("unexpected error during processing message: " + message,
+                        e);
+            }
+        }
+
+        /**
+         * A delegate method that does most of the order handling, including
+         * catching {@link Exception Exceptions} and rescheduling failed jobs.
+         * 
+         * This method is, in turn, a template method, which delegates to
+         * {@link #doProcess(MoveOrder)}, which performs the core processing without
+         * error handling (i.e., non-scheduling).
+         * 
+         * @param order the {@link MoveOrder} to process
+         * @throws Exception if an error occurs
+         */
+        protected void process(MoveOrder order) throws Exception {
+            try {
+                log.info("Start processing " + order);
+
+                doProcess(order);
+                
+                log.info("Finished processing " + order);
+            } catch (Exception e) {
+                order.setThrowable(e);
+                final int failureCount = order.getFailureCount() + 1;
+                order.setFailureCount(failureCount);
+                final long delay = retryIntervalls.getIntervall(
+                        order.getMoveDestination(), failureCount);
+                if (delay == -1L) {
+                    log.error("Give up to process " + order, e);
+                    jmsDelegate.fail(queueName, order);
+                } else {
+                    log.warn("Failed to process " + order
+                            + ". Scheduling retry.", e);
+                    scheduleMoveOrder(order, System.currentTimeMillis() + delay);
+                }
+            }
+        }
+
+        /**
+         * Performs the core order processing.
+         *
+         * @param order the {@link MoveOrder} to process
+         * @throws Exception if an error occurs
+         */
+        protected void doProcess(MoveOrder order) throws Exception {
+            String aet = order.getRetrieveAET();
+            if (forceCalledAET || aet == null) {
+                aet = calledAET;
+            }
+
+            ActiveAssociation aa = openAssociation(aet,
+                    UIDs.PatientRootQueryRetrieveInformationModelMOVE);
+
+            try {
+                invokeDimse(aa, order);
+            } finally {
+                try {
+                    aa.release(true);
+                    // workaround to ensure that the final MOVE-RSP is
+                    // processed
+                    // before to continue
+                    Thread.sleep(10);
+                } catch (Exception e) {
+                    log.warn(
+                            "Failed to release association "
+                                    + aa.getAssociation(), e);
+                }
+            }
+        }
+
+        private void invokeDimse(ActiveAssociation aa, MoveOrder order)
+                throws InterruptedException, IOException, DcmServiceException {
+            AssociationFactory af = AssociationFactory.getInstance();
+            DcmObjectFactory dof = DcmObjectFactory.getInstance();
+            Command cmd = dof.newCommand();
+            cmd.initCMoveRQ(aa.getAssociation().nextMsgID(),
+                    UIDs.PatientRootQueryRetrieveInformationModelMOVE, order
+                            .getPriority(), order.getMoveDestination());
+            Dataset ds = dof.newDataset();
+            ds.putCS(Tags.QueryRetrieveLevel, order.getQueryRetrieveLevel());
+            putLO(ds, Tags.PatientID, order.getPatientId());
+            putUI(ds, Tags.StudyInstanceUID, order.getStudyIuids());
+            putUI(ds, Tags.SeriesInstanceUID, order.getSeriesIuids());
+            putUI(ds, Tags.SOPInstanceUID, order.getSopIuids());
+            modifyMoveRq(cmd, ds, order);
+            log.debug("Move Identifier:\n");
+            log.debug(ds);
+            Dimse dimseRsp = aa.invoke(af.newDimse(PCID_MOVE, cmd, ds)).get();
+            Command cmdRsp = dimseRsp.getCommand();
+            int status = cmdRsp.getStatus();
+            if (status != 0) {
+                if (status == Status.SubOpsOneOrMoreFailures
+                        && order.getSopIuids() != null) {
+                    Dataset moveRspData = dimseRsp.getDataset();
+                    if (moveRspData != null) {
+                        String[] failedUIDs = ds
+                                .getStrings(Tags.FailedSOPInstanceUIDList);
+                        if (failedUIDs != null && failedUIDs.length != 0) {
+                            order.setSopIuids(failedUIDs);
+                        }
+                    }
+                }
+                throw new DcmServiceException(status, cmdRsp
+                        .getString(Tags.ErrorComment));
+            }
+        }
+
+        protected void modifyMoveRq(Command cmd, Dataset ds, MoveOrder order ) {
+        }
+    }
 
     private static final int PCID_MOVE = 1;
 
@@ -180,97 +301,11 @@ public class MoveScuService extends AbstractScuService implements
     }
 
     public void onMessage(Message message) {
-        ObjectMessage om = (ObjectMessage) message;
-        try {
-            MoveOrder order = (MoveOrder) om.getObject();
-            log.info("Start processing " + order);
-            try {
-                process(order);
-                log.info("Finished processing " + order);
-            } catch (Exception e) {
-                order.setThrowable(e);
-                final int failureCount = order.getFailureCount() + 1;
-                order.setFailureCount(failureCount);
-                final long delay = retryIntervalls
-                        .getIntervall(order.getMoveDestination(), failureCount);
-                if (delay == -1L) {
-                    log.error("Give up to process " + order, e);
-                    jmsDelegate.fail(queueName, order);
-                } else {
-                    log.warn("Failed to process " + order
-                            + ". Scheduling retry.", e);
-                    scheduleMoveOrder(order, System.currentTimeMillis() + delay);
-                }
-            }
-        } catch (Throwable e) {
-            log.error("unexpected error during processing message: " + message,
-                    e);
-        }
+        getMessageListener().onMessage(message);
     }
 
-    protected void process(MoveOrder order) throws Exception {
-        String aet = order.getRetrieveAET();
-        if (forceCalledAET || aet == null) {
-            aet = calledAET;
-        }
-        
-        ActiveAssociation aa = openAssociation(aet,
-                UIDs.PatientRootQueryRetrieveInformationModelMOVE);
-        
-        try {
-            invokeDimse(aa, order);
-        } finally {
-            try {
-                aa.release(true);
-                // workaround to ensure that the final MOVE-RSP is processed
-                // before to continue
-                Thread.sleep(10);
-            } catch (Exception e) {
-                log.warn(
-                        "Failed to release association " + aa.getAssociation(),
-                        e);
-            }
-        }
-    }
-
-    private void invokeDimse(ActiveAssociation aa, MoveOrder order)
-            throws InterruptedException, IOException, DcmServiceException {
-        AssociationFactory af = AssociationFactory.getInstance();
-        DcmObjectFactory dof = DcmObjectFactory.getInstance();
-        Command cmd = dof.newCommand();
-        cmd.initCMoveRQ(aa.getAssociation().nextMsgID(),
-                UIDs.PatientRootQueryRetrieveInformationModelMOVE, order
-                        .getPriority(), order.getMoveDestination());
-        Dataset ds = dof.newDataset();
-        ds.putCS(Tags.QueryRetrieveLevel, order.getQueryRetrieveLevel());
-        putLO(ds, Tags.PatientID, order.getPatientId());
-        putUI(ds, Tags.StudyInstanceUID, order.getStudyIuids());
-        putUI(ds, Tags.SeriesInstanceUID, order.getSeriesIuids());
-        putUI(ds, Tags.SOPInstanceUID, order.getSopIuids());
-        modifyMoveRq(cmd, ds, order);
-        log.debug("Move Identifier:\n");
-        log.debug(ds);
-        Dimse dimseRsp = aa.invoke(af.newDimse(PCID_MOVE, cmd, ds)).get();
-        Command cmdRsp = dimseRsp.getCommand();
-        int status = cmdRsp.getStatus();
-        if (status != 0) {
-            if (status == Status.SubOpsOneOrMoreFailures
-                    && order.getSopIuids() != null) {
-                Dataset moveRspData = dimseRsp.getDataset();
-                if (moveRspData != null) {
-                    String[] failedUIDs = ds
-                            .getStrings(Tags.FailedSOPInstanceUIDList);
-                    if (failedUIDs != null && failedUIDs.length != 0) {
-                        order.setSopIuids(failedUIDs);
-                    }
-                }
-            }
-            throw new DcmServiceException(status, cmdRsp
-                    .getString(Tags.ErrorComment));
-        }
-    }
-
-    protected void modifyMoveRq(Command cmd, Dataset ds, MoveOrder order ) {
+    protected MessageListener getMessageListener() {
+        return new MessageListenerImpl();
     }
 
     private static void putLO(Dataset ds, int tag, String s) {
