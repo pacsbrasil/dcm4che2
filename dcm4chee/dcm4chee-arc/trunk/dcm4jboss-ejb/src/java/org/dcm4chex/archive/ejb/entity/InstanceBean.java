@@ -923,4 +923,17 @@ public abstract class InstanceBean implements EntityBean {
         return "Instance[pk=" + getPk() + ", iuid=" + getSopIuid() + ", cuid="
                 + getSopCuid() + ", series->" + getSeries() + "]";
     }
+
+    /**
+     * @ejb.select query="SELECT i.sopIuid FROM Instance as i WHERE i.series.study.studyIuid = ?1"
+     */
+    public abstract Collection ejbSelectSopIuidsByStudyIuid(String studyIuid) throws FinderException;
+    
+    /**    
+     * @ejb.home-method
+     */
+    public Collection ejbHomeSelectSopIuidsByStudyIuid(String studyIuid) throws FinderException {
+        return ejbSelectSopIuidsByStudyIuid(studyIuid);
+    }
+    
 }
