@@ -401,6 +401,9 @@ public class DicomImageReader extends ImageReader {
         // Reset the input stream location if required, and reset the reader if
         // required
         if (compressed) {
+            if (this.siis == null) {
+        		this.siis = new SegmentedImageInputStream(iis, itemParser);		
+        	} 		
             itemParser.seekFrame(siis, imageIndex);
             reader.setInput(siis, false);
         }
