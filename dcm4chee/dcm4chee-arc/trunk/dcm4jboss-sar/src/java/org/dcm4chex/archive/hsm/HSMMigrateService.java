@@ -95,6 +95,7 @@ public class HSMMigrateService extends ServiceMBeanSupport {
     private long targetFsPk;
     
     private int concurrency = 1;
+    private boolean isQueryRunning;
     private ArrayList<MigrationTask> taskList = new ArrayList<MigrationTask>();
     
     private ObjectName hsmModuleServicename;
@@ -419,6 +420,9 @@ public class HSMMigrateService extends ServiceMBeanSupport {
         return sameday ? inside : !inside;
     }
 
+    public boolean isQueryRunning() {
+        return isQueryRunning;
+    }
     public boolean isRunning() {
         synchronized(taskList) {
             return !taskList.isEmpty();
@@ -463,10 +467,15 @@ public class HSMMigrateService extends ServiceMBeanSupport {
             return 0;
         }
         synchronized(this) {
-            if (taskList.size() > 0) {
-                log.info("HSM Migration service is already running!");
+            if (isQueryRunning) {
+                log.info("HSM Migration service is already running! (Query for items to migrate)");
                 return -1;
             }
+            if (taskList.size() > 0) {
+                log.info("HSM Migration service is already running! remaining migration tasks:"+taskList.size());
+                return -1;
+            }
+            isQueryRunning = true;
         }
         if (retry) {
             log.info("Start retry of HSM Migration!");
@@ -492,6 +501,7 @@ public class HSMMigrateService extends ServiceMBeanSupport {
                 new Thread(t).start();
                 log.debug(this+" - thread started.");
             }
+            isQueryRunning = false;
         }
         while (counts[0] > 0) {
             Thread.sleep(1000);

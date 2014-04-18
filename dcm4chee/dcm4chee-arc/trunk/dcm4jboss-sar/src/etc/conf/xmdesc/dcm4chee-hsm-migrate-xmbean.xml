@@ -251,6 +251,13 @@
    </attribute>
 
    <attribute access="read-only"
+      getMethod="isQueryRunning">
+      <description>Current state if query to get migration tasks is running. Used to avoid concurrency!
+      </description>
+      <name>isQueryRunning</name>
+      <type>boolean</type>
+   </attribute>
+   <attribute access="read-only"
       getMethod="isRunning">
       <description>Current state if migration task is running. Used to avoid concurrency!
       </description>
