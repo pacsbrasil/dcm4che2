@@ -294,6 +294,7 @@ public class DicomImageReader extends ImageReader {
         dis.setHandler(ih);
         ds = dis.readDicomObject();
         streamMetaData = new DicomStreamMetaData();
+        fixHeaderData(ds);
         streamMetaData.setDicomObject(ds);
         bigEndian = dis.getTransferSyntax().bigEndian();
         tsuid = ds.getString(Tag.TransferSyntaxUID);
@@ -334,7 +335,26 @@ public class DicomImageReader extends ImageReader {
         } 
     }
     
-    public void readPostPixeldata() throws IOException{
+    /**
+     * Performs various fixes to the header data to fix up vendor specific bugs.
+     * 
+     * @todo Make this a plugin mechanism to do additional fixes.
+     * @param dsFix
+     */
+    protected void fixHeaderData(DicomObject dsFix) {
+    	String transfer = dsFix.getString(Tag.TransferSyntaxUID);
+    	String pmi = dsFix.getString(Tag.PhotometricInterpretation);
+    	
+    	boolean isJpeg = UID.JPEGBaseline1.equals(transfer) || UID.JPEGLosslessNonHierarchical14.equals(transfer);
+    	
+    	// This is a fairly easy mistake for a vendor to make, recode to DICOM, but leave the photometric interpretation
+    	if( pmi.equals(ColorModelFactory.YBR_FULL_422) && isJpeg ) {
+    		log.info("Fix JPEG photometric on {}", dsFix.getString(Tag.SOPInstanceUID));
+    		dsFix.putString(Tag.PhotometricInterpretation,null,ColorModelFactory.RGB);
+    	}
+	}
+
+	public void readPostPixeldata() throws IOException{
     	readMetaData();
     	long currentPosition = dis.getStreamPosition();
     	   	

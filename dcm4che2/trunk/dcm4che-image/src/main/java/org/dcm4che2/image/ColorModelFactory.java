@@ -64,9 +64,9 @@ public class ColorModelFactory {
     private static final String MONOCHROME1 = "MONOCHROME1";
     private static final String MONOCHROME2 = "MONOCHROME2";
     private static final String PALETTE_COLOR = "PALETTE COLOR";
-    private static final String RGB = "RGB";
+    public static final String RGB = "RGB";
     private static final String YBR_FULL = "YBR_FULL";
-    private static final String YBR_FULL_422 = "YBR_FULL_422";
+    public static final String YBR_FULL_422 = "YBR_FULL_422";
     private static final String YBR_PARTIAL_422 = "YBR_PARTIAL_422";
     private static final String YBR_PARTIAL_420 = "YBR_PARTIAL_420";
 
