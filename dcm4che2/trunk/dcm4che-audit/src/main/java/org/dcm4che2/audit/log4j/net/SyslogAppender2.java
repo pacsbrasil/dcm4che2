@@ -763,7 +763,6 @@ public class SyslogAppender2 extends AppenderSkeleton {
     }
 
 
-    @Override
     public void close() {
         synchronized (this) {
             if (closed)
@@ -773,7 +772,6 @@ public class SyslogAppender2 extends AppenderSkeleton {
         protocol.close(this);
     }
 
-    @Override
     public boolean requiresLayout() {
         return false;
     }

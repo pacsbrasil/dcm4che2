@@ -151,7 +151,6 @@ public class SyslogAppender extends AppenderSkeleton {
      * 
      * @since 0.8.4
      */
-    @Override
     synchronized public void close() {
         closed = true;
         // A SyslogWriter is UDP based and needs no opening. Hence, it
@@ -397,7 +396,6 @@ public final int getFatalPriority() {
      * 
      * @since 0.8.4
      */
-    @Override
     public boolean requiresLayout() {
         return true;
     }
