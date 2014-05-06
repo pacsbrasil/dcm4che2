@@ -70,7 +70,7 @@ public class FileCache {
     // journalFileName should differ for multiple FileCache instances
     // inside one and across multiple JVMs
     private String journalFileName = (hashCode() & 0xFFFFFFFFL) + "-"
-                + ManagementFactory.getRuntimeMXBean().getName();
+            + ManagementFactory.getRuntimeMXBean().getName();
 
     private SimpleDateFormat journalFilePathFormat =
             new SimpleDateFormat(DEFAULT_JOURNAL_FILE_PATH_PATTERN);
@@ -89,9 +89,9 @@ public class FileCache {
             assertWritableDiretory(journalRootDir);
         }
         this.journalRootDir = journalRootDir;
-        
+
     }
-    
+
 
     public String getJournalFileName() {
         return journalFileName;
@@ -127,30 +127,30 @@ public class FileCache {
     public void setJournalFilePathFormat(String format) {
         this.journalFilePathFormat = new SimpleDateFormat(format);
     }
-    
+
     /** Finds the date of the oldest journal file */
     public Date findOldestJournalDate() throws IOException {
-    	return findOldestJournalDate(journalRootDir);
+        return findOldestJournalDate(journalRootDir);
     }
-    
-	private Date findOldestJournalDate(File dir) {
-		String[] fnames = dir.list();
-		Arrays.sort(fnames);
-		if (fnames.length == 0) {
-			try {
-				return getJournalDate(dir);
-			} catch (Exception e) {
-				return null;
-			}
-		}
-		
+
+    private Date findOldestJournalDate(File dir) {
+        String[] fnames = dir.list();
+        if (fnames == null || fnames.length == 0) {
+            try {
+                return getJournalDate(dir);
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        Arrays.sort(fnames);
         for (String fname : fnames) {
             File subdir = new File(dir, fname);
             Date d = findOldestJournalDate(subdir);
             if( d!=null ) return d;
         }
         return null;
-	}
+    }
 
     /** Record a newly created file in the journaling cache, (default instance) */
     public void record(File f) throws IOException {
@@ -161,7 +161,7 @@ public class FileCache {
     public synchronized void record(File f, boolean update)
             throws IOException {
         String path = f.getAbsolutePath().substring(
-                    cacheRootDir.getAbsolutePath().length() + 1);
+                cacheRootDir.getAbsolutePath().length() + 1);
         long time = System.currentTimeMillis();
         File journalDir = getJournalDirectory(time);
         File journalFile = new File(journalDir, journalFileName);
@@ -192,22 +192,22 @@ public class FileCache {
 
     private synchronized File getJournalDirectory(long time) {
         return new File(journalRootDir,
-                    journalFilePathFormat.format(new Date(time)));
+                journalFilePathFormat.format(new Date(time)));
     }
-    
+
     public synchronized Date getJournalDate(File dir) throws IOException {
-    	if( dir.isFile() ) dir = dir.getParentFile();
-    	String sDir = dir.getCanonicalPath();
-    	String prefix = journalRootDir.getCanonicalPath();
-    	sDir = sDir.substring(prefix.length()+1);
-    	sDir = sDir.replace('\\', '/');
-    	try {
-    		return journalFilePathFormat.parse(sDir);
-    	}
-    	catch(ParseException e) {
-    		log.warn("Can't parse {}", dir);
-    		throw new IllegalArgumentException(e);
-    	}
+        if( dir.isFile() ) dir = dir.getParentFile();
+        String sDir = dir.getCanonicalPath();
+        String prefix = journalRootDir.getCanonicalPath();
+        sDir = sDir.substring(prefix.length()+1);
+        sDir = sDir.replace('\\', '/');
+        try {
+            return journalFilePathFormat.parse(sDir);
+        }
+        catch(ParseException e) {
+            log.warn("Can't parse {}", dir);
+            throw new IllegalArgumentException(e);
+        }
     }
 
     /** Return true if the free is running file was created, or is very old.   Create
@@ -215,7 +215,7 @@ public class FileCache {
      */
     protected boolean multiProcessFreeIsRunningFile() {        
         try {
-        	File zzzFreeIsRunning = getFreeZZZFile();
+            File zzzFreeIsRunning = getFreeZZZFile();
             if (zzzFreeIsRunning.createNewFile()) {
                 return true;
             }
@@ -296,19 +296,23 @@ public class FileCache {
         long free = 0L;
         if (dir.isDirectory()) {
             String[] fnames = dir.list();
-            Arrays.sort(fnames); 
-            int i=fnames.length;
-            for (String fname : fnames) {            	
-                free += free(size - free, new File(dir, fname), endMost && (i--<2));
-                if (free >= size) {
-                    break;
+            if (fnames == null) {
+                log.warn("Directory "+dir+" not readable! Skipped.");   
+            } else {
+                Arrays.sort(fnames); 
+                int i=fnames.length;
+                for (String fname : fnames) {            	
+                    free += free(size - free, new File(dir, fname), endMost && (i--<2));
+                    if (free >= size) {
+                        break;
+                    }
                 }
             }
         } else {
-        	if(endMost) {
-        		log.warn("Got to the last (current) journal system without being able to clean up enough space, not cleaning current journal to prevent race condition.");
-        		return 0L;
-        	}
+            if(endMost) {
+                log.warn("Got to the last (current) journal system without being able to clean up enough space, not cleaning current journal to prevent race condition.");
+                return 0L;
+            }
             BufferedReader journal = new BufferedReader(new FileReader(dir));
             try {
                 String path;
@@ -336,18 +340,18 @@ public class FileCache {
         }
         return free;
     }
-    
+
     public static long sizeOfFileOrDirectory(File f) {
-		if (f.isFile()) {
-			return f.length();
-		}
-		long size = 0;
-		File[] files = f.listFiles();
-		for (int i = 0; i < files.length; i++) {
-			size += sizeOfFileOrDirectory(files[i]);
-		}
-		return size;
-	}
+        if (f.isFile()) {
+            return f.length();
+        }
+        long size = 0;
+        File[] files = f.listFiles();
+        for (int i = 0; i < files.length; i++) {
+            size += sizeOfFileOrDirectory(files[i]);
+        }
+        return size;
+    }
 
     public static boolean deleteFileAndParents(File f, File baseDir) {
         if (!deleteFileOrDirectory(f)) {
@@ -356,7 +360,7 @@ public class FileCache {
         File dir = f.getParentFile();
         while (!dir.equals(baseDir)) {
             if (!dir.delete()) {
-               break;
+                break;
             }
             log.info("M-DELETE {}", dir);
             dir = dir.getParentFile();
@@ -365,9 +369,9 @@ public class FileCache {
     }
 
     private synchronized File getFreeZZZFile()throws IOException{
-    	if(freeZZZFile==null){
-    		freeZZZFile = new File(this.cacheRootDir,ZZZFREE_IS_RUNNING);    		
-    	}
-    	return freeZZZFile;
+        if(freeZZZFile==null){
+            freeZZZFile = new File(this.cacheRootDir,ZZZFREE_IS_RUNNING);    		
+        }
+        return freeZZZFile;
     }
 }
