@@ -62,6 +62,7 @@ import org.dcm4che.data.DcmEncodeParam;
 import org.dcm4che.data.DcmObjectFactory;
 import org.dcm4che.data.DcmParser;
 import org.dcm4che.data.DcmParserFactory;
+import org.dcm4che.data.PersonName;
 import org.dcm4che.dict.Status;
 import org.dcm4che.dict.Tags;
 import org.dcm4che.dict.UIDs;
@@ -283,9 +284,8 @@ public class StoreScpService extends AbstractScpService {
         try {
             return ((Boolean) server.invoke(
                     mediaCreationRequestEmulatorServiceName,
-                    "containsSourceAETitle",
-                    new Object[] { aet },
-                    new String[] { String.class.getName()})).booleanValue();
+                    "containsSourceAETitle", new Object[] { aet },
+                    new String[] { String.class.getName() })).booleanValue();
         } catch (Exception e) {
             throw new ConfigurationException(e);
         }
@@ -339,9 +339,8 @@ public class StoreScpService extends AbstractScpService {
     private String lookupMediaWriterName(String aet) throws DcmServiceException {
         try {
             return (String) server.invoke(dcmServerName,
-                    LOOKUP_MEDIA_WRITER_NAME,
-                    new Object[] { aet},
-                    new String[] { String.class.getName()});
+                    LOOKUP_MEDIA_WRITER_NAME, new Object[] { aet },
+                    new String[] { String.class.getName() });
         } catch (Exception e) {
             throw new DcmServiceException(Status.ProcessingFailure, e);
         }
@@ -408,19 +407,32 @@ public class StoreScpService extends AbstractScpService {
             Association a = assoc.getAssociation();
             String sourceAET = a.getCallingAET();
             if (emulateMediaCreationRequestForAET(sourceAET)) {
-                File f = spoolDir.getEmulateRequestFile(sourceAET,
+                // TODO rename all to group
+                String group = getGroupMediaCreationRequestForAET(sourceAET);
+                // TODO patern
+                String pattern = getEmulationSpoolPattern(
                         ds.getString(Tags.PatientID),
-                        ds.getString(Tags.IssuerOfPatientID));
+                        ds.getString(Tags.IssuerOfPatientID),
+                        ds.getPersonName(Tags.PatientName)
+                                .get(PersonName.GIVEN),
+                        ds.getPersonName(Tags.PatientName).get(
+                                PersonName.MIDDLE),
+                        ds.getPersonName(Tags.PatientName).get(
+                                PersonName.FAMILY),
+                        ds.getString(Tags.PatientBirthDate),
+                        ds.getString(Tags.PatientSex));
+                File f = spoolDir.getEmulateRequestFile(group != null ? group
+                        : sourceAET, pattern);
                 boolean firstObject;
                 if (firstObject = !f.exists()) {
                     File dir = f.getParentFile();
-                    if (dir.mkdirs()) log.info("M-WRITE " + dir);
+                    if (dir.mkdirs())
+                        log.info("M-WRITE " + dir);
                 }
                 FileWriter fw = new FileWriter(f, true);
                 try {
                     if (firstObject) {
-                         fw.write(lookupMediaWriterName(
-                                 a.getCalledAET()) + '\n');
+                        fw.write(lookupMediaWriterName(a.getCalledAET()) + '\n');
                     }
                     fw.write(cuid + '\t' + iuid + '\n');
                 } finally {
@@ -439,6 +451,31 @@ public class StoreScpService extends AbstractScpService {
         }
     }
 
+    private String getEmulationSpoolPattern(String pid, String iid, String gn, String mn, String fn, String bd, String ps) {
+        // TODO Auto-generated method stub
+        try {
+            return (String) server.invoke(
+                    mediaCreationRequestEmulatorServiceName,
+                    "getDecodedPattern",
+                    new Object[] { pid, iid, gn, mn, fn, bd, ps },
+                    new String[] { String.class.getName(),String.class.getName(),String.class.getName(),
+                            String.class.getName(),String.class.getName(),String.class.getName(),String.class.getName()});
+        } catch (Exception e) {
+            throw new ConfigurationException(e);
+        }
+    }
+
+    private String getGroupMediaCreationRequestForAET(String aet) {
+        try {
+            return (String) server.invoke(
+                    mediaCreationRequestEmulatorServiceName, "getGroupAET",
+                    new Object[] { aet },
+                    new String[] { String.class.getName() });
+        } catch (Exception e) {
+            throw new ConfigurationException(e);
+        }
+    }
+
     private void writePixelData(InputStream in, DcmEncodeParam encParam,
             Dataset ds, DcmParser parser, OutputStream out) throws IOException {
         int len = parser.getReadLength();
@@ -452,9 +489,7 @@ public class StoreScpService extends AbstractScpService {
                 copy(in, out, len, buffer);
                 parser.parseHeader();
             }
-            ds
-                    .writeHeader(out, encParam, Tags.SeqDelimitationItem,
-                            VRs.NONE, 0);
+            ds.writeHeader(out, encParam, Tags.SeqDelimitationItem, VRs.NONE, 0);
         } else {
             ds.writeHeader(out, encParam, Tags.PixelData, parser.getReadVR(),
                     len);
@@ -509,19 +544,15 @@ public class StoreScpService extends AbstractScpService {
         if (!ds.containsValue(Tags.PatientID)) {
             final String pname = ds.getString(Tags.PatientName);
             if (generatePatientID == null) {
-                log
-                        .warn("Receive object without Patient ID with Patient Name - "
-                                + pname
-                                + " -> Creation of Media containing this object will fail!");
+                log.warn("Receive object without Patient ID with Patient Name - "
+                        + pname
+                        + " -> Creation of Media containing this object will fail!");
             } else {
                 String pid = generatePatientID(ds);
                 ds.putLO(Tags.PatientID, pid);
                 ds.putLO(Tags.IssuerOfPatientID, issuerOfPatientID);
-                log
-                        .info("Receive object without Patient ID with Patient Name - "
-                                + pname
-                                + " -> add generated Patient ID - "
-                                + pid);
+                log.info("Receive object without Patient ID with Patient Name - "
+                        + pname + " -> add generated Patient ID - " + pid);
             }
         }
     }
@@ -534,10 +565,10 @@ public class StoreScpService extends AbstractScpService {
         StringBuffer sb = new StringBuffer(generatePatientID.substring(0, left));
         // generate different Patient IDs for different studies
         // if no Patient Name
-        String num = String.valueOf(0xffffffffL & 
-                (37 * ds.getString(Tags.PatientName, 
-                        ds.getString(Tags.StudyInstanceUID)).hashCode() 
-                + ds.getString(Tags.PatientBirthDate, "").hashCode()));
+        String num = String.valueOf(0xffffffffL & (37 * ds.getString(
+                Tags.PatientName, ds.getString(Tags.StudyInstanceUID))
+                .hashCode() + ds.getString(Tags.PatientBirthDate, "")
+                .hashCode()));
         left += num.length();
         final int right = generatePatientID.lastIndexOf('#') + 1;
         while (left++ < right) {

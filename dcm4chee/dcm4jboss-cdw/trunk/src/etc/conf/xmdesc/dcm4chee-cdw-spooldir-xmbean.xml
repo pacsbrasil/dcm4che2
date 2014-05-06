@@ -329,13 +329,8 @@
          <type>java.lang.String</type>
       </parameter>
       <parameter>
-         <description>Patient ID</description>
-         <name>pid</name>
-         <type>java.lang.String</type>
-      </parameter>
-      <parameter>
-         <description>Issuer Of Patient ID</description>
-         <name>issuer</name>
+         <description>SpoolDir Pattern</description>
+         <name>pattern</name>
          <type>java.lang.String</type>
       </parameter>
       <return-type>java.io.File</return-type>

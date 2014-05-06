@@ -366,11 +366,11 @@ public class SpoolDirService extends ServiceMBeanSupport
         return new File(filesetDir, iuid);
     }
 
-    public File getEmulateRequestFile(String aet, String pid, String issuer) {
+    public File getEmulateRequestFile(String aet,String pattern) {
         try {
             return new File(new File(emulateRequestDir, aet), 
                     URLEncoder.encode(
-                            issuer == null ? pid : (pid + '@' + issuer),
+                            pattern,
                             "US-ASCII"));
         } catch (UnsupportedEncodingException e) {
             // should never happen

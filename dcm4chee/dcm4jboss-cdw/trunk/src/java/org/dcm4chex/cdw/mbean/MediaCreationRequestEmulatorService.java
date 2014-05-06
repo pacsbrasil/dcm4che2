@@ -72,7 +72,7 @@ import org.jboss.system.ServiceMBeanSupport;
  * @since Feb 13, 2009
  */
 public class MediaCreationRequestEmulatorService extends ServiceMBeanSupport
-    implements NotificationListener {
+        implements NotificationListener {
 
     private String mediaComposerQueueName;
 
@@ -81,11 +81,11 @@ public class MediaCreationRequestEmulatorService extends ServiceMBeanSupport
     private String requestPriority = Priority.LOW;
 
     private String filesetID;
-    
+
     private DecimalFormat filesetIDFormat;
-    
+
     private int nextFilesetIDSeqno = 1;
-    
+
     private int numberOfCopies = 1;
 
     private boolean labelUsingInformationExtractedFromInstances = true;
@@ -118,6 +118,10 @@ public class MediaCreationRequestEmulatorService extends ServiceMBeanSupport
 
     private long[] delays;
 
+    private String groupAET;
+
+    private String spoolFileNamePattern;
+
     private UIDGenerator uidGenerator = UIDGenerator.getInstance();
 
     public String getSourceAETitles() {
@@ -138,14 +142,93 @@ public class MediaCreationRequestEmulatorService extends ServiceMBeanSupport
         delays = new long[sourceAETs.length];
         int endAET;
         for (int i = 0; i < sourceAETs.length; i++) {
-            sourceAETs[i] = stk.nextToken().trim();
-            delays[i] = SpoolDirService.MS_PER_MINUTE;
-            endAET = sourceAETs[i].indexOf(':');
-            if (endAET >= 0) {
-                delays[i] = SpoolDirService.timeFromString(
-                        sourceAETs[i].substring(endAET+1));
-                sourceAETs[i] = sourceAETs[i].substring(0, endAET);
+            String line = stk.nextToken();
+            if (line.split(";").length > 0) {
+                // TODO group
+                sourceAETs[i] = line.trim();
+                endAET = sourceAETs[i].indexOf(':');
+                delays[i] = SpoolDirService.MS_PER_MINUTE;
+
+                if (endAET >= 0) {
+                    delays[i] = SpoolDirService.timeFromString(sourceAETs[i]
+                            .substring(endAET + 1));
+                    sourceAETs[i] = sourceAETs[i].substring(0, endAET);
+                }
+            } else {
+                sourceAETs[i] = line.trim();
+                delays[i] = SpoolDirService.MS_PER_MINUTE;
+                endAET = sourceAETs[i].indexOf(':');
+                if (endAET >= 0) {
+                    delays[i] = SpoolDirService.timeFromString(sourceAETs[i]
+                            .substring(endAET + 1));
+                    sourceAETs[i] = sourceAETs[i].substring(0, endAET);
+                }
             }
+
+        }
+    }
+
+    public String getGroupAET(String aet) {
+        if (groupAET != null) {
+            if (groupAET.split(";")[1].equals(aet))
+                return groupAET.split(";")[0];
+        }
+        return null;
+    }
+
+    public void setGroupAET(String aet) {
+        this.groupAET = aet;
+    }
+
+    public String getSpoolFileNamePattern() {
+        return spoolFileNamePattern;
+    }
+
+    public String getDecodedPattern(String pid, String iid, String gn,
+            String mn, String fn, String bd, String ps) {
+        if (spoolFileNamePattern != null) {
+            StringTokenizer tokenizer = new StringTokenizer(
+                    spoolFileNamePattern, ".");
+            String formPattern = "";
+            while (tokenizer.hasMoreTokens()) {
+                String part = tokenizer.nextToken();
+                if (part.contains("PID")) {
+                    formPattern += "{" + pid + "}.";
+                } else if (part.contains("FN")) {
+                    formPattern += "{" + fn + "}.";
+                } else if (part.contains("MN")) {
+                    formPattern += "{" + mn + "}.";
+                } else if (part.contains("GN")) {
+                    formPattern += "{" + gn + "}.";
+                } else if (part.contains("IID")) {
+                    formPattern += "{" + iid + "}.";
+                } else if (part.contains("BD")) {
+                    formPattern += "{" + bd + "}.";
+                } else if (part.contains("PS")) {
+                    formPattern += "{" + ps + "}.";
+                } else {
+                    formPattern += part + ".";
+                }
+            }
+            if (formPattern.equals("")) {
+                return spoolFileNamePattern + ".{" + pid + "}." + "{" + iid
+                        + "}";
+            } else {
+                if (formPattern.endsWith(".")) {
+                    return formPattern.substring(0, formPattern.length() - 1);
+                } else {
+                    return formPattern;
+                }
+            }
+        }
+        return "{" + pid + "}" + ".{" + iid + "}";
+    }
+
+    public void setSpoolFileNamePattern(String pattern) {
+        if (pattern.length() > 0 && pattern.contains("PID")) {
+            spoolFileNamePattern=pattern;
+        } else {
+            throw new IllegalArgumentException();
         }
     }
 
@@ -154,9 +237,19 @@ public class MediaCreationRequestEmulatorService extends ServiceMBeanSupport
             return false;
         }
         for (String sourceAET : sourceAETs) {
-            if (sourceAET.equals(aet)) {
-                return true;
+            if (sourceAET.contains(";")) {
+                for (String part : sourceAET.split(";")[1].split(",")) {
+                    if (part.equals(aet)) {
+                        setGroupAET(sourceAET.split(";")[0] + ";" + aet);
+                        return true;
+                    }
+                }
+            } else {
+                if (sourceAET.equals(aet)) {
+                    return true;
+                }
             }
+
         }
         return false;
     }
@@ -198,8 +291,7 @@ public class MediaCreationRequestEmulatorService extends ServiceMBeanSupport
     }
 
     public final void setFilesetID(String filesetID) {
-        if (filesetID.indexOf('0') != -1
-                || filesetID.indexOf('#') != -1) {
+        if (filesetID.indexOf('0') != -1 || filesetID.indexOf('#') != -1) {
             filesetIDFormat = new DecimalFormat(filesetID);
         }
         this.filesetID = filesetID;
@@ -211,24 +303,24 @@ public class MediaCreationRequestEmulatorService extends ServiceMBeanSupport
 
     public final void setNextFilesetIDSeqno(int seqno) {
         this.nextFilesetIDSeqno = seqno;
-    }   
+    }
 
     private String nextFileSetID() {
         if (filesetIDFormat == null) {
             return filesetID;
         }
-        
+
         synchronized (filesetIDFormat) {
             try {
-                server.setAttribute(serviceName, 
-                        new Attribute("NextFilesetIDSeqno", 
-                                new Integer(nextFilesetIDSeqno+1)) );
+                server.setAttribute(serviceName, new Attribute(
+                        "NextFilesetIDSeqno", new Integer(
+                                nextFilesetIDSeqno + 1)));
             } catch (Exception e) {
-                log.warn("Failed to store incremented NextFilesetSeqno - " +
-                            "will be reset by next reboot! ", e);
+                log.warn("Failed to store incremented NextFilesetSeqno - "
+                        + "will be reset by next reboot! ", e);
                 ++nextFilesetIDSeqno;
             }
-            return filesetIDFormat.format(nextFilesetIDSeqno-1);
+            return filesetIDFormat.format(nextFilesetIDSeqno - 1);
         }
     }
 
@@ -236,8 +328,7 @@ public class MediaCreationRequestEmulatorService extends ServiceMBeanSupport
         return allowLossyCompression;
     }
 
-    public final void setAllowLossyCompression(
-            boolean allowLossyCompression) {
+    public final void setAllowLossyCompression(boolean allowLossyCompression) {
         this.allowLossyCompression = allowLossyCompression;
     }
 
@@ -245,8 +336,7 @@ public class MediaCreationRequestEmulatorService extends ServiceMBeanSupport
         return allowMediaSplitting;
     }
 
-    public final void setAllowMediaSplitting(
-            boolean allowMediaSplitting) {
+    public final void setAllowMediaSplitting(boolean allowMediaSplitting) {
         this.allowMediaSplitting = allowMediaSplitting;
     }
 
@@ -263,8 +353,7 @@ public class MediaCreationRequestEmulatorService extends ServiceMBeanSupport
         return includeNonDICOMObjects;
     }
 
-    public final void setIncludeNonDICOMObjects(
-            String includeNonDICOMObjects) {
+    public final void setIncludeNonDICOMObjects(String includeNonDICOMObjects) {
         this.includeNonDICOMObjects = includeNonDICOMObjects;
     }
 
@@ -272,8 +361,7 @@ public class MediaCreationRequestEmulatorService extends ServiceMBeanSupport
         return labelStyleSelection;
     }
 
-    public final void setLabelStyleSelection(
-            String labelStyleSelection) {
+    public final void setLabelStyleSelection(String labelStyleSelection) {
         this.labelStyleSelection = labelStyleSelection;
     }
 
@@ -291,16 +379,14 @@ public class MediaCreationRequestEmulatorService extends ServiceMBeanSupport
 
     public final void setLabelUsingInformationExtractedFromInstances(
             boolean labelUsingInformationExtractedFromInstances) {
-        this.labelUsingInformationExtractedFromInstances =
-                labelUsingInformationExtractedFromInstances;
+        this.labelUsingInformationExtractedFromInstances = labelUsingInformationExtractedFromInstances;
     }
 
     public final boolean isPreserveInstances() {
         return preserveInstances;
     }
 
-    public final void setPreserveInstances(
-            boolean preserveInstances) {
+    public final void setPreserveInstances(boolean preserveInstances) {
         this.preserveInstances = preserveInstances;
     }
 
@@ -310,7 +396,7 @@ public class MediaCreationRequestEmulatorService extends ServiceMBeanSupport
 
     public final void setRequestPriority(String priority) {
         if (!Priority.isValid(priority))
-                throw new IllegalArgumentException("priority:" + priority);
+            throw new IllegalArgumentException("priority:" + priority);
         this.requestPriority = priority;
     }
 
@@ -320,8 +406,8 @@ public class MediaCreationRequestEmulatorService extends ServiceMBeanSupport
 
     public final void setNumberOfCopies(int numberOfCopies) {
         if (numberOfCopies < 1)
-                throw new IllegalArgumentException("numberOfCopies:"
-                        + numberOfCopies);
+            throw new IllegalArgumentException("numberOfCopies:"
+                    + numberOfCopies);
         this.numberOfCopies = numberOfCopies;
     }
 
@@ -334,7 +420,7 @@ public class MediaCreationRequestEmulatorService extends ServiceMBeanSupport
         if (getState() == STARTED) {
             scheduler.stopScheduler(timerID, schedulerID, this);
             schedulerID = scheduler.startScheduler("PurgeSpoolDir",
-                        pollInterval, this);
+                    pollInterval, this);
         }
     }
 
@@ -347,8 +433,7 @@ public class MediaCreationRequestEmulatorService extends ServiceMBeanSupport
     }
 
     protected void startService() throws Exception {
-        schedulerID = scheduler.startScheduler(timerID,
-                pollInterval, this);
+        schedulerID = scheduler.startScheduler(timerID, pollInterval, this);
     }
 
     protected void stopService() throws Exception {
@@ -368,8 +453,8 @@ public class MediaCreationRequestEmulatorService extends ServiceMBeanSupport
         int count = 0;
         long now = System.currentTimeMillis();
         for (int i = 0; i < sourceAETs.length; i++) {
-            File[] files = spoolDir.getEmulateRequestFiles(sourceAETs[i], 
-                    now - delays[i]);
+            File[] files = spoolDir.getEmulateRequestFiles(sourceAETs[i], now
+                    - delays[i]);
             for (File file : files) {
                 try {
                     createRequest(file, sourceAETs[i]);
@@ -384,7 +469,7 @@ public class MediaCreationRequestEmulatorService extends ServiceMBeanSupport
     }
 
     private void createRequest(File sopListFile, String aet) throws Exception {
-        String iuid = uidGenerator .createUID();
+        String iuid = uidGenerator.createUID();
         File f = spoolDir.getMediaCreationRequestFile(iuid);
         MediaCreationRequest mcrq = new MediaCreationRequest(f, aet);
         mcrq.setPriority(requestPriority);
@@ -395,21 +480,18 @@ public class MediaCreationRequestEmulatorService extends ServiceMBeanSupport
 
         DcmObjectFactory dof = DcmObjectFactory.getInstance();
         Dataset attrs = dof.newDataset();
-        attrs.setFileMetaInfo(
-                dof.newFileMetaInfo(iuid,
-                        UIDs.MediaCreationManagementSOPClass,
-                        UIDs.ExplicitVRLittleEndian));
+        attrs.setFileMetaInfo(dof.newFileMetaInfo(iuid,
+                UIDs.MediaCreationManagementSOPClass,
+                UIDs.ExplicitVRLittleEndian));
         attrs.putUI(Tags.SOPClassUID, UIDs.MediaCreationManagementSOPClass);
         attrs.putUI(Tags.SOPInstanceUID, iuid);
         attrs.putIS(Tags.NumberOfCopies, numberOfCopies);
         attrs.putCS(Tags.RequestPriority, requestPriority);
         attrs.putCS(Tags.ExecutionStatus, ExecutionStatus.PENDING);
-        attrs.putCS(Tags.ExecutionStatusInfo,
-                ExecutionStatusInfo.QUEUED_BUILD);
+        attrs.putCS(Tags.ExecutionStatusInfo, ExecutionStatusInfo.QUEUED_BUILD);
         attrs.putCS(Tags.LabelUsingInformationExtractedFromInstances,
                 Flag.valueOf(labelUsingInformationExtractedFromInstances));
-        attrs.putCS(Tags.AllowMediaSplitting,
-                Flag.valueOf(allowMediaSplitting));
+        attrs.putCS(Tags.AllowMediaSplitting, Flag.valueOf(allowMediaSplitting));
         attrs.putCS(Tags.AllowLossyCompression,
                 Flag.valueOf(allowLossyCompression));
         attrs.putCS(Tags.IncludeDisplayApplication,
@@ -418,21 +500,21 @@ public class MediaCreationRequestEmulatorService extends ServiceMBeanSupport
                 Flag.valueOf(preserveInstances));
         attrs.putUT(Tags.LabelText, labelText);
         attrs.putCS(Tags.LabelStyleSelection, labelStyleSelection);
-        attrs.putCS(Tags.IncludeNonDICOMObjects,
-                        includeNonDICOMObjects);
+        attrs.putCS(Tags.IncludeNonDICOMObjects, includeNonDICOMObjects);
         log.info("M-READ " + sopListFile);
-        BufferedReader reader = new BufferedReader(
-                new FileReader(sopListFile));
+        BufferedReader reader = new BufferedReader(new FileReader(sopListFile));
         try {
             HashSet<String> iuids = new HashSet<String>();
             mcrq.setMediaWriterName(reader.readLine());
             DcmElement refSOPs = attrs.putSQ(Tags.RefSOPSeq);
             String line;
             while ((line = reader.readLine()) != null) {
-                if (line.length() == 0) continue;
+                if (line.length() == 0)
+                    continue;
                 int cuidEnd = line.indexOf('\t');
                 iuid = line.substring(cuidEnd + 1);
-                if (!iuids.add(iuid)) continue;
+                if (!iuids.add(iuid))
+                    continue;
                 Dataset item = refSOPs.addNewItem();
                 item.putUI(Tags.RefSOPClassUID, line.substring(0, cuidEnd));
                 item.putUI(Tags.RefSOPInstanceUID, iuid);
@@ -444,13 +526,12 @@ public class MediaCreationRequestEmulatorService extends ServiceMBeanSupport
         }
         attrs.writeFile(f, null);
         JMSDelegate.queue(mediaComposerQueueName,
-                            "Schedule Composing media for " + sopListFile,
-                            log, mcrq, 0L);
+                "Schedule Composing media for " + sopListFile, log, mcrq, 0L);
 
         if (sopListFile.delete()) {
             log.info("M-DELETE " + sopListFile);
         } else {
-            log.warn("Failed: M-DELETE " +  sopListFile);
+            log.warn("Failed: M-DELETE " + sopListFile);
         }
     }
 
