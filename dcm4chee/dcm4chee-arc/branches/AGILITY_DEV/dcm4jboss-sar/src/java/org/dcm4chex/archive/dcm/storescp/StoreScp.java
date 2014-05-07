@@ -1298,9 +1298,9 @@ public class StoreScp extends DcmServiceBase implements AssociationListener {
             String message = "Corrupt instance " + ds.getString(Tags.SOPInstanceUID) + " in study " + ds.getString(Tags.StudyInstanceUID); 
             throw new DcmParseException(message, e);
         }finally {
-            if (fos != null)
+            if (bos != null)
                 try {
-                    fos.close();
+                    bos.close();
                 } catch (Exception ignore) {}
         }
         return md != null ? md.digest() : null;
