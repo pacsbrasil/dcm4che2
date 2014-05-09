@@ -322,8 +322,7 @@ public class FileCache {
                         log.debug("{} already deleted", f);
                         continue;
                     }
-                    if (!getJournalDirectory(f.lastModified())
-                            .equals(dir.getParentFile())) {
+                    if (getJournalDirectory(f.lastModified()).compareTo(dir.getParentFile()) > 0) {
                         log.debug("{} was accessed after record in {}",
                                 f, dir);
                         continue;
