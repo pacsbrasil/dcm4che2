@@ -521,7 +521,9 @@ public abstract class LookupTable {
             if (pval2out == null) {
                 data.setArrayItem(i+wlOff-off, (m * i + b));
             } else {
-                data.setArrayItem(i+wlOff-off,((pval2out[(int) (m * i + b)] & 0xffff) >>> pval2outShift));
+            	int pLookup = (int) (m*i+b);
+            	if( pLookup<0 ) pLookup = 0;
+                data.setArrayItem(i+wlOff-off,((pval2out[pLookup] & 0xffff) >>> pval2outShift));
             }
         }
 
