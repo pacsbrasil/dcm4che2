@@ -348,7 +348,7 @@ public class DicomImageReader extends ImageReader {
     	boolean isJpeg = UID.JPEGBaseline1.equals(transfer) || UID.JPEGLosslessNonHierarchical14.equals(transfer);
     	
     	// This is a fairly easy mistake for a vendor to make, recode to DICOM, but leave the photometric interpretation
-    	if( pmi.equals(ColorModelFactory.YBR_FULL_422) && isJpeg ) {
+    	if( ColorModelFactory.YBR_FULL_422.equals(pmi) && isJpeg ) {
     		log.info("Fix JPEG photometric on {}", dsFix.getString(Tag.SOPInstanceUID));
     		dsFix.putString(Tag.PhotometricInterpretation,null,ColorModelFactory.RGB);
     	}
