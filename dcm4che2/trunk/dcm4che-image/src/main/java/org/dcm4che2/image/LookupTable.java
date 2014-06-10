@@ -48,6 +48,7 @@ import java.awt.image.MultiPixelPackedSampleModel;
 import java.awt.image.Raster;
 import java.awt.image.SampleModel;
 import java.util.Arrays;
+import java.util.Map;
 
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
@@ -695,13 +696,14 @@ public abstract class LookupTable {
 
             return new ByteLookupTable(inBits, signed, off, bits, data, true);
         } else if (data.length == len << 1) {
-            short[] sdata = ds.bigEndian() ? ByteUtils.bytesBE2shorts(data)
-                    : ByteUtils.bytesLE2shorts(data);
+        	Map<String, Object> map =  ds.bigEndian() ? ByteUtils.bytesBE2shortsWithMinMax(data)
+        			: ByteUtils.bytesLE2shortsWithMinMax(data);
+            short[] sdata = (short[]) map.get(ByteUtils.MAP_DATA);
+            short max = (Short) map.get(ByteUtils.MAP_MAX);
 
             // Get the actual number of bits in this lookup table.
             bits = 0;
-            for (int maxVal = Math.max(sdata[0] & 0xFFFF,
-                    sdata[sdata.length - 1] & 0xFFFF); maxVal != 0; maxVal >>>= 1) {
+            for (int maxVal = max & 0xFFFF; maxVal != 0; maxVal >>>= 1) {
                 bits++;
             }
 

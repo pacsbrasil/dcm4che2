@@ -38,9 +38,15 @@
 
 package org.dcm4che2.util;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class ByteUtils
 {
-
+	public static final String MAP_DATA = "DATA";
+	public static final String MAP_MIN = "MIN";
+	public static final String MAP_MAX = "MAX";
+	
     public static byte[] int2bytesLE(int val, byte[] b, int off)
     {
         b[off] = (byte) val;
@@ -316,6 +322,58 @@ public class ByteUtils
         for (int i = 0; i < val.length; i++)
             val[i] = (short) bytesBE2sshort(b, i << 1);
         return val;
+    }
+    
+    public static Map<String, Object> bytesLE2shortsWithMinMax(byte[] b)
+    {
+    	HashMap<String, Object> ret = new HashMap<String, Object>(3);
+        if (b == null)
+            return null;
+        if ((b.length & 0x1) != 0)
+            throw new IllegalArgumentException("byte[" + b.length + "]");
+        short min = ((short) bytesLE2sshort(b, 0)), max = ((short) bytesLE2sshort(b, 0));
+        short[] val = new short[b.length >> 1];
+        for (int i = 0; i < val.length; i++) 
+        {
+            val[i] = (short) bytesLE2sshort(b, i << 1);
+            min = min(min, val[i]);
+            max = max(max, val[i]);
+        }
+        ret.put(MAP_DATA, val);
+        ret.put(MAP_MIN, new Short(min));
+        ret.put(MAP_MAX, new Short(max));
+        return ret;
+    }
+    
+    public static Map<String, Object> bytesBE2shortsWithMinMax(byte[] b)
+    {
+    	HashMap<String, Object> ret = new HashMap<String, Object>(3);
+        if (b == null)
+            return null;
+        if ((b.length & 0x1) != 0)
+            throw new IllegalArgumentException("byte[" + b.length + "]");
+        short min = ((short) bytesBE2sshort(b, 0)), max = ((short) bytesBE2sshort(b, 0));
+        short[] val = new short[b.length >> 1];
+        for (int i = 0; i < val.length; i++)
+        {
+            val[i] = (short) bytesBE2sshort(b, i << 1);
+            min = min(min, val[i]);
+            max = max(max, val[i]);
+        }
+        ret.put(MAP_DATA, val);
+        ret.put(MAP_MIN, new Short(min));
+        ret.put(MAP_MAX, new Short(max));
+        return ret;
+    }
+    
+    public static short min(short s1, short s2)
+    {
+    	return ((s1 & 0xFFFF) < (s2 & 0xFFFF)) ? s1:s2;
+    }
+    
+    public static short max(short s1, short s2)
+    {
+    	return ((s1 & 0xFFFF) > (s2 & 0xFFFF)) ? s1:s2;
     }
     
     public static byte[] float2bytesLE(float val, byte[] b, int off)
