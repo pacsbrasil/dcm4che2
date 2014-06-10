@@ -282,6 +282,29 @@ public class DicomOutputStream extends FilterOutputStream {
         }
     }
 
+    /**
+     * Write a DICOM dataset to the output stream. This one is needed to handle
+     * a case where group 2 elements are within sequence items.
+     * 
+     * @param attrs
+     *            A DicomObject containing the attributes to write.
+     * @param transferSyntax
+     *            A TransferSyntax object representing the transfer syntax of
+     *            the file.
+     * @throws IOException
+     */
+    public void writeDicomObject(DicomObject attrs, TransferSyntax transferSyntax)
+            throws IOException {
+        setTransferSyntax(transferSyntax);
+        this.ts = transferSyntax;
+        writeElements(attrs.iterator(), includeGroupLength,
+                createItemInfo(attrs));
+        if (autoFinish) {
+           finish();
+        }
+    }
+
+
     /** Indicate if the stream is finished automatically (compressed data written) when the dataset is written */
 	public boolean isAutoFinish() {
 		return autoFinish;
