@@ -172,7 +172,7 @@ public class HL7SendService extends ServiceMBeanSupport implements
         } catch (Exception x) {
             throw new ConfigurationException(x);
         }
-	}
+    }
     
     public final ObjectName getJmsServiceName() {
         return jmsDelegate.getJmsServiceName();
@@ -417,11 +417,13 @@ public class HL7SendService extends ServiceMBeanSupport implements
         AEDTO remoteAE = LOCAL_HL7_AET.equals(receiver) 
                 ? localAE : aeMgt().findByAET(receiver);
         Socket s = tlsConfig.createSocket(localAE, remoteAE);
+        boolean ignoreMissingAck = false;
         try {
             MLLPDriver mllpDriver = new MLLPDriver(s.getInputStream(), s
                     .getOutputStream(), true);
             writeMessage(message, receiver, mllpDriver.getOutputStream());
             mllpDriver.turn();
+            ignoreMissingAck = Boolean.getBoolean("org.dcm4che.hl7.ignoreMissingAck");
             if (acTimeout > 0) {
                 s.setSoTimeout(acTimeout);
             }
@@ -431,6 +433,12 @@ public class HL7SendService extends ServiceMBeanSupport implements
                         + " during waiting on response.");
             }
             return readMessage(mllpDriver.getInputStream());
+        } catch (Exception x) {
+            if (ignoreMissingAck) {
+                log.info("Missing Acknowledge ignored! return null as response message.");
+                return null;
+            }
+            throw x;
         } finally {
             if (soCloseDelay > 0)
                 try {
@@ -443,7 +451,8 @@ public class HL7SendService extends ServiceMBeanSupport implements
 
     public void sendTo(byte[] message, String receiver) throws Exception {
         Document rsp = invoke(message, receiver);
-        checkResponse(rsp);
+        if (rsp != null)
+            checkResponse(rsp);
     }
 
     private void checkResponse(Document rsp) throws HL7Exception {
