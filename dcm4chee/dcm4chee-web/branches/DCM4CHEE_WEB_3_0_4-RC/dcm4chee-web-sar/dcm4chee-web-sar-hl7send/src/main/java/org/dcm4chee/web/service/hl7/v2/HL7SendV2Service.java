@@ -646,7 +646,9 @@ public class HL7SendV2Service extends ServiceMBeanSupport implements MessageList
                 log.info("Missing Acknowledge ignored! return true.");
                 return true;
             }
-            throw x;
+            if (x instanceof IOException)
+            	throw (IOException)x;
+            throw new IOException("Unexpected error while waiting for acknowledge!", x);
         } finally {
             if (soCloseDelay > 0)
                 try {
