@@ -545,11 +545,13 @@ public class HL7SendV2Service extends ServiceMBeanSupport implements MessageList
                 new Object[] { ae.getHostName(), ae.getPort(), ciphers, bindAddress, 0 },
                 new String[] { String.class.getName(), int.class.getName(), 
                         String[].class.getName(), String.class.getName(), int.class.getName()});
+        boolean ignoreMissingAck = false;
         try {
             MLLPDriver mllpDriver = new MLLPDriver(s.getInputStream(), s
                     .getOutputStream(), true);
             writeHL7Message(attrs, toTemplates(msgTypeID, receiver), parameter, receiver, mllpDriver.getOutputStream());
             mllpDriver.turn();
+            ignoreMissingAck = Boolean.getBoolean("org.dcm4che.hl7.ignoreMissingAck");
             if (acTimeout > 0) {
                 s.setSoTimeout(acTimeout);
             }
@@ -560,6 +562,12 @@ public class HL7SendV2Service extends ServiceMBeanSupport implements MessageList
             }
             Document rsp = readMessage(mllpDriver.getInputStream());
             return checkResponse(rsp);
+        } catch (Exception x) {
+            if (ignoreMissingAck) {
+                log.info("Missing Acknowledge ignored! return true.");
+                return true;
+            }
+            throw x;
         } finally {
             if (soCloseDelay > 0)
                 try {
@@ -616,11 +624,13 @@ public class HL7SendV2Service extends ServiceMBeanSupport implements MessageList
                 new Object[] { ae.getHostName(), ae.getPort(), ciphers, bindAddress, 0 },
                 new String[] { String.class.getName(), int.class.getName(), 
                         String[].class.getName(), String.class.getName(), int.class.getName()});
+        boolean ignoreMissingAck = false;
         try {
             MLLPDriver mllpDriver = new MLLPDriver(s.getInputStream(), s
                     .getOutputStream(), true);
             mllpDriver.getOutputStream().write(hl7msg);
             mllpDriver.turn();
+            ignoreMissingAck = Boolean.getBoolean("org.dcm4che.hl7.ignoreMissingAck");
             if (acTimeout > 0) {
                 s.setSoTimeout(acTimeout);
             }
@@ -631,6 +641,12 @@ public class HL7SendV2Service extends ServiceMBeanSupport implements MessageList
             }
             Document rsp = readMessage(mllpDriver.getInputStream());
             return this.checkResponse(rsp);
+        } catch (Exception x) {
+            if (ignoreMissingAck) {
+                log.info("Missing Acknowledge ignored! return true.");
+                return true;
+            }
+            throw x;
         } finally {
             if (soCloseDelay > 0)
                 try {
