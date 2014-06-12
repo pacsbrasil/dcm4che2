@@ -199,7 +199,7 @@ public class XDSbRetrieveService extends ServiceMBeanSupport {
             }
         }
         XDSPerformanceLogger perfLogger = new XDSPerformanceLogger("XDS.B", "RETRIEVE_DOCUMENT_SET");
-        String docUid, reqRepoUid;
+        String docUid, reqRepoUid, homeCommunityID;
         XDSDocument doc;
         RetrieveDocumentSetResponseType rsp = objFac.createRetrieveDocumentSetResponseType();
         RetrieveDocumentSetResponseType.DocumentResponse docRsp;
@@ -213,6 +213,7 @@ public class XDSbRetrieveService extends ServiceMBeanSupport {
         for ( RetrieveDocumentSetRequestType.DocumentRequest docReq : req.getDocumentRequest() ) {
             reqRepoUid = docReq.getRepositoryUniqueId();
             docUid = docReq.getDocumentUniqueId();
+            homeCommunityID = docReq.getHomeCommunityId();
             if ( reqRepoUid.equals(repositoryUniqueId) ) {
                 perfLogger.startSubEvent("RetrieveDocument");
                 perfLogger.setSubEventProperty("DocumentUUID", docUid);
@@ -221,7 +222,7 @@ public class XDSbRetrieveService extends ServiceMBeanSupport {
                     perfLogger.setSubEventProperty("DocumentSize", String.valueOf(doc.getXdsDocWriter().size()));
                     localDocUids.add(docUid);
                     try {
-                        docRsp = getDocumentResponse(doc, repositoryUniqueId);
+                        docRsp = getDocumentResponse(doc, repositoryUniqueId, homeCommunityID);
                         rsp.getDocumentResponse().add(docRsp);
                         
                         /*
@@ -298,12 +299,13 @@ public class XDSbRetrieveService extends ServiceMBeanSupport {
         return rsp;
     }
 
-    private DocumentResponse getDocumentResponse(XDSDocument doc, String repositoryUniqueId) throws IOException {
+    private DocumentResponse getDocumentResponse(XDSDocument doc, String repositoryUniqueId, String homeCommunityID) throws IOException {
         RetrieveDocumentSetResponseType.DocumentResponse docRsp;
         docRsp = objFac.createRetrieveDocumentSetResponseTypeDocumentResponse();
         docRsp.setDocumentUniqueId(doc.getDocumentUID());
         docRsp.setMimeType(doc.getMimeType());
         docRsp.setRepositoryUniqueId(repositoryUniqueId);
+        docRsp.setHomeCommunityId(homeCommunityID);
         docRsp.setDocument(doc.getXdsDocWriter().getDataHandler());
         return docRsp;
     }
