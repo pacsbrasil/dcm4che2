@@ -607,6 +607,9 @@ public class StudyListPage extends Panel {
         }
         .add(new PatternValidator("^[0-9]+(\\.[0-9]+)*$"))
         .add(new UIDFieldBehavior(form)));
+        extendedFilter.add(new CheckBox("requestStudyIUID"));
+        extendedFilter.add(new Label("requestStudyIUID.label", new ResourceModel("folder.extendedFilter.requestStudyIUID.label"))
+        	.add(new AttributeModifier("title", true, new ResourceModel("folder.extendedFilter.requestStudyIUID.tooltip"))));
 
         extendedFilter.add( new Label("seriesInstanceUID.label", new ResourceModel("folder.extendedFilter.seriesInstanceUID.label")));
         extendedFilter.add( new TextField<String>("seriesInstanceUID") {
@@ -2916,6 +2919,9 @@ public class StudyListPage extends Panel {
             filter.setSourceAET(paras.getString("sourceAET"));
             String studyIUID = paras.getString("studyIUID");
             filter.setStudyInstanceUID(studyIUID);
+            String requestStudyIUID = paras.getString("requestStudyIUID");
+            filter.setRequestStudyIUID (requestStudyIUID == null ? 
+            		Boolean.getBoolean("org.dcm4chee.web3.pageparam.requestStudyIUID") : Boolean.valueOf(requestStudyIUID));
             String seriesIUID = paras.getString("seriesIUID");
             filter.setSeriesInstanceUID(seriesIUID);
             Date[] birthdate = toDateRange(paras.getString("birthdate"));

@@ -90,6 +90,8 @@ public class StudyListFilter implements Serializable {
     private boolean isStudyIuidQuery;
     private boolean isSeriesIuidQuery;
 	private List<String> modalityFilter;
+
+	private boolean requestStudyIUID;
     
     public StudyListFilter(String forUsername) {
         clear();
@@ -238,6 +240,13 @@ public class StudyListFilter implements Serializable {
 
     public void setStudyInstanceUID(String studyInstanceUID) {
         this.studyInstanceUID = studyInstanceUID;
+    }
+
+    public boolean isRequestStudyIUID() {
+        return requestStudyIUID;
+    }
+    public void setRequestStudyIUID(boolean b) {
+        requestStudyIUID = b;
     }
 
     public String getModality() {

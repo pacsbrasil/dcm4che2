@@ -212,7 +212,7 @@ public class StudyListBean implements StudyListLocal {
         ql.append(" FROM Patient p");
         if (!filter.isPatientQuery() ) {
             ql.append(" INNER JOIN p.studies s");
-            if ( filter.isExtendedQuery() && !QueryUtil.isUniversalMatch(filter.getStudyInstanceUID())) {
+            if ( filter.isExtendedQuery() && !QueryUtil.isUniversalMatch(filter.getStudyInstanceUID()) && filter.isRequestStudyIUID()) {
                 ql.append(", IN(s.series) series");
             }
         }
@@ -223,8 +223,11 @@ public class StudyListBean implements StudyListLocal {
         if ( filter.isPatientQuery()) {
             appendPatFilter(ql, "p", filter);
         } else {
-            if ( filter.isExtendedQuery() && !QueryUtil.isUniversalMatch(filter.getStudyInstanceUID())) {
-                ql.append(" AND s.studyInstanceUID = :studyInstanceUID OR EXISTS (SELECT rq FROM RequestAttributes rq WHERE rq.series = series AND rq.studyInstanceUID = :studyInstanceUID)");
+            if ( filter.isExtendedQuery() && !QueryUtil.isUniversalMatch(filter.getStudyInstanceUID()) ) {
+                ql.append(" AND s.studyInstanceUID = :studyInstanceUID");
+                if (filter.isRequestStudyIUID()) {
+                	ql.append(" OR EXISTS (SELECT rq FROM RequestAttributes rq WHERE rq.series = series AND rq.studyInstanceUID = :studyInstanceUID)");
+                }
             } else if (filter.isExtendedQuery() && !QueryUtil.isUniversalMatch(filter.getSeriesInstanceUID())) {
                 QueryUtil.appendSeriesInstanceUIDFilter(ql, filter.getSeriesInstanceUID());
             } else {
