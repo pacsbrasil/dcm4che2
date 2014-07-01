@@ -144,7 +144,7 @@ public class MediaCreationRequestEmulatorService extends ServiceMBeanSupport
         for (int i = 0; i < sourceAETs.length; i++) {
             String line = stk.nextToken();
             if (line.split(";").length > 0) {
-                // TODO group
+
                 sourceAETs[i] = line.trim();
                 endAET = sourceAETs[i].indexOf(':');
                 delays[i] = SpoolDirService.MS_PER_MINUTE;
@@ -226,7 +226,7 @@ public class MediaCreationRequestEmulatorService extends ServiceMBeanSupport
 
     public void setSpoolFileNamePattern(String pattern) {
         if (pattern.length() > 0 && pattern.contains("PID")) {
-            spoolFileNamePattern=pattern;
+            spoolFileNamePattern = pattern;
         } else {
             throw new IllegalArgumentException();
         }
@@ -453,8 +453,9 @@ public class MediaCreationRequestEmulatorService extends ServiceMBeanSupport
         int count = 0;
         long now = System.currentTimeMillis();
         for (int i = 0; i < sourceAETs.length; i++) {
-            File[] files = spoolDir.getEmulateRequestFiles(sourceAETs[i], now
-                    - delays[i]);
+            File[] files = spoolDir.getEmulateRequestFiles((sourceAETs[i]
+                    .split(";").length > 0 ? sourceAETs[i].split(";")[0]
+                    : sourceAETs[i]), now - delays[i]);
             for (File file : files) {
                 try {
                     createRequest(file, sourceAETs[i]);
