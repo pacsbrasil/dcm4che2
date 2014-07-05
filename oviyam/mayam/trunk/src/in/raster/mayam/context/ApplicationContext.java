@@ -89,7 +89,7 @@ public class ApplicationContext {
     //Reference Objects and Variables    
 
     public static MainScreen mainScreenObj = null;
-    private static Locale currentLocale = null;
+    public static Locale currentLocale = null;
     public static ResourceBundle currentBundle = null;
     public static DatabaseHandler databaseRef = DatabaseHandler.getInstance();
     public static CommunicationDelegate communicationDelegate = new CommunicationDelegate();

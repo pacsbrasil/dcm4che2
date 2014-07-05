@@ -66,19 +66,19 @@ import org.dcm4che2.data.UID;
  * @version 2.1
  */
 public class JNLPSeriesRetriever {
-
+    
     InputArgumentValues inputArgumentValues = null;
     ExecutorService executor = Executors.newFixedThreadPool(3);
-
+    
     public JNLPSeriesRetriever(InputArgumentValues inputArgumentValues) {
         this.inputArgumentValues = inputArgumentValues;
         run();
     }
-
+    
     public void run() {
         doQuery(inputArgumentValues);
     }
-
+    
     private void doQuery(InputArgumentValues inputArgumentValues) {
         HashMap<String, HashSet<String>> instances = null;
         HashSet<String> sopClassList = new HashSet<String>(0, 1);
@@ -195,7 +195,7 @@ public class JNLPSeriesRetriever {
         }
     }
     int position = 0, size = 0;
-
+    
     private void createPreviews(Dataset seriesDataset, ImagePreviewPanel imagePreviewPanel, int id, int noOfInstances) {
         Series series = new Series(seriesDataset);
         series.setSeriesRelatedInstance(noOfInstances);
@@ -208,7 +208,7 @@ public class JNLPSeriesRetriever {
         imagePreviewPanel.addViewerPanel(position, height, viewerPreviewPanel, size);
         position += (height + 5);
     }
-
+    
     private void createMultiframeOrVideoPreview(Dataset seriesDataset, ImagePreviewPanel imagePreviewPanel, int id, String iuid, String seriesDesc) {
         Series series = new Series(seriesDataset);
         series.setSeriesRelatedInstance(1);
@@ -226,27 +226,23 @@ public class JNLPSeriesRetriever {
         }
         position += (height + 5);
     }
-
+    
     private String[] constructPatientInfo(Dataset dataset) {
         String[] patientInfo = new String[5];
-        DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
-        DateFormat timeFormat = new SimpleDateFormat("hhmmss");
-        DateFormat displayDateFormat = new SimpleDateFormat("dd/MM/yyyy");
-        DateFormat displayTimeFormat = new SimpleDateFormat("hh:mm:ss");
         patientInfo[0] = dataset.getString(Tags.PatientName);
         patientInfo[1] = dataset.getString(Tags.PatientID);
         patientInfo[2] = dataset.getString(Tags.StudyDescription);
-        Date date = null, time = null;
+        
         try {
-            date = dateFormat.parse(dataset.getString(Tags.StudyDate).replace("-", ""));
-            time = timeFormat.parse(dataset.getString(Tags.StudyTime).replace(":", ""));
-        } catch (ParseException ex) {
-            // ignore the parse exception
-        }
-        try {
-            patientInfo[3] = displayDateFormat.format(date) + " " + displayTimeFormat.format(time);
-        } catch (NullPointerException nullPtr) {
+            patientInfo[3] = DateFormat.getDateInstance(DateFormat.DEFAULT, ApplicationContext.currentLocale).format(dataset.getDate(Tags.StudyDate));
+        } catch (Exception ex) {
             patientInfo[3] = "Unknown";
+        }
+        
+        try {
+            patientInfo[3] += " " + DateFormat.getTimeInstance(DateFormat.DEFAULT, ApplicationContext.currentLocale).format(dataset.getDate(Tags.StudyTime));
+        } catch (Exception ex) {
+            patientInfo[3] += "Unknown";
         }
         patientInfo[4] = String.valueOf(dataset.getInteger(Tags.NumberOfStudyRelatedSeries) + " Series");
         return patientInfo;

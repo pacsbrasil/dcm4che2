@@ -189,7 +189,7 @@ public class ImagePanel extends javax.swing.JPanel {
         textOverlayParam.setPatientName(dataset.getString(Tags.PatientName));
         textOverlayParam.setPatientID(dataset.getString(Tags.PatientID));
         textOverlayParam.setSex(dataset.getString(Tags.PatientSex));
-        textOverlayParam.setStudyDate(dataset.getString(Tags.StudyDate));
+        textOverlayParam.setStudyDate(dataset.getDate(Tags.StudyDate));
         textOverlayParam.setStudyDescription(dataset.getString(Tags.StudyDescription) != null ? dataset.getString(Tags.StudyDescription) : "");
         textOverlayParam.setSeriesDescription(dataset.getString(Tags.SeriesDescription) != null ? dataset.getString(Tags.SeriesDescription) : "");
         textOverlayParam.setBodyPartExamined(dataset.getString(Tags.BodyPartExamined));

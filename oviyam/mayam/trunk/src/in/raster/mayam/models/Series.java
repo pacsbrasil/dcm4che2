@@ -39,11 +39,14 @@
  * ***** END LICENSE BLOCK ***** */
 package in.raster.mayam.models;
 
+import in.raster.mayam.context.ApplicationContext;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
+import java.text.ParseException;
 
 /**
  *
@@ -83,10 +86,6 @@ public class Series {
     }
 
     public Series(Dataset dataset) {
-        SimpleDateFormat timeFormatter = new SimpleDateFormat("hh:mm:ss");
-        SimpleDateFormat timeParser = new SimpleDateFormat("hhmmss");
-        SimpleDateFormat dateFormatter = new SimpleDateFormat("dd/MM/yyyy");
-        SimpleDateFormat dateParser = new SimpleDateFormat("yyyyMMdd");
         this.SeriesInstanceUID = dataset.getString(Tags.SeriesInstanceUID);
         this.StudyInstanceUID = dataset.getString(Tags.StudyInstanceUID);
         this.SeriesNumber = dataset.getString(Tags.SeriesNumber) != null ? dataset.getString(Tags.SeriesNumber) : "";
@@ -94,12 +93,12 @@ public class Series {
         this.bodyPartExamined = dataset.getString(Tags.BodyPartExamined);
         this.seriesDesc = dataset.getString(Tags.SeriesDescription) != null ? dataset.getString(Tags.SeriesDescription) : "";
         try {
-            seriesTime = timeFormatter.format(timeParser.parse(dataset.getString(Tags.SeriesTime)));
+            seriesTime = DateFormat.getTimeInstance(DateFormat.DEFAULT, ApplicationContext.currentLocale).format(dataset.getDate(Tags.SeriesTime));
         } catch (Exception ex) {
             seriesTime = "unknown";
         }
         try {
-            seriesDate = dateFormatter.format(dateParser.parse(dataset.getString(Tags.SeriesDate)));
+            seriesDate = DateFormat.getDateInstance(DateFormat.DEFAULT, ApplicationContext.currentLocale).format(dataset.getDate(Tags.SeriesDate));
         } catch (Exception ex) {
             seriesDate = "unknown";
         }
@@ -113,11 +112,19 @@ public class Series {
         this.SeriesNumber = seriesNo;
         this.seriesDesc = seriesDesc;
         this.bodyPartExamined = bodyPart;
-        this.seriesDate = seriesDate;
-        this.seriesTime = seriesTime;
         this.multiframe = multiframe;
         this.instanceUID = instanceUid;
         this.seriesRelatedInstance = noOfInstances;
+        try {
+            this.seriesDate = DateFormat.getDateInstance(DateFormat.DEFAULT, ApplicationContext.currentLocale).format(new SimpleDateFormat("dd/MM/yyyy").parse(seriesDate));
+        } catch (ParseException ex) {
+            this.seriesDate = seriesDate;
+        }
+        try {
+            this.seriesTime = DateFormat.getTimeInstance(DateFormat.DEFAULT, ApplicationContext.currentLocale).format(new SimpleDateFormat("hh:mm:ss").parse(seriesTime));
+        } catch (ParseException ex) {
+            this.seriesTime = seriesTime;
+        }
         imageList = new ArrayList<Instance>();
     }
 

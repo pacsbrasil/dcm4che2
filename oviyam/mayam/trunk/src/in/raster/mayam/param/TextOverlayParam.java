@@ -39,6 +39,8 @@
  * ***** END LICENSE BLOCK ***** */
 package in.raster.mayam.param;
 
+import in.raster.mayam.context.ApplicationContext;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -163,21 +165,16 @@ public class TextOverlayParam {
         return studyDate;
     }
 
-    public void setStudyDate(String studyDate) {
-        try {
-            Date d = sourceDateFormat.parse(studyDate);
-            this.studyDate = destinationDateFormat.format(d);
-        } catch (ParseException ex) {
-            this.studyDate = "";
-        }
+    public void setStudyDate(Date studydate) {
+        this.studyDate = DateFormat.getDateInstance(DateFormat.DEFAULT, ApplicationContext.currentLocale).format(studydate);
     }
 
     public String getStudyTime() {
         return studyTime;
     }
-
-    public void setStudyTime(String studyTime) {
-        this.studyTime = studyTime;
+    
+    public void setStudyTime(Date studyTime) {
+        this.studyTime = DateFormat.getTimeInstance(DateFormat.DEFAULT, ApplicationContext.currentLocale).format(studyTime);
     }
 
     public String getWindowLevel() {

@@ -39,10 +39,10 @@
  * ***** END LICENSE BLOCK ***** */
 package in.raster.mayam.models;
 
+import in.raster.mayam.context.ApplicationContext;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
 
@@ -76,10 +76,26 @@ public class StudyModel {
     public StudyModel(String patientId, String patientName, String dob, String accessionNo, String studyDate, String studyTime, String studyDescription, String modality, String numberOfSeries, String studyLevelInstances, String studyInstaceUid) {
         this.patientId = patientId;
         this.patientName = patientName;
-        this.dob = dob;
         this.accessionNo = accessionNo;
-        this.studyDate = studyDate;
-        this.studyTime = studyTime;
+        DateFormat df1 = DateFormat.getDateInstance(DateFormat.DEFAULT, ApplicationContext.currentLocale);
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+        try {
+            this.studyDate = df1.format(sdf.parse(studyDate));
+        } catch (ParseException ex) {
+            this.studyDate = studyDate;
+        }
+        try {
+            this.dob = df1.format(sdf.parse(dob));
+        } catch (ParseException ex) {
+            this.dob = dob;
+        }
+
+        try {
+            this.studyTime = DateFormat.getTimeInstance(DateFormat.DEFAULT, ApplicationContext.currentLocale).format(new SimpleDateFormat("hh:mm:ss").parse(studyTime));
+        } catch (ParseException ex) {
+            this.studyTime = studyTime;
+        }
+
         this.studyDescription = studyDescription;
         this.modality = modality;
         this.modalitiesInStudy = modality;
@@ -117,13 +133,22 @@ public class StudyModel {
         accessionNo = dataSet.getString(Tags.AccessionNumber) != null ? dataSet.getString(Tags.AccessionNumber) : "unknown";
         studyLevelInstances = dataSet.getString(Tags.NumberOfStudyRelatedInstances) != null ? dataSet.getString(Tags.NumberOfStudyRelatedInstances) : "unknown";
         numberOfSeries = dataSet.getString(Tags.NumberOfStudyRelatedSeries) != null ? dataSet.getString(Tags.NumberOfStudyRelatedSeries) : "unknown";
+
+        DateFormat df1 = DateFormat.getDateInstance(DateFormat.DEFAULT, ApplicationContext.currentLocale);
         try {
-            studyDate = dateFormatter.format(dateParser.parse(dataSet.getString(Tags.StudyDate)));
+            studyDate = df1.format(dataSet.getDate(Tags.StudyDate));
         } catch (Exception ex) {
             studyDate = "unknown";
         }
+
         try {
-            studyTime = timeFormatter.format(timeParser.parse(dataSet.getString(Tags.StudyTime)));
+            dob = df1.format(dataSet.getDate(Tags.PatientBirthDate));
+        } catch (Exception ex) {
+            dob = "unknown";
+        }
+
+        try {
+            studyTime = DateFormat.getTimeInstance(DateFormat.DEFAULT, ApplicationContext.currentLocale).format(dataSet.getDate(Tags.StudyTime));
         } catch (Exception ex) {
             studyTime = "unknown";
         }
