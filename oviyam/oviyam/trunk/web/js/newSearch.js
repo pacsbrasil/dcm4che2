@@ -53,7 +53,9 @@ function searchClick(searchBtn) {
 
     var tabIndex = $('#tabs_div').data('tabs').options.selected;
     searchURL += '&tabIndex=' + tabIndex;
-
+    
+    searchURL += '&preview=' + $('.ui-tabs-selected').find('a').attr('preview');
+    
     divContent += '_content';
 
     $(divContent).html('');

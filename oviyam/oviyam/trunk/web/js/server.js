@@ -12,8 +12,8 @@ $(document).ready(function() {
 
     loadTable();
     $.get("do/IOviyamContext", function(data){ 
-    	$('#ioviyamCxt').val(data);
-    });
+    	$('#ioviyamCxt').val(data.trim());
+    },'text');
 
     $("#addBtn").click(function() {
         if(!addBtnPressed) {
@@ -21,18 +21,18 @@ $(document).ready(function() {
             '<td><input type="text" id="aet" style="width:100%"></td>' +
             '<td><input type="text" id="host" style="width:100%"></td><td><input type="text" id="port" style="width:100%"></td>' +
             '<td><select id="retrieve" style="width:100%" onchange="hideWadoFields()"><option value="WADO">WADO</option><option value="C-MOVE">C-MOVE</option><option value="C-GET">C-GET</option></select></td>' +
-            '<td><input type="text" id="wadoCxt" value="wado" style="width:100%" title="WADO Context"></td><td><input type="text" id="wadoPort" value="8080" style="width:87%" title="WADO Port">' +
+            '<td><input type="text" id="wadoCxt" value="wado" style="width:100%" title="WADO Context"></td><td><input type="text" id="wadoPort" value="8080" style="width:100%" title="WADO Port">' +
+            '<td><input type="checkbox" id="preview" style="width: 50%;" checked>' + 
             '<a href="#" onClick="insertTable();"><img src="images/save.png"></a></td></tr>';
             //var wid = $("#serverTable").css('width');
             $("#serverTable > tbody:last").append(str);
-            // $("#serverTable").css('width', '1088px');
             addBtnPressed = true;
         }
     });
 
     $("#verifyBtn").click(function(){
         var msg = '';
-        if($url != "" && ($('#serverTable :checked').length == 1)) {
+        if($url != "" && ($('#serverTable :checked').not('.previewChk').length == 1)) {
             $.get("Echo.do?dicomURL=" + $url, function(data) {
                 if (data == "EchoSuccess") {
                     msg = "Echo " + $url + " successfully!!!";
@@ -91,6 +91,7 @@ $(document).ready(function() {
                 'port':$('#listener_port').val(),
                 'action':'Update'
             },
+            dataType: 'text',
             success: function(msg1) {
                 if(msg1.trim() == 'success') {
                     $.ambiance({
@@ -125,6 +126,7 @@ $(document).ready(function() {
     			'iOviyamCxt': $('#ioviyamCxt').val(),
     			'action': 'Update'
     		},
+    		dataType: 'text',
     		success: function(msg2) {
     			if(msg2.trim() == 'success') {
     				$.ambiance({
@@ -157,7 +159,7 @@ function insertTable() {
         alert($('#desc').val() + " is reserved for local studies, please try some other name!!!");
         return;
     }
-
+    	
     if($("#desc").val()!='' && $("#aet").val()!='' && $("#host").val()!='' && $("#port").val()!='' && $("#wadoport").val()!='') {
         $.ajax({
             url: 'ServerConfig.do',
@@ -169,9 +171,11 @@ function insertTable() {
                 'retrieve':$("#retrieve").val(),
                 'wadoContext':$("#wadoCxt").val(),
                 'wadoPort':$("#wadoPort").val(),
+                'previews':$('#preview').prop('checked')?'true':'false',
                 'todo':'ADD'
             },
             type: 'POST',
+            dataType: 'text',
             success: function(msg1) {
                 if(msg1.trim() == 'success') {
                     oTable.fnClearTable();
@@ -209,9 +213,11 @@ function editTable() {
             'retrieve':$("#retrieve").val(),
             'wadoContext':$("#wadoCxt").val(),
             'wadoPort':$("#wadoPort").val(),
+            'previews':$('#preview').prop('checked')?'true':'false',
             'todo':'EDIT'
         },
         type: 'POST',
+        dataType: 'text',
         success: function(msg1) {
             oTable.fnClearTable();
             loadTable();
@@ -241,6 +247,14 @@ function loadTable() {
                 if ( typeof row['wadoport'] != 'undefined' ) {
                     wadoPort = row['wadoport'];
                 }
+                
+                var preview = "<input type='checkbox' class='previewChk' style='text-align:center' disabled ";
+                
+                if(row['previews']!='false') {
+                	preview+= "checked>";
+                } else {
+                	preview+= ">";
+                }			
 
                 oTable.fnAddData([
                     "<input type='checkbox' style='text-align:center'>",
@@ -250,7 +264,8 @@ function loadTable() {
                     row['port'],
                     row['retrieve'],
                     wadoCxt,
-                    wadoPort
+                    wadoPort,
+                    preview
                     ]);
             } else {
                 callingAET = row['callingAET'].trim();
@@ -275,8 +290,8 @@ function deleteRow() {
 
 function deleteSelectedRow() {
     var msg = '';
-    var selectRow = $('#serverTable :checked').parent().parent();
-    if($('#serverTable :checked').length == 1) {
+    var selectRow = $('#serverTable :checked').not('.previewChk').parent().parent();
+    if($('#serverTable :checked').not('.previewChk').length == 1) {
         var logical = selectRow.find('td:nth-child(2)').html();
         var ae = selectRow.find('td:nth-child(3)').html();
         var host = selectRow.find('td:nth-child(4)').html();
@@ -294,6 +309,7 @@ function deleteSelectedRow() {
                 'todo':'DELETE'
             },
             type: 'POST',
+            dataType: 'text',
             success: function(msg1) {
                 oTable.fnClearTable();
                 loadTable();
@@ -316,8 +332,8 @@ function deleteSelectedRow() {
 }
 
 function editSelectedRow() {
-    var $selRow = $('#serverTable :checked').parent().parent();
-    if($('#serverTable :checked').length == 1) {
+    var $selRow = $('#serverTable :checked').not('.previewChk').parent().parent();
+    if($('#serverTable :checked').not('.previewChk').length == 1) {
 
         var currDesc = $selRow.find('td:nth-child(2)').html();
         var currAET = $selRow.find('td:nth-child(3)').html();
@@ -327,7 +343,8 @@ function editSelectedRow() {
         var currRet = $selRow.find('td:nth-child(6)').html();
         var currWadoCxt = $selRow.find('td:nth-child(7)').html();
         var currWadoPort = $selRow.find('td:nth-child(8)').html();
-
+		var currentPreview = $selRow.find('td:nth-child(9)').find('.previewChk').prop('checked');
+		 
         var str = '<td><input type="checkbox" disabled="true" CHECKED /></td><td><input type="text" id="desc" disabled="true" value="' + currDesc + '"></td>' +
         '<td><input type="text" id="aet" value="' + currAET + '"></td>' +
         '<td><input type="text" id="host" value="' + currHost +'"></td><td><input type="text" id="port" value="' + currPort +'"></td>';
@@ -339,7 +356,12 @@ function editSelectedRow() {
         } else {
             str += '<td><select id="retrieve" value="' + currRet + '" style="width:100%" onchange="hideWadoFields()"><option value="WADO" selected>WADO</option><option value="C-MOVE">C-MOVE</option><option value="C-GET">C-GET</option></select></td>';
         }
-        str += '<td><input type="text" id="wadoCxt" value="' + currWadoCxt + '" style="width:100%" title="WADO Context"></td><td><input type="text" id="wadoPort" value="' + currWadoPort + '" style="width:87%" title="WADO Port">';
+        str += '<td><input type="text" id="wadoCxt" value="' + currWadoCxt + '" style="width:100%" title="WADO Context"></td><td><input type="text" id="wadoPort" value="' + currWadoPort + '" style="width:100%" title="WADO Port"></td>';
+        if(currentPreview!=true) {
+	        str+= '<td><input type="checkbox" id="preview" class="previewChk">';
+        } else {
+	        str+= '<td><input type="checkbox" id="preview" checked class="previewChk">';
+        }
         str += '<a href="#" onClick="editTable(); $(this).parent().parent().remove();"><img src="images/save.png"></a></td>';
 
         $selRow.html(str);
@@ -402,9 +424,9 @@ $("#serverTable tbody tr").live('click', function(e) {
     }
 
     //get checkbox current checkbox
-    var $checkbox = $(this).find(':checkbox');
+    var $checkbox = $(this).find(':checkbox').not('.previewChk');
     //deselect the already selected checkbox
-    $("#serverTable :checkbox").not($checkbox).removeAttr("checked");
+    $("#serverTable :checkbox").not($checkbox).not('.previewChk').removeAttr("checked");
     if(e.target.type == 'checkbox') {
         //e.stopPropagation();
         $(this).filter(':has(:checkbox)').toggleClass('selected', $checkbox.attr('checked'));

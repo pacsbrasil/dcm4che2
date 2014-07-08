@@ -58,13 +58,13 @@ public class XMLFileHandler {
     private static Logger log = Logger.getLogger(XMLFileHandler.class);
     
     public String getXMLFilePath(String tmpDir) {
-        String xmlFilePath = this.getClass().getResource("/conf/oviyam2-config.xml").getPath();
-        String fname = "oviyam2-config.xml";
+        String xmlFilePath = this.getClass().getResource("/conf/oviyam2-1-config.xml").getPath();
+        String fname = "oviyam2-1-config.xml";
         String retValue = null;
         
        // if(xmlFilePath.indexOf("default") > 0) {
             try {
-                File srcFile = new File(this.getClass().getResource("/conf/oviyam2-config.xml").toURI());
+                File srcFile = new File(this.getClass().getResource("/conf/oviyam2-1-config.xml").toURI());
                 //retValue = xmlFilePath.substring(0, xmlFilePath.indexOf("default")) + "default" + File.separator + fname;
                 retValue = tmpDir + File.separator + fname;
                 File destFile = new File(retValue);

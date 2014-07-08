@@ -104,6 +104,7 @@ $(document).ready(function() {
         var crit = that['dateCrit'];
         var tCrit = that['timeCrit'];
         var modality = that['modality'];
+        var studyDesc = that['studyDesc'];
         var autoRef = that['autoRefresh'];
 
         var id = '';
@@ -173,6 +174,10 @@ $(document).ready(function() {
                                 searchURL += '&fromTime=' + tArr[0] + '&toTime=' + tArr[1];
                             }
                         }
+                        
+                        if(studyDesc!=null) {
+                        	searchURL+='&studyDesc=' + studyDesc + "*";
+                        }
 
                         searchURL += "&dcmURL=" + dUrl;
 
@@ -181,6 +186,8 @@ $(document).ready(function() {
 
                         var tabIndex = $('#tabs_div').data('tabs').options.selected;
                         searchURL += '&tabIndex=' + tabIndex;
+                        
+                        searchURL += "&preview=" + $('.ui-tabs-selected').find('a').attr('preview');
                                             
                         divContent += '_content';
 
@@ -306,8 +313,14 @@ $(document).ready(function() {
                 } else {
                     wadoUrl = node.retrieve;
                 }
+                
+                var preview = true;
+                
+                if(typeof(node.previews)!="undefined") {
+                	preview = node.previews;
+                }
 
-                var li = '<li class="ui-state-default ui-corner-top"><a href="#' + node.aetitle + '" name="' + dcmUrl + '" wadoUrl="' + wadoUrl + '"><span>' + node.logicalname + '</span></a></li>';
+                var li = '<li class="ui-state-default ui-corner-top"><a href="#' + node.aetitle + '" name="' + dcmUrl + '" wadoUrl="' + wadoUrl + '" preview="' + preview + '"><span>' + node.logicalname + '</span></a></li>';
                 $('#tabUL').append(li);
                 
                 var div = '';
@@ -328,8 +341,9 @@ $(document).ready(function() {
                 		var searchURL = "queryResult.jsp?";
                 		searchURL += 'patientId=' + patId;
                 		searchURL += "&dcmURL=" + dcmUrl;
-                		searchURL += '&tabName=' + node.aetitle;
+                		searchURL += '&tabName=' + node.aetitle;                		
                 		searchURL += '&tabIndex=' + tabIndex;
+                		searchURL += '&preview=' + preview;
                    
                 		var divContent = '#' + node.aetitle + '_content';
 

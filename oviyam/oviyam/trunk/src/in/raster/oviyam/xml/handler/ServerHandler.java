@@ -121,6 +121,7 @@ public class ServerHandler {
                     serObj.setRetrieve(server.getRetrieve());
                     serObj.setWadocontext(server.getWadocontext());
                     serObj.setWadoport(server.getWadoport());
+                    serObj.setPreviewStatus(server.isPreviewEnabled());
                     break;
                 }
             }

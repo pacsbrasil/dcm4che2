@@ -77,6 +77,7 @@ public class ServerConfigServlet extends HttpServlet {
         String retrieve = request.getParameter("retrieve");
         String wadoCxt = request.getParameter("wadoContext");
         String wadoport = request.getParameter("wadoPort");
+        String previews = request.getParameter("previews");
         String action = request.getParameter("todo");
 
         PrintWriter out = response.getWriter();
@@ -91,6 +92,7 @@ public class ServerConfigServlet extends HttpServlet {
             sm.setRetrieve(retrieve);
             sm.setWadocontext(wadoCxt);
             sm.setWadoport(wadoport);
+            sm.setPreviewStatus(previews);
 
             // Initialize the ServerHandler instance.
             //File tempDir = (File) getServletContext().getAttribute("javax.servlet.context.tempdir");

@@ -71,11 +71,11 @@ public class ReadXMLFile {
             DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
 
-            String xmlFileName = this.getClass().getResource("/conf/oviyam2-config.xml").getPath(); //toString();
+            String xmlFileName = this.getClass().getResource("/conf/oviyam2-1-config.xml").getPath(); //toString();
             //String fname = "oviyam2-config.xml";
 
             //if(xmlFileName.indexOf("default") >0) {
-                File srcFile = new File(this.getClass().getResource("/conf/oviyam2-config.xml").toURI());
+                File srcFile = new File(this.getClass().getResource("/conf/oviyam2-1-config.xml").toURI());
 		//configXmlFile = new File(xmlFileName.substring(0,xmlFileName.indexOf("default"))+"default" + File.separator + fname);
                 configXmlFile = LanguageHandler.source;
                 

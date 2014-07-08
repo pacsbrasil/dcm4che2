@@ -70,7 +70,7 @@ public class ReceiveDelegate {
             dcmrcv.setPort(Integer.parseInt(listener.getPort()));
             //dcmrcv.setDestination(ServerConfigLocator.locate().getServerHomeDir() + File.separator + "data");
             String dest = LanguageHandler.source.getAbsolutePath();
-            dcmrcv.setDestination(dest.substring(0, dest.indexOf("oviyam2-config.xml")-1));
+            dcmrcv.setDestination(dest.substring(0, dest.indexOf("oviyam2-1-config.xml")-1));
             dcmrcv.setPackPDV(false);
             dcmrcv.setTcpNoDelay(false);
             dcmrcv.initTransferCapability();

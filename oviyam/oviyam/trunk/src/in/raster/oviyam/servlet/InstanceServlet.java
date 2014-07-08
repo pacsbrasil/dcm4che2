@@ -102,7 +102,7 @@ public class InstanceServlet extends HttpServlet {
         if( !(!wadoURL.equals("C-MOVE") && !wadoURL.equals("C-GET")) ) {
             String dest = LanguageHandler.source.getAbsolutePath();
             //fname = ServerConfigLocator.locate().getServerHomeDir() + File.separator + "data" + File.separator + "oviyam2";
-            fname = dest.substring(0, dest.indexOf("oviyam2-config.xml")-1) + File.separator + "oviyam2";
+            fname = dest.substring(0, dest.indexOf("oviyam2-1-config.xml")-1) + File.separator + "oviyam2";
             fname += File.separator + studyUID;
         } else {
             wadoURL += "?requestType=WADO&contentType=application/dicom&studyUID=" + studyUID + "&seriesUID=" + seriesUID;

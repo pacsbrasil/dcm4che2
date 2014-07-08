@@ -67,8 +67,8 @@ import org.dcm4che2.data.Tag;
 import org.dcm4che2.image.OverlayUtils;
 import org.dcm4che2.io.DicomInputStream;
 import org.dcm4che2.tool.dcmqr.DcmQR;
-import com.sun.image.codec.jpeg.JPEGCodec;	 
-import com.sun.image.codec.jpeg.JPEGImageEncoder;
+//import com.sun.image.codec.jpeg.JPEGCodec;	 
+//import com.sun.image.codec.jpeg.JPEGImageEncoder;
 
 /**
  *
@@ -105,7 +105,7 @@ public class WadoServlet extends HttpServlet {
         
         //String dest = ServerConfigLocator.locate().getServerHomeDir() + File.separator + "data";
         String dest = LanguageHandler.source.getAbsolutePath();
-        dest = dest.substring(0, dest.indexOf("oviyam2-config.xml")-1);
+        dest = dest.substring(0, dest.indexOf("oviyam2-1-config.xml")-1);
         String inputDcmFilePath = dest + File.separator + "oviyam2" + File.separator + study + File.separator + object;
         File inputDicomFile = new File(inputDcmFilePath);
 
@@ -190,18 +190,18 @@ public class WadoServlet extends HttpServlet {
             BufferedImage bufferImage2 = overlayDicom(inputDicomFile);
 
             OutputStream output = new BufferedOutputStream(new FileOutputStream(outputJpegFile));
-            JPEGImageEncoder encoder = JPEGCodec.createJPEGEncoder(output);
+//            JPEGImageEncoder encoder = JPEGCodec.createJPEGEncoder(output);
 
             if(bufferImage2 != null) {
                 BufferedImage finalBufferImage = addImages(bufferImage1, bufferImage2);
-                //ImageIO.write(finalBufferImage, "jpeg", output);
-                encoder.encode(finalBufferImage);
+                ImageIO.write(finalBufferImage, "jpeg", output);
+//                encoder.encode(finalBufferImage);
             } else {
-                //ImageIO.write(bufferImage1, "jpeg", output);
-                encoder.encode(bufferImage1);
+                ImageIO.write(bufferImage1, "jpeg", output);
+//                encoder.encode(bufferImage1);
             }
             
-            output.close();
+//            output.close();
 
             startStream(response, outputJpegFile, contentType);
 

@@ -45,6 +45,7 @@
 <%@page isELIgnored="false"%>
 <%@taglib prefix="pat" uri="/WEB-INF/tags/PatientInfo.tld"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <%
     String patName = request.getParameter("patientName");
@@ -94,10 +95,6 @@
                 });
 
                 $.fn.dataTableInstances[<%=tabIndex%>] = dTable;
-
-                /* var searchPanel = '#' + <%=request.getParameter("tabName")%>.id + '_search';
-                $(searchPanel).load('newSearch.html'); */
-
             });
             
             function toggleDivider(divider) {
@@ -117,21 +114,25 @@
         </script>
     </head>
     <body>
+		<c:choose>
+			<c:when test="${param.preview=='true'}">
+				<div id="<%=request.getParameter("tabName")%>_westPane" style="width: 16%; height: 99%; visibility: visible; display: block; z-index: 0; overflow:auto; float: left; border: 1px solid #555;"></div>
 
-<!--  <div id="<%=request.getParameter("tabName")%>_search" style="height:13%; width:99%;"></div>  -->
+       			 <div title="Close" class="ui-state-default" onmouseover="this.className='ui-state-hover'" onmouseout="this.className='ui-state-default'" style="float:left; width: 4px; height: 99%; margin-left: 3px; cursor: pointer;" onclick="toggleDivider(this)"></div>
 
-        <div id="<%=request.getParameter("tabName")%>_westPane" style="width: 16%; height: 99%; visibility: visible; display: block; z-index: 0; overflow:auto; float: left; border: 1px solid #555;"></div>
+       			 <div style="float:left; width:82%; margin-left: 3px;height: 96%;">
+			</c:when>
+			<c:otherwise>
+				<div style="float:left; width:99%; margin-left: 3px;height: 96%;">
+			</c:otherwise>
+		</c:choose>     
 
-        <div title="Close" class="ui-state-default" onmouseover="this.className='ui-state-hover'" onmouseout="this.className='ui-state-default'" style="float:left; width: 4px; height: 99%; margin-left: 3px; cursor: pointer;" onclick="toggleDivider(this)"></div>
+        <table class="display" id="<%=tabName%>" style="font-size:12px;">
 
-        <div style="float:left; width:82%; margin-left: 3px;height: 96%;">
-
-            <table class="display" id="<%=tabName%>" style="font-size:12px;">
-
-                <thead>
-                    <tr>
-                        <th></th>
-                        <th><fmt:message key='patientID' bundle="${lang}"/></th>
+            <thead>
+                <tr>
+                <th></th>
+                <th><fmt:message key='patientID' bundle="${lang}"/></th>
                 <th><fmt:message key='patientName' bundle="${lang}"/></th>
                 <th><fmt:message key='dateOfBirth' bundle="${lang}"/></th>
                 <th><fmt:message key='accessionNumber' bundle="${lang}"/></th>
@@ -144,8 +145,8 @@
                 <th>Series Count</th>
                 <th>Gender</th>
                 </tr>
-                </thead>
-                <tbody>
+            </thead>
+            <tbody>
                 <pat:Patient patientId="${param.patientId}" patientName="<%=patName%>" birthDate="${param.birthDate}" modality="${param.modality}"
                              from="${param.from}" to="${param.to}" searchDays="${param.searchDays}" accessionNumber="${param.accessionNumber}"
                              referPhysician="${param.referPhysician}" studyDescription="${param.studyDesc}"
@@ -154,7 +155,7 @@
                         <td>
                             <img src="images/details_open.png" alt="" />
                             <img src="images/green.png" style="visibility: hidden" id="${studyIUID}" alt="" />
-                        </td>
+                   		</td>
                         <td>${patientId}</td>
                         <td>${patientName}</td>
                         <td>${birthDate}</td>
@@ -169,8 +170,8 @@
                         <td>${patientGender}</td>
                     </tr>
                 </pat:Patient>
-                </tbody>
-            </table>
-        </div>
+            </tbody>
+        </table>
+    </div>
     </body>
 </html>

@@ -279,10 +279,12 @@ table.display tr.even.gradeU {
 
 tr.odd {
 	background-color: #E2E4FF;
+	height: 30px;
 }
 
 tr.even {
 	background-color: white;
+	height: 30px;
 }
 
 
