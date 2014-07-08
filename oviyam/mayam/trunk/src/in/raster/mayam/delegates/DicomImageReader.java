@@ -89,4 +89,24 @@ public class DicomImageReader {
         g2d.dispose();
         return tempImage;
     }
+
+    //Export
+    public static BufferedImage[] readMultiFrames(File dicomFile) {
+        BufferedImage[] bufferedImages = null;
+        ImageReader reader = (ImageReader) ImageIO.getImageReadersByFormatName("DICOM").next();
+        ImageInputStream iis = null;
+        try {
+            iis = ImageIO.createImageInputStream(dicomFile);
+            reader.setInput(iis, false);
+            if (reader.getNumImages(true) > 0) {
+                bufferedImages = new BufferedImage[reader.getNumImages(true)];
+                for (int i = 0; i < bufferedImages.length; i++) {
+                    bufferedImages[i] = reader.read(i);
+                }
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(DicomImageReader.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return bufferedImages;
+    }
 }

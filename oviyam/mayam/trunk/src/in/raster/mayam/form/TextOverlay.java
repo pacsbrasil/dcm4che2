@@ -371,7 +371,7 @@ public class TextOverlay extends javax.swing.JPanel {
             setTextOverlayToNull();
         }
         if (firstTime) {
-            setSize(layeredCanvas.getWidth()-5, layeredCanvas.getHeight()-5);
+            setSize(layeredCanvas.getWidth() - 5, layeredCanvas.getHeight() - 5);
             firstTime = false;
             setTextOverlayToNull();
             repaint();
@@ -397,4 +397,8 @@ public class TextOverlay extends javax.swing.JPanel {
     private javax.swing.JLabel windowingLabel;
     private javax.swing.JLabel zoomLabel;
     // End of variables declaration//GEN-END:variables
+
+    public String getPatientName() {
+        return patientNameLabel.getText();
+    }
 }

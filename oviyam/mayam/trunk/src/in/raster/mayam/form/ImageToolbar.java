@@ -45,7 +45,7 @@ import in.raster.mayam.delegates.CineTimer;
 import in.raster.mayam.delegates.LocalizerDelegate;
 import in.raster.mayam.dicomtags.DicomTags;
 import in.raster.mayam.dicomtags.DicomTagsReader;
-import in.raster.mayam.form.dialogs.ExportDialog;
+import in.raster.mayam.form.dialogs.ExportDicom;
 import in.raster.mayam.form.display.Display;
 import in.raster.mayam.models.PresetModel;
 import in.raster.mayam.param.TextOverlayParam;
@@ -823,13 +823,9 @@ public class ImageToolbar extends javax.swing.JPanel {
     }//GEN-LAST:event_resetActionPerformed
 
     private void exportButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportButtonActionPerformed
-        if (ApplicationContext.layeredCanvas.annotationPanel != null && ApplicationContext.layeredCanvas.imgpanel != null) {
-            ExportDialog jpegConvertor = new ExportDialog(ApplicationContext.imgView, true);
-            Display.alignScreen(jpegConvertor);
-            jpegConvertor.setVisible(true);
-        } else {
-            JOptionPane.showOptionDialog(this, ApplicationContext.currentBundle.getString("ImageView.invalidToolSelection.text"), ApplicationContext.currentBundle.getString("ErrorTitles.text"), JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
-        }
+        ExportDicom exporter = new ExportDicom(ApplicationContext.layeredCanvas);
+        Display.alignScreen(exporter);
+        exporter.setVisible(true);
     }//GEN-LAST:event_exportButtonActionPerformed
 
     private void metaDataButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_metaDataButtonActionPerformed

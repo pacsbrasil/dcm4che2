@@ -420,13 +420,13 @@ public class DatabaseHandler {
                 conn.createStatement().executeUpdate("insert into image(SopUID,SOPClassUID,InstanceNo,multiframe,totalframe,SendStatus,ForwardDateTime,ReceivedDateTime,ReceiveStatus,FileStoreUrl,SliceLocation,EncapsulatedDocument,ThumbnailStatus,FrameOfReferenceUID,ImagePosition,ImageOrientation,ImageType,PixelSpacing,SliceThickness,NoOfRows,NoOfColumns,ReferencedSopUid,PatientId,StudyInstanceUID,SeriesInstanceUID) values('" + dataset.getString(Tags.SOPInstanceUID) + "','" + dataset.getString(Tags.SOPClassUID) + "'," + dataset.getInt(Tags.InstanceNumber) + ",'" + multiframe + "','" + totalFrame + "','" + "partial" + "','" + " " + "','" + " " + "','" + "partial" + "','" + filePath + "'," + sliceLoc + ",'" + encapsulatedPDF + "',false,'" + frameOfRefUid + "','" + imgPos + "','" + imgOrientation + "','" + image_type + "','" + pixelSpacing + "','" + sliceThickness + "'," + row + "," + columns + ",'" + referSopInsUid.trim() + "','" + dataset.getString(Tags.PatientID) + "','" + dataset.getString(Tags.StudyInstanceUID) + "','" + dataset.getString(Tags.SeriesInstanceUID) + "')");
                 conn.commit();
                 boolean isVideo = false;
-                 if (dataset.getString(Tags.SOPClassUID).equals(UID.VideoEndoscopicImageStorage) || dataset.getString(Tags.SOPClassUID).equals(UID.VideoMicroscopicImageStorage) || dataset.getString(Tags.SOPClassUID).equals(UID.VideoPhotographicImageStorage)) {
-                        String storeLoc = isLink ? ApplicationContext.getAppDirectory() + File.separator + "Videos" + File.separator + dataset.getString(Tags.SOPInstanceUID) + "_V" : new File(filePath).getParentFile() + File.separator + dataset.getString(Tags.SOPInstanceUID) + "_V";
-                        ApplicationContext.convertVideo(filePath, storeLoc, dataset.getString(Tags.SOPInstanceUID));
-                        isVideo = true;
-                    }
+                if (dataset.getString(Tags.SOPClassUID).equals(UID.VideoEndoscopicImageStorage) || dataset.getString(Tags.SOPClassUID).equals(UID.VideoMicroscopicImageStorage) || dataset.getString(Tags.SOPClassUID).equals(UID.VideoPhotographicImageStorage)) {
+                    String storeLoc = isLink ? ApplicationContext.getAppDirectory() + File.separator + "Videos" + File.separator + dataset.getString(Tags.SOPInstanceUID) + "_V" : new File(filePath).getParentFile() + File.separator + dataset.getString(Tags.SOPInstanceUID) + "_V";
+                    ApplicationContext.convertVideo(filePath, storeLoc, dataset.getString(Tags.SOPInstanceUID));
+                    isVideo = true;
+                }
                 if (ApplicationContext.mainScreenObj != null && updateMainScreen || (!ApplicationContext.isJnlp && !ApplicationContext.mainScreenObj.isInProgress())) {
-                    if(!isVideo) {
+                    if (!isVideo) {
                         String storeLoc = isLink ? ApplicationContext.getAppDirectory() + File.separator + "Thumbnails" + File.separator + dataset.getString(Tags.StudyInstanceUID) + File.separator + dataset.getString(Tags.SOPInstanceUID) : filePath.substring(0, filePath.lastIndexOf(File.separator)) + File.separator + "Thumbnails" + File.separator + dataset.getString(Tags.SOPInstanceUID);
                         executor.submit(new ThumbnailConstructor(filePath, storeLoc));
                         update("image", "ThumbnailStatus", true, "SopUID", dataset.getString(Tags.SOPInstanceUID));
@@ -834,7 +834,7 @@ public class DatabaseHandler {
                 img.setTotalNumFrames(totalFrames);
                 if (img.getSopClassUid() != null && (img.getSopClassUid().equals(UID.VideoEndoscopicImageStorage) || img.getSopClassUid().equals(UID.VideoMicroscopicImageStorage) || img.getSopClassUid().equals(UID.VideoPhotographicImageStorage))) {
                     series.setVideoStatus(true);
-                    series.setSeriesDesc("Video:"+totalFrames+" Frames");
+                    series.setSeriesDesc("Video:" + totalFrames + " Frames");
                 } else {
                     series.setSeriesDesc("Multiframe:" + totalFrames + " Frames");
                 }
@@ -1173,6 +1173,41 @@ public class DatabaseHandler {
             Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
         return 0;
+    }
+
+    //Export
+    public HashSet<ServerModel> getServersToSend(String selectionStr) {
+        HashSet<ServerModel> serversToSend = new HashSet<ServerModel>(0, 1);
+        try {
+            ResultSet serverInfo = conn.createStatement().executeQuery("select logicalname,aetitle,hostname,port from servers where logicalname in(" + selectionStr + ")");
+            while (serverInfo.next()) {
+                serversToSend.add(new ServerModel(serverInfo.getString("aetitle"), serverInfo.getString("hostname"), serverInfo.getInt("port")));
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return serversToSend;
+    }
+
+    public ArrayList<String> getInstances(String studyUid, String seriesUid, String multiframe) {
+        ArrayList<String> instances = new ArrayList<String>();
+        String sql = "select FileStoreUrl from image where StudyInstanceUID='" + studyUid + "'";
+        if (seriesUid != null) {
+            sql += " and SeriesInstanceUID='" + seriesUid + "'";
+        }
+        if (multiframe != null) {
+            sql += " and multiframe=" + multiframe;
+        }
+        try {
+            ResultSet rs = conn.createStatement().executeQuery(sql);
+            while (rs.next()) {
+                instances.add(rs.getString("FileStoreUrl"));
+            }
+            rs.close();
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return instances;
     }
 
     //Updations
