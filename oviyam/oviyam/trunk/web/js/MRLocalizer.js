@@ -100,16 +100,12 @@ function projectSliceMR(_imgType) {
         var imgOri = jQuery(currCanvas).parent().parent().find('#imgOrientation').html();
         imgPlane = oImgOrient.getOrientation(imgOri);
 
-        //First slice
+        //First and last slice
         var serUid = jQuery(parent.jcanvas).parent().parent().find('#frameSrc').html();
         serUid = serUid.substring(serUid.indexOf("seriesUID=")+10);
         serUid = serUid.substring(0, serUid.indexOf('&'));
-
-        scoutModel = new ScoutLineModel(serUid);
-        scoutModel.getValues("First", _imgType);
-
-        //Last slice
-        scoutModel.getValues("Last", _imgType);
+        
+        drawBorderMR(serUid, _imgType);
     }
 
     // current slice
@@ -250,4 +246,46 @@ function projectScoutLineMR(sliceModel) {
 function findSlope(x1, y1, x2, y2) {
     var sl = (y2-y1) / (x2-x1);
     return sl;
+}
+
+function drawBorderMR(seriesUid, imgType) {
+	var instanceData = JSON.parse(sessionStorage[seriesUid]);
+	
+	var firstInstance = null;
+	var lastInstance = null;
+	
+	for(var i=0;i<instanceData.length;i++) {
+		if((instanceData[i])['imageType']==(imgType)) {
+			firstInstance = instanceData[i];
+			break;
+		}
+	}
+	
+	for(var i=instanceData.length-1;i>0;i--) {
+		if((instanceData[i])['imageType']==(imgType)) {
+			lastInstance = instanceData[i];
+			break;
+		}
+	}
+	
+	if(firstInstance!=null) {
+		var sliceModel = new ScoutLineModel('');
+		sliceModel.imgPosition = firstInstance['imagePositionPatient'];
+		sliceModel.imgOrientation = firstInstance['imageOrientPatient'];
+		sliceModel.pixelSpacing = firstInstance['pixelSpacing'];
+		sliceModel.rows = firstInstance['nativeRows'];
+		sliceModel.columns = firstInstance['nativeColumns'];
+		sliceModel.instanceNo = firstInstance['InstanceNo'];
+		projectScoutLineMR(sliceModel);
+	}
+	
+	if(lastInstance!=null) {
+		var sliceModel1 = new ScoutLineModel('');
+		sliceModel1.imgPosition = lastInstance['imagePositionPatient'];
+		sliceModel1.imgOrientation = lastInstance['imageOrientPatient'];
+		sliceModel1.pixelSpacing = lastInstance['pixelSpacing'];
+		sliceModel1.rows = lastInstance['nativeRows'];
+		sliceModel1.columns = lastInstance['nativeColumns'];
+		projectScoutLineMR(sliceModel1);	
+	}
 }

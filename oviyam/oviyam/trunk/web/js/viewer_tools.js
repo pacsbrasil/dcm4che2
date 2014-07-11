@@ -1,6 +1,3 @@
-var systemDB = null;
-
-
 jQuery(document).keyup(function(e) {
     var curr = jQuery('#containerBox').find('.current');
 

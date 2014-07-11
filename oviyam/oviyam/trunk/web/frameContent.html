@@ -9,7 +9,7 @@
         <script type="text/javascript" src="js/lib/jquery.sleep.js"></script>
         <script type="text/javascript" src="js/viewer1.js"></script>
         <script type="text/javascript" src="js/viewer.js"></script>
-        <script type="text/javascript" src="js/database.js"></script>
+        <!--<script type="text/javascript" src="js/database.js"></script>-->
         <script type="text/javascript" src="js/sync.js"></script>
         <script type="text/javascript" src="js/lib/smartslider.js"></script>
 
@@ -81,45 +81,40 @@
             <div id="applyWLDiv" class="textOverlay" style="bottom:100px; right:7px; cursor:pointer; display:none">Apply All</div>
         </div>
 
-        <script type="text/javascript">
+        <script type="text/javascript">        	
             function loadContextMenu() {
-                var myDb = systemDB;
-                var sql1 = "select SeriesInstanceUID, SeriesDescription from series where StudyInstanceUID='" + parent.pat.studyUID + "'";
-                myDb.transaction(function(tx) {
-                    tx.executeSql(sql1, [], getSeriesDescription, errorHandler);
-                }, errorHandler);
-            }
-
-            function getSeriesDescription(trans, results) {
-                var cxtContent = '<ul id="contextmenu1" class="jqcontextmenu" style="z-index:10">';
-
-                if(isCompatible()) {
-                    for(var i=0; i<results.rows.length; i++) {
-                        var row = results.rows.item(i);
-                        cxtContent += '<li><a href="frameContent.html?seriesUID=' + row['SeriesInstanceUID'] + '">' + convertSplChars(row['SeriesDescription']) + '</a></li>';
-                    }
-                    cxtContent += '</ul>';
-                } else {
-                    //console.log("Safari");
-
-                    var queryString = window.location.href; //window.top.location.search.substring(1);
-                    for(var i=0; i<results.rows.length; i++) {
-                        var row = results.rows.item(i);
-                        cxtContent += '<li><a href="frameContent.html?serverURL=';
-                        cxtContent += getParameter(queryString, 'serverURL');
-                        cxtContent += '&studyUID=' + getParameter(queryString, 'studyUID');
-                        cxtContent += '&seriesUID=' + row['SeriesInstanceUID'] + '">' + convertSplChars(row['SeriesDescription']) + '</a></li>';
-                    }
-                    cxtContent += '</ul>';
-                }
-
+            	var queryString = window.location.href;
+            	var seriesData = JSON.parse(sessionStorage[parent.pat.studyUID]);            	
+            	var cxtContent = '<ul id="contextmenu1" class="jqcontextmenu" style="z-index: 10">';
+            	if(isCompatible()) {
+            		for(var i=0;i<seriesData.length;i++) {
+            			var series = seriesData[i];
+            			if(series['seriesUID']==getParameter(queryString,'seriesUID')){
+            				jQuery('#seriesDesc').html(series['seriesDesc']);
+            				jQuery("#modalityDiv").html(series['modality']);
+            			}
+						cxtContent+= '<li><a href="frameContent.html?seriesUID=' + series['seriesUID'] + '">' + convertSplChars(series['seriesDesc']) + '</a></li>';						
+            		}   
+            		cxtContent+='</ul>';         		
+            	} else {
+            		for(var i=0;i<seriesData.length;i++) {
+	            		var series = seriesData[i];
+	            		if(series['seriesUID']==getParameter(queryString,'seriesUID')){
+            				jQuery('#seriesDesc').html(series['seriesDesc']);
+            			}
+            			cxtContent +='<li><a href="frameContent.html?serverURL=';
+            			cxtContent += getParameter(queryString, 'serverURL');
+            			cxtContent += '&studyUID=' + parent.pat.studyUID;
+            			cxtContent += '&seriesUID=' + series['seriesUID'] + '">' + convertSplChars(series['seriesDesc']) + '</a></li>';
+            		}
+            		cxtContent+='</ul>';
+            	}
                 var div = document.createElement("div");
                 div.innerHTML = cxtContent;
                 document.body.appendChild(div);
 
                 jQuery('canvas').addcontextmenu('contextmenu1');
             }
-
         </script>
 
     </body>

@@ -17,11 +17,12 @@
 *
 * The Initial Developer of the Original Code is
 * Raster Images
-* Portions created by the Initial Developer are Copyright (C) 2007
+* Portions created by the Initial Developer are Copyright (C) 2014
 * the Initial Developer. All Rights Reserved.
 *
 * Contributor(s):
 * Babu Hussain A
+* Devishree V
 * Meer Asgar Hussain B
 * Prakash J
 * Suresh V
@@ -69,7 +70,7 @@
 
         <script type="text/javascript">
 
-            $(document).ready(function() {
+           /* $(document).ready(function() {
                 var bgClr = jQuery('#westPane').css('background-color');
                 bgClr = bgClr.substring(bgClr.indexOf('(')+1, bgClr.indexOf(')'));
                 var bgColorArr = bgClr.split(',');
@@ -88,7 +89,7 @@
                 jQuery('.seriesTable').css('background-color', WPSeriesColor);
                 if(WPSeriesColor == 'rgb(211, 214, 255)')
 	                jQuery('.seriesTable').find('tr:first').css('background-color', WPSeriesColor);
-            });
+            });*/
 
             function changeImgView(but) {
                 //var table = $(but).parent().parent().parent().parent();
@@ -214,7 +215,7 @@
     <body>
         <div id="patName" class="heading"><%=patName%></div>
         <div id="patID" class="heading">ID: ${param.patient}</div>
-        <table id="studyTable" style="font-family: Arial,Helvitica,Serif; font-size:12px; width: 100%;border: 2px outset white; " >
+        <table id="studyTable" style="font-family: Arial,Helvitica,Serif; font-size:12px; width: 100%;border: 2px outset white; color:#fff; " >
             <tbody>
                 <tr>
                     <td colspan="2"><%=studyDesc%></td>

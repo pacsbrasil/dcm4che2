@@ -181,10 +181,6 @@ function moveCanvas(moveDiv) {
     if(winEnabled) {
         stopWLAdjustment();
     }
-    
-    if(measureEnabled) {
-    	doMeasurement(jQuery('#ruler').get(0));
-    }
 
     var canvas = jQuery(jcanvas).parent().children().get(2);
     var tCanvas = jQuery(jcanvas).get(0);
@@ -317,11 +313,6 @@ function startZoom(zoomDiv) {
     if(winEnabled) {
         stopWLAdjustment();
     }
-    
-    if(measureEnabled) {
-    	doMeasurement(jQuery('#ruler').get(0));
-    }
-
 
     if(!zoomEnabled) {
         zoomEnabled = true;
@@ -438,7 +429,7 @@ function doContainerBoxHOver() {
 function doLoop(isChecked) {
 
     if(isChecked) {
-        var qstr = jQuery(jcanvas).parent().parent().find('#frameSrc').html();
+        /*var qstr = jQuery(jcanvas).parent().parent().find('#frameSrc').html();
         var serUid = getParameter(qstr, 'seriesUID');
 
         var sql = "select SopUID from instance where SeriesInstanceUID='" + serUid + "'";
@@ -446,7 +437,8 @@ function doLoop(isChecked) {
         var myDb = initDB();
         myDb.transaction(function(tx) {
             tx.executeSql(sql, [], imageHandler, errorHandler);
-        });
+        });*/
+        imageHandler();
 
         clearInterval(timer);
 
@@ -689,11 +681,6 @@ function doStack(stackDiv) {
 
     if(!scrollImages) {
         scrollImages = true;
-        
-       if(measureEnabled) {
-	    	doMeasurement(jQuery('#ruler').get(0));
-	   }
-
 
         startStack(stkCanvas);
 
@@ -767,31 +754,18 @@ function doFullScreen(fullscreenDiv) {
 }
 
 function showMetaData() {
-    var qryStr = jQuery(jcanvas).parent().parent().find('#frameSrc').html();
-    var seriesUID = getParameter(qryStr, 'seriesUID');
-
-    var sql = "select study.StudyInstanceUID, ServerURL, SeriesInstanceUID from study, series where study.StudyInstanceUID = series.StudyInstanceUID and SeriesInstanceUID = '" + seriesUID + "';";
-    var myDb = initDB();
-    myDb.transaction(function(tx) {
-        tx.executeSql(sql, [], handleURL, errorHandler);
-    });
-}
-
-function handleURL(transaction, results) {
-    var row = results.rows.item(0);
-
     var queryString = jQuery(jcanvas).parent().parent().find("#frameSrc").html();
     var insUID = getParameter(queryString, 'objectUID');
 
     var url = '';
-    if(row['ServerURL'].indexOf("wado") >=0) {    
-    	var url = "Image.do?serverURL=" + row['ServerURL'];
-    	url += '&contentType=application/dicom&study=' + row['StudyInstanceUID'];
-    	url += '&series=' + row['SeriesInstanceUID'];
+    if(parent.pat.serverURL.indexOf("wado") >=0) {    
+    	var url = "Image.do?serverURL=" + parent.pat.serverURL;
+    	url += '&contentType=application/dicom&study=' + parent.pat.studyUID;
+    	url += '&series=' + getParameter(queryString,'seriesUID');
     	url += '&object=' + insUID;
     	url += '&transferSyntax=1.2.840.10008.1.2';
     } else {    
-    	url = "Wado.do?study=" + row['StudyInstanceUID'] + "&object=" + insUID + "&contentType=application/dicom";
+    	url = "Wado.do?study=" + parent.pat.studyUID + "&object=" + insUID + "&contentType=application/dicom";
     }
 
     var xhr = new XMLHttpRequest();

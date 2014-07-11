@@ -21,7 +21,6 @@ var canvas;
 var ctx;
 var myImageData;
 var winEnabled = false;
-var originX,originY;
 
 String.prototype.replaceAll = function(pcFrom, pcTo){
     var i = this.indexOf(pcFrom);
@@ -44,9 +43,9 @@ function mouseDownHandler(evt)
     if(imageLoaded==1)
     {
         mouseLocX = evt.pageX - parent.jcanvas.offsetLeft;
-        mouseLocX = parseInt((mouseLocX / zoomPercent)-originX);
+        mouseLocX = parseInt(mouseLocX / zoomPercent);
         mouseLocY = evt.pageY - parent.jcanvas.offsetTop;
-        mouseLocY = parseInt((mouseLocY / zoomPercent)-originY);
+        mouseLocY = parseInt(mouseLocY / zoomPercent);
     }
 
     evt.preventDefault();
@@ -69,10 +68,10 @@ function mousemoveHandler(evt)
     {
         if(parent.imageLoaded==1)
         {
-            mouseLocX1 = evt.pageX - parent.jcanvas.offsetLeft;
-            mouseLocX1 = parseInt((mouseLocX1-originX) / zoomPercent);
-            mouseLocY1 = evt.pageY - parent.jcanvas.offsetTop;
-            mouseLocY1 = parseInt((mouseLocY1-originY) / zoomPercent);
+            mouseLocX1 = evt.pageX - jcanvas.offsetLeft;
+            mouseLocX1 = parseInt(mouseLocX1 / zoomPercent);
+            mouseLocY1 = evt.pageY - jcanvas.offsetTop;
+            mouseLocY1 = parseInt(mouseLocY1 / zoomPercent);
 
             if(mouseLocX1>=0&&mouseLocY1>=0&&mouseLocX1<column&&mouseLocY1<row)
             {
@@ -191,11 +190,6 @@ function loadDicom() {
         var mvDiv = jQuery('#move').get(0);
         stopMove(mvDiv);
     }
-    
-    //Stop measure if enabled
-    if(measureEnabled) {
-    	doMeasurement(jQuery('#ruler').get(0));
-    }
 
     var imgSize = jQuery(jcanvas).parent().parent().find('#imageSize').html().substring(11).split("x");
     row = parseInt(imgSize[1]);
@@ -210,17 +204,10 @@ function loadDicom() {
 
     var curr = jQuery('#containerBox').find('.current');
 
-    //var queryString = window.top.location.search.substring(1);
-
     var queryString = jQuery(jcanvas).parent().parent().find("#frameSrc").html();
 
-    //var queryString = window.location.href;
-    var seriesUID = getParameter(queryString, 'seriesUID');
+    var seriesUID = getParameter(queryString, 'seriesUID');   
 
-    var sql = "select study.StudyInstanceUID, ServerURL, SeriesInstanceUID from study, series where study.StudyInstanceUID = series.StudyInstanceUID and SeriesInstanceUID = '" + seriesUID + "';";
-    var myDb = initDB();
-
-    //var layerCanvas = jQuery(jcanvas).siblings().get(1);
     var layerCanvas = jQuery(jcanvas).parent().children().get(2);
 
     if(!winEnabled) {
@@ -233,11 +220,10 @@ function loadDicom() {
         jQuery(jcanvas).parent().parent().find('#huDisplayPanel').show();
         jQuery(jcanvas).parent().parent().find('#thickLocationPanel').hide();
         jQuery('#containerBox .toolbarButton').unbind('mouseenter').unbind('mouseleave');
-        jQuery(curr).attr('class','toolbarButton current');
+        jQuery(curr).attr('class','toolbarButton current');        
 
-        myDb.transaction(function(tx) {
-            tx.executeSql(sql, [], urlHandler, errorHandler);
-        });
+        wadoURL = parent.pat.serverURL + "/wado?requestType=WADO&contentType=application/dicom&studyUID=" + parent.pat.studyUID + "&seriesUID=" + seriesUID + "&objectUID=" + getParameter(queryString, 'objectUID');      
+		parseAndLoadDicom();
 
 
         jQuery(layerCanvas).mouseup(function(evt) {
@@ -286,14 +272,13 @@ function parseAndLoadDicom()
     //alert(wadoURL);
     var reader=new DicomInputStreamReader();
 
-    if( !(!(wadoURL.indexOf('C-GET') >= 0) && !(wadoURL.indexOf('C-MOVE') >= 0))) {
+    /*if( !(!(wadoURL.indexOf('C-GET') >= 0) && !(wadoURL.indexOf('C-MOVE') >= 0))) {
         //var urlTmp = "DcmFile.do?study=" + getParameter(wadoURL, "studyUID") + "&object=" + getParameter(wadoURL, "objectUID");
         var urlTmp = "Wado.do?study=" + getParameter(wadoURL, "studyUID") + "&object=" + getParameter(wadoURL, "objectUID") + "&contentType=application/dicom";
     	reader.readDicom(urlTmp);
-    } else {
-       // reader.readDicom("http://"+top.location.host+"/"+getContextPath()+"/DcmStream.do?wadourl="+wadoURL.replaceAll("&","_"));
+    } else {*/
     	 reader.readDicom("DcmStream.do?wadourl="+wadoURL.replaceAll("&","_"));
-    }
+    //}
 
     /*var urlTmp = "Wado.do?dicomURL=DICOM://ASGARDCM:OVIYAM2@localhost:11112&study=" + getParameter(wadoURL, "studyUID") + "&series=" + getParameter(wadoURL, "seriesUID");
     urlTmp += "&object=" + getParameter(wadoURL, "objectUID");
@@ -361,15 +346,6 @@ function genImage()
 
     var sw = jcanvas.width;
     var sh = jcanvas.height;
-    var xScale = sw / column;
-    var yScale = sh / row;
-    
-    var scaleFac = Math.min(xScale,yScale);	
-	var dw = (scaleFac * column);
-	var dh = (scaleFac*row); 
-	
-	originX = (sw-dw)/2;
-	originY = (sh-dh)/2;
 
     tmpCanvas.width = column;
     tmpCanvas.height = row;
@@ -395,19 +371,9 @@ function genImage()
     }
 
     tmpCxt.putImageData(myImageData, 0,0);
-    ctx.drawImage(tmpCanvas, 0, 0, column, row, originX, originY, dw, dh);
-}
-
-function urlHandler(transaction, results) {
-    var row = results.rows.item(0);
-
-    var queryString = jQuery(jcanvas).parent().parent().find("#frameSrc").html();
-    var insUID = getParameter(queryString, 'objectUID');
-
-    wadoURL = row['ServerURL'] + "/wado?requestType=WADO&contentType=application/dicom&studyUID=" + row['StudyInstanceUID'] + "&seriesUID=" + row['SeriesInstanceUID'] + "&objectUID=" + insUID; //tances[imgInc];
-
-    //wadoURL += getWindowingValue();
-    parseAndLoadDicom();
+    //ctx.scale(1.5,1.5);
+    ctx.drawImage(tmpCanvas, 0, 0, column, row, 0, 0, sw, sh);
+    //ctx.drawImage(tmpCanvas, 0, 0, tmpCanvas.width , tmpCanvas.height, 0, 0, sw, sh);
 }
 
 function getWindowingValue() {
@@ -417,7 +383,7 @@ function getWindowingValue() {
     ww = values[1].substring(values[1].indexOf(':')+1).trim();
 }
 
-function applyWindowing() {
+/*function applyWindowing() {
     //var queryString = window.top.location.search.substring(1);
     var queryString = window.location.href;
     var seriesUID = getParameter(queryString, 'seriesUID');
@@ -428,14 +394,14 @@ function applyWindowing() {
     myDb.transaction(function(tx) {
         tx.executeSql(sql, [], windowingHandler, errorHandler);
     });
-}
+}*/
 
-function windowingHandler(transaction, results) {
+/*function windowingHandler(transaction, results) {
     for(var i=0; i<results.rows.length; i++) {
         var row = results.rows.item(i);
     //retrieveImage1(row['StudyInstanceUID'], row['SeriesIntanceUID'], row['SopUID']);
     }
-}
+}*/
 
 function retrieveImage1(studyUID, seriesUID, instanceUID) {
 
@@ -494,36 +460,4 @@ function retrieveImage1(studyUID, seriesUID, instanceUID) {
         }
     };
     xhr.send();
-}
-
-function constructWadoUrl() { // Load the dicom file if wado url is null
-    //stop zoom if zoom enabled
-    if(zoomEnabled) {
-        var zDiv = jQuery('#zoomIn').get(0);
-        stopZoom(zDiv);
-    }
-
-    // stop move if move enabled
-    if(moveEnabled) {
-        var mvDiv = jQuery('#move').get(0);
-        stopMove(mvDiv);
-    }
-
-    var imgSize = jQuery(jcanvas).parent().parent().find('#imageSize').html().substring(11).split("x");
-    row = parseInt(imgSize[1]);
-    column = parseInt(imgSize[0]);
-    var queryString = jQuery(jcanvas).parent().parent().find("#frameSrc").html();
-    var seriesUID = getParameter(queryString, 'seriesUID');
-
-    var sql = "select study.StudyInstanceUID, ServerURL, SeriesInstanceUID from study, series where study.StudyInstanceUID = series.StudyInstanceUID and SeriesInstanceUID = '" + seriesUID + "';";
-    var myDb = initDB();
-    
-    myDb.transaction(function(tx) {
-        tx.executeSql(sql, [], urlHandler, errorHandler);
-    });  
-}
-
-function getPixelAt(x,y) {
-	var t = (y*column)+x;
-	return huLookupTable[pixelBuffer[t]];
 }

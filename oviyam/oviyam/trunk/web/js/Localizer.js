@@ -102,16 +102,12 @@ function projectSlice(_imgType) {
         var imgOri = jQuery(currCanvas).parent().parent().find('#imgOrientation').html();
         imgPlane = oImgOrient.getOrientation(imgOri);
 
-        //First slice
+        //First  and last slice
         var serUid = jQuery(parent.jcanvas).parent().parent().find('#frameSrc').html();
         serUid = serUid.substring(serUid.indexOf("seriesUID=")+10);
-        serUid = serUid.substring(0, serUid.indexOf('&'));
+        serUid = serUid.substring(0, serUid.indexOf('&'));               
 
-        scoutModel = new ScoutLineModel(serUid);
-        scoutModel.getValues("First", _imgType);
-
-        //Last slice
-        scoutModel.getValues("Last", _imgType);
+        drawBorderCT(serUid,_imgType);
     }
 
     // current slice
@@ -191,12 +187,12 @@ function drawLine(x1, y1, x2, y2, canvas, color, lineWidth) {
     oCtx.stroke();
 }
 
-function projectScoutLine(sliceModel) {
-    var scoutPos = scoutModel.ImgPosition;
+function projectScoutLine(sliceModel) {	
+    var scoutPos = scoutModel.imgPosition;
     var scoutOrientation = scoutModel.imgOrientation;
     var scoutPixelSpacing = scoutModel.pixelSpacing;
     var scoutRow = scoutModel.rows;
-    var scoutColumn = scoutModel.columns;
+    var scoutColumn = scoutModel.columns;    
 
     var imgPos = sliceModel.getImgPosition();
     var imgOrientation = sliceModel.getImgOrientation();
@@ -205,7 +201,7 @@ function projectScoutLine(sliceModel) {
     var imgColumn = sliceModel.getColumns();
 
     if(imgPlane == "SAGITTAL") {
-        locator.projectSlice(scoutPos, scoutOrientation, scoutPixelSpacing, scoutRow, scoutColumn, imgPos, imgOrientation, imgPixelSpacing, imgRow, imgColumn);
+        locator.projectSlice(scoutPos, scoutOrientation, scoutPixelSpacing, scoutRow, scoutColumn, imgPos, imgOrientation, imgPixelSpacing, imgRow, imgColumn);       
         drawLine(parseInt(locator.getBoxUlx()*zoomPer), parseInt(locator.getBoxUly()*zoomPer), parseInt(locator.getBoxLlx()*zoomPer), parseInt(locator.getBoxLly()*zoomPer), currCanvas, "YELLOW", null);
     } else if(imgPlane == "CORONAL") {
         locator.projectSlice(scoutPos, scoutOrientation, scoutPixelSpacing, scoutRow, scoutColumn, imgPos, imgOrientation, imgPixelSpacing, imgRow, imgColumn);
@@ -225,4 +221,46 @@ function clearCanvas(canvas) {
 
     // Restore the transform
     oCtx.restore();
+}
+
+function drawBorderCT(seriesUid,imgType) {
+	var instanceData = JSON.parse(sessionStorage[seriesUid]);
+	
+	var firstInstance = null;
+	var lastInstance = null;
+	
+	for(var i=0;i<instanceData.length;i++) {
+		if((instanceData[i])['imageType']==imgType) {
+			firstInstance = instanceData[i];
+			break;
+		}
+	}
+	
+	for(var i=instanceData.length-1;i>0;i--) {
+		if((instanceData[i])['imageType']==imgType) {
+			lastInstance = instanceData[i];
+			break;
+		}
+	}
+	
+	if(firstInstance!=null) {
+		var sliceModel = new ScoutLineModel('');
+		sliceModel.imgPosition = firstInstance['imagePositionPatient'];
+		sliceModel.imgOrientation = firstInstance['imageOrientPatient'];
+		sliceModel.pixelSpacing = firstInstance['pixelSpacing'];
+		sliceModel.rows = firstInstance['nativeRows'];
+		sliceModel.columns = firstInstance['nativeColumns'];
+		sliceModel.instanceNo = firstInstance['InstanceNo'];
+		projectScoutLine(sliceModel);
+	}
+	
+	if(lastInstance!=null) {
+		var sliceModel1 = new ScoutLineModel('');
+		sliceModel1.imgPosition = lastInstance['imagePositionPatient'];
+		sliceModel1.imgOrientation = lastInstance['imageOrientPatient'];
+		sliceModel1.pixelSpacing = lastInstance['pixelSpacing'];
+		sliceModel1.rows = lastInstance['nativeRows'];
+		sliceModel1.columns = lastInstance['nativeColumns'];
+		projectScoutLine(sliceModel1);	
+	}
 }

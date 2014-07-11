@@ -64,9 +64,9 @@ $(document).ready(function() {
         success: parseJson
     });
 
-    if( !location.search ) {
+  /*  if( !location.search ) {
     	showAllLocalStudies();
-    }
+    }*/
 
     function parseJson(json) {
 
@@ -196,7 +196,7 @@ $(document).ready(function() {
 
                         $(divContent).load(encodeURI(searchURL), function() {
                             clearInterval(timer);
-                            checkLocalStudies();
+//                            checkLocalStudies();
 
                             if(parseInt(autoRef) > 0) {
                                 timer = setInterval(function() {
@@ -222,7 +222,7 @@ $(document).ready(function() {
         });
 
         $("#buttonContainer").buttonset();
-        $('#buttonContainer').hide();
+//        $('#buttonContainer').hide();
 
         if(/chrome/.test(navigator.userAgent.toLowerCase())) {
             $('.ui-helper-hidden-accessible').css('display', 'none');
@@ -265,21 +265,21 @@ $(document).ready(function() {
     // } // if
     }
 
-    function checkLocalStudies() {
-        var myDB = initDB();
-        var sql = "select StudyInstanceUID from study";
-        myDB.transaction(function(tx) {
-            tx.executeSql(sql, [], function(trans, results) {
-                for(var i=0; i<results.rows.length; i++) {
-                    var row = results.rows.item(i);
-                    var img = document.getElementById(row['StudyInstanceUID']);
-                    if(img != null) {
-                        img.style.visibility = 'visible';
-                    }
-                }
-            }, errorHandler);
-        });
-    }
+//    function checkLocalStudies() {
+//        var myDB = initDB();
+//        var sql = "select StudyInstanceUID from study";
+//        myDB.transaction(function(tx) {
+//            tx.executeSql(sql, [], function(trans, results) {
+//                for(var i=0; i<results.rows.length; i++) {
+//                    var row = results.rows.item(i);
+//                    var img = document.getElementById(row['StudyInstanceUID']);
+//                    if(img != null) {
+//                        img.style.visibility = 'visible';
+//                    }
+//                }
+//            }, errorHandler);
+//        });
+//    }
 
     function loadTabs() {
     	var tabName = getParameterByName("serverName");
@@ -352,13 +352,23 @@ $(document).ready(function() {
                     
                 		$(divContent).load(encodeURI(searchURL), function() {
                 			clearInterval(timer);
-                			checkLocalStudies();
+//                			checkLocalStudies();
                 		});
                 	}
                 }
             }
 
             $("#tabs_div").tabs({
+            	show: function(event,ui){
+            	  	$.sleep(1, function(){
+            		  $('.modalitiesList').multiselect({
+	                	selectedList: 12,
+    	            	minWidth: 130,
+    	            	header: false,
+                        noneSelectedText: "ALL"
+                    });
+                    });
+            	  },  
             	selected: tabIndex,
                 select: function(event, ui) {
                     clearInterval(timer);
@@ -379,25 +389,21 @@ $(document).ready(function() {
                         $("#buttonContainer").buttonset( "refresh" );
                     }
 
-                    if(selTabText == 'Local') {
+                   /* if(selTabText == 'Local') {
                         $('#buttonContainer').hide();
                         oTable.fnClearTable();
                         //oTable.fnDestroy();
                         showAllLocalStudies(oTable);
                     } else {
                         $('#buttonContainer').show();
+                    }*/
 
-                    /*if(typeof oTable != 'undefined') {
-                            oTable.fnClearTable();
-                        }*/
-                    }
-
-                    $('.modalitiesList').multiselect({
+                   /* $('.modalitiesList').multiselect({
                 	selectedList: 12,
                 	minWidth: 130,
                 	header: false,
                         noneSelectedText: "ALL"
-                    });
+                    });*/
 
                 } // for select event
             });
@@ -458,7 +464,7 @@ $(document).ready(function() {
     		return;
         }       
 
-        if(selTabText != 'Local') {
+        //if(selTabText != 'Local') {
             if(document.getElementById(iPos[9]).style.visibility == 'hidden') {
                 showWestPane(iPos);
             } else {
@@ -468,7 +474,7 @@ $(document).ready(function() {
                     showWestPane(iPos);
                 }
             }
-        } else {
+        /*} else {
             if(!!(window.requestFileSystem || window.webkitRequestFileSystem)) {
                 viewWPSeries(this);
             } else {
@@ -486,7 +492,7 @@ $(document).ready(function() {
                 });
 
             }
-        }
+        }*/
     });
 
     //$("#resultTable tbody tr").live("dblclick", function() {
@@ -504,7 +510,7 @@ $(document).ready(function() {
             return;
         } 
        
-        var ser_url = $('.ui-tabs-selected').find('a').attr('wadoUrl');
+     /*   var ser_url = $('.ui-tabs-selected').find('a').attr('wadoUrl');
         if(typeof ser_url == 'undefined') {
             var lSql = "select DicomURL, ServerURL from study where StudyInstanceUID='" + nTrContent[9] + "'";
             var myDb = initDB();
@@ -534,7 +540,7 @@ $(document).ready(function() {
                     window.open("viewer.html", "_blank");
                 }, errorHandler);
             });
-        } else {
+        } else {*/
 
             var jsonObj = {
                 "pat_ID" : nTrContent[1],
@@ -557,7 +563,7 @@ $(document).ready(function() {
             $.cookies.set( 'patient', jsonObj );
 
             window.open("viewer.html", "_blank");
-        }
+       // }
     });
 
     //$('#resultTable tbody td img').live('click', function() {
@@ -576,13 +582,13 @@ $(document).ready(function() {
             /* Open this row */
             this.src = "images/details_close.png";
             var selectedTabTxt = $('.ui-tabs-selected').find('span').html();
-            if(selectedTabTxt != 'Local') {
+          //  if(selectedTabTxt != 'Local') {
                 var urlDcm = $('.ui-tabs-selected').find('a').attr('name');
                 var tmpUrl = "seriesDetails.jsp?patient=" + nTrContent[1] + "&study=" + nTrContent[9] + "&dcmURL=" + urlDcm;
                 $.get(tmpUrl, function(series) {
                     oTable.fnOpen(nTr, series, 'details');
                 });
-            } else {
+           /* } else {
                 var sql = "select SeriesNo, SeriesDescription, Modality, BodyPartExamined, NoOfSeriesRelatedInstances from series where StudyInstanceUID='" + nTrContent[9] + "';";
                 var content = '<head><style>.dataTables_wrapper .fg-toolbar{display: none;}</style>';
                 content += '<script type="text/javascript">$(document).ready(function() {var now = new Date().getTime();';
@@ -605,7 +611,7 @@ $(document).ready(function() {
                         oTable.fnOpen(nTr, content, 'details');
                     }, errorHandler);
                 });
-            }
+            }*/
         }
 
     });
@@ -615,7 +621,7 @@ $(document).ready(function() {
         window.open('config.html', '_blank');
     });
 
-    $('#deleteDb').click(function() {
+    /*$('#deleteDb').click(function() {
     	if(confirm('All the studies stored in the local storage will be deleted. Are you sure?')) {
             resetLocalDB();
             var selTabText = $('.ui-tabs-selected').find('span').html();
@@ -623,7 +629,7 @@ $(document).ready(function() {
                 $('#westPane').html('');
             }
     	}
-    });
+    });*/
 
     $('img.menu_class').click(function () {
         $('ul.the_menu').slideToggle('medium');

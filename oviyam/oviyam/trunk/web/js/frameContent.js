@@ -1,14 +1,13 @@
-var systemDB = null;
 var isSlider = false;
 
 var instances = new Array();
 
 jQuery(document).ready(function() {
-
     var ht = jQuery(window).height() - 3 + 'px';
     jQuery('body').css('height',ht );
 
-    initFrame();
+    jQuery("#frameSrc").html(window.location.href);
+    //initFrame();
     loadContextMenu();
 
     jQuery.get("UserConfig.do", {
@@ -20,8 +19,6 @@ jQuery(document).ready(function() {
             loadSlider();
         }
     });
-
-    //jQuery('canvas').addcontextmenu('contextmenu1');
 
     jQuery("#loopSlider").slider({
         max:1000,
@@ -64,9 +61,7 @@ jQuery(document).ready(function() {
                 nextImage(iNo-1);
 
             }
-
-        //changeImgPosInSeries();
-        }
+         }
     });
 
     jQuery(document).bind('keydown', function(e) {
@@ -78,89 +73,7 @@ jQuery(document).ready(function() {
         } else if(e.keyCode == 40 || e.keyCode == 39) {
             nextImage(iNo-1);
         }
-    });
-
-    jQuery("#frameSrc").html(window.location.href);
-
-    var framesCnt = jQuery(parent.document).find('iframe');
-    if(framesCnt.size() == 1) {
-        jQuery('.seriesImgsIndex', window.parent.document).each(function() {
-            var childs = jQuery(this).children();
-            var imgCnt = 0;
-            childs.each(function() {
-                var bgClr = jQuery(this).css('background-color');
-                //bgClr = bgClr.substring(bgClr.indexOf('rgb('), bgClr.indexOf(')')+1);
-
-                if(bgClr == 'rgb(255, 0, 0)') {
-                    var imgToggle = jQuery(this).parent().next().find('img').attr('src');
-                    if(imgToggle == 'images/three.png') {
-                        if(imgCnt == 0 || imgCnt==Math.round(childs.size()/2)-1 || imgCnt==childs.size()-1) {
-                            jQuery(this).css('background-color', 'rgb(0, 0, 255)');
-                        } else {
-                            jQuery(this).css('background-color', 'rgb(166, 166, 166)');
-                        }
-                    } else if(imgToggle == 'images/one.png') {
-                        if(imgCnt == 0) {
-                            jQuery(this).css('background-color', 'rgb(0, 0, 255)');
-                        } else {
-                            jQuery(this).css('background-color', 'rgb(166, 166, 166)');
-                        }
-                    } else if(imgToggle == 'images/all.png') {
-                        jQuery(this).css('background-color', 'rgb(0, 0, 255)');
-                    }
-                }
-                imgCnt++;
-            });
-        });
-    } else {
-        for(var x=0; x<framesCnt.size(); x++) {
-            var serUidTmp = jQuery(framesCnt[x]).contents().find('#frameSrc').html();
-            if(serUidTmp != null) {
-                var qryStrTmp = window.location.href;
-                var actFrmSerUid = getParameter(qryStrTmp, 'seriesUID');
-                serUidTmp = getParameter(serUidTmp, 'seriesUID');
-
-                if(typeof serUidTmp != 'undefined') {
-
-                    if(actFrmSerUid != serUidTmp) {
-                        serUidTmp = serUidTmp.replace(/\./g, '_');
-
-                        jQuery('.seriesImgsIndex', window.parent.document).each(function() {
-                            if(jQuery(this).attr('id') != serUidTmp) {
-                                var childs = jQuery(this).children();
-                                var imgCnt = 0;
-                                childs.each(function() {
-                                    var bgClr = jQuery(this).css('background-color');
-                                    //bgClr = bgClr.substring(bgClr.indexOf('rgb('), bgClr.indexOf(')')+1);
-
-                                    if(bgClr == 'rgb(255, 0, 0)') {
-                                        var imgToggle = jQuery(this).parent().next().find('img').attr('src');
-                                        if(imgToggle == 'images/three.png') {
-                                            if(imgCnt == 0 || imgCnt==Math.round(childs.size()/2)-1 || imgCnt==childs.size()-1) {
-                                                jQuery(this).css('background-color', 'rgb(0, 0, 255)');
-                                            } else {
-                                                jQuery(this).css('background-color', 'rgb(166, 166, 166)');
-                                            }
-                                        } else if(imgToggle == 'images/one.png') {
-                                            if(imgCnt == 0) {
-                                                jQuery(this).css('background-color', 'rgb(0, 0, 255)');
-                                            } else {
-                                                jQuery(this).css('background-color', 'rgb(166, 166, 166)');
-                                            }
-                                        } else if(imgToggle == 'images/all.png') {
-                                            jQuery(this).css('background-color', 'rgb(0, 0, 255)');
-                                        }
-                                    }
-                                    imgCnt++;
-                                });
-                            }
-
-                        });
-                    }
-                }
-            }
-        } //for
-    } //else
+    });    
 
     jQuery('body').css('background-color', parent.pat.bgColor);
 
@@ -218,100 +131,48 @@ jQuery(document).ready(function() {
 
         parent.wlApplied = true;
 
-    });
-
+    });        
+	initFrame();	
 });  //for document.ready
-
-/*
-jQuery(document).keyup(function(e) {
-    var curr = jQuery('#containerBox').find('.current');
-
-    //Executed when RIGHT arrow pressed
-    if(e.keyCode == 39) {
-        if(curr.length) {
-            jQuery(curr).attr('class', 'toolbarButton');
-            jQuery(curr).children().attr('class', 'imgOff');
-            jQuery(curr).next().attr('class', 'toolbarButton current');
-            jQuery(curr).next().children().attr('class', 'imgOn');
-        } else {
-            jQuery('#containerBox div:first-child').attr('class', 'toolbarButton current');
-            jQuery('#containerBox div:first-child').children().attr('class', 'imgOn');
-        }
-    }
-
-    //Executed when LEFT arrow pressed
-    if(e.keyCode == 37) {
-        if(curr.length) {
-            jQuery(curr).attr('class', 'toolbarButton');
-            jQuery(curr).children().attr('class', 'imgOff');
-            jQuery(curr).prev().attr('class', 'toolbarButton current');
-            jQuery(curr).prev().children().attr('class', 'imgOn');
-        } else {
-            jQuery('#containerBox div:last-child').attr('class', 'toolbarButton current');
-            jQuery('#containerBox div:last-child').children().attr('class', 'imgOn');
-        }
-    }
-
-    //Executed when ENTER key pressed
-    if(e.keyCode == 13) {
-        jQuery(curr).attr('class', 'toolbarButton current');
-        jQuery(curr).children().attr('class', 'imgOn');
-
-        var featureSelected = jQuery(curr).attr('id');
-        switch(featureSelected) {
-            case "rotateLeft":
-                rotateLeft();
-                break;
-            case "rotateRight":
-                rotateRight();
-                break;
-            case "vflip":
-                flipVertical();
-                break;
-            case "hflip":
-                flipHorizontal();
-                break;
-            case "zoomIn":
-                startZoom();
-                break;
-            case "zoomOut":
-                break;
-            case "move":
-                moveCanvas();
-                break;
-            case "invert":
-                invert();
-                break;
-            case "windowing":
-                break;
-        }
-
-    }
-
-});
-
-*/
 
 jQuery('#canvasDiv').ready(function() {
     var queryString = window.location.href;
     var frameSize = getParameter(queryString, 'frameSize');
     if(frameSize == null) {
         setBorder(document.getElementById('imageCanvas'));
-    }
+    } 
 });
 
 function loadSlider() {
     var qsTmp = window.location.href;
     var serUID = getParameter(qsTmp, 'seriesUID');
-
-    var dbTmp = systemDB;
-    var sqlTmp = "select NoOfSeriesRelatedInstances from series where SeriesInstanceUID='" + serUID + "';";
-    dbTmp.transaction(function(tx) {
-        tx.executeSql(sqlTmp, [], sliderHandler, errorHandler);
-    });
+    var noOfInstances = 0;
+    
+	var seriesData = JSON.parse(sessionStorage[parent.pat.studyUID]);		
+	for(var i=0;i<seriesData.length;i++) {
+		if((seriesData[i])['seriesUID']==serUID) {
+			if((seriesData[i])['totalInstances']>1) {
+				jQuery('#trackbar1').slider({
+					range: "min",
+					value: imgInc+1,
+					min: 1,
+					max: (seriesData[i])['totalInstances'],
+					slide: onTick
+				});
+			} else {
+				jQuery('#footer').hide();
+			}
+			jQuery('.ui-slider-handle').css('height', '10px');
+   			jQuery('.ui-slider-handle').css('width', '10px');
+		    jQuery('.ui-slider-horizontal').css('height', '.4em');
+		    jQuery('.ui-slider-horizontal').css('top', '8px');
+		    jQuery('.ui-slider-horizontal').css('cursor', 'pointer');
+			break;
+		}
+	}
 }
 
-function sliderHandler(trans, results) {
+/*function sliderHandler(trans, results) {
 
     var row = results.rows.item(0);
 
@@ -333,32 +194,19 @@ function sliderHandler(trans, results) {
     jQuery('.ui-slider-horizontal').css('top', '8px');
     jQuery('.ui-slider-horizontal').css('cursor', 'pointer');
 
-}
-
-/*function onTick(value) {
-            nextImage(value);
-        } */
+}*/
 
 function onTick(event, ui) {
     nextImage(ui.value - 2);
 }
 
 function initFrame() {
-    //var queryString = window.top.location.search.substring(1);
-    var queryString = window.location.href;
-    var seriesUID = getParameter(queryString, 'seriesUID');
-
-    //showDcmAttributeValues();
-    var sql = "select SopUID from instance where SeriesInstanceUID='" + seriesUID + "'";
-    var sql1 = "select patient.PatientId, PatientName, PatientSex, StudyDate, StudyDescription, ModalityInStudy, ReferringPhysicianName, SeriesDescription, BodyPartExamined, NoOfSeriesRelatedInstances, SopClassUID from patient, study, series where patient.Pk = study.Patient_Pk and study.StudyInstanceUID = series.StudyInstanceUID and SeriesInstanceUID='" + seriesUID + "';";
-
-    systemDB = initDB();
-    var myDb = systemDB;
-    myDb.transaction(function(tx) {
-        tx.executeSql(sql, [], imageHandler, errorHandler);
-        tx.executeSql(sql1, [], imageDetailsHandler, errorHandler);
-    });
-    imgInc = 0;
+	jQuery('#patName').html(parent.pat.pat_Name);
+	jQuery('#patID').html(parent.pat.pat_ID);
+	jQuery("#patGender").html(parent.pat.pat_gender);
+	jQuery("#studyDate").html(parent.pat.studyDate);
+	jQuery("#studyDesc").html(parent.pat.studyDesc);
+	imageHandler();
 }
 
 function getParameter(queryString, parameterName) {

@@ -17,11 +17,12 @@
 *
 * The Initial Developer of the Original Code is
 * Raster Images
-* Portions created by the Initial Developer are Copyright (C) 2007
+* Portions created by the Initial Developer are Copyright (C) 2014
 * the Initial Developer. All Rights Reserved.
 *
 * Contributor(s):
 * Babu Hussain A
+* Devishree V
 * Meer Asgar Hussain B
 * Prakash J
 * Suresh V
@@ -82,7 +83,8 @@
                 	if(pat.serverURL == 'C-GET' || pat.serverURL == 'C-MOVE') {
 	                	var tmpImgSrc = $(this).attr('src');
     	           		$(this).parent().waitForImages(function() {
-							insertInstances('${param.patient}', getParameter(tmpImgSrc, 'study'), getParameter(tmpImgSrc, 'series'));  
+// 							insertInstances('${param.patient}', getParameter(tmpImgSrc, 'study'), getParameter(tmpImgSrc, 'series'));
+    	           			getInstances('${param.patient}', getParameter(tmpImgSrc, 'study'), getParameter(tmpImgSrc, 'series'));
                			});
                		}
                 	saveJpgImages();

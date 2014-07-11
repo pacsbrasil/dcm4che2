@@ -63,7 +63,7 @@ function searchClick(searchBtn) {
 
     $(divContent).load(encodeURI(searchURL), function() {
         clearInterval(timer);
-        checkLocalStudies();
+//        checkLocalStudies();
     });
    
 } // end of searchClick()
@@ -84,18 +84,18 @@ function convertToDcm4cheeDate(givenDate) {
     return(retVal);
 }
 
-function checkLocalStudies() {
-    var myDB = initDB();
-    var sql = "select StudyInstanceUID from study";
-    myDB.transaction(function(tx) {
-        tx.executeSql(sql, [], function(trans, results) {
-            for(var i=0; i<results.rows.length; i++) {
-                var row = results.rows.item(i);
-                var img = document.getElementById(row['StudyInstanceUID']);
-                if(img != null) {
-                    img.style.visibility = 'visible';
-                }
-            }
-        }, errorHandler);
-    });
-}
+//function checkLocalStudies() {
+//    var myDB = initDB();
+//    var sql = "select StudyInstanceUID from study";
+//    myDB.transaction(function(tx) {
+//        tx.executeSql(sql, [], function(trans, results) {
+//            for(var i=0; i<results.rows.length; i++) {
+//                var row = results.rows.item(i);
+//                var img = document.getElementById(row['StudyInstanceUID']);
+//                if(img != null) {
+//                    img.style.visibility = 'visible';
+//                }
+//            }
+//        }, errorHandler);
+//    });
+//}

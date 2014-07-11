@@ -1,6 +1,7 @@
 function syncSeries() {
     var frames = jQuery(parent.document).find('iframe');
     var mCanvas = null;
+    var selectedFrame = -1;
 
     if(frames.length <= 1) {
         return;
@@ -9,7 +10,7 @@ function syncSeries() {
     for(var k=0; k<frames.length; k++) {
         if(jQuery(frames[k]).contents().find('html').css('border') == '2px solid rgb(0, 255, 0)') {
             mCanvas = jQuery(frames[k]).contents().find('#imageCanvas');
-            //console.log(mCanvas);
+            selectedFrame = k;
             break;
         }
     }
@@ -17,19 +18,60 @@ function syncSeries() {
     var cForUid = jQuery(mCanvas).parent().parent().find('#forUIDPanel').html();
     var cThickLoc = jQuery(mCanvas).parent().parent().find('#thickLocationPanel').html();
 
-    if(cThickLoc.length == 0) {
+    if(cThickLoc==null || cThickLoc.length == 0) {
         return;
     }
+        
+    for(var i=0;i<frames.length;i++) {
+    	//if(jQuery(frames[i]).contents().find('html').css('border') != '2px solid rgb(0,255,0)') {
+    	if(i!=selectedFrame) {
+    		var forUid = jQuery(frames[i]).contents().find('#forUIDPanel').html();
+    		var currCanvas = jQuery(frames[i]).contents().find('#imageCanvas').get(0);
+    		if(cForUid == forUid) {
+    			var serUid = getParameter(jQuery(frames[i]).contents().find('#frameSrc').html(),'seriesUID');
+    			
+    			var cThick = cThickLoc.match("Thick:(.*)mm Loc")[1];
+                var cLocation = cThickLoc.match("Loc:(.*)mm")[1];
+                var fromLoc = parseFloat(cLocation) - parseFloat(cThick);
+                var toLoc = parseFloat(cLocation) + parseFloat(cThick);
 
-    var myDb = initDB();
+                var sliceInfo = '';
+                var totalImgs = 'Images: ';
+                var thickLocPanel = jQuery(frames[i]).contents().find('#thickLocationPanel');
+                var totalImgsPanel = jQuery(frames[i]).contents().find('#totalImages');
+                
+				var instanceData = JSON.parse(sessionStorage[serUid]);
+				for(var j=0;j<instanceData.length;j++) {
+					var sliceLoc = (instanceData[j])['sliceLocation'];
+					var sliceThickness = (instanceData[j])['sliceThickness'];
+					if(sliceLoc>=fromLoc && sliceLoc<=toLoc && (parseFloat(sliceLoc)-parseFloat(cLocation))<128) {
+						var instanceNo = (instanceData[j])['InstanceNo'];
+						var img1 = jQuery('#' + serUid.replace(/\./g, '_') + '_' + instanceNo,window.parent.document).get(0);
+						var currCanvas = jQuery(jQuery(frames[i]).contents().find('#imageCanvas')).get(0);
+						currCanvas.getContext("2d").drawImage(img1,0,0,currCanvas.width,currCanvas.height);
+						showHiddenValues(jQuery(jQuery(frames[i]).contents().find('#imageCanvas')),instanceData[i]);
+						var thickLocPanel = jQuery(frames[i]).contents().find('#thickLocationPanel');
+				        var totalImgsPanel = jQuery(frames[i]).contents().find('#totalImages');
+				        var totalImages = totalImgsPanel.html().split("/")[1];              
+				        totalImgs += instanceNo + " / " + totalImages;
+				        totalImgsPanel.html(totalImgs); 
+				        sliceInfo += 'Thick: ' + parseFloat(sliceThickness).toFixed(2) + ' mm ';
+                        sliceInfo += 'Loc: ' + parseFloat(sliceLoc).toFixed(2) + ' mm';
+                        thickLocPanel.html(sliceInfo);             
+						break;
+					}
+				}
+    		}
+    	}
+    }
+
+   /* var myDb = initDB();
     for(var i=0; i<frames.length; i++) {
         (function(value){
             if(jQuery(frames[i]).contents().find('html').css('border') != '2px solid rgb(0, 255, 0)') {
                 var forUid = jQuery(frames[i]).contents().find('#forUIDPanel').html();
                 var currCanvas = jQuery(frames[i]).contents().find('#imageCanvas').get(0);
                 if(cForUid == forUid) {
-                    //var thickLoc = jQuery(frames[i]).contents().find('#thickLocationPanel').html();
-
                     var qstr = jQuery(frames[i]).contents().find('#frameSrc').html();
                     var serUid = getParameter(qstr, 'seriesUID');
 
@@ -37,7 +79,6 @@ function syncSeries() {
                     var cLocation = cThickLoc.match("Loc:(.*)mm")[1];
                     var fromLoc = parseFloat(cLocation) - parseFloat(cThick);
                     var toLoc = parseFloat(cLocation) + parseFloat(cThick);
-                    //alert(fromLoc + " : " + toLoc);
 
                     var sliceInfo = '';
                     var totalImgs = 'Images: ';
@@ -56,11 +97,7 @@ function syncSeries() {
                                 var sliceLocation = '';
 
                                 for(var j=0; j<results.rows.length; j++) {
-                                    //(function(val) {
                                     var row = results.rows.item(j);
-                                    //console.log(row['SliceLocation']);
-                                    //if(minDiff == null) {
-
                                     var diff = parseFloat(row['SliceLocation']) - parseFloat(cLocation);
                                     diff = Math.abs(diff);
                                     if(minDiff > diff) {
@@ -98,17 +135,30 @@ function syncSeries() {
                 }
             }
         })(i);
-    } // for i
+    } // for i*/
 }
 
-function showHiddenValues(currCanvas) {
+function showHiddenValues(currCanvas,instanceDetails) {
 
     if(typeof instances == 'undefined') {
         var actFrame = getActiveFrame();
         instances = actFrame.contentWindow.instances;
+    }   
+
+    if(instanceDetails['frameOfReferenceUID'] != 'undefined') {
+        currCanvas.parent().parent().find('#forUIDPanel').html(instanceDetails['frameOfReferenceUID']);
     }
 
-    var sql = "select FrameOfReferenceUID, ImagePosition, ImageOrientPatient, PixelSpacing, ImageType, ReferencedSOPInsUID from instance where SopUID='" + instances[imgInc] + "';";
+    if(instanceDetails['refSOPInsUID'] != 'undefined') {
+        currCanvas.parent().parent().find('#refSOPInsUID').html(instanceDetails['refSOPInsUID']);
+    }
+    
+    currCanvas.parent().parent().find('#imgPosition').html(instanceDetails['imagePositionPatient']);
+    currCanvas.parent().parent().find('#imgOrientation').html(instanceDetails['imageOrientPatient']);
+    currCanvas.parent().parent().find('#imgType').html(instanceDetails['imageType']);
+    currCanvas.parent().parent().find('#pixelSpacing').html(instanceDetails['pixelSpacing']);
+    
+   /* var sql = "select FrameOfReferenceUID, ImagePosition, ImageOrientPatient, PixelSpacing, ImageType, ReferencedSOPInsUID from instance where SopUID='" + instances[imgInc] + "';";
     var myDb = initDB();
     myDb.transaction(function(tx) {
         tx.executeSql(sql, [], function(transaction, results) {
@@ -127,5 +177,5 @@ function showHiddenValues(currCanvas) {
             jQuery(currCanvas).parent().parent().find('#pixelSpacing').html(row['PixelSpacing']);
         }, errorHandler);
 
-    });
+    });*/
 }
