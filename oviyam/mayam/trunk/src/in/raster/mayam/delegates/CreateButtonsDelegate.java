@@ -14,7 +14,7 @@
  *
  * The Initial Developer of the Original Code is
  * Raster Images
- * Portions created by the Initial Developer are Copyright (C) 2009-2010
+ * Portions created by the Initial Developer are Copyright (C) 2014
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -82,6 +82,7 @@ public class CreateButtonsDelegate {
         }
         buttonsToolbar.setLayout(null);
         ApplicationContext.appNameLabel = new JLabel(ApplicationContext.currentBundle.getString("MainScreen.appNameLabel.text"));
+        ApplicationContext.appNameLabel.setToolTipText("09/07/2014");
         ApplicationContext.appNameLabel.setFont(new Font("Lucida Grande", Font.BOLD, 16));
         ApplicationContext.appNameLabel.setBounds(10, 5, 120, 30);
         buttonsToolbar.add(ApplicationContext.appNameLabel);

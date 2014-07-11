@@ -14,7 +14,7 @@
  *
  * The Initial Developer of the Original Code is
  * Raster Images
- * Portions created by the Initial Developer are Copyright (C) 2009-2010
+ * Portions created by the Initial Developer are Copyright (C) 2014
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -46,6 +46,7 @@ import in.raster.mayam.param.QueryParam;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.logging.Level;
 import javax.swing.JOptionPane;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.util.DcmURL;
@@ -73,6 +74,7 @@ public class CommunicationDelegate {
                 return false;
             }
         } catch (Exception e) {
+            ApplicationContext.logger.log(Level.WARNING, "Communication Delegate - Unable to verify server");
             return false;
         }
     }
@@ -167,7 +169,7 @@ public class CommunicationDelegate {
         ArrayList<Series> seriesList = new ArrayList<Series>();
         QuerySeriesService seriesService = new QuerySeriesService();
         seriesService.callFindWithQuery(studyModel.getPatientId(), studyModel.getStudyUID(), dcmurl);
-
+        
         for (int i = 0; i < seriesService.getDatasetVector().size(); i++) {
             Dataset dataset = (Dataset) seriesService.getDatasetVector().elementAt(i);
             Series series = new Series(dataset);
@@ -218,10 +220,10 @@ public class CommunicationDelegate {
                         seriesNodes.add(new DataNode("", "", "", "", "", "", "", "", "", "", seriesList.get(k).getSeriesNumber(), seriesList.get(k).getSeriesDesc(), seriesList.get(k).getModality(), seriesList.get(k).getSeriesDate(), seriesList.get(k).getSeriesTime(), seriesList.get(k).getBodyPartExamined(), String.valueOf(seriesList.get(k).getSeriesRelatedInstance()), null, null, null, true, false));
                     }
                     rootNodes.add(new DataNode("", studyList.get(i).getPatientId(), studyList.get(i).getPatientName(), studyList.get(i).getDob(), studyList.get(i).getAccessionNo(), studyList.get(i).getStudyDate(), studyList.get(i).getStudyDescription(), studyList.get(i).getModalitiesInStudy(), studyList.get(i).getStudyLevelInstances(), studyList.get(i).getStudyUID(), "", "", "", "", "", "", "", seriesNodes, ((StudyModel) studyList.get(i)), seriesList, false, false));
-                    root = new DataNode("", pid, pName, dob, accNo, studyDate, studyDesc, modality, "", "", "", "", "", "", "", "", "", rootNodes, null, null, false, true);
                 }
             }
         }
+        root = new DataNode("", pid, pName, dob, accNo, studyDate, studyDesc, modality, "", "", "", "", "", "", "", "", "", rootNodes, null, null, false, true);
         if (root == null) {
             root = new DataNode("", pid, pName, dob, accNo, studyDate, studyDesc, modality, "", "", "", "", "", "", "", "", "", rootNodes, null, null, false, true);
         }

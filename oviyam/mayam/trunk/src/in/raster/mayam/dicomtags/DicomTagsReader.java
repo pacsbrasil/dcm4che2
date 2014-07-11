@@ -14,7 +14,7 @@
  *
  * The Initial Developer of the Original Code is
  * Raster Images
- * Portions created by the Initial Developer are Copyright (C) 2009-2010
+ * Portions created by the Initial Developer are Copyright (C) 2014
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -39,9 +39,11 @@
  * ***** END LICENSE BLOCK ***** */
 package in.raster.mayam.dicomtags;
 
+import in.raster.mayam.context.ApplicationContext;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.logging.Level;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.io.DicomInputStream;
@@ -70,7 +72,7 @@ public class DicomTagsReader {
             dcmObject = dcmInputStream.readDicomObject();
             dcmInputStream.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            ApplicationContext.logger.log(Level.SEVERE, "DicomTagsReader", e);
         }
 
         //Call to Parsing Tags in an Array List        
@@ -121,8 +123,9 @@ public class DicomTagsReader {
                     dcmTags.setTagValue(dcmObject.getString(tag));
 
                 } catch (UnsupportedOperationException e) {
+                    ApplicationContext.logger.log(Level.INFO, "DicomTagsReader", e);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    ApplicationContext.logger.log(Level.INFO, "DicomTagsReader", e);
                 }
 
                 //Adding DicomTags object to Tags ArrayList

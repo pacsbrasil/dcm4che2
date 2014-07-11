@@ -14,7 +14,7 @@
  *
  * The Initial Developer of the Original Code is
  * Raster Images
- * Portions created by the Initial Developer are Copyright (C) 2009-2010
+ * Portions created by the Initial Developer are Copyright (C) 2014
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -41,9 +41,9 @@ package in.raster.mayam.param;
 
 import in.raster.mayam.context.ApplicationContext;
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 /**
  *
@@ -166,15 +166,19 @@ public class TextOverlayParam {
     }
 
     public void setStudyDate(Date studydate) {
-        this.studyDate = DateFormat.getDateInstance(DateFormat.DEFAULT, ApplicationContext.currentLocale).format(studydate);
+        this.studyDate = DateFormat.getDateInstance(DateFormat.SHORT, ApplicationContext.currentLocale).format(studydate);
+    }
+
+    public void setStudyDate(String studyDate) {
+        this.studyDate = studyDate;
     }
 
     public String getStudyTime() {
         return studyTime;
     }
-    
-    public void setStudyTime(Date studyTime) {
-        this.studyTime = DateFormat.getTimeInstance(DateFormat.DEFAULT, ApplicationContext.currentLocale).format(studyTime);
+
+    public void setStudyTime(String studyTime) {
+        this.studyTime = studyTime;
     }
 
     public String getWindowLevel() {

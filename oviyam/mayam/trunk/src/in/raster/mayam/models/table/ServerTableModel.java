@@ -14,7 +14,7 @@
  *
  * The Initial Developer of the Original Code is
  * Raster Images
- * Portions created by the Initial Developer are Copyright (C) 2009-2010
+ * Portions created by the Initial Developer are Copyright (C) 2014
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -43,6 +43,7 @@ import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.form.dialogs.WadoInformation;
 import in.raster.mayam.models.ServerModel;
 import java.util.ArrayList;
+import java.util.logging.Level;
 import javax.swing.JOptionPane;
 import javax.swing.table.AbstractTableModel;
 
@@ -149,7 +150,7 @@ public class ServerTableModel extends AbstractTableModel {
                     ApplicationContext.mainScreenObj.addOrEditServer(prevName, row.getDescription());
                 } else {
                     row.setDescription(prevName);
-                    JOptionPane.showOptionDialog(null, "'"+aValue+"' "+ApplicationContext.currentBundle.getString("SettingsForm.addServerFailiure.text"), ApplicationContext.currentBundle.getString("ErrorTitles.text"), JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
+                    JOptionPane.showOptionDialog(null, "'" + aValue + "' " + ApplicationContext.currentBundle.getString("SettingsForm.addServerFailiure.text"), ApplicationContext.currentBundle.getString("ErrorTitles.text"), JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
                 }
                 break;
             case 1:
@@ -165,7 +166,7 @@ public class ServerTableModel extends AbstractTableModel {
                     row.setPort(Integer.parseInt(aValue.toString()));
                     ApplicationContext.databaseRef.updateServer(row);
                 } catch (Exception e) {
-                    System.out.println("Not valid port : " + e.getMessage());
+                    ApplicationContext.logger.log(Level.INFO, "ServerTableModel - Not a valid port", e);
                 }
                 break;
             case 4:
@@ -178,7 +179,7 @@ public class ServerTableModel extends AbstractTableModel {
                     }
                     ApplicationContext.databaseRef.updateServer(row);
                 } catch (Exception e) {
-                    System.out.println("Unable to update retrieve type information : " + e.getMessage());
+                    ApplicationContext.logger.log(Level.INFO, "ServerTableModel - Unable to update retrieve type information", e);
                 }
                 break;
             case 5:

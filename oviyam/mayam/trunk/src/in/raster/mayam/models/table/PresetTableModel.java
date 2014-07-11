@@ -14,7 +14,7 @@
  *
  * The Initial Developer of the Original Code is
  * Raster Images
- * Portions created by the Initial Developer are Copyright (C) 2009-2010
+ * Portions created by the Initial Developer are Copyright (C) 2014
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -42,6 +42,7 @@ package in.raster.mayam.models.table;
 import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.models.PresetModel;
 import java.util.ArrayList;
+import java.util.logging.Level;
 import javax.swing.table.AbstractTableModel;
 
 /**
@@ -135,7 +136,7 @@ public class PresetTableModel extends AbstractTableModel {
                     row.setWindowLevel(Integer.toString(level));
                     ApplicationContext.databaseRef.updatePreset(row);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    ApplicationContext.logger.log(Level.INFO, "PresetTableModel", e);
                 }
                 break;
             case 2:
@@ -144,7 +145,7 @@ public class PresetTableModel extends AbstractTableModel {
                     row.setWindowWidth(Integer.toString(width));
                     ApplicationContext.databaseRef.updatePreset(row);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    ApplicationContext.logger.log(Level.INFO, "PresetTableModel", e);
                 }
                 break;
         }

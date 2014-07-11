@@ -53,7 +53,6 @@ import java.awt.event.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
@@ -69,14 +68,14 @@ public class MainScreen extends javax.swing.JFrame {
     public CreateButtonsDelegate createButtonsDelegate = null;
     public SettingsForm settingsForm = null;
     //Variables    
-    ArrayList<String> serverLabels = new ArrayList<String>();
-    ArrayList<StudySeriesMatch> studySeriesMatchs;
-    JPopupMenu preferencesPopup;
-    JMenuItem preferencesItem, resetItem, importItem;
+    private ArrayList<String> serverLabels = new ArrayList<String>();
+    private ArrayList<StudySeriesMatch> studySeriesMatchs;
+    private JPopupMenu preferencesPopup;
+    private JMenuItem preferencesItem, resetItem, importItem;
     //Listeners
-    QueryButtonListener queryButtonListener = null;
-    ServerTabChangeListener serverTabChangeListener = null;
-    int progressValue = 0;
+    private QueryButtonListener queryButtonListener = null;
+    private ServerTabChangeListener serverTabChangeListener = null;
+    private int progressValue = 0;
 
     /**
      * Creates new form MainScreen
@@ -192,9 +191,11 @@ public class MainScreen extends javax.swing.JFrame {
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
         setVisible(false);
         ApplicationContext.stopListening();
-        if (ApplicationContext.imgView != null) {
-            ApplicationContext.imgView.setVisible(false);
-            ApplicationContext.imgView.onWindowClose();
+        if (ApplicationContext.viewer != null) {
+        }
+        if (ApplicationContext.viewer != null) {
+            ApplicationContext.viewer.setVisible(false);
+            ApplicationContext.viewer.onWindowClose();
         }
         ApplicationContext.databaseRef.deleteLinkStudies();
         ApplicationContext.deleteDir(new File(ApplicationContext.getAppDirectory() + File.separator + "Thumbnails"));
@@ -250,16 +251,16 @@ public class MainScreen extends javax.swing.JFrame {
     public void addNewTab(String serverName) {
         JSplitPane parentSpliPane;
         SearchFilterForm searchFilterForm = new SearchFilterForm();
-        searchFilterForm.setMinimumSize(new Dimension(900, 150));
+        searchFilterForm.setMaximumSize(new Dimension(900, 140));
         if (ApplicationContext.databaseRef.isPreviewsEnabled(serverName)) {
             JSplitPane splitPane = constructSplitPaneWithPreview();
             parentSpliPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, searchFilterForm, splitPane);
-            setSplitPaneProperties(parentSpliPane, 150, 15);
+            setSplitPaneProperties(parentSpliPane, 140, 15);
         } else {
             TreeTable treeTab = new TreeTable();
             treeTab.addMouseListener(new TreeTableMouseListener(treeTab));
             parentSpliPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, searchFilterForm, new JScrollPane(treeTab));
-            setSplitPaneProperties(parentSpliPane, 150, 15);
+            setSplitPaneProperties(parentSpliPane, 140, 15);
         }
         serverTab.add(serverName, parentSpliPane);
     }
@@ -278,6 +279,7 @@ public class MainScreen extends javax.swing.JFrame {
         splitPane.setDividerLocation(dividerLocation);
         splitPane.setDividerSize(dividerSize);
         splitPane.setOneTouchExpandable(true);
+        splitPane.setBorder(null);
     }
 
     public void setTheme() {
@@ -300,15 +302,13 @@ public class MainScreen extends javax.swing.JFrame {
             uIDefaults.put("Label.font", ApplicationContext.textFont);
             uIDefaults.put("RadioButton.font", ApplicationContext.textFont);
             uIDefaults.put("CheckBox.font", ApplicationContext.textFont);
-            uIDefaults.put("TabbedPane.tabInsets", new Insets(5, 5, 5, 5));
-            uIDefaults.put("TabbedPane.selectedTabPadInsets", new Insets(5, 7, 5, 7));
+            uIDefaults.put("TabbedPane.tabInsets", new Insets(7, 7, 7, 7));
+            uIDefaults.put("TabbedPane.selectedTabPadInsets", new Insets(7, 9, 7, 9));
             uIDefaults.put("OptionPane.messageFont", ApplicationContext.labelFont);
             uIDefaults.put("OptionPane.buttonFont", ApplicationContext.labelFont);
             uIDefaults.put("ToolTip.font", ApplicationContext.labelFont);
-            uIDefaults.put("Slider.horizontalThumbIcon", new ImageIcon(getClass().getResource("/in/raster/mayam/form/images/slider.png")));
-            updateComponentsTreeUI();
         } catch (UnsupportedLookAndFeelException ex) {
-            Logger.getLogger(MainScreen.class.getName()).log(Level.SEVERE, null, ex);
+            ApplicationContext.logger.log(Level.INFO, "MainScreen", ex);
         }
     }
 
@@ -317,7 +317,7 @@ public class MainScreen extends javax.swing.JFrame {
             UIManager.setLookAndFeel(new MotifLookAndFeel());
             updateComponentsTreeUI();
         } catch (UnsupportedLookAndFeelException ex) {
-            Logger.getLogger(MainScreen.class.getName()).log(Level.SEVERE, null, ex);
+            ApplicationContext.logger.log(Level.INFO, "MainScreen", ex);
         }
     }
 
@@ -326,13 +326,13 @@ public class MainScreen extends javax.swing.JFrame {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
             updateComponentsTreeUI();
         } catch (ClassNotFoundException ex) {
-            Logger.getLogger(MainScreen.class.getName()).log(Level.SEVERE, null, ex);
+            ApplicationContext.logger.log(Level.INFO, "MainScreen", ex);
         } catch (InstantiationException ex) {
-            Logger.getLogger(MainScreen.class.getName()).log(Level.SEVERE, null, ex);
+            ApplicationContext.logger.log(Level.INFO, "MainScreen", ex);
         } catch (IllegalAccessException ex) {
-            Logger.getLogger(MainScreen.class.getName()).log(Level.SEVERE, null, ex);
+            ApplicationContext.logger.log(Level.INFO, "MainScreen", ex);
         } catch (UnsupportedLookAndFeelException ex) {
-            Logger.getLogger(MainScreen.class.getName()).log(Level.SEVERE, null, ex);
+            ApplicationContext.logger.log(Level.INFO, "MainScreen", ex);
         }
     }
 
@@ -342,8 +342,8 @@ public class MainScreen extends javax.swing.JFrame {
             SwingUtilities.updateComponentTreeUI(settingsForm);
             SwingUtilities.updateComponentTreeUI(preferencesPopup);
         }
-        if (ApplicationContext.isImageViewExist()) {
-            SwingUtilities.updateComponentTreeUI(ApplicationContext.imgView);
+        if (ApplicationContext.viewer != null) {
+            SwingUtilities.updateComponentTreeUI(ApplicationContext.viewer);
         }
         //To update the theme to ImagePreviewPanel,SearchFilterForm,TreeTable
         for (int i = 0; i < serverTab.getTabCount(); i++) {
@@ -435,7 +435,7 @@ public class MainScreen extends javax.swing.JFrame {
         try {
             ((ImagePreviewPanel) ((JSplitPane) ((JSplitPane) serverTab.getSelectedComponent()).getRightComponent()).getLeftComponent()).resetImagePreviewPanel();
         } catch (ClassCastException cce) {
-            //ignore
+            ApplicationContext.logger.log(Level.INFO, "MainScreen", cce);
         }
     }
 
@@ -453,14 +453,6 @@ public class MainScreen extends javax.swing.JFrame {
         progressValue += 1;
         progressBar.setValue(progressValue);
         progressBar.setStringPainted(true);
-    }
-
-    public void increaseProgressValue() { // To increase the progress value during the thumbnails construction
-        if (progressValue < progressBar.getMaximum()) {
-            progressValue++;
-            progressBar.setValue(progressValue);
-            progressBar.setStringPainted(true);
-        }
     }
 
     public void hideProgressBar() {
@@ -502,6 +494,10 @@ public class MainScreen extends javax.swing.JFrame {
 
     public boolean isInProgress() {
         return progressBar.isVisible();
+    }
+
+    public int getProgressMaximum() {
+        return progressBar.getMaximum();
     }
 
     //To filter the studies
@@ -549,6 +545,7 @@ public class MainScreen extends javax.swing.JFrame {
                 try {
                     ApplicationContext.currentTreeTable.setValueAt(str.substring(0, str.length() - 1), row, column);
                 } catch (StringIndexOutOfBoundsException sioobe) {
+                    ApplicationContext.logger.log(Level.INFO, "MainScreen", sioobe);
                 }
             } else {
                 ApplicationContext.currentTreeTable.setValueAt((String) ApplicationContext.currentTreeTable.getValueAt(row, column) + e.getKeyChar(), row, column);
@@ -569,6 +566,7 @@ public class MainScreen extends javax.swing.JFrame {
                         }
                     }
                     ApplicationContext.databaseRef.deleteLocalStudy((String) ApplicationContext.currentTreeTable.getValueAt(i, 2), studyUid);
+                    removeInViewer(studyUid);
                 }
                 loadlocalStudies();
                 if (getCurrentImagePreviewPanel().parent.getComponentCount() > 0) {
@@ -626,8 +624,8 @@ public class MainScreen extends javax.swing.JFrame {
         }
         progressLabel.setText(ApplicationContext.currentBundle.getString("MainScreen.downloadingLabel.text"));
         settingsForm.applyLocaleChange();
-        if (ApplicationContext.isImageViewExist()) {
-            ApplicationContext.imgView.applyLocale();
+        if (ApplicationContext.viewer != null) {
+            ApplicationContext.viewer.applyLocaleChange();
         }
         preferencesItem.setText(ApplicationContext.currentBundle.getString("MainScreen.settingsMenuItem.text"));
         resetItem.setText(ApplicationContext.currentBundle.getString("MainScreen.resetLocalDbMenuItem.text"));
@@ -659,9 +657,10 @@ public class MainScreen extends javax.swing.JFrame {
                         setTreeTableModel(null);
                     }
                     ((ImagePreviewPanel) ((JSplitPane) serverTab.getComponentAt(0)).getLeftComponent()).resetImagePreviewPanel();
-                    if (ApplicationContext.isImageViewExist()) {
-                        ApplicationContext.imgView.dispose();
-                        ApplicationContext.imgView = null;
+                    if (ApplicationContext.viewer != null) {
+                        ApplicationContext.viewer.dispose();
+                        ApplicationContext.viewer = null;
+                        ApplicationContext.tabbedPane = null;
                     }
                 }
             }
@@ -712,5 +711,23 @@ public class MainScreen extends javax.swing.JFrame {
 
     public SearchFilterForm getCurrentSearchFilterForm() {
         return ((SearchFilterForm) ((JSplitPane) serverTab.getSelectedComponent()).getTopComponent());
+    }
+
+    public void removeInViewer(String studyUid) {
+        try {
+            for (int tab_Iter = 0; tab_Iter < ApplicationContext.tabbedPane.getTabCount(); tab_Iter++) {
+                if (ApplicationContext.tabbedPane.getComponentAt(tab_Iter).getName().equals(studyUid)) {
+                    ApplicationContext.tabbedPane.removeTabAt(tab_Iter);
+                    ApplicationContext.tabbedPane.revalidate();
+                    if (ApplicationContext.tabbedPane.getTabCount() == 0) {
+                        ApplicationContext.viewer.dispose();
+                        ApplicationContext.viewer = null;
+                    }
+                    break;
+                }
+            }
+        } catch (Exception ex) {
+            ApplicationContext.logger.log(Level.INFO, "Mainscreen - Image Viewer not exist.", ex);
+        }
     }
 }

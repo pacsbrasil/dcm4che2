@@ -1339,7 +1339,7 @@ public class DcmQR {
                         DicomObject data = dataStream.readDataset();
                         suid = data.getString(Tag.StudyInstanceUID);
                         String serUid = data.getString(Tags.SeriesInstanceUID);
-                        Calendar today = Calendar.getInstance();
+                        Calendar today = Calendar.getInstance(ApplicationContext.currentLocale);
                         File struturedDestination = new File(ApplicationContext.listenerDetails[2] + File.separator + today.get(Calendar.YEAR) + File.separator + today.get(Calendar.MONTH) + File.separator + today.get(Calendar.DATE) + File.separator + suid + File.separator + serUid);
                         String child[] = struturedDestination.list();
                         if (child == null) {
@@ -1355,7 +1355,7 @@ public class DcmQR {
                         dos.writeFileMetaInformation(fmi);
                         dos.writeDataset(data, tsuid);
 //                        infoUpdateDelegate.updateFileDetails(file);
-                        ApplicationContext.databaseRef.writeDatasetInfo(data, false, file.getAbsolutePath(), false);
+                        ApplicationContext.databaseRef.writeDatasetInfo(data, file.getAbsolutePath());
                         dos.close();
                     } catch (IOException e) {
                         throw new DicomServiceException(rq, Status.ProcessingFailure, e.getMessage());

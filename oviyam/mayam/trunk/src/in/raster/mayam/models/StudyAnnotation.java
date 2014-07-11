@@ -14,7 +14,7 @@
  *
  * The Initial Developer of the Original Code is
  * Raster Images
- * Portions created by the Initial Developer are Copyright (C) 2009-2010
+ * Portions created by the Initial Developer are Copyright (C) 2014
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -55,6 +55,11 @@ public class StudyAnnotation implements Serializable {
     public StudyAnnotation() {
         seriesAnnotations = new HashMap<String, SeriesAnnotations>();
     }
+    
+    public StudyAnnotation(String studyUid) {
+        this.studyInstanceUID = studyUid;
+        seriesAnnotations = new HashMap<String, SeriesAnnotations>();
+    }
 
     public StudyAnnotation(String studyInstanceUID, HashMap<String, SeriesAnnotations> seriesAnnotations) {
         this.studyInstanceUID = studyInstanceUID;
@@ -81,7 +86,7 @@ public class StudyAnnotation implements Serializable {
         seriesAnnotations.put(seriesInstanceUid, annotation);
     }
 
-    public SeriesAnnotations getSeriesAnnotation(String seriesInstanceUid) {
+    public SeriesAnnotations getSeriesAnnotation(String seriesInstanceUid) {      
         return seriesAnnotations.get(seriesInstanceUid);
     }
 }

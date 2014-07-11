@@ -14,7 +14,7 @@
  *
  * The Initial Developer of the Original Code is
  * Raster Images
- * Portions created by the Initial Developer are Copyright (C) 2009-2010
+ * Portions created by the Initial Developer are Copyright (C) 2014
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -154,6 +154,8 @@ public class DataModel extends AbstractTreeTableModel {
                     return ((DataNode) node).getHeader();
                 case 14:
                     return ((DataNode) node).isSeries;
+                case 15:
+                    return ((DataNode) node);
             }
         }
         return null;

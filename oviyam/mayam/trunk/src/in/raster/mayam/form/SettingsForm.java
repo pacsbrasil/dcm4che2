@@ -62,6 +62,7 @@ import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Vector;
+import java.util.logging.Level;
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
@@ -713,6 +714,7 @@ public class SettingsForm extends javax.swing.JFrame {
 
     private void loopbackChkActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loopbackChkActionPerformed
         ApplicationContext.databaseRef.updateLoopBack(loopbackChk.isSelected());
+        ApplicationContext.isLoopBack = loopbackChk.isSelected();
     }//GEN-LAST:event_loopbackChkActionPerformed
 
     private void modalityComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_modalityComboActionPerformed
@@ -850,13 +852,13 @@ public class SettingsForm extends javax.swing.JFrame {
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(SettingsForm.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            ApplicationContext.logger.log(Level.INFO, "Settings Form", ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(SettingsForm.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            ApplicationContext.logger.log(Level.INFO, "Settings Form", ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(SettingsForm.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            ApplicationContext.logger.log(Level.INFO, "Settings Form", ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(SettingsForm.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            ApplicationContext.logger.log(Level.INFO, "Settings Form", ex);
         }
         //</editor-fold>
 

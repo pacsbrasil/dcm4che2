@@ -14,11 +14,12 @@
  *
  * The Initial Developer of the Original Code is
  * Raster Images
- * Portions created by the Initial Developer are Copyright (C) 2009-2010
+ * Portions created by the Initial Developer are Copyright (C) 2014
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  * Babu Hussain A 
+ * Devishree V
  * Meer Asgar Hussain B
  * Prakash J
  * Suresh V
@@ -70,6 +71,9 @@ public class InputArgumentValues {
     private String to;
     //Added to include C-Move,C-GET Retrieve methods
     private String retrieveType;
+    
+    //Added to avoid DICOM query in client side
+    private String xmlFilePath = null;
 
     public String getAccessionNumber() {
         return accessionNumber;
@@ -247,5 +251,13 @@ public class InputArgumentValues {
         Calendar currDate = Calendar.getInstance();
         currDate.add(Calendar.DATE, -1);
         return dateFormat.format(currDate.getTime());
+    }   
+
+    public String getXmlFilePath() {
+        return xmlFilePath;
+    }
+
+    public void setXmlFilePath(String xmlFileLocation) {
+        this.xmlFilePath = xmlFileLocation;
     }
 }

@@ -14,7 +14,7 @@
  *
  * The Initial Developer of the Original Code is
  * Raster Images
- * Portions created by the Initial Developer are Copyright (C) 2009-2010
+ * Portions created by the Initial Developer are Copyright (C) 2014
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -45,9 +45,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.ConcurrentModificationException;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 
 /**
@@ -60,45 +58,46 @@ public class ConstructThumbnails extends Thread {
     String studyInstanceUid, seriesInstanceUid;
     File parent;
     int maxThumbwidth = 75;
+    boolean isLink = false;
 
-    public ConstructThumbnails(String studyInstanceUid, String seriesInstanceUid) {
+    public ConstructThumbnails(String studyInstanceUid, String seriesInstanceUid, boolean isLink) {
         this.studyInstanceUid = studyInstanceUid;
         this.seriesInstanceUid = seriesInstanceUid;
+        this.isLink = isLink;
     }
 
     @Override
     public void run() {
         createThumbnails();
-        ApplicationContext.displayPreview(studyInstanceUid, seriesInstanceUid);
-        ApplicationContext.createVideoPreviews(studyInstanceUid);
+        ApplicationContext.displayPreviewOfSeries(studyInstanceUid, seriesInstanceUid);
     }
 
     private synchronized void createThumbnails() {
+        System.out.println("Thumbnails for : " + seriesInstanceUid);
         ArrayList<String> imageLocations = ApplicationContext.databaseRef.getLocationsBasedOnSeries(studyInstanceUid, seriesInstanceUid);
         try {
-            File seriesDir = new File(imageLocations.get(0)).getParentFile();
-            parent = new File(seriesDir + File.separator + "Thumbnails");
+            parent = isLink ? new File(ApplicationContext.appDirectory + File.separator + "Thumbnails") : new File(new File(imageLocations.get(0).split(",")[0]).getParent(), "Thumbnails");
+//            parent = new File(new File(imageLocations.get(0).split(",")[0]).getParent(), "Thumbnails");
             if (!parent.exists()) {
                 parent.mkdirs();
             }
         } catch (IndexOutOfBoundsException exception) {
-            System.out.println("index out of bounds");
-            //ignore
+            ApplicationContext.logger.log(Level.INFO, "CreateThumbnails() - Unable to create thumbnails");
         }
 
         for (int j = 0; j < imageLocations.size(); j++) {
-            BufferedImage image = DicomImageReader.readDicomFile(new File(imageLocations.get(j)));
+            BufferedImage image = DicomImageReader.readDicomFile(new File(imageLocations.get(j).split(",")[0]));
             BufferedImage imageToWrite = shrinkImage(image);
             try {
-                ImageIO.write(imageToWrite, "jpeg", new File(parent, imageLocations.get(j).substring(imageLocations.get(j).lastIndexOf(File.separator), imageLocations.get(j).length())));
+                ImageIO.write(imageToWrite, "jpeg", new File(parent, imageLocations.get(j).split(",")[1]));
+//                    ImageIO.write(imageToWrite, "jpeg", new File(parent, imageLocations.get(j).substring(imageLocations.get(j).lastIndexOf(File.separator), imageLocations.get(j).length())));
+
             } catch (IOException ex) {
-                Logger.getLogger(ConstructThumbnails.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (ConcurrentModificationException cme) {
-                System.out.println("concurrent modification");
-            } catch (IllegalArgumentException ile) {
-                System.out.println("illegal arg");
-            } catch (NullPointerException npe) {
-                System.out.println("null ptr");
+                ex.printStackTrace();
+                ApplicationContext.logger.log(Level.INFO, "Construct Thumbnails", ex);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                ApplicationContext.logger.log(Level.INFO, "Construct Thumbnails", ex);
             }
         }
 

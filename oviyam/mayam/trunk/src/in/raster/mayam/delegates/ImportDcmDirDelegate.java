@@ -14,7 +14,7 @@
  *
  * The Initial Developer of the Original Code is
  * Raster Images
- * Portions created by the Initial Developer are Copyright (C) 2009-2010
+ * Portions created by the Initial Developer are Copyright (C) 2014
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -46,6 +46,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Iterator;
+import java.util.logging.Level;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 import javax.swing.JOptionPane;
@@ -61,7 +62,7 @@ import org.dcm4che2.io.DicomInputStream;
  */
 public class ImportDcmDirDelegate extends Thread {
 
-    Calendar today = Calendar.getInstance();
+    Calendar today = Calendar.getInstance(ApplicationContext.currentLocale);
     String dest = ApplicationContext.listenerDetails[2] + File.separator + today.get(Calendar.YEAR) + File.separator + today.get(Calendar.MONTH) + File.separator + today.get(Calendar.DATE);
     boolean saveAsLink = false, skip = false;
     OutputStream outStream = null;
@@ -93,19 +94,19 @@ public class ImportDcmDirDelegate extends Thread {
             checkIsLink();
             if (!skip) {
                 readAndImportDicomFile(file);
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        ApplicationContext.mainScreenObj.refreshLocalDB();
-                    }
-                });
-
             } else {
                 return;
             }
         } else {
             JOptionPane.showOptionDialog(ApplicationContext.mainScreenObj, ApplicationContext.currentBundle.getString("MainScreen.importFailiure.text"), ApplicationContext.currentBundle.getString("ErrorTitles.text"), JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
         }
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                ApplicationContext.mainScreenObj.refreshLocalDB();
+            }
+        });
+
     }
 
     public void setImportFolder(File importFolder) {
@@ -143,12 +144,6 @@ public class ImportDcmDirDelegate extends Thread {
                 }
             }
             ApplicationContext.mainScreenObj.hideProgressBar();
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    ApplicationContext.mainScreenObj.refreshLocalDB();
-                }
-            });
             JOptionPane.showOptionDialog(ApplicationContext.mainScreenObj, importedFileCount + " " + ApplicationContext.currentBundle.getString("MainScreen.import.filesCopied.text"), ApplicationContext.currentBundle.getString("MainScreen.importMenuItem.text"), JOptionPane.OK_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
         } else {
             return;
@@ -156,55 +151,55 @@ public class ImportDcmDirDelegate extends Thread {
     }
 
     private void readAndImportDicomFile(File parseFile) throws CompressedDcmOnMacException {
-        DicomInputStream dis = null;
-        try {
-            dis = new DicomInputStream(parseFile);
-            DicomObject data = new BasicDicomObject();
-            data = dis.readDicomObject();
-            if (data != null) {
-                if (Platform.getCurrentPlatform().equals(Platform.MAC)) {
-                    if (data.getString(Tags.TransferSyntaxUID).equalsIgnoreCase(TransferSyntax.ExplicitVRLittleEndian.uid()) || data.getString(Tags.TransferSyntaxUID).equalsIgnoreCase(TransferSyntax.ImplicitVRLittleEndian.uid())) {
-                        if (saveAsLink) {
-                            ApplicationContext.databaseRef.writeDatasetInfo(data, saveAsLink, parseFile.getAbsolutePath(), true);
-                        } else {
-                            File destination = new File(dest + File.separator + data.getString(Tags.StudyInstanceUID) + File.separator + data.getString(Tags.SeriesInstanceUID));
-                            if (!destination.exists()) {
-                                destination.mkdirs();
-                            }
-                            File destinationFile = new File(destination, data.getString(Tags.SOPInstanceUID));
-                            copy(parseFile, destinationFile);
-                            ApplicationContext.databaseRef.writeDatasetInfo(data, saveAsLink, destinationFile.getAbsolutePath(), true);
-                        }
-                    } else {
-                        throw new CompressedDcmOnMacException();
-                    }
-                } else {
-                    if (saveAsLink) {
-                        ApplicationContext.databaseRef.writeDatasetInfo(data, saveAsLink, parseFile.getAbsolutePath(), true);
-                    } else {
-                        File destination = new File(dest + File.separator + data.getString(Tags.StudyInstanceUID) + File.separator + data.getString(Tags.SeriesInstanceUID));
-                        if (!destination.exists()) {
-                            destination.mkdirs();
-                        }
-                        File destinationFile = new File(destination, data.getString(Tags.SOPInstanceUID));
-                        copy(parseFile, destinationFile);
-                        ApplicationContext.databaseRef.writeDatasetInfo(data, saveAsLink, destinationFile.getAbsolutePath(), true);
-                    }
-                }
-            }
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        } catch (NullPointerException ex) {
-            //ignore
-        } finally {
-            if (dis != null) {
-                try {
-                    dis.close();
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-            }
-        }
+//        DicomInputStream dis = null;
+//        try {
+//            dis = new DicomInputStream(parseFile);
+//            DicomObject data = new BasicDicomObject();
+//            data = dis.readDicomObject();
+//            if (data != null) {
+//                if (Platform.getCurrentPlatform().equals(Platform.MAC)) {
+//                    if (data.getString(Tags.TransferSyntaxUID).equalsIgnoreCase(TransferSyntax.ExplicitVRLittleEndian.uid()) || data.getString(Tags.TransferSyntaxUID).equalsIgnoreCase(TransferSyntax.ImplicitVRLittleEndian.uid())) {
+//                        if (saveAsLink) {
+//                            ApplicationContext.databaseRef.writeDatasetInfo(data, saveAsLink, parseFile.getAbsolutePath(), true);
+//                        } else {
+//                            File destination = new File(dest + File.separator + data.getString(Tags.StudyInstanceUID) + File.separator + data.getString(Tags.SeriesInstanceUID));
+//                            if (!destination.exists()) {
+//                                destination.mkdirs();
+//                            }
+//                            File destinationFile = new File(destination, data.getString(Tags.SOPInstanceUID));
+//                            copy(parseFile, destinationFile);
+//                            ApplicationContext.databaseRef.writeDatasetInfo(data, saveAsLink, destinationFile.getAbsolutePath(), true);
+//                        }
+//                    } else {
+//                        throw new CompressedDcmOnMacException();
+//                    }
+//                } else {
+//                    if (saveAsLink) {
+//                        ApplicationContext.databaseRef.writeDatasetInfo(data, saveAsLink, parseFile.getAbsolutePath(), true);
+//                    } else {
+//                        File destination = new File(dest + File.separator + data.getString(Tags.StudyInstanceUID) + File.separator + data.getString(Tags.SeriesInstanceUID));
+//                        if (!destination.exists()) {
+//                            destination.mkdirs();
+//                        }
+//                        File destinationFile = new File(destination, data.getString(Tags.SOPInstanceUID));
+//                        copy(parseFile, destinationFile);
+//                        ApplicationContext.databaseRef.writeDatasetInfo(data, saveAsLink, destinationFile.getAbsolutePath(), true);
+//                    }
+//                }
+//            }
+//        } catch (IOException ex) {
+//            ApplicationContext.logger.log(Level.INFO, "Unable to import file", ex);
+//        } catch (NullPointerException ex) {
+//            ApplicationContext.logger.log(Level.INFO, "Unable to import file", ex);
+//        } finally {
+//            if (dis != null) {
+//                try {
+//                    dis.close();
+//                } catch (Exception ex) {
+//                    ApplicationContext.logger.log(Level.INFO, "Unable to import file", ex);
+//                }
+//            }
+//        }
     }
 
     public boolean isDicomFile(File file) {
@@ -217,9 +212,9 @@ public class ImportDcmDirDelegate extends Thread {
                 return true;
             }
         } catch (FileNotFoundException ex) {
-//            System.out.println("File not found : " + ex.getMessage());
+            ApplicationContext.logger.log(Level.INFO, null, ex);
         } catch (IOException ex) {
-//            System.out.println("IOException : " + ex.getMessage());
+            ApplicationContext.logger.log(Level.INFO, null, ex);
         }
         return false;
     }
@@ -237,7 +232,7 @@ public class ImportDcmDirDelegate extends Thread {
             outStream.close();
             System.out.println("File : " + src.getAbsolutePath() + " copied successfully");
         } catch (IOException ex) {
-//            System.out.println("IO Exception : " + ex.getMessage());
+            ApplicationContext.logger.log(Level.INFO, "ImportDcmDirDelegate", ex);
         }
     }
 

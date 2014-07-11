@@ -14,7 +14,7 @@
  *
  * The Initial Developer of the Original Code is
  * Raster Images
- * Portions created by the Initial Developer are Copyright (C) 2009-2010
+ * Portions created by the Initial Developer are Copyright (C) 2014
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -43,7 +43,6 @@ import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.util.core.DcmQR;
 import in.raster.mayam.util.core.MoveScu;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -72,41 +71,25 @@ public class SeriesRetriever implements Runnable {
         if (useMoveRQ) {
             try {
                 MoveScu.main(moveArg);
-                showSeries();
             } catch (Exception ex) {
-                Logger.getLogger(SeriesRetriever.class.getName()).log(Level.SEVERE, null, ex);
+                ApplicationContext.logger.log(Level.SEVERE, null, ex);
             }
         } else {
             DcmQR.main(moveArg);
-            showSeries();
         }
-
+        showSeries();
     }
 
     private void showSeries() {
-        boolean studyCompleted = false;
         if (totalInstances == ApplicationContext.databaseRef.getStudyLevelInstances(studyUid)) {
-            studyCompleted = true;
-            ApplicationContext.databaseRef.update("study", "DownloadStatus", true, "StudyInstanceUID", studyUid);
-            ApplicationContext.imgView.getImageToolbar().enableMultiSeriesTools();
-            ApplicationContext.databaseRef.updateStudies(studyUid);
-            ApplicationContext.createVideoPreviews(studyUid);
-            if (ApplicationContext.mainScreenObj != null && !ApplicationContext.databaseRef.isDownloadPending()) {
-                ApplicationContext.mainScreenObj.hideProgressBar();
-            }
+            ApplicationContext.studyRetirivalCompleted(studyUid);
         }
         if (isFirstSeries) {
-            ApplicationContext.createLayeredCanvas(ApplicationContext.databaseRef.getFirstInstanceLocation(studyUid, seriesUid), studyUid, 0, true);
+            ApplicationContext.createCanvas(ApplicationContext.databaseRef.getFirstInstanceLocation(studyUid, seriesUid), studyUid, 0);
         }
-        if (!constructPreview) {
-            ApplicationContext.displayPreview(studyUid, seriesUid);
-        } else {
-            ConstructThumbnails constructThumbnails = new ConstructThumbnails(studyUid, seriesUid);
-            constructThumbnails.start();
+        if (constructPreview) {
+            new ConstructThumbnails(studyUid, seriesUid, false).start();
         }
-        if (studyCompleted) {
-            ApplicationContext.setCorrespondingPreviews();
-            ApplicationContext.setAllSeriesIdentification(studyUid);
-        }
+        ApplicationContext.databaseRef.update("series", "NoOfSeriesRelatedInstances", ApplicationContext.databaseRef.getSeriesLevelInstance(studyUid, seriesUid), "SeriesInstanceUID", seriesUid);
     }
 }

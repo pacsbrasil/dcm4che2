@@ -56,7 +56,7 @@ import javax.swing.JPanel;
  */
 public class Canvas extends javax.swing.JPanel {
 
-        /**
+    /**
      * Creates new form DateFormatPanel
      */
     public boolean startPan = false;
@@ -109,8 +109,8 @@ public class Canvas extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void formMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_formMouseClicked
-        setSelection(true);
-        layeredCanvas.annotationPanel.mouseClicked(evt);
+        // setSelection(true);
+        // layeredCanvas.annotationPanel.mouseClicked(evt);
     }//GEN-LAST:event_formMouseClicked
     public boolean isFocusGained() {
         return focusGained;
@@ -118,7 +118,7 @@ public class Canvas extends javax.swing.JPanel {
 
     @Override
     public void paint(Graphics g) {
-       super.paint(g);
+        super.paint(g);
         if (firstTime) {
             setSize(layeredCanvas.getSize().width, layeredCanvas.getSize().height);
             firstTime = false;
@@ -261,7 +261,7 @@ public class Canvas extends javax.swing.JPanel {
     /**
      * This routine used to set the selection coloring.
      */
-     public void setSelectionColoring() {
+    public void setSelectionColoring() {
         focusGained = true;
         repaint();
     }
@@ -373,34 +373,34 @@ public class Canvas extends javax.swing.JPanel {
         repaint();
     }
 
-    public void setSelection(boolean skip) { //skip is used to skip this block each time on mouse scroll
-        try {
-            String seriesUid = ApplicationContext.layeredCanvas.imgpanel.getSeriesUID();
-            String iuid = ApplicationContext.layeredCanvas.imgpanel.getInstanceUID();
-            ImagePanel imgPanel = (ImagePanel) this.getComponent(0);
-            if (skip || !seriesUid.equals(imgPanel.getSeriesUID()) || imgPanel.isMultiFrame() || !iuid.equals(imgPanel.getInstanceUID())) {
-                if (ApplicationContext.layeredCanvas != null && ApplicationContext.layeredCanvas.canvas != null) {
-                    ApplicationContext.layeredCanvas.getCanvas().setNoSelectionColoring();
-                } else {
-                    ApplicationContext.layeredCanvas.setNoSelectionColoring();
-                }
-                ApplicationContext.layeredCanvas = null;
-                ApplicationContext.layeredCanvas = layeredCanvas;
-                ApplicationContext.selectedPanel = (JPanel) layeredCanvas.getParent();
-                setSelectionColoring();
-                if (ApplicationContext.isImageViewExist()) {
-                    ApplicationContext.imgView.getImageToolbar().refreshToolsDisplay();
-                }
-                if (!ApplicationContext.imgView.getImageToolbar().isImageLayout && ImagePanel.isDisplayScout()) {
-                    LocalizerDelegate localizer = new LocalizerDelegate(false);
-                    localizer.start();
-                }
-            }
-
-        } catch (ArrayIndexOutOfBoundsException ex) {
-            //ignore : No of components differ in Jdk 1.7
-        }
-    }
+//    public void setSelection(boolean skip) { //skip is used to skip this block each time on mouse scroll
+//        try {
+//            String seriesUid = ApplicationContext.layeredCanvas.imgpanel.getSeriesUID();
+//            String iuid = ApplicationContext.layeredCanvas.imgpanel.getInstanceUID();
+//            ImagePanel imgPanel = (ImagePanel) this.getComponent(0);
+//            if (skip || !seriesUid.equals(imgPanel.getSeriesUID()) || imgPanel.isMultiFrame() || !iuid.equals(imgPanel.getInstanceUID())) {
+//                if (ApplicationContext.layeredCanvas != null && ApplicationContext.layeredCanvas.canvas != null) {
+//                    ApplicationContext.layeredCanvas.getCanvas().setNoSelectionColoring();
+//                } else {
+//                    ApplicationContext.layeredCanvas.setNoSelectionColoring();
+//                }
+//                ApplicationContext.layeredCanvas = null;
+//                ApplicationContext.layeredCanvas = layeredCanvas;
+//                ApplicationContext.selectedPanel = (JPanel) layeredCanvas.getParent();
+//                setSelectionColoring();
+//                if (ApplicationContext.isImageViewExist()) {
+////                    ApplicationContext.imgView.imageToolbar.refreshToolsDisplay();
+//                }
+//                if (!ApplicationContext.imgView.imageToolbar.isImageLayout && ImagePanel.isDisplayScout()) {
+//                    LocalizerDelegate localizer = new LocalizerDelegate(false);
+//                    localizer.start();
+//                }
+//            }
+//
+//        } catch (ArrayIndexOutOfBoundsException ex) {
+//            //ignore : No of components differ in Jdk 1.7
+//        }
+//    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // End of variables declaration//GEN-END:variables
 }

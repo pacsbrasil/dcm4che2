@@ -41,10 +41,13 @@ package in.raster.mayam.form;
 
 import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.listeners.CursorController;
+import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.KeyEventDispatcher;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -89,6 +92,8 @@ public class SearchFilterForm extends javax.swing.JPanel {
         searchBtn.addActionListener(CursorController.createListener(ApplicationContext.mainScreenObj, searchBtnListener));
         addDateChooserListeners();
         addKeyEventDispatcher();
+        fromDateChooser.getCalendarButton().setPreferredSize(new Dimension(25, 20));
+        toDateChooser.getCalendarButton().setPreferredSize(new Dimension(25, 20));
     }
 
     /**
@@ -115,42 +120,58 @@ public class SearchFilterForm extends javax.swing.JPanel {
         jButton1 = new javax.swing.JButton();
         searchBtn = new javax.swing.JButton();
         resetBtn = new javax.swing.JButton();
-        fromDateChooser = new com.toedter.calendar.JDateChooser();
         toDateChooser = new com.toedter.calendar.JDateChooser();
         fromDateLabel = new javax.swing.JLabel();
         toDateLabel = new javax.swing.JLabel();
+        fromDateChooser = new com.toedter.calendar.JDateChooser();
 
         patientIdLabel.setFont(ApplicationContext.textFont);
         patientIdLabel.setText(ApplicationContext.currentBundle.getString("MainScreen.patientIdLabel.text")); // NOI18N
+        patientIdLabel.setPreferredSize(new java.awt.Dimension(150, 20));
 
         patientIdTxt.setFont(ApplicationContext.textFont);
+        patientIdTxt.setPreferredSize(new java.awt.Dimension(150, 28));
 
         patientNameLabel.setFont(ApplicationContext.textFont);
         patientNameLabel.setText(ApplicationContext.currentBundle.getString("MainScreen.patientNameLabel.text")); // NOI18N
+        patientNameLabel.setPreferredSize(new java.awt.Dimension(150, 20));
 
         patientNameTxt.setFont(ApplicationContext.textFont);
+        patientNameTxt.setPreferredSize(new java.awt.Dimension(150, 28));
 
         accessionNoLabel.setFont(ApplicationContext.textFont);
         accessionNoLabel.setText(ApplicationContext.currentBundle.getString("MainScreen.accessionLabel.text")); // NOI18N
+        accessionNoLabel.setPreferredSize(new java.awt.Dimension(150, 20));
 
         accNoTxt.setFont(ApplicationContext.textFont);
+        accNoTxt.setPreferredSize(new java.awt.Dimension(150, 28));
 
         studyDescLabel.setFont(ApplicationContext.textFont);
         studyDescLabel.setText(ApplicationContext.currentBundle.getString("MainScreen.studyDescriptionLabel.text")); // NOI18N
+        studyDescLabel.setPreferredSize(new java.awt.Dimension(150, 20));
 
         studyDescriptionTxt.setFont(ApplicationContext.textFont);
+        studyDescriptionTxt.setPreferredSize(new java.awt.Dimension(150, 28));
 
         referringPhysicianLabel.setFont(ApplicationContext.textFont);
         referringPhysicianLabel.setText(ApplicationContext.currentBundle.getString("MainScreen.referringPhysicianLabel.text")); // NOI18N
+        referringPhysicianLabel.setPreferredSize(new java.awt.Dimension(150, 20));
 
         referringPhysicianTxt.setFont(ApplicationContext.textFont);
+        referringPhysicianTxt.setPreferredSize(new java.awt.Dimension(150, 28));
 
         modalityLabel.setFont(ApplicationContext.textFont);
         modalityLabel.setText(ApplicationContext.currentBundle.getString("MainScreen.modalityLabel.text")); // NOI18N
+        modalityLabel.setPreferredSize(new java.awt.Dimension(150, 20));
 
         modalityTxt.setFont(ApplicationContext.textFont);
+        modalityTxt.setPreferredSize(new java.awt.Dimension(150, 28));
 
         jButton1.setText("....");
+        jButton1.setBorderPainted(false);
+        jButton1.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        jButton1.setFocusPainted(false);
+        jButton1.setPreferredSize(new java.awt.Dimension(28, 28));
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
@@ -158,27 +179,33 @@ public class SearchFilterForm extends javax.swing.JPanel {
         });
 
         searchBtn.setText(ApplicationContext.currentBundle.getString("MainScreen.searchButton.text")); // NOI18N
+        searchBtn.setFocusPainted(false);
 
         resetBtn.setText(ApplicationContext.currentBundle.getString("MainScreen.resetButton.text")); // NOI18N
+        resetBtn.setFocusPainted(false);
         resetBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 resetBtnActionPerformed(evt);
             }
         });
 
-        fromDateChooser.setDateFormatString("dd/MM/yyyy");
-        fromDateChooser.setFont(ApplicationContext.textFont);
-        fromDateChooser.setMaskFormatVisible(true);
-
         toDateChooser.setDateFormatString("dd/MM/yyyy");
         toDateChooser.setFont(ApplicationContext.textFont);
         toDateChooser.setMaskFormatVisible(true);
+        toDateChooser.setPreferredSize(new java.awt.Dimension(150, 28));
 
         fromDateLabel.setFont(ApplicationContext.textFont);
         fromDateLabel.setText(ApplicationContext.currentBundle.getString("MainScreen.fromDateLabel.text")); // NOI18N
+        fromDateLabel.setPreferredSize(new java.awt.Dimension(150, 20));
 
         toDateLabel.setFont(ApplicationContext.textFont);
         toDateLabel.setText(ApplicationContext.currentBundle.getString("MainScreen.toDateLabel.text")); // NOI18N
+        toDateLabel.setPreferredSize(new java.awt.Dimension(150, 20));
+
+        fromDateChooser.setDateFormatString("dd/MM/yyyy");
+        fromDateChooser.setFont(ApplicationContext.textFont);
+        fromDateChooser.setMaskFormatVisible(true);
+        fromDateChooser.setPreferredSize(new java.awt.Dimension(150, 28));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -186,49 +213,49 @@ public class SearchFilterForm extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(fromDateChooser, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                        .addComponent(fromDateLabel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(patientIdTxt, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 145, Short.MAX_VALUE)
-                        .addComponent(patientIdLabel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(41, 41, 41)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(fromDateLabel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(fromDateChooser, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(patientIdTxt, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(patientIdLabel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(44, 44, 44)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(patientNameTxt, javax.swing.GroupLayout.DEFAULT_SIZE, 175, Short.MAX_VALUE)
-                    .addComponent(patientNameLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 149, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(toDateChooser, javax.swing.GroupLayout.PREFERRED_SIZE, 161, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(patientNameTxt, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(patientNameLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(toDateChooser, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(toDateLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addGap(39, 39, 39)
+                .addGap(46, 46, 46)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                         .addComponent(referringPhysicianTxt, javax.swing.GroupLayout.DEFAULT_SIZE, 152, Short.MAX_VALUE)
                         .addComponent(accessionNoLabel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 97, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(accNoTxt))
+                        .addComponent(accNoTxt, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addComponent(referringPhysicianLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(28, 28, 28)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(studyDescLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 137, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(studyDescriptionTxt, javax.swing.GroupLayout.PREFERRED_SIZE, 199, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(modalityLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(modalityTxt, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(modalityLabel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(studyDescriptionTxt, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(modalityTxt, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 160, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)))
+                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(searchBtn, javax.swing.GroupLayout.DEFAULT_SIZE, 116, Short.MAX_VALUE)
                     .addComponent(resetBtn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(23, Short.MAX_VALUE))
+                .addContainerGap(36, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(patientIdLabel)
-                    .addComponent(patientNameLabel)
-                    .addComponent(accessionNoLabel)
-                    .addComponent(studyDescLabel))
+                    .addComponent(patientIdLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(patientNameLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(accessionNoLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(studyDescLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(patientIdTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -236,24 +263,24 @@ public class SearchFilterForm extends javax.swing.JPanel {
                     .addComponent(accNoTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(studyDescriptionTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(searchBtn))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(referringPhysicianLabel)
-                            .addComponent(modalityLabel)
-                            .addComponent(fromDateLabel)
-                            .addComponent(toDateLabel))
+                            .addComponent(referringPhysicianLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(modalityLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(fromDateLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(toDateLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(fromDateChooser, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(toDateChooser, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                 .addComponent(referringPhysicianTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addComponent(modalityTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(jButton1))))
+                                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(fromDateChooser, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addComponent(resetBtn))
-                .addContainerGap(21, Short.MAX_VALUE))
+                .addContainerGap(14, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -457,28 +484,17 @@ public class SearchFilterForm extends javax.swing.JPanel {
     }
 
     private void addDateChooserListeners() {
-        fromDateChooser.getTextBox().addFocusListener(new FocusListener() {
-            @Override
-            public void focusGained(FocusEvent e) {
-                fromDateChooser.getTextBox().setForeground(fromDateLabel.getForeground());
-            }
+        FocusManager focusManager = new FocusManager();
+        fromDateChooser.getTextBox().addPropertyChangeListener(focusManager);
+        toDateChooser.getTextBox().addPropertyChangeListener(focusManager);
+    }
 
-            @Override
-            public void focusLost(FocusEvent e) {
-                fromDateChooser.getTextBox().setForeground(fromDateLabel.getForeground());
-            }
-        });
+    public class FocusManager implements PropertyChangeListener {
 
-        toDateChooser.getTextBox().addFocusListener(new FocusListener() {
-            @Override
-            public void focusGained(FocusEvent e) {
-                toDateChooser.getTextBox().setForeground(toDateLabel.getForeground());
-            }
-
-            @Override
-            public void focusLost(FocusEvent e) {
-                toDateChooser.getTextBox().setForeground(toDateLabel.getForeground());
-            }
-        });
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            fromDateChooser.getTextBox().setForeground(fromDateLabel.getForeground());
+            toDateChooser.getTextBox().setForeground(toDateLabel.getForeground());
+        }
     }
 }

@@ -14,7 +14,7 @@
  *
  * The Initial Developer of the Original Code is
  * Raster Images
- * Portions created by the Initial Developer are Copyright (C) 2009-2010
+ * Portions created by the Initial Developer are Copyright (C) 2014
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -43,7 +43,7 @@ import com.nilo.plaf.nimrod.NimRODLookAndFeel;
 import com.sun.java.swing.plaf.motif.MotifLookAndFeel;
 import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.delegates.InputArgumentsParser;
-import in.raster.mayam.delegates.JNLPSeriesRetriever;
+import in.raster.mayam.delegates.DirectLaunch;
 import static in.raster.mayam.facade.ApplicationFacade.mainscreen;
 import static in.raster.mayam.facade.ApplicationFacade.splash;
 import in.raster.mayam.form.MainScreen;
@@ -52,11 +52,14 @@ import in.raster.mayam.form.display.Display;
 import in.raster.mayam.models.InputArgumentValues;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
-import java.awt.Insets;
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
+import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
 import javax.swing.UIDefaults;
 import javax.swing.UIManager;
@@ -78,6 +81,7 @@ public class ApplicationFacade {
 
     public static void main(String[] args) {
         ApplicationFacade facade = new ApplicationFacade();
+        createLogger();
         facade.setSystemProperties();
         facade.createSplash();
         ApplicationContext.setAppLocale();
@@ -91,6 +95,24 @@ public class ApplicationFacade {
             facade.createMainScreen();
             splash.setVisible(false);
             mainscreen.setVisible(true);
+        }
+    }
+
+    private static void createLogger() {
+        ApplicationContext.logger.setLevel(Level.INFO);
+        try {
+            FileHandler fileHandler = new FileHandler(System.getProperty("user.dir") + File.separator + "log.txt");
+            System.out.println("Log File path : " + System.getProperty("user.dir") + File.separator + "log.txt");
+
+            //Create text formatter
+            SimpleFormatter txtFormatter = new SimpleFormatter();
+            fileHandler.setFormatter(txtFormatter);
+            ApplicationContext.logger.addHandler(fileHandler);
+            ApplicationContext.logger.setUseParentHandlers(false);
+        } catch (IOException ex) {
+            ApplicationContext.logger.log(Level.SEVERE, "ApplicationFacade-113", ex);
+        } catch (SecurityException ex) {
+            ApplicationContext.logger.log(Level.SEVERE, "ApplicationFacade-115", ex);
         }
     }
 
@@ -115,15 +137,10 @@ public class ApplicationFacade {
             fieldSysPath = ClassLoader.class.getDeclaredField("sys_paths");
             fieldSysPath.setAccessible(true);
             fieldSysPath.set(null, null);
-        } catch (NoSuchFieldException ex) {
-            Logger.getLogger(ApplicationFacade.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (SecurityException ex) {
-            Logger.getLogger(ApplicationFacade.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IllegalArgumentException ex) {
-            Logger.getLogger(ApplicationFacade.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            Logger.getLogger(ApplicationFacade.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception ex) {
+            ApplicationContext.logger.log(Level.SEVERE, "Unable to set Library Path.", ex);
         }
+
         if (Platform.getCurrentPlatform().equals(Platform.MAC)) {
             System.setProperty("apple.laf.useScreenMenuBar", "true");
             System.setProperty("com.apple.mrj.application.apple.menu.about.name", ApplicationContext.applicationName);
@@ -134,12 +151,14 @@ public class ApplicationFacade {
             System.setProperty("sun.java2d.pmoffscreen", "false");
         }
         System.setProperty("java.util.Arrays.useLegacyMergeSort", "true"); //Need to avoid the exceptions occured when using jdk 1.7                         
+        ImageIO.scanForPlugins();
     }
 
     public static void exitApp(String exitString) {
         if (splash != null) {
             splash.setVisible(false);
         }
+        ApplicationContext.logger.log(Level.SEVERE, exitString);
         JOptionPane.showOptionDialog(null, exitString, ApplicationContext.currentBundle.getString("ApplicationFacade.applicationerror.title.text"), JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
         System.exit(0);
     }
@@ -149,12 +168,8 @@ public class ApplicationFacade {
     }
 
     private static void loadStudiesBasedOnInputParameter(InputArgumentValues inputArgumentValues) {
-        if (ApplicationContext.communicationDelegate.verifyServer(ApplicationContext.communicationDelegate.constructURL(inputArgumentValues.getAeTitle(), inputArgumentValues.getHostName(), inputArgumentValues.getPort()))) {
-            JNLPSeriesRetriever jNLPSeriesRetriever = new JNLPSeriesRetriever(inputArgumentValues);
-        } else {
-            System.err.println("ERROR : DICOM Server Unreachable");
-            System.exit(0);
-        }
+        DirectLaunch directLauncher = new DirectLaunch(inputArgumentValues);
+        directLauncher.execute();
     }
 
     private static void setTheme() {
@@ -177,13 +192,11 @@ public class ApplicationFacade {
             uIDefaults.put("Label.font", ApplicationContext.textFont);
             uIDefaults.put("RadioButton.font", ApplicationContext.textFont);
             uIDefaults.put("CheckBox.font", ApplicationContext.textFont);
-            uIDefaults.put("TabbedPane.tabInsets", new Insets(5, 5, 5, 5));
-            uIDefaults.put("TabbedPane.selectedTabPadInsets", new Insets(5, 7, 5, 7));
             uIDefaults.put("OptionPane.messageFont", ApplicationContext.labelFont);
             uIDefaults.put("OptionPane.buttonFont", ApplicationContext.labelFont);
             uIDefaults.put("ToolTip.font", ApplicationContext.labelFont);
         } catch (UnsupportedLookAndFeelException ex) {
-            Logger.getLogger(MainScreen.class.getName()).log(Level.SEVERE, null, ex);
+            ApplicationContext.logger.log(Level.SEVERE, null, ex);
         }
     }
 
@@ -191,7 +204,7 @@ public class ApplicationFacade {
         try {
             UIManager.setLookAndFeel(new MotifLookAndFeel());
         } catch (UnsupportedLookAndFeelException ex) {
-            Logger.getLogger(MainScreen.class.getName()).log(Level.SEVERE, null, ex);
+            ApplicationContext.logger.log(Level.SEVERE, null, ex);
         }
     }
 
@@ -199,13 +212,13 @@ public class ApplicationFacade {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (ClassNotFoundException ex) {
-            Logger.getLogger(MainScreen.class.getName()).log(Level.SEVERE, null, ex);
+            ApplicationContext.logger.log(Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            Logger.getLogger(MainScreen.class.getName()).log(Level.SEVERE, null, ex);
+            ApplicationContext.logger.log(Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            Logger.getLogger(MainScreen.class.getName()).log(Level.SEVERE, null, ex);
+            ApplicationContext.logger.log(Level.SEVERE, null, ex);
         } catch (UnsupportedLookAndFeelException ex) {
-            Logger.getLogger(MainScreen.class.getName()).log(Level.SEVERE, null, ex);
+            ApplicationContext.logger.log(Level.SEVERE, null, ex);
         }
     }
 }

@@ -14,7 +14,7 @@
  *
  * The Initial Developer of the Original Code is
  * Raster Images
- * Portions created by the Initial Developer are Copyright (C) 2009-2010
+ * Portions created by the Initial Developer are Copyright (C) 2014
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -43,7 +43,13 @@ import in.raster.mayam.context.ApplicationContext;
 import static in.raster.mayam.delegates.InputArgumentsParser.inputArgumentValues;
 import static in.raster.mayam.delegates.InputArgumentsParser.opts;
 import in.raster.mayam.models.InputArgumentValues;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.logging.Level;
 import org.apache.commons.cli.*;
+import org.apache.commons.codec.binary.Base64;
 
 /**
  *
@@ -144,19 +150,24 @@ public class InputArgumentsParser {
             OptionBuilder.withDescription("Specifies the retrieve method C-MOVE/C-GET/WADO");
             opts.addOption(OptionBuilder.create("RetrieveType"));
 
+            OptionBuilder.withArgName("DicomData");
+            OptionBuilder.hasArg();
+            OptionBuilder.withDescription("Encoded XML file that have entire study information.");
+            opts.addOption(OptionBuilder.create("DicomData"));
+
             opts.addOption("h", "help", false, "Prints help");
 
             CommandLine cl = null;
             try {
                 cl = new GnuParser().parse(opts, args);
             } catch (ParseException e) {
-                e.printStackTrace();
+                ApplicationContext.logger.log(Level.SEVERE, "Unreachable", e);
                 throw new RuntimeException("unreachable");
             }
             if (cl.hasOption('h')) {
                 HelpFormatter formatter = new HelpFormatter();
                 formatter.printHelp(USAGE, "\nOptions:", opts, EXAMPLE);
-//                System.exit(0);
+                System.exit(0);
             }
             getInputArgumentValues(cl);
         }
@@ -173,17 +184,28 @@ public class InputArgumentsParser {
     }
 
     public static void getInputArgumentValues(CommandLine cl) {
-        if (cl.hasOption("StudyUID") || cl.hasOption("PatientID") || cl.hasOption("Accession")) {
+        if (cl.hasOption("DicomData")) {    // If Encoded XML file found
+            checkWadoInfo(cl);
+            inputArgumentValues.setHostName(cl.hasOption("HostName") ? cl.getOptionValue("HostName") : "localhost");
+            inputArgumentValues.setXmlFilePath(decodeXML(cl.getOptionValue("DicomData")));
+        } else if (cl.hasOption("StudyUID") || cl.hasOption("PatientID") || cl.hasOption("Accession")) {
             checkDicomServerInfo(cl);
-            if (ApplicationContext.databaseRef.getDynamicRetrieveTypeStatus()) {
-                if (cl.hasOption("RetrieveType")) {
-                    inputArgumentValues.setRetrieveType(cl.getOptionValue("RetrieveType"));
-                } else {
-                    inputArgumentValues.setRetrieveType(ApplicationContext.databaseRef.getJNLPRetrieveType());
-                }
+//            if (ApplicationContext.databaseRef.getDynamicRetrieveTypeStatus()) {
+//                if (cl.hasOption("RetrieveType")) {
+//                    inputArgumentValues.setRetrieveType(cl.getOptionValue("RetrieveType"));
+//                } else {
+//                    inputArgumentValues.setRetrieveType(ApplicationContext.databaseRef.getJNLPRetrieveType());
+//                }
+//            } else {
+//                inputArgumentValues.setRetrieveType(ApplicationContext.databaseRef.getJNLPRetrieveType());
+//            }
+
+            if (ApplicationContext.databaseRef.getDynamicRetrieveTypeStatus() && cl.hasOption("RetrieveType")) {
+                inputArgumentValues.setRetrieveType(cl.getOptionValue("RetrieveType"));
             } else {
                 inputArgumentValues.setRetrieveType(ApplicationContext.databaseRef.getJNLPRetrieveType());
             }
+
             if (inputArgumentValues.getRetrieveType().equals("WADO")) {
                 checkWadoInfo(cl);
             }
@@ -219,7 +241,7 @@ public class InputArgumentsParser {
             System.out.println("");
             HelpFormatter formatter = new HelpFormatter();
             formatter.printHelp(USAGE, "\nOptions:", opts, EXAMPLE);
-//            System.exit(0);
+            System.exit(0);
         }
     }
 
@@ -249,7 +271,23 @@ public class InputArgumentsParser {
             System.out.println("");
             HelpFormatter formatter = new HelpFormatter();
             formatter.printHelp(USAGE, "\nOptions:", opts, EXAMPLE);
-//            System.exit(0);
+            System.exit(0);
         }
+    }
+
+    private static String decodeXML(String encodedXML) {
+        byte[] decoded = Base64.decodeBase64(encodedXML);
+        try {
+            FileOutputStream fileOutputStream = new FileOutputStream(ApplicationContext.getAppDirectory() + File.separator + "MayamInfo.xml");
+            fileOutputStream.write(decoded);
+            fileOutputStream.close();
+            System.out.println("Decoded XML.");
+            return ApplicationContext.getAppDirectory() + File.separator + "MayamInfo.xml";
+        } catch (FileNotFoundException ex) {
+            ApplicationContext.logger.log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            ApplicationContext.logger.log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
 }

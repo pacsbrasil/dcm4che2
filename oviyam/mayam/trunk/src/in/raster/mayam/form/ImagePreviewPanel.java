@@ -40,10 +40,12 @@
 package in.raster.mayam.form;
 
 import in.raster.mayam.context.ApplicationContext;
+import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GridLayout;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JSplitPane;
 
 /**
  *
@@ -55,6 +57,7 @@ public class ImagePreviewPanel extends javax.swing.JPanel {
     public JPanel parent = new JPanel();
     String[] labelInfo;
     String studyInstanceUid = "";
+    JLabel[] infoLabels = null;
 
     /**
      * Creates new form ImagePreviewPanel
@@ -63,8 +66,21 @@ public class ImagePreviewPanel extends javax.swing.JPanel {
         initComponents();
         container.setLayout(new GridLayout(1, 1));
         parent.setLayout(null);
-        patientDetailsLabel.setFont(ApplicationContext.textFont);
-        patientDetailsLabel.setText("");
+        infoPanel.setLayout(new GridLayout(4, 1, 5, 5));
+        infoLabels = new JLabel[4];
+        infoLabels[0] = new JLabel("");
+        infoLabels[0].setFont(ApplicationContext.textFont);
+        infoLabels[1] = new JLabel("");
+        infoLabels[1].setFont(ApplicationContext.textFont);
+        Font font = new Font("Lucida Grande", Font.PLAIN, 12);
+        infoLabels[2] = new JLabel("");
+        infoLabels[2].setFont(font);
+        infoLabels[3] = new JLabel("");
+        infoLabels[3].setFont(font);
+        infoPanel.add(infoLabels[0]);
+        infoPanel.add(infoLabels[1]);
+        infoPanel.add(infoLabels[2]);
+        infoPanel.add(infoLabels[3]);
     }
 
     /**
@@ -76,17 +92,14 @@ public class ImagePreviewPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        patientDetailsLabel = new javax.swing.JLabel();
         seriesScrollPane = new javax.swing.JScrollPane();
         container = new javax.swing.JPanel();
-
-        patientDetailsLabel.setText("jLabel1");
-        patientDetailsLabel.setMaximumSize(new java.awt.Dimension(44, 12));
-        patientDetailsLabel.setMinimumSize(new java.awt.Dimension(44, 12));
-        patientDetailsLabel.setPreferredSize(new java.awt.Dimension(44, 12));
+        infoPanel = new javax.swing.JPanel();
 
         seriesScrollPane.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         seriesScrollPane.getVerticalScrollBar().setUnitIncrement(20);
+
+        container.setBorder(null);
 
         javax.swing.GroupLayout containerLayout = new javax.swing.GroupLayout(container);
         container.setLayout(containerLayout);
@@ -101,6 +114,17 @@ public class ImagePreviewPanel extends javax.swing.JPanel {
 
         seriesScrollPane.setViewportView(container);
 
+        javax.swing.GroupLayout infoPanelLayout = new javax.swing.GroupLayout(infoPanel);
+        infoPanel.setLayout(infoPanelLayout);
+        infoPanelLayout.setHorizontalGroup(
+            infoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
+        );
+        infoPanelLayout.setVerticalGroup(
+            infoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 100, Short.MAX_VALUE)
+        );
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -108,23 +132,23 @@ public class ImagePreviewPanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(seriesScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 202, Short.MAX_VALUE)
-                    .addComponent(patientDetailsLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(infoPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(seriesScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 205, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(6, 6, 6)
-                .addComponent(patientDetailsLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(seriesScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 423, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(infoPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(seriesScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 395, Short.MAX_VALUE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel container;
-    private javax.swing.JLabel patientDetailsLabel;
+    private javax.swing.JPanel infoPanel;
     private javax.swing.JScrollPane seriesScrollPane;
     // End of variables declaration//GEN-END:variables
 
@@ -167,11 +191,17 @@ public class ImagePreviewPanel extends javax.swing.JPanel {
 
     public void setPatientInfo(String[] labelsInfo) {
         this.labelInfo = labelsInfo;
-        patientDetailsLabel.setText("<html><body>" + labelsInfo[0] + "<br>" + labelsInfo[1] + "<br>" + labelsInfo[2] + "<br>" + labelsInfo[3] + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + labelsInfo[4] + "</body></html");
+        infoLabels[0].setText(labelInfo[0]);
+        infoLabels[1].setText(labelInfo[1]);
+        infoLabels[2].setText(labelInfo[2]);
+        infoLabels[3].setText("<html><body>" + labelInfo[3] + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + labelInfo[4] + "</body></html>");
     }
 
     public void clearPatientInfo() {
-        patientDetailsLabel.setText("");
+        infoLabels[0].setText("");
+        infoLabels[1].setText("");
+        infoLabels[2].setText("");
+        infoLabels[3].setText("");
     }
 
     public void resetPreviewPanel() {
@@ -203,14 +233,6 @@ public class ImagePreviewPanel extends javax.swing.JPanel {
         seriesScrollPane.validate();
     }
 
-    public String getPatientInfo() {
-        return patientDetailsLabel.getText();
-    }
-
-    public void setPatientInfo(String patientInfo) {
-        patientDetailsLabel.setText(patientInfo);
-    }
-
     public String[] getLabelInfo() {
         return labelInfo;
     }
@@ -233,7 +255,6 @@ public class ImagePreviewPanel extends javax.swing.JPanel {
 
     public void displayPreiew(String seriesInstanceUID) {
         for (int i = 0; i < parent.getComponentCount(); i++) {
-            ApplicationContext.databaseRef.update("series", "NoOfSeriesRelatedInstances", ApplicationContext.databaseRef.getSeriesLevelInstance(((ViewerPreviewPanel) parent.getComponent(0)).getStudyInstanceUid(), seriesInstanceUID), "SeriesInstanceUID", seriesInstanceUID);
             if (((ViewerPreviewPanel) parent.getComponent(i)).getSeriesInstanceUid().equals(seriesInstanceUID)) {
                 ((ViewerPreviewPanel) parent.getComponent(i)).loadThumbnails();
 //                return;
@@ -250,28 +271,7 @@ public class ImagePreviewPanel extends javax.swing.JPanel {
     public void displayVideoPreviews() {
         for (int i = 0; i < parent.getComponentCount(); i++) {
             ((ViewerPreviewPanel) parent.getComponent(i)).convertVideo();
-            ((ViewerPreviewPanel) parent.getComponent(i)).loadMultiframes();
-        }
-    }
-
-    public void iteratePreviews() {
-        JPanel comp = ((JPanel) ((JSplitPane) ApplicationContext.tabbedPane.getSelectedComponent()).getRightComponent());
-        for (int i = 0; i < parent.getComponentCount(); i++) {
-            ViewerPreviewPanel preview = (ViewerPreviewPanel) parent.getComponent(i);
-            preview.clearSelectedInstances();
-            for (int j = 0; j < comp.getComponentCount(); j++) {
-                JPanel seriesLevelPanel = (JPanel) comp.getComponent(j);
-                for (int k = 0; k < seriesLevelPanel.getComponentCount(); k++) {
-                    if (preview.getSeriesInstanceUid().equals(((LayeredCanvas) seriesLevelPanel.getComponent(k)).imgpanel.getSeriesUID())) {
-                        if (!preview.isMultiframe && ((LayeredCanvas) seriesLevelPanel.getComponent(k)).imgpanel.getInstanceUidIfMultiframe() == null) {
-                            ((LayeredCanvas) seriesLevelPanel.getComponent(k)).setPreviewRef(preview);
-                        } else if (preview.getSopUid() != null && preview.getSopUid().equals(((LayeredCanvas) seriesLevelPanel.getComponent(k)).imgpanel.getInstanceUidIfMultiframe())) {
-                            ((LayeredCanvas) seriesLevelPanel.getComponent(k)).setPreviewRef(preview);
-                        }
-                    }
-                }
-            }
-            preview = null;
+//            ((ViewerPreviewPanel) parent.getComponent(i)).loadMultiframes();
         }
     }
 
@@ -279,12 +279,37 @@ public class ImagePreviewPanel extends javax.swing.JPanel {
         return labelInfo[0];
     }
 
-    public void setVideoIdentification(VideoPanel comp) {
-        for (int j = 0; j < parent.getComponentCount(); j++) {
-            ((ViewerPreviewPanel) parent.getComponent(j)).clearSelectedInstances();
-            if (((ViewerPreviewPanel) parent.getComponent(j)).getSopUid() != null && ((ViewerPreviewPanel) parent.getComponent(j)).getSopUid().equals(comp.getComponent(0).getName())) {
-                ((ViewerPreviewPanel) parent.getComponent(j)).setSelectedInstance(0);
+    public void setVideoIdentification(String videoIuid) {
+        for (Object previewPanel : parent.getComponents()) {
+            ((ViewerPreviewPanel) previewPanel).clearSelectedInstances();
+        }
+        for (Component previewPanel : parent.getComponents()) {
+            ViewerPreviewPanel viewerPreviewPanel = (ViewerPreviewPanel) previewPanel;
+            if (viewerPreviewPanel.getSopUid() != null && viewerPreviewPanel.getSopUid().equals(videoIuid)) {
+                viewerPreviewPanel.setSelectedInstance(0);
                 break;
+            }
+        }
+    }
+
+    public void setSeriesIdentification(JPanel container) {
+        for (int i = 0; i < parent.getComponentCount(); i++) {
+            ViewerPreviewPanel preview = ((ViewerPreviewPanel) parent.getComponent(i));
+            preview.clearSelectedInstances();
+            for (int k = 0; k < container.getComponentCount(); k++) {
+                JPanel seriesLevelPanel = (JPanel) container.getComponent(k);
+                for (int j = 0; j < seriesLevelPanel.getComponentCount(); j++) {
+                    if (seriesLevelPanel.getComponent(j) instanceof LayeredCanvas) {
+                        LayeredCanvas canvas = (LayeredCanvas) seriesLevelPanel.getComponent(j);
+                        if (preview.getSopUid() == null && !canvas.imgpanel.isMultiFrame()) {
+                            if (canvas.imgpanel.getSeriesUID().equals(preview.getSeriesInstanceUid())) {
+                                preview.setSelectedInstance(canvas.imgpanel.getCurrentInstanceNo());
+                            }
+                        } else if (preview.getSopUid() != null && preview.getSopUid().equals(canvas.imgpanel.getInstanceUID())) {
+                            preview.setSelectedInstance(0);
+                        }
+                    }
+                }
             }
         }
     }

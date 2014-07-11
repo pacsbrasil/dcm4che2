@@ -14,7 +14,7 @@
  *
  * The Initial Developer of the Original Code is
  * Raster Images
- * Portions created by the Initial Developer are Copyright (C) 2009-2010
+ * Portions created by the Initial Developer are Copyright (C) 2014
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -76,16 +76,15 @@ public class ServerTabListener extends MouseAdapter {
         verifyPopup = new JPopupMenu();
         verifyItem = new JMenuItem(ApplicationContext.currentBundle.getString("MainScreen.verifyPopup.text"));
         verifyItem.addActionListener(new ActionListener() {
-
             @Override
             public void actionPerformed(ActionEvent e) {
                 ServerModel serverdetails = ApplicationContext.databaseRef.getServerDetails(serverTab.getTitleAt(serverTab.getSelectedIndex()));
                 DcmURL url = ApplicationContext.communicationDelegate.constructURL(serverdetails.getAeTitle(), serverdetails.getHostName(), serverdetails.getPort());
                 boolean result = ApplicationContext.communicationDelegate.verifyServer(url);
                 if (result) {
-                    JOptionPane.showOptionDialog(ApplicationContext.mainScreenObj, "Echo dicom://" + serverdetails.getAeTitle() + "@" + serverdetails.getHostName() + ":" + serverdetails.getPort() +" "+  ApplicationContext.currentBundle.getString("MainScreen.verifyServerSuccess.text"), ApplicationContext.currentBundle.getString("MainScreen.verifyServer.title.text"), JOptionPane.OK_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
+                    JOptionPane.showOptionDialog(ApplicationContext.mainScreenObj, "Echo dicom://" + serverdetails.getAeTitle() + "@" + serverdetails.getHostName() + ":" + serverdetails.getPort() + " " + ApplicationContext.currentBundle.getString("MainScreen.verifyServerSuccess.text"), ApplicationContext.currentBundle.getString("MainScreen.verifyServer.title.text"), JOptionPane.OK_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
                 } else {
-                    JOptionPane.showOptionDialog(ApplicationContext.mainScreenObj, "Echo dicom://" + serverdetails.getAeTitle() + "@" + serverdetails.getHostName() + ":" + serverdetails.getPort() +" "+  ApplicationContext.currentBundle.getString("MainScreen.verifyServerFailiure.text"), ApplicationContext.currentBundle.getString("MainScreen.verifyServer.title.text"), JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
+                    JOptionPane.showOptionDialog(ApplicationContext.mainScreenObj, "Echo dicom://" + serverdetails.getAeTitle() + "@" + serverdetails.getHostName() + ":" + serverdetails.getPort() + " " + ApplicationContext.currentBundle.getString("MainScreen.verifyServerFailiure.text"), ApplicationContext.currentBundle.getString("MainScreen.verifyServer.title.text"), JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
                 }
             }
         });

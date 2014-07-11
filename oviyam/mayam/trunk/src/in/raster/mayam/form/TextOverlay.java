@@ -63,7 +63,7 @@ public class TextOverlay extends javax.swing.JPanel {
     public TextOverlay(LayeredCanvas l) {
         initComponents();
         textOverlayParam = new TextOverlayParam();
-        this.setOpaque(false);
+        setOpaque(false);
         layeredCanvas = l;
     }
 
@@ -89,16 +89,16 @@ public class TextOverlay extends javax.swing.JPanel {
     public void toggleTextOverlay() {
         if (textOverlay) {
             textOverlay = false;
-            this.repaint();
+            repaint();
         } else {
             textOverlay = true;
-            this.repaint();
+            repaint();
         }
     }
 
     public void updateCurrentInstanceNo(int currentInstanceNo) {
         textOverlayParam.setCurrentInstance(currentInstanceNo);
-        this.repaint();
+        repaint();
     }
 
     /**
@@ -318,7 +318,7 @@ public class TextOverlay extends javax.swing.JPanel {
         slicePositionLabel.setText(textOverlayParam.getSlicePosition() != null ? ApplicationContext.currentBundle.getString("ImageView.textOverlay.slicePositionLabel.text") + textOverlayParam.getSlicePosition() : "");
         imageSizeLabel.setText(textOverlayParam.getImageSize() != null ? ApplicationContext.currentBundle.getString("ImageView.textOverlay.imageSizeLabel.text") + textOverlayParam.getImageSize() : "");
         viewSizeLabel.setText(textOverlayParam.getViewSize() != null ? ApplicationContext.currentBundle.getString("ImageView.textOverlay.viewSizeLabel.text") + textOverlayParam.getViewSize() : "");
-        if (ImagePanel.isProbeFlag()) {
+        if (((ViewerJPanel) ApplicationContext.tabbedPane.getSelectedComponent()).getTool().equals("probe")) {
             huLabel.setText(" " + ApplicationContext.currentBundle.getString("ImageView.textOverlay.probeX.text") + textOverlayParam.getXPosition() + " " + ApplicationContext.currentBundle.getString("ImageView.textOverlay.probeY.text") + textOverlayParam.getYPosition() + " " + ApplicationContext.currentBundle.getString("ImageView.textOverlay.probePx.text") + textOverlayParam.getPxValue());
         } else {
             huLabel.setText("");
@@ -378,6 +378,14 @@ public class TextOverlay extends javax.swing.JPanel {
         }
         showProbeFlag = false;
     }
+
+    public boolean isTextVisible() {
+        return textOverlay;
+    }
+
+    public String getPatientName() {
+        return patientNameLabel.getText();
+    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel huLabel;
     private javax.swing.JLabel imageSizeLabel;
@@ -397,8 +405,4 @@ public class TextOverlay extends javax.swing.JPanel {
     private javax.swing.JLabel windowingLabel;
     private javax.swing.JLabel zoomLabel;
     // End of variables declaration//GEN-END:variables
-
-    public String getPatientName() {
-        return patientNameLabel.getText();
-    }
 }

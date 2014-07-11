@@ -14,7 +14,7 @@
  *
  * The Initial Developer of the Original Code is
  * Raster Images
- * Portions created by the Initial Developer are Copyright (C) 2009-2010
+ * Portions created by the Initial Developer are Copyright (C) 2014
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -265,7 +265,7 @@ public class ExportDicom extends javax.swing.JDialog {
                         selectedServerStr += ",'" + iterator.next() + "'";
                     }
                     serversToSend = ApplicationContext.databaseRef.getServersToSend(selectedServerStr);
-                    exportingProgress = new ProgressBar(ApplicationContext.imgView, true, ApplicationContext.currentBundle.getString("ExportingProgress.exportingLabel.text"));
+                    exportingProgress = new ProgressBar(ApplicationContext.viewer, true, ApplicationContext.currentBundle.getString("ExportingProgress.exportingLabel.text"));
                     ExportToPacs exportToPacs = new ExportToPacs();
                     exportToPacs.start();
                     Display.alignScreen(exportingProgress);
@@ -289,7 +289,7 @@ public class ExportDicom extends javax.swing.JDialog {
                     }
 
                     private void startExport(String selectedFolderPath) {
-                        exportingProgress = new ProgressBar(ApplicationContext.imgView, true, ApplicationContext.currentBundle.getString("ExportingProgress.exportingLabel.text"));
+                        exportingProgress = new ProgressBar(ApplicationContext.viewer, true, ApplicationContext.currentBundle.getString("ExportingProgress.exportingLabel.text"));
                         patientNameFile = new File(selectedFolderPath + File.separator + selectedCanvas.textOverlay.getPatientName());
                         patientNameFile.mkdirs();
                         Exporter exporter = new Exporter();
@@ -560,25 +560,23 @@ public class ExportDicom extends javax.swing.JDialog {
 
         public void run() {
             Iterator<ServerModel> iterator = serversToSend.iterator();
-            int i = 0;
-            exportingProgress.setProgressMaximum(serversToSend.size());
             if (entireStudyRadio.isSelected()) { //Whole STUDY                                
                 ArrayList<String> instances = ApplicationContext.databaseRef.getInstances(selectedCanvas.imgpanel.getStudyUID(), null, null);
+                exportingProgress.setProgressMaximum(instances.size() * serversToSend.size());
                 while (iterator.hasNext()) {
-                    exportingProgress.showProgress(i++);
                     sendFiles(instances, iterator.next(), null);
                 }
                 exportingProgress.showProgress(serversToSend.size());
             } else if (entireSeriesRadio.isSelected()) { //A SERIES
                 ArrayList<String> instances = ApplicationContext.databaseRef.getInstances(selectedCanvas.imgpanel.getStudyUID(), selectedCanvas.imgpanel.getSeriesUID(), null);
+                exportingProgress.setProgressMaximum(instances.size() * serversToSend.size());
                 while (iterator.hasNext()) {
-                    exportingProgress.showProgress(i++);
                     sendFiles(instances, iterator.next(), null);
                 }
             } else if (singleImageRadio.isSelected()) { //Single Image
                 File file = new File(selectedCanvas.imgpanel.getDicomFileUrl());
+                exportingProgress.setProgressMaximum(serversToSend.size());
                 while (iterator.hasNext()) {
-                    exportingProgress.showProgress(i++);
                     sendFiles(null, iterator.next(), file);
                 }
             }
@@ -598,9 +596,11 @@ public class ExportDicom extends javax.swing.JDialog {
             dcmSnd.setTcpNoDelay(true);
             try {
                 for (int i = 0; i < instances.size(); i++) {
+                    exportingProgress.update();
                     dcmSnd.addFile(new File(instances.get(i)));
                 }
             } catch (NullPointerException ex) {  //Single image export
+                exportingProgress.update();
                 dcmSnd.addFile(dcmFile);
             }
             dcmSnd.configureTransferCapability();

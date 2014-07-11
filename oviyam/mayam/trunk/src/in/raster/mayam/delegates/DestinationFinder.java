@@ -14,7 +14,7 @@
  *
  * The Initial Developer of the Original Code is
  * Raster Images
- * Portions created by the Initial Developer are Copyright (C) 2009-2010
+ * Portions created by the Initial Developer are Copyright (C) 2014
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -43,6 +43,7 @@ import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.facade.Platform;
 import in.raster.mayam.util.core.TranscoderMain;
 import java.io.File;
+import java.util.logging.Level;
 
 /**
  *
@@ -66,7 +67,7 @@ public class DestinationFinder {
                     fileDest = importFileTranscodedDestination(file);
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                ApplicationContext.logger.log(Level.INFO, "Destination Finder", e);
             }
         } else {
             fileDest = file.getAbsolutePath();
@@ -82,7 +83,7 @@ public class DestinationFinder {
                 fileDest = ApplicationContext.getAppDirectory() + File.separator + filePath;
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            ApplicationContext.logger.log(Level.INFO, "Destination Finder", e);
         }
         return fileDest;
     }

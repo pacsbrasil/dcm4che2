@@ -14,7 +14,7 @@
  *
  * The Initial Developer of the Original Code is
  * Raster Images
- * Portions created by the Initial Developer are Copyright (C) 2009-2010
+ * Portions created by the Initial Developer are Copyright (C) 2014
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -39,6 +39,7 @@
  * ***** END LICENSE BLOCK ***** */
 package in.raster.mayam.delegates;
 
+import in.raster.mayam.context.ApplicationContext;
 import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsEnvironment;
@@ -47,7 +48,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 
 /**
@@ -65,14 +65,24 @@ public class ThumbnailConstructor implements Runnable {
         this.dest = storeLoc;
     }
 
+    public ThumbnailConstructor() {
+    }
+
+    public void constructThumbnail(String filePath, String storeLoc) {
+        this.filePath = filePath;
+        this.dest = storeLoc;
+        run();
+    }
+
     @Override
     public void run() {
         File fileToStore = new File(dest);
         fileToStore.getParentFile().mkdirs();
         try {
-            ImageIO.write(shrinkImage(DicomImageReader.readDicomFile(new File(filePath))), "jpeg", fileToStore);
+//            ImageIO.write(shrinkImage(DicomImageReader.readDicomFile(new File(filePath))), "jpeg", fileToStore);
+            ImageIO.write(shrinkImage(ImageIO.read(new File(filePath))), "jpeg", fileToStore);
         } catch (IOException ex) {
-            Logger.getLogger(ThumbnailConstructor.class.getName()).log(Level.SEVERE, null, ex);
+            ApplicationContext.logger.log(Level.SEVERE, null, ex);
         }
     }
 

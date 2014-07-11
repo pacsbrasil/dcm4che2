@@ -14,7 +14,7 @@
  *
  * The Initial Developer of the Original Code is
  * Raster Images
- * Portions created by the Initial Developer are Copyright (C) 2009-2010
+ * Portions created by the Initial Developer are Copyright (C) 2014
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -41,12 +41,14 @@ package in.raster.mayam.models;
 
 import in.raster.mayam.context.ApplicationContext;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import org.dcm4che.data.Dataset;
 import org.dcm4che.dict.Tags;
-import java.text.ParseException;
+import org.dcm4che2.data.DicomObject;
 
 /**
  *
@@ -105,6 +107,27 @@ public class Series {
         this.institutionName = dataset.getString(Tags.InstitutionName) != null ? dataset.getString(Tags.InstitutionName) : "";
         this.seriesRelatedInstance = dataset.getInteger(Tags.NumberOfSeriesRelatedInstances);
     }
+    
+    public Series(DicomObject dataset) {
+        this.SeriesInstanceUID = dataset.getString(Tags.SeriesInstanceUID);
+        this.StudyInstanceUID = dataset.getString(Tags.StudyInstanceUID);
+        this.SeriesNumber = dataset.getString(Tags.SeriesNumber) != null ? dataset.getString(Tags.SeriesNumber) : "";
+        this.Modality = dataset.getString(Tags.Modality);
+        this.bodyPartExamined = dataset.getString(Tags.BodyPartExamined);
+        this.seriesDesc = dataset.getString(Tags.SeriesDescription) != null ? dataset.getString(Tags.SeriesDescription) : "";
+        try {
+            seriesTime = DateFormat.getTimeInstance(DateFormat.DEFAULT, ApplicationContext.currentLocale).format(dataset.getDate(Tags.SeriesTime));
+        } catch (Exception ex) {
+            seriesTime = "unknown";
+        }
+        try {
+            seriesDate = DateFormat.getDateInstance(DateFormat.DEFAULT, ApplicationContext.currentLocale).format(dataset.getDate(Tags.SeriesDate));
+        } catch (Exception ex) {
+            seriesDate = "unknown";
+        }
+        this.institutionName = dataset.getString(Tags.InstitutionName) != null ? dataset.getString(Tags.InstitutionName) : "";
+        this.seriesRelatedInstance = dataset.getInt(Tags.NumberOfSeriesRelatedInstances);
+    }
 
     public Series(String studyUid, String seriesUid, String seriesNo, String seriesDesc, String bodyPart, String seriesDate, String seriesTime, boolean multiframe, String instanceUid, int noOfInstances) {
         this.StudyInstanceUID = studyUid;
@@ -115,6 +138,9 @@ public class Series {
         this.multiframe = multiframe;
         this.instanceUID = instanceUid;
         this.seriesRelatedInstance = noOfInstances;
+//        this.seriesTime = seriesTime;
+//        this.seriesDate = seriesDate;
+//        DateFormat df1 = DateFormat.getDateInstance(DateFormat.DEFAULT, ApplicationContext.currentLocale);
         try {
             this.seriesDate = DateFormat.getDateInstance(DateFormat.DEFAULT, ApplicationContext.currentLocale).format(new SimpleDateFormat("dd/MM/yyyy").parse(seriesDate));
         } catch (ParseException ex) {

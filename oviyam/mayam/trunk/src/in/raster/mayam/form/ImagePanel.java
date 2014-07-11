@@ -58,10 +58,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
@@ -84,21 +81,16 @@ import org.dcm4che2.io.DicomInputStream;
  */
 public class ImagePanel extends javax.swing.JPanel {
 
-    private Canvas canvas;
+    private LayeredCanvas layeredCanvas = null;
     //Image manipulation Flags
-    public boolean isRotate = false, flipHorizontalFlag = false, flipVerticalFlag = false;
+    public boolean isRotate = false, flipHorizontalFlag = false, flipVerticalFlag = false, zoomFlag = false;
     private boolean invertFlag = false;
-    private static boolean probeFlag;
     public int rotateRightAngle = 0;
     private int rotateLeftAngle = 0;
-    public static String tool = "windowing";
     boolean isPDF = false;
     //Windowing, Hu related variables
     private int windowLevel, windowWidth, WC, WW;
-    private String rescaleSlope, rescaleIntercept;
     private double pixelSpacingX, pixelSpacingY;
-    //Unique id variables
-    private String studyUID, seriesUID, instanceUID, modality, studyDesc;
     //ImageIO variables
     private BufferedImage currentbufferedimage, image;
     ImageReader reader = null;
@@ -109,8 +101,8 @@ public class ImagePanel extends javax.swing.JPanel {
     private static final ColorModelFactory cmFactory = ColorModelFactory.getInstance();
     private ColorModel cm = null;
     private String hu = "", dicomFileUrl;
-    //Multiframe image related variables
-    private int nFrames = 0, currentFrame = 0, currentInstanceNo = 0, totalInstance;
+    //Image related variables
+    private int currentInstanceNo = 0, totalInstance;
     private boolean multiframe = false;
     //TextOverlay 
     private TextOverlayParam textOverlayParam;
@@ -126,26 +118,22 @@ public class ImagePanel extends javax.swing.JPanel {
     private int thumbWidth = 512, thumbHeight = 512, maxHeight = 512, maxWidth = 512;
     private double thumbRatio, currentScaleFactor = 1;
     private int axis1LeftX, axis1LeftY, axis1RightX, axis1RightY, axis2LeftX, axis2LeftY, axis2RightX, axis2RightY, axisLeftX, axisLeftY, axisRightX, axisRightY;
-    private String sliceThickness;
     public static boolean synchornizeTiles = false;
     private PDFFile curFile = null;
     private int curpage = -1;
-    private String instanceUidIfMultiframe = null;
     long timeDelay = 0; //To synchronize the mouse scroll amount    
     ArrayList<String> instanceUidList;
     String fileLocation;
     SeriesAnnotations currentSeriesAnnotation = null;
-    ArrayList<String> fileUrlsifLink = null;
-    public boolean isLink = false;
     //added for mouse drag zooming 
-    private double zoomFactor = 1.0;
     private double scale = 0.0;
     private int originX = 0, originY = 0;
     private Point mousePosition;
     public Buffer buffer = null;
     boolean isNormal = false;
-    ExecutorService executor = Executors.newFixedThreadPool(3);
-    boolean isLoopBack = false;
+    private Dataset dataset;
+    public boolean setHints = true;
+    int multiframePtr = 0;
 
     /**
      * Constructs the image panel by passing file url and outer canvas
@@ -153,14 +141,12 @@ public class ImagePanel extends javax.swing.JPanel {
      * @param dicomFileUrl
      * @param canvas
      */
-    public ImagePanel(File dicomFile, Canvas canvas) {
+    public ImagePanel(File dicomFile, LayeredCanvas canvas) {
         this.dicomFileUrl = dicomFile.getAbsolutePath();
-        this.canvas = canvas;
+        this.layeredCanvas = canvas;
         readDicomFile(dicomFile);
         initComponents();
-        getFilePathsifLink();
         setIsNormal();
-        isLoopBack = ApplicationContext.databaseRef.getLoopbackStatus();
     }
 
     public void createBuffer(int i) {
@@ -175,8 +161,8 @@ public class ImagePanel extends javax.swing.JPanel {
         }
     }
 
-    public ImagePanel(Canvas canvas) {
-        this.canvas = canvas;
+    public ImagePanel(LayeredCanvas canvas) {
+        this.layeredCanvas = canvas;
         initComponents();
     }
 
@@ -208,22 +194,15 @@ public class ImagePanel extends javax.swing.JPanel {
      */
     private void retrieveTagInfo(Dataset dataset) {
         try {
-            studyUID = dataset.getString(Tags.StudyInstanceUID);
-            seriesUID = dataset.getString(Tags.SeriesInstanceUID);
-            instanceUID = dataset.getString(Tags.SOPInstanceUID);
-            instanceUidList = ApplicationContext.databaseRef.getInstanceUidList(studyUID, seriesUID);
-            totalInstance = !isMultiFrame() ? instanceUidList.size() : nFrames;
-            modality = dataset.getString(Tags.Modality);
-            studyDesc = dataset.getString(Tags.StudyDescription);
-            rescaleSlope = dataset.getString(Tags.RescaleSlope);
-            rescaleIntercept = dataset.getString(Tags.RescaleIntercept);
-            sliceThickness = (dataset.getString(Tags.SliceThickness) != null) ? dataset.getString(Tags.SliceThickness) : "";
+            instanceUidList = ApplicationContext.databaseRef.getInstanceUidList(dataset.getString(Tags.StudyInstanceUID), dataset.getString(Tags.SeriesInstanceUID));
+            totalInstance = !isMultiFrame() ? instanceUidList.size() : totalInstance;
         } catch (NullPointerException e) {
+            ApplicationContext.logger.log(Level.INFO, "Image Panel", e);
         }
     }
 
     private void retrieveScoutParam() {
-        currentScoutDetails = ApplicationContext.databaseRef.getScoutLineDetails(studyUID, seriesUID, instanceUID);
+        currentScoutDetails = ApplicationContext.databaseRef.getScoutLineDetails(dataset.getString(Tags.StudyInstanceUID), dataset.getString(Tags.SeriesInstanceUID), dataset.getString(Tags.SOPInstanceUID));
         isLocalizer = (currentScoutDetails.getImageType().equalsIgnoreCase("LOCALIZER")) ? true : false;
         findOrientation();
     }
@@ -247,6 +226,7 @@ public class ImagePanel extends javax.swing.JPanel {
                 pixelSpacingY = Double.parseDouble(dataset.getString(Tags.PixelSpacing, 0));
                 pixelSpacingX = Double.parseDouble(dataset.getString(Tags.PixelSpacing, 1));
             } catch (NullPointerException e) { //ignore
+                ApplicationContext.logger.log(Level.INFO, "Image Panel - Unable to get Pixel spacing", e);
             }
             int nWindow = cmParam.getNumberOfWindows();
             if (nWindow > 0) {
@@ -257,7 +237,7 @@ public class ImagePanel extends javax.swing.JPanel {
                 WC = windowLevel = (int) w / 2;
             }
         }
-        windowChanged(windowLevel, windowWidth);
+//        windowChanged(windowLevel, windowWidth);
     }
 
     /**
@@ -268,13 +248,13 @@ public class ImagePanel extends javax.swing.JPanel {
     private void readDicomFile(File selFile) {
         try {
             fileLocation = selFile.getParent();
-            ImageIO.scanForPlugins();
+//            ImageIO.scanForPlugins();
             ImageInputStream iis = ImageIO.createImageInputStream(selFile);
             reader = (ImageReader) ImageIO.getImageReadersByFormatName("DICOM").next();
             reader.setInput(iis, false);
             DicomInputStream dis = new DicomInputStream(selFile);
             DicomObject obj = dis.readDicomObject();
-            Dataset dataset = ((DcmMetadata) reader.getStreamMetadata()).getDataset();
+            dataset = ((DcmMetadata) reader.getStreamMetadata()).getDataset();
             try {
                 if (reader.getNumImages(true) > 0) {
                     currentbufferedimage = reader.read(0);
@@ -286,11 +266,9 @@ public class ImagePanel extends javax.swing.JPanel {
                         image = currentbufferedimage;
                     }
                 }
-                nFrames = reader.getNumImages(true);
-                if (nFrames - 1 > 0) {
+                totalInstance = reader.getNumImages(true);
+                if (totalInstance - 1 > 0) {
                     multiframe = true;
-                    totalInstance = nFrames;
-                    instanceUidIfMultiframe = dataset.getString(Tags.SOPInstanceUID);
                 }
                 if (dataset.getString(Tags.SOPClassUID) != null && dataset.getString(Tags.SOPClassUID).equalsIgnoreCase("1.2.840.10008.5.1.4.1.1.104.1")) {
                     isPDF = true;
@@ -302,10 +280,10 @@ public class ImagePanel extends javax.swing.JPanel {
                 retriveTextOverlayParam(dataset);
                 repaint();
             } catch (RuntimeException e) {
-                e.printStackTrace();
+                ApplicationContext.logger.log(Level.SEVERE, "Image Panel", e);
             }
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            ApplicationContext.logger.log(Level.SEVERE, "Image Panel", e);
         }
     }
 
@@ -318,7 +296,7 @@ public class ImagePanel extends javax.swing.JPanel {
             openPDFByteBuffer(byteBuffer, null, null);
             isEncapsulatedDocument = true;
         } catch (IOException ex) {
-            Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
+            ApplicationContext.logger.log(Level.SEVERE, "Image Panel", ex);
         }
     }
 
@@ -422,24 +400,28 @@ public class ImagePanel extends javax.swing.JPanel {
 
     public void showNextFrame() {
         storeMultiframeAnnotation();
-        currentFrame++;
-        if (currentFrame == nFrames) {
-            currentFrame = 0;
+        currentInstanceNo++;
+        if (currentInstanceNo == totalInstance) {
+            if (ApplicationContext.isLoopBack) {
+                currentInstanceNo = 0;
+            } else {
+                ((ViewerJPanel) layeredCanvas.getParent().getParent().getParent().getParent()).stopAutoPlay();
+            }
+        } else {
+            layeredCanvas.textOverlay.getTextOverlayParam().setCurrentInstance(currentInstanceNo);
+            displayFrames();
         }
-        currentInstanceNo = currentFrame;
-        totalInstance = nFrames;
-        displayFrames();
     }
 
     public void showPreviousFrame() {
         storeMultiframeAnnotation();
-        if (currentFrame == 0) {
-            currentFrame = nFrames;
+        if (currentInstanceNo > 0) {
+            currentInstanceNo--;
+            layeredCanvas.textOverlay.getTextOverlayParam().setCurrentInstance(currentInstanceNo);
+            displayFrames();
+        } else if (ApplicationContext.isLoopBack) {
+            currentInstanceNo = totalInstance;
         }
-        currentFrame--;
-        currentInstanceNo = currentFrame;
-        totalInstance = nFrames;
-        displayFrames();
     }
 
     /**
@@ -498,7 +480,7 @@ public class ImagePanel extends javax.swing.JPanel {
             rotateLeftAngle = -90;
         }
         repaint();
-        canvas.getLayeredCanvas().textOverlay.repaint();
+        layeredCanvas.textOverlay.repaint();
     }
 
     /**
@@ -518,7 +500,7 @@ public class ImagePanel extends javax.swing.JPanel {
             rotateRightAngle = 90;
         }
         repaint();
-        canvas.getLayeredCanvas().textOverlay.repaint();
+        layeredCanvas.textOverlay.repaint();
     }
     /*
      * static AffineTransform mirrorHorizontalTransform;
@@ -558,9 +540,9 @@ public class ImagePanel extends javax.swing.JPanel {
     }
 
     public void reset() {
-        canvas.getLayeredCanvas().annotationPanel.resetAnnotation();
-        canvas.getLayeredCanvas().annotationPanel.resetMeasurements();
-        canvas.getLayeredCanvas().annotationPanel.clearAllMeasurement();
+        layeredCanvas.annotationPanel.resetAnnotation();
+        layeredCanvas.annotationPanel.resetMeasurements();
+        layeredCanvas.annotationPanel.clearAllMeasurement();
         windowLevel = (int) WC;
         windowWidth = (int) WW;
         mousePosition = null;
@@ -568,18 +550,19 @@ public class ImagePanel extends javax.swing.JPanel {
         invertFlag = flipHorizontalFlag = flipVerticalFlag = isRotate = displayScout = synchornizeTiles = false;
         rotateLeftAngle = rotateRightAngle = 0;
         windowChanged(windowLevel, windowWidth);
-        LocalizerDelegate.hideAllScoutLines();
-        canvas.getLayeredCanvas().annotationPanel.resetAnnotaionTools();
-        tool = "windowing";
-        canvas.getLayeredCanvas().annotationPanel.tool = "windowing";
-        ApplicationContext.imgView.getImageToolbar().deselectTools();
+        LocalizerDelegate.hideAllScoutLines((JPanel) layeredCanvas.getParent().getParent());
+        layeredCanvas.annotationPanel.resetAnnotaionTools();
+        ((ViewerJPanel) ApplicationContext.tabbedPane.getSelectedComponent()).setWindowing();
         repaint();
+    }
+
+    public void resetWindowing() {
+        windowChanged(WC, WW);
     }
 
     public void resizeHandler() {
         repaint();
         centerImage();
-        canvas.setSelection(false);
     }
 
     /**
@@ -590,72 +573,69 @@ public class ImagePanel extends javax.swing.JPanel {
     @Override
     public void paintComponent(Graphics gs) {
         Graphics2D g = (Graphics2D) gs;
-        try {
-            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        if (setHints) {
+//            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);            
             g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
             g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-            if (isRotate) {
-                if (rotateRightAngle == 90) {
-                    g.rotate(Math.PI / 2, getSize().width / 2, getSize().height / 2);
-                } else if (rotateRightAngle == 180) {
-                    g.rotate(Math.PI, getSize().width / 2, getSize().height / 2);
-                } else if (rotateRightAngle == 270) {
-                    g.rotate((Math.PI * 3) / 2, getSize().width / 2, getSize().height / 2);
-                }
-            }
-            if (flipHorizontalFlag) {
-                g.translate(getSize().width, 0);
-                g.scale(-1, 1);
-            }
-            if (flipVerticalFlag) {
-                g.translate(0, getSize().height);
-                g.scale(1, -1);
-            }
-            g.scale(scale, scale);
-            if (image != null) {
-                Rectangle rect = getImageClipBounds();
-                if ((rect == null) || (rect.width == 0) || (rect.height == 0)) {
-                    System.out.println("return");
-                    return;
-                }
-                BufferedImage subimage = image.getSubimage(rect.x, rect.y, rect.width, rect.height);
-                g.drawImage(subimage, (int) Math.max(0.0D, originX / scale), (int) Math.max(0.0D, originY / scale), subimage.getWidth(), subimage.getHeight(), null);
-//                if (ApplicationContext.layeredCanvas.imgpanel != null && displayScout && !ApplicationContext.layeredCanvas.imgpanel.isLocalizer && isLocalizer) {
-                if (ApplicationContext.layeredCanvas.imgpanel != null && displayScout) {
-                    if (modality.equals("MR") || (modality.equals("CT") && !ApplicationContext.layeredCanvas.imgpanel.isLocalizer && isLocalizer)) {
-                        g.setColor(Color.YELLOW);
-                        if (orientationLabel.equalsIgnoreCase("SAGITTAL")) {
-                            if (modality.equals("CT") || slope1 == slope2) {
-                                g.drawLine((int) (boundaryLine1X1 + (originX / scale)), (int) (boundaryLine1Y1 + (originY / scale)), (int) (boundaryLine1X2 + (originX / scale)), (int) (boundaryLine1Y2 + (originY / scale)));
-                                g.drawLine((int) (boundaryLine2X1 + (originX / scale)), (int) (boundaryLine2Y1 + (originY / scale)), (int) (boundaryLine2X2 + (originX / scale)), (int) (boundaryLine2Y2 + (originY / scale)));
-                            }
-                            g.setColor(Color.GREEN);
-                            g.drawLine((int) (scoutLine1X1 + (originX / scale)), (int) (scoutLine1Y1 + (originY / scale)), (int) (scoutLine1X2 + (originX / scale)), (int) (scoutLine1Y2 + (originY / scale)));
-                            g.drawLine((int) (scoutLine2X1 + (originX / scale)), (int) (scoutLine2Y1 + (originY / scale)), (int) (scoutLine2X2 + (originX / scale)), (int) (scoutLine2Y2 + (originY / scale)));
-                        } else if (orientationLabel.equalsIgnoreCase("CORONAL")) {
-                            if (modality.equals("CT") || slope1 == slope2) {
-                                g.drawLine((int) (axis1LeftX + (originX / scale)), (int) (axis1LeftY + (originY / scale)), (int) (axis1RightX + (originX / scale)), (int) (axis1RightY + (originY / scale)));
-                                g.drawLine((int) (axis2LeftX + (originX / scale)), (int) (axis2LeftY + (originY / scale)), (int) (axis2RightX + (originX / scale)), (int) (axis2RightY + (originY / scale)));
-                            }
-                            g.setColor(Color.GREEN);
-                            g.drawLine((int) (axisLeftX + (originX / scale)), (int) (axisLeftY + (originY / scale)), (int) (axisRightX + (originX / scale)), (int) (axisRightY + (originY / scale)));
-                        }
-                    }
-                }
-            }
-            if (isPDF) {
-                Image loadedImage = null;
-                calculateResolutionForPdfDicom(loadedImage.getWidth(null), loadedImage.getHeight(null));
-                canvas.getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(curpage);
-                canvas.getLayeredCanvas().textOverlay.getTextOverlayParam().setTotalInstance(Integer.toString(totalInstance));
-                g.drawImage(loadedImage, (int) Math.max(0.0D, originX / scale), (int) Math.max(0.0D, originY / scale), loadedImage.getWidth(null), loadedImage.getHeight(null), null);
-                ApplicationContext.imgView.getImageToolbar().hideAnnotationTools();
-            }
-        } catch (Exception ex) { //ignore
-            System.out.println("exception in paintComponent()[imagepanel] : " + ex.getMessage());
-        } finally {
-            g.dispose();
         }
+        if (flipHorizontalFlag) {
+            g.translate(getWidth(), 0);
+            g.scale(-1, 1);
+        }
+        if (flipVerticalFlag) {
+            g.translate(0, getHeight());
+            g.scale(1, -1);
+        }
+        if (isRotate) {
+            switch (rotateRightAngle) {
+                case 90:
+                    g.rotate(Math.PI / 2, getWidth() / 2, getHeight() / 2);
+                    break;
+                case 180:
+                    g.rotate(Math.PI, getWidth() / 2, getHeight() / 2);
+                    break;
+                case 270:
+                    g.rotate((Math.PI * 3) / 2, getWidth() / 2, getHeight() / 2);
+                    break;
+            }
+        }
+        g.translate(originX, originY);
+        g.scale(scale, scale);
+        if (image != null) {
+            g.drawImage(image, 0, 0, null);
+        }
+        //Scout Lines
+        if (displayScout && isLocalizer) {
+            if (dataset.getString(Tags.Modality).equals("MR") || (dataset.getString(Tags.Modality).equals("CT"))) {
+//            if (modality.equals("MR") || (modality.equals("CT"))) {
+                g.setColor(Color.YELLOW);
+                if (orientationLabel.equalsIgnoreCase("SAGITTAL")) {
+                    if (dataset.getString(Tags.Modality).equals("CT") || slope1 == slope2) {
+//                        g.drawLine((int) (boundaryLine1X1 + (originX / scale)), (int) (boundaryLine1Y1 + (originY / scale)), (int) (boundaryLine1X2 + (originX / scale)), (int) (boundaryLine1Y2 + (originY / scale)));
+//                        g.drawLine((int) (boundaryLine2X1 + (originX / scale)), (int) (boundaryLine2Y1 + (originY / scale)), (int) (boundaryLine2X2 + (originX / scale)), (int) (boundaryLine2Y2 + (originY / scale)));
+                        g.drawLine(boundaryLine1X1, boundaryLine1Y1, boundaryLine1X2, boundaryLine1Y2);
+                        g.drawLine(boundaryLine2X1, boundaryLine2Y1, boundaryLine2X2, boundaryLine2Y2);
+                    }
+                    g.setColor(Color.GREEN);
+//                    g.drawLine((int) (scoutLine1X1 + (originX / scale)), (int) (scoutLine1Y1 + (originY / scale)), (int) (scoutLine1X2 + (originX / scale)), (int) (scoutLine1Y2 + (originY / scale)));
+//                    g.drawLine((int) (scoutLine2X1 + (originX / scale)), (int) (scoutLine2Y1 + (originY / scale)), (int) (scoutLine2X2 + (originX / scale)), (int) (scoutLine2Y2 + (originY / scale)));
+                    g.drawLine(scoutLine1X1, scoutLine1Y1, scoutLine1X2, scoutLine1Y2);
+                    g.drawLine(scoutLine2X1, scoutLine2Y1, scoutLine2X2, scoutLine2Y2);
+                } else if (orientationLabel.equalsIgnoreCase("CORONAL")) {
+                    if (dataset.getString(Tags.Modality).equals("CT") || slope1 == slope2) {
+//                        g.drawLine((int) (axis1LeftX + (originX / scale)), (int) (axis1LeftY + (originY / scale)), (int) (axis1RightX + (originX / scale)), (int) (axis1RightY + (originY / scale)));
+//                        g.drawLine((int) (axis2LeftX + (originX / scale)), (int) (axis2LeftY + (originY / scale)), (int) (axis2RightX + (originX / scale)), (int) (axis2RightY + (originY / scale)));
+                        g.drawLine(axis1LeftX, axis1LeftY, axis1RightX, axis1RightY);
+                        g.drawLine(axis2LeftX, axis2LeftY, axis2RightX, axis2RightY);
+                    }
+                    g.setColor(Color.GREEN);
+//                    g.drawLine((int) (axisLeftX + (originX / scale)), (int) (axisLeftY + (originY / scale)), (int) (axisRightX + (originX / scale)), (int) (axisRightY + (originY / scale)));
+                    g.drawLine(axisLeftX, axisLeftY, axisRightX, axisRightY);
+                }
+            }
+        }
+        g.dispose();
     }
 
     public void setScoutCoordinates(int line1X1, int line1Y1, int line1X2, int line1Y2, int line2X1, int line2Y1, int line2X2, int line2Y2) {
@@ -673,14 +653,17 @@ public class ImagePanel extends javax.swing.JPanel {
 
     public void displayZoomLevel() {
         int currentZoomLevel = (int) Math.floor(scale * 100);
-        canvas.getLayeredCanvas().textOverlay.getTextOverlayParam().setZoomLevel(ApplicationContext.currentBundle.getString("ImageView.textOverlay.zoomLabel.text") + currentZoomLevel + "%");
-        canvas.getLayeredCanvas().textOverlay.getTextOverlayParam().setImageSize((image.getWidth() + "x" + image.getHeight()));
-        canvas.getLayeredCanvas().textOverlay.getTextOverlayParam().setViewSize(getWidth() + "x" + getHeight());
+        layeredCanvas.textOverlay.getTextOverlayParam().setZoomLevel(ApplicationContext.currentBundle.getString("ImageView.textOverlay.zoomLabel.text") + currentZoomLevel + "%");
+//        layeredCanvas.textOverlay.getTextOverlayParam().setImageSize((image.getWidth() + "x" + image.getHeight()));
+        layeredCanvas.textOverlay.getTextOverlayParam().setImageSize(dataset.getString(Tags.Rows) + "x" + dataset.getString(Tags.Columns));
+        layeredCanvas.textOverlay.getTextOverlayParam().setViewSize(getWidth() + "x" + getHeight());
     }
 
     public void calculateCurrentScaleFactor() {
-        double imageWidth = image.getWidth();
-        double imageHeight = image.getHeight();
+//        double imageWidth = image.getWidth();
+//        double imageHeight = image.getHeight();
+        double imageWidth = Double.parseDouble(dataset.getString(Tags.Rows));
+        double imageHeight = Double.parseDouble(dataset.getString(Tags.Columns));
         double imageRatio = imageWidth / imageHeight;
         if (imageRatio < floatAspectRatio) {
             imageHeight = (imageWidth + 0.00f) / floatAspectRatio;
@@ -804,10 +787,11 @@ public class ImagePanel extends javax.swing.JPanel {
             if (invertFlag) {
                 invert();
             }
-            canvas.getLayeredCanvas().textOverlay.setWindowingParameter(Integer.toString(windowLevel), Integer.toString(windowWidth));
+            layeredCanvas.textOverlay.setWindowingParameter(Integer.toString(windowLevel), Integer.toString(windowWidth));
             repaint();
         } catch (Exception e) {
-        }//ignore   
+            ApplicationContext.logger.log(Level.INFO, "Image Panel - Unable to apply windowing", e);
+        }
     }
 
     @Override
@@ -817,12 +801,6 @@ public class ImagePanel extends javax.swing.JPanel {
             cm = cmFactory.getColorModel(cmParam);
         }
         return cm;
-    }
-
-    public boolean probe() {
-        probeFlag = probeFlag ? false : true;
-        canvas.getLayeredCanvas().textOverlay.repaint();
-        return probeFlag;
     }
 
     /**
@@ -849,7 +827,6 @@ public class ImagePanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void formMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_formMouseClicked
-        canvas.requestFocus();
     }//GEN-LAST:event_formMouseClicked
 
     public void mouseWheelMoved(MouseWheelEvent e) {
@@ -863,19 +840,16 @@ public class ImagePanel extends javax.swing.JPanel {
     public void doPrevious() {
         if (isNormal) {
             previous();
-            canvas.setSelection(true);
         } else {
-            JPanel panel = (JPanel) canvas.getLayeredCanvas().getParent();
+            JPanel panel = (JPanel) layeredCanvas.getParent();
             if (panel.getComponentCount() > 1) {
                 if (System.currentTimeMillis() - timeDelay > panel.getComponentCount() * 10) {
                     reverseMultipleImages(panel);
                     timeDelay = System.currentTimeMillis();
                 }
             } else if (multiframe) {
-                canvas.setSelection(false);
                 showPreviousFrame();
             } else if (isEncapsulatedDocument) {
-                canvas.setSelection(false);
                 if (isPDF) {
                     forceGotoPage(curpage - 1);
                 }
@@ -886,19 +860,16 @@ public class ImagePanel extends javax.swing.JPanel {
     public void doNext() {
         if (isNormal) {
             next();
-            canvas.setSelection(false);
         } else {
-            JPanel panel = (JPanel) canvas.getLayeredCanvas().getParent();
+            JPanel panel = (JPanel) layeredCanvas.getParent();
             if (panel.getComponentCount() > 1) {
                 if (System.currentTimeMillis() - timeDelay > panel.getComponentCount() * 10) {
                     forwardMultipleImages(panel);
                     timeDelay = System.currentTimeMillis();
                 }
             } else if (multiframe) {
-                canvas.setSelection(false);
                 showNextFrame();
             } else if (isEncapsulatedDocument) {
-                canvas.setSelection(false);
                 if (isPDF) {
                     forceGotoPage(curpage + 1);
                 }
@@ -915,7 +886,6 @@ public class ImagePanel extends javax.swing.JPanel {
             }
 
         }
-        canvas.setSelection(true);
         selectSeries(e);
     }
 
@@ -933,7 +903,7 @@ public class ImagePanel extends javax.swing.JPanel {
         MenuElement[] me = jPopupMenu1.getSubElements();
         JMenu menu;
         if (me.length > 0) {
-            ArrayList presetList = ApplicationContext.databaseRef.getPresetsForModality(ApplicationContext.layeredCanvas.imgpanel.getModality());
+            ArrayList presetList = ApplicationContext.databaseRef.getPresetsForModality(dataset.getString(Tags.Modality));
             if (presetList.size() > 0) {
                 menu = new JMenu("Window Width & Level");
                 jPopupMenu1.addSeparator();
@@ -945,13 +915,13 @@ public class ImagePanel extends javax.swing.JPanel {
                         menu1.addActionListener(new ActionListener() {
                             @Override
                             public void actionPerformed(ActionEvent e) {
-                                JPanel currentPanel = (JPanel) ApplicationContext.layeredCanvas.getParent();
+                                JPanel currentPanel = (JPanel) layeredCanvas.getParent();
                                 try {
                                     for (int i = 0; i < currentPanel.getComponentCount(); i++) {
                                         ((LayeredCanvas) currentPanel.getComponent(i)).imgpanel.windowChanged(Integer.parseInt(presetModel.getWindowLevel()), Integer.parseInt(presetModel.getWindowWidth()));
                                     }
                                 } catch (NullPointerException npe) {
-                                    //Null pointer exception occurs when there is no components in image layout
+                                    ApplicationContext.logger.log(Level.INFO, "Image Panel - No components in tile", e);
                                 }
                             }
                         });
@@ -962,38 +932,25 @@ public class ImagePanel extends javax.swing.JPanel {
         }
     }
 
-    public void mouseDragged(MouseEvent e) {
-        mouseLocX2 = e.getX();
-        mouseLocY2 = e.getY();
-
-        if (tool.equalsIgnoreCase("windowing")) {
-            mouseDragWindowing(mouseLocX2, mouseLocY2);
-        } else if (tool.equalsIgnoreCase("panning")) {
-            panImage(e.getPoint());
-        } else if (tool.equalsIgnoreCase("stack")) {
-            mouseDragStack(mouseLocX2, mouseLocY2);
-        } else if (tool.equalsIgnoreCase("zooming")) {
-            mouseDragZoom(mouseLocX2, mouseLocY2);
-        }
-    }
-
-    private void mouseDragWindowing(int mouseLocX2, int mouseLocY2) {
+    public void mouseDragWindowing(int mouseLocX2, int mouseLocY2) {
         int mouseLocDiffX = (int) ((mouseLocX2 - mouseLocX1));
         int mouseLocDiffY = (int) ((mouseLocY1 - mouseLocY2));
         mouseLocX1 = mouseLocX2;
         mouseLocY1 = mouseLocY2;
-        double newWindowWidth = windowWidth + mouseLocDiffX * 5;
+        double newWindowWidth = windowWidth + mouseLocDiffX * 2;
+//        double newWindowWidth = windowWidth + mouseLocDiffX;
         if (newWindowWidth < 1.0) {
             newWindowWidth = 1.0;
         }
-        double newWindowLevel = windowLevel + mouseLocDiffY * 5;
-        JPanel currentSeriesPanel = (JPanel) ApplicationContext.layeredCanvas.getParent();
+        double newWindowLevel = windowLevel + mouseLocDiffY * 2;
+//        double newWindowLevel = windowLevel + mouseLocDiffY;
+        JPanel currentSeriesPanel = (JPanel) layeredCanvas.getParent();
         for (int i = 0; i < currentSeriesPanel.getComponentCount(); i++) {
             ((LayeredCanvas) currentSeriesPanel.getComponent(i)).imgpanel.windowChanged((int) newWindowLevel, (int) newWindowWidth);
         }
     }
 
-    private void mouseDragStack(int mouseLocX2, int mouseLocY2) {
+    public void mouseDragStack(int mouseLocX2, int mouseLocY2) {
         int mouseLocDiffY = (int) ((mouseLocY2 - mouseLocY1));
         if (mouseLocDiffY < -12) {
             mouseLocX1 = mouseLocX2;
@@ -1006,26 +963,28 @@ public class ImagePanel extends javax.swing.JPanel {
         }
     }
 
-    private void mouseDragZoom(int mouseLocX2, int mouseLocY2) {
+    public void mouseDragZoom(int mouseLocX2, int mouseLocY2) {
+        this.mouseLocX2 = mouseLocX2;
+        this.mouseLocY2 = mouseLocY2;
+
         int mouseLocDiffY = (int) ((mouseLocY2 - mouseLocY1));
         if (mouseLocDiffY < 0) {
-            zoomFactor = 1.2;
-        } else {
-            zoomFactor = 0.8;
+            zoomImage(0.2);
+        } else if (scale > 0.2) {
+            zoomImage(-0.2);
         }
         mouseLocX1 = mouseLocX2;
         mouseLocY1 = mouseLocY2;
-        zoomImage();
     }
 
-    public void setImage(String sliceLocation, boolean isForward) {
+    public void setImage(String sliceLocation, boolean isForward, String sliceThickness) {
         /**
          * This method has been added for synchronized scroll it will not
          * support for multiframe sync scroll. so that instance number can be
          * set directly to instanceNumber and currentInstanceNo variable.
          */
         storeAnnotation();
-        String iuid = ApplicationContext.databaseRef.getInstanceUIDBasedOnSliceLocation(studyUID, seriesUID, sliceLocation, ApplicationContext.layeredCanvas.imgpanel.sliceThickness);
+        String iuid = ApplicationContext.databaseRef.getInstanceUIDBasedOnSliceLocation(dataset.getString(Tags.StudyInstanceUID), dataset.getString(Tags.SeriesInstanceUID), sliceLocation, sliceThickness);
         if (iuid != null) {
             currentInstanceNo = instanceUidList.indexOf(iuid);
             if (buffer.isImageExist(currentInstanceNo)) {
@@ -1033,13 +992,12 @@ public class ImagePanel extends javax.swing.JPanel {
             } else {
                 setImage(DicomImageReader.readDicomFile(new File(fileLocation + File.separator + instanceUidList.get(currentInstanceNo))));
             }
-            canvas.getLayeredCanvas().setSelectedThumbnail();
             buffer.update(currentInstanceNo);
         }
     }
 
     public ScoutLineInfoModel[] prepareScoutBorder() {
-        return ApplicationContext.databaseRef.getFirstAndLastInstances(studyUID, seriesUID);
+        return ApplicationContext.databaseRef.getFirstAndLastInstances(dataset.getString(Tags.StudyInstanceUID), dataset.getString(Tags.SeriesInstanceUID));
     }
 
     private String calculateHU(int x, int y) {
@@ -1047,11 +1005,13 @@ public class ImagePanel extends javax.swing.JPanel {
             int[] pixelValueArray = currentbufferedimage.getSampleModel().getPixel(x, y, (int[]) null, currentbufferedimage.getRaster().getDataBuffer());
             int pixelValue = pixelValueArray[0];
             try {
-                hu = Integer.toString(pixelValue * Integer.parseInt(rescaleSlope) + Integer.parseInt(rescaleIntercept));
+                hu = Integer.toString(pixelValue * Integer.parseInt(dataset.getString(Tags.RescaleSlope)) + Integer.parseInt(dataset.getString(Tags.RescaleIntercept)));
+//                hu = Integer.toString(pixelValue * Integer.parseInt(rescaleSlope) + Integer.parseInt(rescaleIntercept));
             } catch (Exception e) {
                 hu = Integer.toString(pixelValue * 1 - 1024);
             }
         } catch (Exception e) {
+            ApplicationContext.logger.log(Level.INFO, "Image Panel - Unable to calculate HU", e);
         }
         return hu;
     }
@@ -1064,7 +1024,8 @@ public class ImagePanel extends javax.swing.JPanel {
             for (int i = 0; i < pixelValueArray.length; i++) {
                 ++pixelCount;
                 try {
-                    sum += pixelValueArray[i] * Integer.parseInt(rescaleSlope) + Integer.parseInt(rescaleIntercept);
+                    sum += pixelValueArray[i] * Integer.parseInt(dataset.getString(Tags.RescaleSlope)) + Integer.parseInt(dataset.getString(Tags.RescaleIntercept));
+//                    sum += pixelValueArray[i] * Integer.parseInt(rescaleSlope) + Integer.parseInt(rescaleIntercept);
                 } catch (Exception e) {
                     sum += pixelValueArray[i] * 1 - 1024;
                 }
@@ -1082,7 +1043,8 @@ public class ImagePanel extends javax.swing.JPanel {
         int[] pixel = currentbufferedimage.getSampleModel().getPixel(x, y, (int[]) null, currentbufferedimage.getRaster().getDataBuffer());
         int hu = 0;
         try {
-            hu = pixel[0] * Integer.parseInt(rescaleSlope) + Integer.parseInt(rescaleIntercept);
+            hu = pixel[0] * Integer.parseInt(dataset.getString(Tags.RescaleSlope)) + Integer.parseInt(dataset.getString(Tags.RescaleIntercept));
+//            hu = pixel[0] * Integer.parseInt(rescaleSlope) + Integer.parseInt(rescaleIntercept);
         } catch (Exception e) {
             hu = pixel[0] * 1 - 1024;
         }
@@ -1098,7 +1060,8 @@ public class ImagePanel extends javax.swing.JPanel {
                 ++pixelCount;
                 int value;
                 try {
-                    value = pixelValueArray[i] * Integer.parseInt(rescaleSlope) + Integer.parseInt(rescaleIntercept);
+                    value = pixelValueArray[i] * Integer.parseInt(dataset.getString(Tags.RescaleSlope)) + Integer.parseInt(dataset.getString(Tags.RescaleIntercept));
+//                    value = pixelValueArray[i] * Integer.parseInt(rescaleSlope) + Integer.parseInt(rescaleIntercept);
                 } catch (Exception e) {
                     value = pixelValueArray[i] * 1 - 1024;
                 }
@@ -1118,23 +1081,25 @@ public class ImagePanel extends javax.swing.JPanel {
         mousePosition = e.getPoint();
         mouseLocX2 = e.getX();
         mouseLocY2 = e.getY();
-        if (probeFlag) {
+        if (((ViewerJPanel) ApplicationContext.tabbedPane.getSelectedComponent()).getTool().equals("probe")) {
+
+//        if (tool.equalsIgnoreCase("probe")) {
             String probeParameter[] = new String[3];
             probeParameter[0] = Integer.toString((int) Math.round((mouseLocX2 - originX) / scale));
             probeParameter[1] = Integer.toString((int) Math.round((mouseLocY2 - originY) / scale));
             probeParameter[2] = calculateHU((int) Math.round((mouseLocX2 - originX) / scale), (int) Math.round((mouseLocY2 - originY) / scale));
-            canvas.getLayeredCanvas().textOverlay.setProbeParameters(probeParameter);
+            layeredCanvas.textOverlay.setProbeParameters(probeParameter);
             probeParameter = null;
         }
     }
 
     private void designContext() {
-        ArrayList<Series> seriesList = ApplicationContext.databaseRef.getSeriesList_SepMulti(studyUID);
+        ArrayList<Series> seriesList = ApplicationContext.databaseRef.getSeriesList_SepMulti(dataset.getString(Tags.StudyInstanceUID));
         JMenu menu;
-        if ((studyDesc == null) || (studyDesc.equalsIgnoreCase(""))) {
-            menu = new JMenu(studyUID);
+        if ((dataset.getString(Tags.StudyDescription) == null) || (dataset.getString(Tags.StudyDescription).equalsIgnoreCase(""))) {
+            menu = new JMenu(dataset.getString(Tags.StudyInstanceUID));
         } else {
-            menu = new JMenu(studyDesc);
+            menu = new JMenu(dataset.getString(Tags.StudyDescription));
         }
         JMenu menu1 = new JMenu("Multiframe(s)");
         for (final Series series : seriesList) {
@@ -1160,10 +1125,10 @@ public class ImagePanel extends javax.swing.JPanel {
             }
             menuitem.addActionListener(new java.awt.event.ActionListener() {
                 public void actionPerformed(ActionEvent arg0) {
-                    if (ApplicationContext.selectedPanel.getComponentCount() == 1) {
+                    if (((JPanel) layeredCanvas.getParent()).getComponentCount() == 1) {
                         changeSeries(series.getStudyInstanceUID(), series.getSeriesInstanceUID(), null, 0);
                     } else {
-                        changeSeries(series.getStudyInstanceUID(), series.getSeriesInstanceUID(), null, 0, ApplicationContext.selectedPanel);
+                        changeSeries(series.getStudyInstanceUID(), series.getSeriesInstanceUID(), null, 0, (JPanel) layeredCanvas.getParent());
                     }
                 }
             });
@@ -1176,7 +1141,7 @@ public class ImagePanel extends javax.swing.JPanel {
     }
 
     public void doSynchronize() {
-        synchornizeTiles = (synchornizeTiles || ((JPanel) ((JPanel) canvas.getLayeredCanvas().getParent()).getParent()).getComponentCount() == 1 || !modality.contains("CT")) ? false : true;
+        synchornizeTiles = (synchornizeTiles || layeredCanvas.getParent().getParent().getComponentCount() == 1 || !dataset.getString(Tags.Modality).contains("CT")) ? false : true;
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPopupMenu jPopupMenu1;
@@ -1189,7 +1154,7 @@ public class ImagePanel extends javax.swing.JPanel {
         } else {
             storeMultiframeAnnotation();
         }
-        SeriesChooserDelegate seriesChooserDelegate = new SeriesChooserDelegate(studyUID, seriesUID, sopUid, canvas.getLayeredCanvas(), instanceNo);
+        SeriesChooserDelegate seriesChooserDelegate = new SeriesChooserDelegate(studyUID, seriesUID, sopUid, layeredCanvas, instanceNo);
     }
 
     //To change series in case of image layout
@@ -1199,15 +1164,19 @@ public class ImagePanel extends javax.swing.JPanel {
 
     public void displayFrames() {
         try {
-            currentbufferedimage = reader.read(currentFrame);
+            currentbufferedimage = reader.read(currentInstanceNo);
             convertToRGBImage();
+            layeredCanvas.annotationPanel.setAnnotation(currentSeriesAnnotation.getMultiframeAnnotation(currentInstanceNo));
             repaint();
-            canvas.getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(currentInstanceNo);
-            canvas.getLayeredCanvas().textOverlay.getTextOverlayParam().setTotalInstance(Integer.toString(totalInstance));
-            canvas.getLayeredCanvas().annotationPanel.setAnnotation(currentSeriesAnnotation.getMultiframeAnnotation(currentInstanceNo));
         } catch (Exception ex) {
-            Logger.getLogger(ImagePanel.class.getName()).log(Level.SEVERE, null, ex);
+            ApplicationContext.logger.log(Level.INFO, "Image Panel", ex);
         }
+    }
+
+    public void displayFrame(int i) {
+        this.currentInstanceNo = i;
+        layeredCanvas.textOverlay.getTextOverlayParam().setCurrentInstance(currentInstanceNo);
+        displayFrames();
     }
 
     public void forwardMultipleImages(JPanel panel) {
@@ -1226,7 +1195,6 @@ public class ImagePanel extends javax.swing.JPanel {
                 displayImages(panel, lastInstanceNumber - tiles, false);
             }
         }
-        canvas.setSelection(false);
     }
 
     public void reverseMultipleImages(JPanel panel) {
@@ -1238,14 +1206,12 @@ public class ImagePanel extends javax.swing.JPanel {
         }
         if (lastInstanceNumber != 0) {
             int x = lastInstanceNumber % tiles;
-            canvas.getLayeredCanvas().clearThumbnailSelection();
             if (x > 0) {
                 displayImages(panel, lastInstanceNumber - x, false);
             } else {
                 displayImages(panel, lastInstanceNumber - tiles, false);
             }
         }
-        canvas.setSelection(false);
     }
 
     public void setVisibility(LayeredCanvas tempCanvas, boolean visibility) {
@@ -1275,7 +1241,7 @@ public class ImagePanel extends javax.swing.JPanel {
                 if (instanceNumber < ((LayeredCanvas) panel.getComponent(0)).imgpanel.totalInstance) {
                     if (panel.getComponent(i) instanceof LayeredCanvas) {
                         LayeredCanvas tempCanvas = ((LayeredCanvas) panel.getComponent(i));
-                        if (tempCanvas.imgpanel != null && tempCanvas.imgpanel.seriesUID.equals(seriesUID)) {
+                        if (tempCanvas.imgpanel != null && tempCanvas.imgpanel.dataset.getString(Tags.SeriesInstanceUID).equals(dataset.getString(Tags.SeriesInstanceUID))) {
                             tempCanvas.imgpanel.currentInstanceNo = instanceNumber;
                             tempCanvas.textOverlay.updateCurrentInstanceNo(instanceNumber);
                             if (!waitForImages) {
@@ -1301,7 +1267,7 @@ public class ImagePanel extends javax.swing.JPanel {
                     setVisibility(tempCanvas, false);
                 }
             }
-            ApplicationContext.setAllSeriesIdentification(studyUID);
+            ((ViewerJPanel) ApplicationContext.tabbedPane.getSelectedComponent()).setSeriesIdentification();
         }
     }
 
@@ -1319,24 +1285,23 @@ public class ImagePanel extends javax.swing.JPanel {
             setImage(buffer.getImage(instanceNumber));
         }
 
-        if (synchornizeTiles && modality.contains("CT") && !multiframe) {
+        if (synchornizeTiles && dataset.getString(Tags.Modality).contains("CT") && !multiframe) {
             doTileSync(true);
         }
-        ApplicationContext.setAllSeriesIdentification(studyUID);
-        canvas.getLayeredCanvas().annotationPanel.setAnnotation(currentSeriesAnnotation.getInstanceAnnotation(currentInstanceNo));
+        ((ViewerJPanel) ApplicationContext.tabbedPane.getSelectedComponent()).setSeriesIdentification();
+        layeredCanvas.annotationPanel.setAnnotation(currentSeriesAnnotation.getInstanceAnnotation(currentInstanceNo));
     }
 
     public void doTileSync(boolean isForward) {
-        JPanel outerComponent = (JPanel) ((JPanel) ApplicationContext.layeredCanvas.imgpanel.getCanvas().getLayeredCanvas().getParent()).getParent();
+        JPanel outerComponent = (JPanel) layeredCanvas.getParent().getParent();
         for (int i = 0; i < outerComponent.getComponentCount(); i++) {
-            LayeredCanvas layeredCanvas = (LayeredCanvas) ((JPanel) outerComponent.getComponent(i)).getComponent(0);
-            ImagePanel imgPanel = layeredCanvas.imgpanel;
-            if (ApplicationContext.layeredCanvas.imgpanel != imgPanel) {
-                try {
-                    imgPanel.setImage(ApplicationContext.layeredCanvas.imgpanel.getSliceLocation(), isForward);
-                } catch (NullPointerException npe) {
-                    //ignore : Null pointer exception occurs when there is no canvas
+            try {
+                LayeredCanvas tempCanvas = (LayeredCanvas) ((JPanel) outerComponent.getComponent(i)).getComponent(0);
+                if (tempCanvas.imgpanel != this) {
+                    tempCanvas.imgpanel.setImage(currentScoutDetails.getSliceLocation(), isForward, (dataset.getString(Tags.SliceThickness) != null) ? dataset.getString(Tags.SliceThickness) : "");
                 }
+            } catch (Exception ex) {
+                ApplicationContext.logger.log(Level.INFO, "Image Panel - Unable to synchronize", ex);
             }
         }
     }
@@ -1354,18 +1319,19 @@ public class ImagePanel extends javax.swing.JPanel {
         if (currentInstanceNo + 1 < totalInstance) {
             storeAnnotation();
             currentInstanceNo++;
+            layeredCanvas.textOverlay.getTextOverlayParam().setCurrentInstance(currentInstanceNo);
             setImage(buffer.getForward(currentInstanceNo));
             if (currentInstanceNo == 10) {
                 buffer.setStartBuffering(true);
             }
-            if (!multiframe && synchornizeTiles && modality.startsWith("CT")) {
+            if (!multiframe && synchornizeTiles && dataset.getString(Tags.Modality).startsWith("CT")) {
                 doTileSync(true);
             }
-            ApplicationContext.setAllSeriesIdentification(studyUID);
-        } else if (isLoopBack) {
+            ((ViewerJPanel) ApplicationContext.tabbedPane.getSelectedComponent()).setSeriesIdentification();
+        } else if (ApplicationContext.isLoopBack) {
             storeAnnotation();
             currentInstanceNo = -1;
-            buffer.getForwardLoopBack();
+            buffer.forwardLoopBack();
         }
     }
 
@@ -1373,21 +1339,32 @@ public class ImagePanel extends javax.swing.JPanel {
         if (currentInstanceNo > 0) {
             storeAnnotation();
             currentInstanceNo--;
+            layeredCanvas.textOverlay.getTextOverlayParam().setCurrentInstance(currentInstanceNo);
             setImage(buffer.getBackward(currentInstanceNo));
-            if (!multiframe && synchornizeTiles && modality.startsWith("CT")) {
+            if (!multiframe && synchornizeTiles && dataset.getString(Tags.Modality).startsWith("CT")) {
                 doTileSync(false);
             }
-            ApplicationContext.setAllSeriesIdentification(studyUID);
-        } else if (isLoopBack) {
+            ((ViewerJPanel) ApplicationContext.tabbedPane.getSelectedComponent()).setSeriesIdentification();
+        } else if (ApplicationContext.isLoopBack) {
             storeAnnotation();
             currentInstanceNo = totalInstance;
             buffer.getBackwardLoopBack();
         }
     }
 
+    public synchronized void showImage(int i) {
+        storeAnnotation();
+        this.currentInstanceNo = i;
+        if (currentInstanceNo == 10) {
+            buffer.setStartBuffering(true);
+        }
+        layeredCanvas.textOverlay.getTextOverlayParam().setCurrentInstance(currentInstanceNo);
+        setImage(buffer.getForward(currentInstanceNo));
+        ((ViewerJPanel) ApplicationContext.tabbedPane.getSelectedComponent()).setSeriesIdentification();
+    }
+
     private void setImage(BufferedImage tempImage) {
         if (tempImage != null) {
-            this.instanceUID = instanceUidList.get(currentInstanceNo);
             currentbufferedimage = tempImage;
             try {
                 if (cm != null) {
@@ -1400,7 +1377,8 @@ public class ImagePanel extends javax.swing.JPanel {
                     image = currentbufferedimage;
                 }
             } catch (Exception e) {
-                System.out.println("Could not display image : " + currentInstanceNo);
+                ApplicationContext.logger.log(Level.INFO, "Image Panel", e);
+                image = currentbufferedimage;
             }
             updateCurrentInstance();
             repaint();
@@ -1408,46 +1386,62 @@ public class ImagePanel extends javax.swing.JPanel {
     }
 
     public void updateCurrentInstance() {
-        currentScoutDetails = ApplicationContext.databaseRef.getScoutLineDetails(studyUID, seriesUID, instanceUidList.get(currentInstanceNo));
-        canvas.getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(currentInstanceNo);
-        canvas.getLayeredCanvas().textOverlay.getTextOverlayParam().setSlicePosition(currentScoutDetails.getSliceLocation());
-        if (displayScout) {
-            currentScoutDetails = ApplicationContext.databaseRef.getScoutLineDetails(studyUID, seriesUID, instanceUidList.get(currentInstanceNo));
-            isLocalizer = (currentScoutDetails.getImageType().equalsIgnoreCase("LOCALIZER")) ? true : false;
-            if (!isLocalizer) {
-                if (currentInstanceNo > 1) {
-                    executor.submit(new LocalizerDelegate(true));
-                } else {
-                    executor.submit(new LocalizerDelegate(false));
+        if (!multiframe) {
+            currentScoutDetails = ApplicationContext.databaseRef.getScoutLineDetails(dataset.getString(Tags.StudyInstanceUID), dataset.getString(Tags.SeriesInstanceUID), instanceUidList.get(currentInstanceNo));
+            if (displayScout) {
+                isLocalizer = (currentScoutDetails.getImageType().equalsIgnoreCase("LOCALIZER")) ? true : false;
+                if (isLocalizer) {
+                    findOrientation();
                 }
-            } else {
-                findOrientation();
             }
+            try {
+                layeredCanvas.annotationPanel.setAnnotation(currentSeriesAnnotation.getInstanceAnnotation(currentInstanceNo));
+            } catch (NullPointerException ex) {
+                ApplicationContext.logger.log(Level.INFO, "Image Paenl - Unable to update current instance", ex);
+            }
+            layeredCanvas.textOverlay.getTextOverlayParam().setSlicePosition(currentScoutDetails.getSliceLocation());
         }
-        canvas.getLayeredCanvas().annotationPanel.setAnnotation(currentSeriesAnnotation.getInstanceAnnotation(currentInstanceNo));
+    }
+
+    public void updateTextOverlay() {
+        layeredCanvas.textOverlay.getTextOverlayParam().setCurrentInstance(currentInstanceNo);
+
     }
 
     public void storeAnnotation() { //Adds new instance's annotaion
         try {
-            currentSeriesAnnotation.addAnnotation(currentInstanceNo, canvas.getLayeredCanvas().annotationPanel.getAnnotation());
+            currentSeriesAnnotation.addAnnotation(currentInstanceNo, layeredCanvas.annotationPanel.getAnnotation());
         } catch (NullPointerException ex) {
+            ApplicationContext.logger.log(Level.INFO, "Image Panel - No annotation present", ex);
             //ignoreNull pointer exception occurs if there is no annotaion for instance
         }
     }
 
     public void storeMultiframeAnnotation() { //Add new frame's annotation
-        currentSeriesAnnotation.addMultiframeAnnotation(currentInstanceNo, canvas.getLayeredCanvas().annotationPanel.getAnnotation());
+        currentSeriesAnnotation.addMultiframeAnnotation(currentInstanceNo, layeredCanvas.annotationPanel.getAnnotation());
+    }
+
+    public void storeAllAnnotations() {
+        try {
+            currentSeriesAnnotation.addAnnotation(currentInstanceNo, layeredCanvas.annotationPanel.getAnnotation());
+        } catch (NullPointerException ex) {
+            ApplicationContext.logger.log(Level.INFO, "Image Panel - No Annotation present", ex);
+            //ignoreNull pointer exception occurs if there is no annotaion for instance
+        }
+        if (multiframe) {
+            currentSeriesAnnotation.addMultiframeAnnotation(currentInstanceNo, layeredCanvas.annotationPanel.getAnnotation());
+        }
     }
 
     public void setCurrentSeriesAnnotation() { //Sets the annotation for first time
-        currentSeriesAnnotation = ApplicationContext.imgView.getSeriesAnnotation(studyUID, seriesUID);
+        currentSeriesAnnotation = ((ViewerJPanel) layeredCanvas.getParent().getParent().getParent().getParent()).getSeriesAnnotaions(dataset.getString(Tags.SeriesInstanceUID));
         if (!multiframe) {
-            canvas.getLayeredCanvas().annotationPanel.setAnnotation(currentSeriesAnnotation.getInstanceAnnotation(currentInstanceNo));
+            layeredCanvas.annotationPanel.setAnnotation(currentSeriesAnnotation.getInstanceAnnotation(currentInstanceNo));
         } else {
             if (!currentSeriesAnnotation.isMultiframeAnnotationsExist()) {
                 currentSeriesAnnotation.initializeMultiframeAnnotations();
             }
-            canvas.getLayeredCanvas().annotationPanel.setAnnotation(currentSeriesAnnotation.getMultiframeAnnotation(currentInstanceNo));
+            layeredCanvas.annotationPanel.setAnnotation(currentSeriesAnnotation.getMultiframeAnnotation(currentInstanceNo));
         }
     }
 
@@ -1459,50 +1453,21 @@ public class ImagePanel extends javax.swing.JPanel {
         }
     }
 
-    public void getFilePathsifLink() {
-        if (ApplicationContext.databaseRef.isLink(studyUID)) {
-            fileUrlsifLink = ApplicationContext.databaseRef.getInstancesLocation(studyUID, seriesUID);
-            isLink = true;
-        }
-    }
-
     public void setImage(int instanceNumber) {
         currentInstanceNo = instanceNumber;
         currentbufferedimage = ApplicationContext.buffer.waitAndGet(currentInstanceNo);
         windowChanged(windowLevel, windowWidth);
-        canvas.getLayeredCanvas().textOverlay.getTextOverlayParam().setCurrentInstance(currentInstanceNo);
-        canvas.getLayeredCanvas().textOverlay.getTextOverlayParam().setSlicePosition(ApplicationContext.databaseRef.getSlicePosition(studyUID, seriesUID, instanceUidList.get(currentInstanceNo)));
-        multiframe = canvas.getLayeredCanvas().textOverlay.getTextOverlayParam().isMultiframe();
-        canvas.getLayeredCanvas().textOverlay.multiframeStatusDisplay(multiframe);
-        instanceUID = instanceUidList.get(currentInstanceNo);
-        dicomFileUrl = fileLocation + File.separator + instanceUID;
+        layeredCanvas.textOverlay.getTextOverlayParam().setCurrentInstance(currentInstanceNo);
+        layeredCanvas.textOverlay.getTextOverlayParam().setSlicePosition(ApplicationContext.databaseRef.getSlicePosition(dataset.getString(Tags.StudyInstanceUID), dataset.getString(Tags.SeriesInstanceUID), instanceUidList.get(currentInstanceNo)));
+        multiframe = layeredCanvas.textOverlay.getTextOverlayParam().isMultiframe();
+        layeredCanvas.textOverlay.multiframeStatusDisplay(multiframe);
+        dicomFileUrl = fileLocation + File.separator + instanceUidList.get(currentInstanceNo);
         initializeParams();
-    }
-
-    public boolean doPan() {
-        tool = (tool.equalsIgnoreCase("panning")) ? "" : "panning";
-        return tool.equalsIgnoreCase("panning");
-    }
-
-    public boolean doZoom() {
-        tool = (tool.equalsIgnoreCase("zooming")) ? "" : "zooming";
-        return tool.equalsIgnoreCase("zooming");
-    }
-
-    public boolean doWindowing() {
-        tool = (tool.equalsIgnoreCase("windowing")) ? "" : "windowing";
-        return tool.equalsIgnoreCase("windowing");
-    }
-
-    public void doStack() {
-        tool = (tool.equalsIgnoreCase("stack")) ? "" : "stack";
     }
 
     public void setImageInfo(double pixelSpacingX, double pixelSpacingY, String studyUid, String seriesUid, String fileLocation, SeriesAnnotations currentSeriesAnnotation, ArrayList<String> instanceUidList, ColorModelParam cmParam, ColorModel cm, int windowLevel, int windowWidth, String modality, String studyDesc, ScoutLineInfoModel currentScoutDetails) {
         this.pixelSpacingX = pixelSpacingX;
         this.pixelSpacingY = pixelSpacingY;
-        this.studyUID = studyUid;
-        this.seriesUID = seriesUid;
         this.fileLocation = fileLocation;
         this.currentSeriesAnnotation = currentSeriesAnnotation;
         this.instanceUidList = instanceUidList;
@@ -1511,9 +1476,23 @@ public class ImagePanel extends javax.swing.JPanel {
         this.cm = cm;
         this.windowLevel = WC = windowLevel;
         this.windowWidth = WW = windowWidth;
-        this.modality = modality;
-        this.studyDesc = studyDesc;
         this.currentScoutDetails = currentScoutDetails;
+    }
+
+    public void setImageInfo(double pixelSpacingX, double pixelSpacingY, String fileLocation, SeriesAnnotations currentSeriesAnnotation, ArrayList<String> instanceUidList, ColorModelParam cmParam, ColorModel cm, int windowLevel, int windowWidth, ScoutLineInfoModel currentScoutDetails, Dataset dataset) {
+        this.pixelSpacingX = pixelSpacingX;
+        this.pixelSpacingY = pixelSpacingY;
+        this.fileLocation = fileLocation;
+        this.currentSeriesAnnotation = currentSeriesAnnotation;
+        this.instanceUidList = instanceUidList;
+        this.totalInstance = instanceUidList.size();
+        this.cmParam = cmParam;
+        this.cm = cm;
+        this.windowLevel = WC = windowLevel;
+        this.windowWidth = WW = windowWidth;
+        this.currentScoutDetails = currentScoutDetails;
+        this.dataset = dataset;
+        this.totalInstance = instanceUidList.size();
     }
 
     public TextOverlayParam getTextOverlayParam() {
@@ -1528,12 +1507,8 @@ public class ImagePanel extends javax.swing.JPanel {
         return dicomFileUrl;
     }
 
-    public Canvas getCanvas() {
-        return canvas;
-    }
-
     public String getStudyUID() {
-        return studyUID;
+        return dataset.getString(Tags.StudyInstanceUID);
     }
 
     public boolean isEncapsulatedDocument() {
@@ -1545,15 +1520,11 @@ public class ImagePanel extends javax.swing.JPanel {
     }
 
     public String getInstanceUID() {
-        return instanceUID;
+        return dataset.getString(Tags.SOPInstanceUID);
     }
 
     public String getSeriesUID() {
-        return seriesUID;
-    }
-
-    public void setWindowingToolsAsDefault() {
-        tool = "windowing";
+        return dataset.getString(Tags.SeriesInstanceUID);
     }
 
     public boolean isFlipHorizontalFlag() {
@@ -1580,20 +1551,8 @@ public class ImagePanel extends javax.swing.JPanel {
         return scale;
     }
 
-    public static boolean isProbeFlag() {
-        return probeFlag;
-    }
-
     public double getCurrentScaleFactor() {
         return currentScaleFactor;
-    }
-
-    public boolean isStackSelected() {
-        return (tool.equalsIgnoreCase("stack"));
-    }
-
-    public void setToolsToNull() {
-        tool = "";
     }
 
     public boolean isInvertFlag() {
@@ -1641,11 +1600,7 @@ public class ImagePanel extends javax.swing.JPanel {
     }
 
     public String getModality() {
-        return modality;
-    }
-
-    public void setModality(String modality) {
-        this.modality = modality;
+        return dataset.getString(Tags.Modality);
     }
 
     public boolean isLocalizer() {
@@ -1664,16 +1619,16 @@ public class ImagePanel extends javax.swing.JPanel {
         return (currentScoutDetails != null) ? currentScoutDetails.getImageReferenceSOPInstanceUID() : null;
     }
 
-    public String getInstanceUidIfMultiframe() {
-        return instanceUidIfMultiframe;
-    }
-
     public ScoutLineInfoModel getCurrentScoutDetails() {
         return currentScoutDetails;
     }
 
     public ArrayList<String> getInstanceUidList() {
         return instanceUidList;
+    }
+
+    public int getTotalFrames() {
+        return dataset.getInteger(Tags.NumberOfFrames);
     }
 
     public void initializeParams() {
@@ -1691,73 +1646,13 @@ public class ImagePanel extends javax.swing.JPanel {
         originY = (int) (getHeight() - (int) (scale * image.getHeight())) / 2;
     }
 
-    private void zoomImage() {
-        Coords imageP = panelToImageCoords(mousePosition);
-        scale *= zoomFactor;
-        Coords panelP = imageToPanelCoords(imageP);
-        originX += (mousePosition.x - (int) panelP.x);
-        originY += (mousePosition.y - (int) panelP.y);
-        displayZoomLevel();
-        repaint();
-        canvas.getLayeredCanvas().annotationPanel.repaint();
-    }
-
-    private void panImage(Point p) {
+    public void panImage(Point p) {
         int xDelta = p.x - mousePosition.x;
         int yDelta = p.y - mousePosition.y;
         originX += xDelta;
         originY += yDelta;
         mousePosition = p;
         repaint();
-    }
-
-    //Converts this panel's coordinates into the original image coordinates
-    private Coords panelToImageCoords(Point p) {
-        return new Coords((p.x - originX) / scale, (p.y - originY) / scale);
-    }
-
-    //Converts the original image coordinates into this panel's coordinates
-    private Coords imageToPanelCoords(Coords p) {
-        return new Coords((p.x * scale) + originX, (p.y * scale) + originY);
-    }
-
-    //This class is required for high precision image coordinates translation.
-    private class Coords {
-
-        public double x;
-        public double y;
-
-        public Coords(double x, double y) {
-            this.x = x;
-            this.y = y;
-        }
-
-        public int getIntX() {
-            return (int) Math.round(x);
-        }
-
-        public int getIntY() {
-            return (int) Math.round(y);
-        }
-    }
-
-    public Rectangle getImageClipBounds() {
-        Coords startCoords = panelToImageCoords(new Point(0, 0));
-        Coords endCoords = panelToImageCoords(new Point(getWidth() - 1, getHeight() - 1));
-        int panelX1 = startCoords.getIntX();
-        int panelY1 = startCoords.getIntY();
-        int panelX2 = endCoords.getIntX();
-        int panelY2 = endCoords.getIntY();
-        //No intersection?
-        if (panelX1 >= image.getWidth() || panelX2 < 0 || panelY1 >= image.getHeight() || panelY2 < 0) {
-            return null;
-        }
-
-        int x1 = (panelX1 < 0) ? 0 : panelX1;
-        int y1 = (panelY1 < 0) ? 0 : panelY1;
-        int x2 = (panelX2 >= image.getWidth()) ? image.getWidth() - 1 : panelX2;
-        int y2 = (panelY2 >= image.getHeight()) ? image.getHeight() - 1 : panelY2;
-        return new Rectangle(x1, y1, x2 - x1 + 1, y2 - y1 + 1);
     }
 
     public int getOriginX() {
@@ -1769,29 +1664,20 @@ public class ImagePanel extends javax.swing.JPanel {
     }
 
     public String getFileLocation(int i) {
-        return !isLink ? fileLocation + File.separator + instanceUidList.get(i) : fileUrlsifLink.get(i);
-
+        return fileLocation + File.separator + instanceUidList.get(i);
     }
 
     public String get(int i) {
         return instanceUidList.get(i);
     }
 
-    public void createThread(Thread threadObj) {
-        executor.submit(threadObj);
-    }
-
-    public void createTask(Runnable task) {
-        executor.submit(task);
-    }
-
     public void setInfo(ImagePanel imgPanelRef) {
-        imgPanelRef.setImageInfo(pixelSpacingX, pixelSpacingY, studyUID, seriesUID, fileLocation, currentSeriesAnnotation, instanceUidList, cmParam, cm, windowLevel, windowWidth, modality, studyDesc, currentScoutDetails);
+        imgPanelRef.setImageInfo(pixelSpacingX, pixelSpacingY, fileLocation, currentSeriesAnnotation, instanceUidList, cmParam, cm, windowLevel, windowWidth, currentScoutDetails, dataset);
     }
 
     public void shutDown() {
-        executor.shutdownNow();
-        executor = null;
+        buffer.shutDown();
+        buffer = null;
     }
 
     public String getSeriesLocation() {
@@ -1807,5 +1693,27 @@ public class ImagePanel extends javax.swing.JPanel {
         centerImage();
         displayZoomLevel();
         repaint();
+    }
+
+    private void zoomImage(double factor) {
+        //gives the actual mouse position on image
+        double imgPosX = (mouseLocX2 - originX) / scale;
+        double imgPosY = (mouseLocY2 - originY) / scale;
+
+        scale += factor;
+
+        //gives the mouse position after the scale factor applied
+        double afterZoomX = (imgPosX * scale) + originX;
+        double afterZoomY = (imgPosY * scale) + originY;
+
+        //adds the difference in mouse position to origins
+        originX += (mouseLocX2 - afterZoomX);
+        originY += (mouseLocY2 - afterZoomY);
+
+        displayZoomLevel();
+
+        revalidate();
+        repaint();
+        layeredCanvas.annotationPanel.repaint();
     }
 }

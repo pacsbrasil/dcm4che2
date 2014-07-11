@@ -14,7 +14,7 @@
  *
  * The Initial Developer of the Original Code is
  * Raster Images
- * Portions created by the Initial Developer are Copyright (C) 2009-2010
+ * Portions created by the Initial Developer are Copyright (C) 2014
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -40,9 +40,8 @@
 package in.raster.mayam.delegates;
 
 import in.raster.mayam.context.ApplicationContext;
-import in.raster.mayam.form.VideoPanel;
+import in.raster.mayam.form.Thumbnail;
 import in.raster.mayam.models.ServerModel;
-import java.awt.Desktop;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -51,13 +50,12 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.dcm4che2.data.TransferSyntax;
-import org.dcm4che2.data.UID;
 import org.dcm4che2.io.DicomInputStream;
 
 /**
@@ -73,55 +71,110 @@ public class WadoRetriever implements Runnable {
     private HashMap<String, HashSet<String>> instances = null;
     private boolean useTransferSyntax = true;
     private boolean firstSeries = true;
+    private String seriesUid = null;
+    private Collection<String> instanceList = null;
+    private int totalInstances = 0;
 
     public WadoRetriever(String studyUid, HashMap<String, HashSet<String>> instances, ServerModel serverDetails, boolean useTransferSynatx, boolean showImageView) {
-        this.studyUid = studyUid;
+        this.studyUid = studyUid != null ? studyUid : "";
         this.instances = instances;
         this.serverDetails = serverDetails;
-        studyUid = studyUid != null ? studyUid : "";
         this.useTransferSyntax = useTransferSynatx;
         this.firstSeries = showImageView;
     }
 
+    public WadoRetriever(String studyUid, String seriesUid, Collection<String> instanceList, ServerModel serverDetails, boolean useTransferSyntax, boolean showImageView, int totalInstances) {
+        this.studyUid = studyUid != null ? studyUid : "";
+        this.seriesUid = seriesUid;
+        this.serverDetails = serverDetails;
+        this.instanceList = instanceList;
+        this.useTransferSyntax = useTransferSyntax;
+        this.firstSeries = showImageView;
+        this.totalInstances = totalInstances;
+    }
+
+    public WadoRetriever(String studyUid, String seriesUid, Collection<String> instanceList, String wadoProtocol, String wadoContext, String hostName, int wadoPort, boolean showImageView, int totalInstances) {
+        this.studyUid = studyUid;
+        this.seriesUid = seriesUid;
+        this.instanceList = instanceList;
+        useTransferSyntax = true;
+        this.firstSeries = showImageView;
+        this.totalInstances = totalInstances;
+        serverDetails = new ServerModel();
+        serverDetails.setWadoInformation(wadoProtocol, wadoContext, hostName, wadoPort);
+    }
+
+    public WadoRetriever() {
+    }
+
     private void doDownloadSeries() {
-        boolean isVideo = false;
-        String firstInstanceWithSOPCls = null;
-        Iterator<String> iterator = instances.keySet().iterator();
+        Iterator<String> iterator = instanceList.iterator();
         while (iterator.hasNext()) {
-            String seriesUid = iterator.next();
-            Iterator<String> iterator1 = instances.get(seriesUid).iterator();
-            while (iterator1.hasNext()) {
-                String next = iterator1.next();
-                retrieve(next.split(",")[0], next.split(",")[1]);
-            }
-            if (firstSeries) {
-                firstInstanceWithSOPCls = ApplicationContext.databaseRef.getFirstInstanceWithSOPCls(studyUid, seriesUid);
-                String sopCls = firstInstanceWithSOPCls.split(",")[1];
-                if (sopCls.equals(UID.VideoEndoscopicImageStorage) || sopCls.equals(UID.VideoMicroscopicImageStorage) || sopCls.equals(UID.VideoPhotographicImageStorage)) {
-                    isVideo = true;
-                    ApplicationContext.createVideoCanvas(studyUid, firstInstanceWithSOPCls.split(",")[0]);
-                } else {
-                    ApplicationContext.createLayeredCanvas(ApplicationContext.databaseRef.getFileLocation(firstInstanceWithSOPCls.split(",")[0]), studyUid, 0, true);
-                }
-                firstSeries = false;
-            }
-            ApplicationContext.displayPreview(studyUid, seriesUid);
+            String[] next = iterator.next().split(",");
+            retrieve(next[0], next[1]);
         }
-        try {
-            ApplicationContext.createVideoPreviews(studyUid);
-        } catch (Exception e) {
-            //ignore : exception occurs if the study is video and it was played using the default media player.
+        if (firstSeries) {
+            ApplicationContext.createCanvas(ApplicationContext.databaseRef.getFirstInstanceLocation(studyUid, seriesUid), studyUid, 0);
         }
-        showSeries();
-        if (isVideo) {
+        if (totalInstances == ApplicationContext.databaseRef.getStudyLevelInstances(studyUid)) {
+            ApplicationContext.studyRetirivalCompleted(studyUid);
+        }
+        ApplicationContext.databaseRef.update("series", "NoOfSeriesRelatedInstances", ApplicationContext.databaseRef.getSeriesLevelInstance(studyUid, seriesUid), "SeriesInstanceUID", seriesUid);
+    }
+
+    public void reteriveVideoAndMultiframes(String studyUid, ServerModel serverDetails, HashSet<String> instances, boolean showImageView) {
+        this.useTransferSyntax = false;
+        this.serverDetails = serverDetails;
+        this.studyUid = studyUid;
+        Iterator<String> iterator = instances.iterator();
+        while (iterator.hasNext()) {
+            String[] next = iterator.next().split(",");
+            retrieve(next[0], next[1]);
+        }
+        if (showImageView) {
+            ApplicationContext.createCanvas(ApplicationContext.databaseRef.getFirstInstanceLocation(studyUid), studyUid, 0);
+        }
+        ApplicationContext.studyRetirivalCompleted(studyUid);
+    }
+
+    public void reteriveMultiframeThumbnails(String studyUid, ServerModel serverDetails, HashSet<String> instances) {
+        Iterator<String> iterator = instances.iterator();
+        Calendar today = Calendar.getInstance(ApplicationContext.currentLocale);
+        String dest = ApplicationContext.listenerDetails[2] + File.separator + today.get(Calendar.YEAR) + File.separator + today.get(Calendar.MONTH) + File.separator + today.get(Calendar.DATE) + File.separator + studyUid + File.separator;
+        while (iterator.hasNext()) {
+            String[] next = iterator.next().split(",");
+            String wadoRequest = serverDetails.getWadoProtocol() + "://" + serverDetails.getHostName() + ":" + serverDetails.getWadoPort() + "/wado?requestType=WADO&studyUID=" + studyUid + "&seriesUID=" + next[0] + "&objectUID=" + next[1] + "&rows=75" + "&columns=75";
             try {
-                ((VideoPanel) ApplicationContext.selectedPanel).playMedia(ApplicationContext.databaseRef.getFileLocation(firstInstanceWithSOPCls.split(",")[0]));
-            } catch (Exception ex) {
+                HttpURLConnection httpURLConnection = (HttpURLConnection) new URL(wadoRequest).openConnection();
+                httpURLConnection.setRequestMethod("GET");
+                httpURLConnection.setInstanceFollowRedirects(false);
+                httpURLConnection.setRequestProperty("Connection", "Keep-Alive");
+                httpURLConnection.setRequestProperty("Content-Type", "application/x-java-serialized-object");
                 try {
-                    Desktop.getDesktop().open(new File(ApplicationContext.databaseRef.getFileLocation(firstInstanceWithSOPCls.split(",")[0])));
-                } catch (IOException ex1) {
-                    Logger.getLogger(WadoRetriever.class.getName()).log(Level.SEVERE, null, ex1);
+                    httpURLConnection.connect();
+                } catch (RuntimeException e) {
+                    ApplicationContext.logger.log(Level.SEVERE, "WadoRetriever - Error while querying ", e);
                 }
+                if (httpURLConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                    InputStream inputStream = httpURLConnection.getInputStream();
+                    //setIcon(new ImageIcon(ImageIO.read(inputStream)));
+                    File destination = new File(dest + next[0] + File.separator + "Thumbnails" + File.separator + next[1]);
+                    destination.getParentFile().mkdirs();
+                    OutputStream outputStream = new FileOutputStream(destination);
+                    byte[] buffer = new byte[4 * 1024];
+                    int read;
+                    while ((read = inputStream.read(buffer)) != -1) {
+                        if (outputStream != null) {
+                            outputStream.write(buffer, 0, read);
+                        }
+                    }
+                    inputStream.close();
+                    outputStream.close();
+                } else {
+                    ApplicationContext.logger.log(Level.SEVERE, "WadoRetriever - Response Error ", httpURLConnection.getResponseMessage());
+                }
+            } catch (IOException ex) {
+                ApplicationContext.logger.log(Level.SEVERE, null, ex);
             }
         }
     }
@@ -136,6 +189,8 @@ public class WadoRetriever implements Runnable {
         if (useTransferSyntax) {
             queryString += appendTransferSyntax();
         }
+//        //For MAC
+//        queryString += "&transferSyntax=" + TransferSyntax.ImplicitVRLittleEndian;
         try {
             URL wadoUrl = new URL(queryString);
             httpURLConnection = (HttpURLConnection) wadoUrl.openConnection();
@@ -146,15 +201,40 @@ public class WadoRetriever implements Runnable {
             try {
                 httpURLConnection.connect();
             } catch (RuntimeException e) {
-                System.out.println("Error while querying " + e.getMessage());
+                ApplicationContext.logger.log(Level.SEVERE, "WadoRetriever - Error while querying ", e);
             }
             if (httpURLConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
                 responseSuccess(seriesUid, iuid);
             } else {
-                System.out.println("Response Error:" + httpURLConnection.getResponseMessage());
+                ApplicationContext.logger.log(Level.SEVERE, "WadoRetriever - Response Error ", httpURLConnection.getResponseMessage());
             }
         } catch (Exception ex) {
-            Logger.getLogger(ThumbnailWadoRetriever.class.getName()).log(Level.SEVERE, null, ex);
+            ApplicationContext.logger.log(Level.SEVERE, "WadoRetriever", ex);
+        }
+    }
+
+    //For Direct Launch
+    public void reterive(String dicom_Req, String study_UID, String ser_UID, String inst_UID) {
+        try {
+            this.studyUid = study_UID;
+            URL wadoUrl = new URL(dicom_Req);
+            httpURLConnection = (HttpURLConnection) wadoUrl.openConnection();
+            httpURLConnection.setRequestMethod("GET");
+            httpURLConnection.setInstanceFollowRedirects(false);
+            httpURLConnection.setRequestProperty("Connection", "Keep-Alive");
+            httpURLConnection.setRequestProperty("Content-Type", "application/x-java-serialized-object");
+            try {
+                httpURLConnection.connect();
+            } catch (RuntimeException e) {
+                ApplicationContext.logger.log(Level.SEVERE, "Wado Retriever - Error while querying ", e);
+            }
+            if (httpURLConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                responseSuccess(ser_UID, inst_UID);
+            } else {
+                ApplicationContext.logger.log(Level.SEVERE, "Wado Retriever - Response Error ", httpURLConnection.getResponseMessage());
+            }
+        } catch (Exception ex) {
+            ApplicationContext.logger.log(Level.SEVERE, "Wado Retriever", ex);
         }
     }
 
@@ -163,21 +243,21 @@ public class WadoRetriever implements Runnable {
         try {
             OutputStream out = null;
             in = httpURLConnection.getInputStream();
-            Calendar today = Calendar.getInstance();
+            Calendar today = Calendar.getInstance(ApplicationContext.currentLocale);
             String destinationPath = ApplicationContext.listenerDetails[2];
             File struturedDestination = new File(destinationPath + File.separator + today.get(Calendar.YEAR) + File.separator + today.get(Calendar.MONTH) + File.separator + today.get(Calendar.DATE) + File.separator + studyUid + File.separator + seriesUid);
             struturedDestination.mkdirs();
             File storeLocation = new File(struturedDestination, iuid);
             out = new FileOutputStream(storeLocation);
             copy(in, out);
-            ApplicationContext.databaseRef.writeDatasetInfo(new DicomInputStream(storeLocation).readDicomObject(), false, storeLocation.getAbsolutePath(), false);
+            ApplicationContext.databaseRef.writeDatasetInfo(new DicomInputStream(storeLocation).readDicomObject(), storeLocation.getAbsolutePath());
         } catch (IOException ex) {
-            Logger.getLogger(WadoRetriever.class.getName()).log(Level.SEVERE, null, ex);
+            ApplicationContext.logger.log(Level.SEVERE, "Wado Retriever", ex);
         } finally {
             try {
                 in.close();
             } catch (IOException ex) {
-                Logger.getLogger(WadoRetriever.class.getName()).log(Level.SEVERE, null, ex);
+                ApplicationContext.logger.log(Level.SEVERE, "Wado Retriever", ex);
             }
         }
     }
@@ -210,24 +290,5 @@ public class WadoRetriever implements Runnable {
     @Override
     public void run() {
         doDownloadSeries();
-    }
-
-    private void showSeries() {
-        try {
-            ApplicationContext.databaseRef.update("study", "DownloadStatus", true, "StudyInstanceUID", studyUid);
-            try {
-                ApplicationContext.imgView.getImageToolbar().enableMultiSeriesTools();
-            } catch (Exception ex) {
-                //ignore : exception occurs if the study is video and it was played using the default media player.
-            }
-            ApplicationContext.databaseRef.updateStudies(studyUid);
-            if (ApplicationContext.mainScreenObj != null && !ApplicationContext.databaseRef.isDownloadPending()) {
-                ApplicationContext.mainScreenObj.hideProgressBar();
-            }
-            ApplicationContext.setCorrespondingPreviews();
-            ApplicationContext.setAllSeriesIdentification(studyUid);
-        } catch (Exception ex) {
-            //ignore : exception occurs if the study is video and it was played using the default media player.
-        }
     }
 }

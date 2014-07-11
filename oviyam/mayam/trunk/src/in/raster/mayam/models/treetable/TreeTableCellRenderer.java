@@ -14,7 +14,7 @@
  *
  * The Initial Developer of the Original Code is
  * Raster Images
- * Portions created by the Initial Developer are Copyright (C) 2009-2010
+ * Portions created by the Initial Developer are Copyright (C) 2014
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -59,7 +59,12 @@ public class TreeTableCellRenderer extends JTree implements TableCellRenderer {
 
     protected int visibleRow;
     private TreeTable treeTable;
+    private Color whiteColor = new Color(254, 254, 254);
     private Color alternateColor = new Color(237, 243, 254);
+    private Color selectedColor = new Color(142, 104, 104);
+//    private Color alternateColor = new Color(237, 243, 254);
+//    private Color selectedColor = new Color(176, 190, 217);
+//    private Color odd = new Color(226, 228, 255);
 
     public TreeTableCellRenderer(TreeTable treeTable, TreeModel model) {
         super(model);
@@ -91,19 +96,31 @@ public class TreeTableCellRenderer extends JTree implements TableCellRenderer {
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
         JLabel label = new JLabel();
-        Color fg;
+//        Color fg;
         if (isSelected) {
-            fg = Color.white;
-            table.setForeground(fg);
+//            fg = Color.white;
+//            table.setForeground(fg);
+            setBackground(selectedColor);
+            table.setForeground(Color.WHITE);
         } else {
-            fg = Color.black;
-            setBackground(alternateColor);
-            table.setBackground(alternateColor);
-            table.setForeground(fg);
+            setBackground((row % 2 == 0 ? alternateColor : whiteColor));
+            setForeground(Color.BLACK);
+//            if (row % 2 == 0) {
+//                setBackground(Color.WHITE);
+//            } else {
+//                setBackground(odd);
+//            }
+//            fg = Color.black;
+//             table.setForeground(fg);
+//            setBackground(alternateColor);
+//            table.setBackground(alternateColor);
+
         }
         visibleRow = row;
         if (ApplicationContext.isLocal && row == 0 && column == 0) {
             label.setIcon(new ImageIcon(getClass().getResource("/in/raster/mayam/form/images/search.png")));
+            label.setOpaque(true);
+            label.setBackground(Color.WHITE);
             return label;
         }
 //        else if(row==0 && column==0) {

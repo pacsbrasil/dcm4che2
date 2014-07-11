@@ -14,7 +14,7 @@
  *
  * The Initial Developer of the Original Code is
  * Raster Images
- * Portions created by the Initial Developer are Copyright (C) 2009-2010
+ * Portions created by the Initial Developer are Copyright (C) 2014
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -75,7 +75,7 @@ public class TreeTable extends JTable {
         getTableHeader().setFont(new Font("Lucida Grande", Font.BOLD, 14));
         getTableHeader().setForeground(new Color(255, 138, 0));
         getTableHeader().setBackground(new Color(0, 0, 0));
-        setShowGrid(false);
+//        setShowGrid(false);
 //        setShowGrid(true);
 //        setShowVerticalLines(true);
 //        setShowHorizontalLines(true);

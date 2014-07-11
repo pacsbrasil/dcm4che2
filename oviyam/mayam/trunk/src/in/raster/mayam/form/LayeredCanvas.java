@@ -45,6 +45,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.*;
 import java.io.File;
+import java.util.logging.Level;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 
@@ -54,7 +55,7 @@ import javax.swing.border.LineBorder;
  * @version 0.5
  *
  */
-public class LayeredCanvas extends JLayeredPane implements FocusListener, MouseListener, ComponentListener {
+public class LayeredCanvas extends JLayeredPane implements ComponentListener {
 
     public static int ImageHeight = 512;
     public static int ImageWidth = 512;
@@ -65,11 +66,8 @@ public class LayeredCanvas extends JLayeredPane implements FocusListener, MouseL
     public boolean focusGained = false;
     public boolean fileIsNull = false;
     private String studyUID = "";
-    public ViewerPreviewPanel previewRef = null;
 
     public LayeredCanvas() {
-        addFocusListener(this);
-        addMouseListener(this);
         addComponentListener(this);
         setBorder(new LineBorder(Color.DARK_GRAY));
         fileIsNull = true;
@@ -103,13 +101,13 @@ public class LayeredCanvas extends JLayeredPane implements FocusListener, MouseL
      * @param filePath
      */
     public void createSubComponents(String filePath, int startFrom, boolean isImageLayout) {
-        if (this.canvas != null) {
+        if (canvas != null) {
             canvas.remove(imgpanel);
             annotationPanel.resetMeasurements();
             if (filePath != null) {
-                imgpanel = new ImagePanel(new File(filePath), canvas);
+                imgpanel = new ImagePanel(new File(filePath), this);
             } else {
-                imgpanel = new ImagePanel(canvas);
+                imgpanel = new ImagePanel(this);
             }
             if (!isImageLayout) {
                 imgpanel.createBuffer(startFrom);
@@ -122,16 +120,8 @@ public class LayeredCanvas extends JLayeredPane implements FocusListener, MouseL
             createLayers();
         }
         textOverlay.setTextOverlayParam(this.imgpanel.getTextOverlayParam());
-        imgpanel.revalidate();
-        imgpanel.repaint();
-        annotationPanel.revalidate();
-        annotationPanel.repaint();
-        textOverlay.revalidate();
-        textOverlay.repaint();
-        canvas.setSelection(true);
+        ((ViewerJPanel) ApplicationContext.tabbedPane.getSelectedComponent()).setSeriesIdentification();
         imgpanel.setCurrentSeriesAnnotation();
-        ApplicationContext.setCorrespondingPreviews();
-        ApplicationContext.setAllSeriesIdentification(studyUID);
         if (!isImageLayout && ImagePanel.isDisplayScout()) {
             LocalizerDelegate localizer = new LocalizerDelegate(false);
             localizer.start();
@@ -139,11 +129,9 @@ public class LayeredCanvas extends JLayeredPane implements FocusListener, MouseL
         try {
             if (canvas != null) {
                 canvas.resizeHandler();
-                imgpanel.resizeHandler();
-                textOverlay.resizeHandler();
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            ApplicationContext.logger.log(Level.INFO,"Layered Canvas",ex);            
         }
     }
 
@@ -151,7 +139,7 @@ public class LayeredCanvas extends JLayeredPane implements FocusListener, MouseL
         if (this.canvas != null) {
             canvas.remove(imgpanel);
             annotationPanel.resetMeasurements();
-            imgpanel = new ImagePanel(canvas);
+            imgpanel = new ImagePanel(this);
             canvas.add(imgpanel);
         } else if (this.imgpanel == null) {
             createImageCanvas(null, 0, true);
@@ -176,9 +164,9 @@ public class LayeredCanvas extends JLayeredPane implements FocusListener, MouseL
         canvas = new Canvas(this);
         canvas.setSize(514, 514);
         if (file != null) {
-            imgpanel = new ImagePanel(file, canvas);
+            imgpanel = new ImagePanel(file, this);
         } else {
-            imgpanel = new ImagePanel(canvas);
+            imgpanel = new ImagePanel(this);
         }
         if (!isImageLayout) {
             imgpanel.createBuffer(startFrom);
@@ -189,7 +177,7 @@ public class LayeredCanvas extends JLayeredPane implements FocusListener, MouseL
     private void createImageCanvas() {
         canvas = new Canvas(this);
         canvas.setSize(514, 514);
-        imgpanel = new ImagePanel(canvas);
+        imgpanel = new ImagePanel(this);
         canvas.add(imgpanel);
     }
 
@@ -222,29 +210,28 @@ public class LayeredCanvas extends JLayeredPane implements FocusListener, MouseL
         textOverlay.setTextOverlayParam(imgpanel.getTextOverlayParam());
     }
 
-    @Override
-    public void focusGained(FocusEvent arg0) {
-        this.setBorder(new LineBorder(Color.YELLOW));
-    }
-
-    @Override
-    public void focusLost(FocusEvent arg0) {
-        this.setBorder(new LineBorder(Color.DARK_GRAY));
-    }
-
-    @Override
-    public void mouseClicked(MouseEvent arg0) {
-        if (fileIsNull) {
-            setSelection();
-        }
-    }
-
+//    @Override
+//    public void focusGained(FocusEvent arg0) {
+//        this.setBorder(new LineBorder(Color.YELLOW));
+//    }
+//
+//    @Override
+//    public void focusLost(FocusEvent arg0) {
+//        this.setBorder(new LineBorder(Color.DARK_GRAY));
+//    }
+//
+//    @Override
+//    public void mouseClicked(MouseEvent arg0) {
+//        if (fileIsNull) {
+////            setSelection();
+//        }
+//    }
     /**
      * This routine used to set the selection coloring.
      */
     public void setSelectionColoring() {
         this.setBorder(new LineBorder(new Color(255, 138, 0)));
-        ApplicationContext.imgView.getImageToolbar().disableAllTools();
+//        ApplicationContext.imgView.imageToolbar.disableAllTools();        
     }
 
     public void setColoring() {
@@ -258,58 +245,55 @@ public class LayeredCanvas extends JLayeredPane implements FocusListener, MouseL
         this.setBorder(new LineBorder(Color.DARK_GRAY));
     }
 
-    public void setSelection() {
-        if (this.canvas != null) {
-            if (ApplicationContext.layeredCanvas != null) {
-                if (ApplicationContext.layeredCanvas.getCanvas() != null) {
-                    ApplicationContext.layeredCanvas.getCanvas().setNoSelectionColoring();
-                } else {
-                    ApplicationContext.layeredCanvas.setNoSelectionColoring();
-                }
-            }
-            ApplicationContext.layeredCanvas = null;
-            ApplicationContext.layeredCanvas = this;
-            ApplicationContext.layeredCanvas.setSelectionColoring();
-        }
-    }
-
-    public void setPreviewRef(ViewerPreviewPanel previewRef) {
-        this.previewRef = previewRef;
-    }
-
-    public void setSelectedThumbnail() {
-        previewRef.clearSelectedInstances();
-        previewRef.setSelectedInstance(imgpanel.getCurrentInstanceNo());
-    }
-
-    public void setSelectedThumbnails() {
-        if (!previewRef.isMultiframe && !imgpanel.isMultiFrame()) {
-            previewRef.setSelectedInstance(imgpanel.getCurrentInstanceNo());
-        } else if (imgpanel.isMultiFrame() && imgpanel.getInstanceUidIfMultiframe().equals(previewRef.getSopUid())) {
-            previewRef.setSelectedInstance(0);
-        }
-    }
-
-    public void clearThumbnailSelection() {
-        previewRef.clearSelectedInstances();
-    }
-
-    @Override
-    public void mousePressed(MouseEvent arg0) {
-    }
-
-    @Override
-    public void mouseReleased(MouseEvent arg0) {
-    }
-
-    @Override
-    public void mouseEntered(MouseEvent arg0) {
-    }
-
-    @Override
-    public void mouseExited(MouseEvent arg0) {
-    }
-
+//    public void setSelection() {
+//        if (this.canvas != null) {
+//            if (ApplicationContext.layeredCanvas != null) {
+//                if (ApplicationContext.layeredCanvas.getCanvas() != null) {
+//                    ApplicationContext.layeredCanvas.getCanvas().setNoSelectionColoring();
+//                } else {
+//                    ApplicationContext.layeredCanvas.setNoSelectionColoring();
+//                }
+//            }
+//            ApplicationContext.layeredCanvas = null;
+//            ApplicationContext.layeredCanvas = this;
+//            ApplicationContext.layeredCanvas.setSelectionColoring();
+//        }
+//    }
+//    public void setPreviewRef(ViewerPreviewPanel previewRef) {
+//        this.previewRef = previewRef;
+//    }
+//
+//    public void setSelectedThumbnail() {
+//        previewRef.clearSelectedInstances();
+//        previewRef.setSelectedInstance(imgpanel.getCurrentInstanceNo());
+//    }
+//
+//    public void setSelectedThumbnails() {
+//        if (!previewRef.isMultiframe && !imgpanel.isMultiFrame()) {
+//            previewRef.setSelectedInstance(imgpanel.getCurrentInstanceNo());
+//        } else if (imgpanel.isMultiFrame() && imgpanel.getInstanceUidIfMultiframe().equals(previewRef.getSopUid())) {
+//            previewRef.setSelectedInstance(0);
+//        }
+//    }
+//
+//    public void clearThumbnailSelection() {
+//        previewRef.clearSelectedInstances();
+//    }
+//    @Override
+//    public void mousePressed(MouseEvent arg0) {
+//    }
+//
+//    @Override
+//    public void mouseReleased(MouseEvent arg0) {
+//    }
+//
+//    @Override
+//    public void mouseEntered(MouseEvent arg0) {
+//    }
+//
+//    @Override
+//    public void mouseExited(MouseEvent arg0) {
+//    }
     public Canvas getCanvas() {
         return canvas;
     }
@@ -331,7 +315,7 @@ public class LayeredCanvas extends JLayeredPane implements FocusListener, MouseL
                 this.textOverlay.resizeHandler();
                 this.annotationPanel.resizeHandler();
             }
-        } catch (NullPointerException ex) {
+        } catch (NullPointerException ex) {                        
             //Null pointer exception occurs if any of the components creation on progress
         }
     }

@@ -14,7 +14,7 @@
  *
  * The Initial Developer of the Original Code is
  * Raster Images
- * Portions created by the Initial Developer are Copyright (C) 2009-2010
+ * Portions created by the Initial Developer are Copyright (C) 2014
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -41,8 +41,10 @@ package in.raster.mayam.delegates;
 
 import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.form.LayeredCanvas;
+import in.raster.mayam.form.ViewerJPanel;
 import in.raster.mayam.param.TextOverlayParam;
 import java.util.ArrayList;
+import java.util.logging.Level;
 import javax.swing.JPanel;
 
 /**
@@ -91,33 +93,41 @@ public class SeriesChooserDelegate extends Thread {
     /**
      * This routine used to change the series in the tile.
      */
-    private void changeSeries() {
-        changeSeries_SepMulti();
-        if (canvas != null) {
-            canvas.revalidate();
-            canvas.repaint();
-        }
-    }
-
     @Override
     public void run() {
         changeSeries();
     }
 
-    private void changeSeries_SepMulti() {
+    private void changeSeries() {
         if (canvas != null) {
-            if (ApplicationContext.layeredCanvas.imgpanel.buffer != null) {
-                ApplicationContext.layeredCanvas.imgpanel.buffer.terminateThread();
-                ApplicationContext.layeredCanvas.imgpanel.shutDown();
-                ApplicationContext.layeredCanvas.imgpanel.buffer = null;
+            if (canvas.imgpanel.buffer != null) { // no layout or image layout
+                canvas.imgpanel.buffer.terminateThread();
+                canvas.imgpanel.shutDown();
+                canvas.imgpanel.buffer = null;
             }
-            if (instanceUID == null) {
-                canvas.createSubComponents(ApplicationContext.databaseRef.getFirstInstanceLocation(studyUID, seriesUID), 0, false);
-            } else {
-                canvas.createSubComponents(ApplicationContext.databaseRef.getFileLocation(studyUID, seriesUID, instanceUID), instanceNumber, false);
-                canvas.imgpanel.updateCurrentInstance();
+            if (instanceUID == null) { //Load First  instance
+                String filePath = ApplicationContext.databaseRef.getFirstInstanceLocation(studyUID, seriesUID);
+                if (!filePath.contains("_V")) {
+                    canvas.createSubComponents(filePath, 0, false);
+                } else {
+                    ((ViewerJPanel) canvas.getParent().getParent().getParent().getParent()).createVideoCanvas(filePath, studyUID);
+                }
+            } else { //Load selected instance   
+                String filePath = ApplicationContext.databaseRef.getFileLocation(studyUID, seriesUID, instanceUID);
+                if (filePath != null) {
+                    if (!filePath.contains("_V")) {
+                        canvas.createSubComponents(filePath, instanceNumber, false);
+                        if (!canvas.imgpanel.isMultiFrame()) {
+                            canvas.imgpanel.updateCurrentInstance();
+                        } else {
+                            ((ViewerJPanel) canvas.getParent().getParent().getParent().getParent()).doAutoPlay();
+                        }
+                    } else {
+                        ((ViewerJPanel) canvas.getParent().getParent().getParent().getParent()).createVideoCanvas(filePath, studyUID);
+                    }
+                }
             }
-        } else {
+        } else { //Tile layout
             instanceNumber++;
             int x = instanceNumber % tilePanel.getComponentCount();
             if (x > 0) {
@@ -135,13 +145,17 @@ public class SeriesChooserDelegate extends Thread {
             imageToDisplay = 0;
         }
         String fileLocation = ApplicationContext.databaseRef.getFileLocation(studyUID, seriesUID, imageToDisplay);
-        ApplicationContext.layeredCanvas = ((LayeredCanvas) tilePanel.getComponent(0));
-        ApplicationContext.layeredCanvas.createSubComponents(fileLocation, instanceNumber, true);
-        TextOverlayParam textOverlayParam = ApplicationContext.layeredCanvas.imgpanel.getTextOverlayParam();
-        ArrayList<String> instanceUidList = ApplicationContext.layeredCanvas.imgpanel.getInstanceUidList();
-        ApplicationContext.layeredCanvas.imgpanel.setCurrentInstanceNo(imageToDisplay);
-        ApplicationContext.layeredCanvas.textOverlay.getTextOverlayParam().setCurrentInstance(imageToDisplay);
-        ApplicationContext.layeredCanvas.imgpanel.setIsNormal(false);
+        //First canvas
+        LayeredCanvas layeredCanvas = (LayeredCanvas) tilePanel.getComponent(0);
+        layeredCanvas.createSubComponents(fileLocation, instanceNumber, true);
+        TextOverlayParam textOverlayParam = layeredCanvas.imgpanel.getTextOverlayParam();
+        layeredCanvas.imgpanel.setCurrentInstanceNo(imageToDisplay);
+        layeredCanvas.imgpanel.getTextOverlayParam().setCurrentInstance(imageToDisplay);
+        layeredCanvas.imgpanel.setIsNormal(false);
+        ArrayList<String> instanceUidList = layeredCanvas.imgpanel.getInstanceUidList();
+
+        ApplicationContext.buffer.setImgPanelRef(layeredCanvas.imgpanel);
+
         if (instanceUidList.size() > ApplicationContext.buffer.getDefaultBufferSize()) {
             ApplicationContext.buffer.updateFrom(instanceNumber - tilePanel.getComponentCount());
         } else {
@@ -151,11 +165,11 @@ public class SeriesChooserDelegate extends Thread {
         imageToDisplay++;
 
         for (int i = 1; i < tilePanel.getComponentCount(); i++) {
-            LayeredCanvas tempCanvas = ((LayeredCanvas) tilePanel.getComponent(i));
+            LayeredCanvas tempCanvas = (LayeredCanvas) tilePanel.getComponent(i);
             if (imageToDisplay < instanceUidList.size()) {
                 tempCanvas.createImageLayoutComponents();
                 tempCanvas.textOverlay.setTextOverlayParam(new TextOverlayParam(textOverlayParam.getPatientName(), textOverlayParam.getPatientID(), textOverlayParam.getSex(), textOverlayParam.getStudyDate(), textOverlayParam.getStudyDescription(), textOverlayParam.getSeriesDescription(), textOverlayParam.getBodyPartExamined(), textOverlayParam.getInstitutionName(), textOverlayParam.getWindowLevel(), textOverlayParam.getWindowWidth(), i, textOverlayParam.getTotalInstance(), textOverlayParam.isMultiframe()));
-                ApplicationContext.layeredCanvas.imgpanel.setInfo(tempCanvas.imgpanel);
+                layeredCanvas.imgpanel.setInfo(tempCanvas.imgpanel);
                 tempCanvas.imgpanel.setImage(imageToDisplay);
                 tempCanvas.imgpanel.setVisibility(tempCanvas, true);
             } else {
@@ -163,12 +177,11 @@ public class SeriesChooserDelegate extends Thread {
                 try {
                     tempCanvas.imgpanel.setVisibility(tempCanvas, false);
                 } catch (NullPointerException npe) {
-                    //Null pointer occurs when there is no image panel
+                    ApplicationContext.logger.log(Level.INFO, null, npe);
                 }
             }
             imageToDisplay++;
         }
-        ApplicationContext.setCorrespondingPreviews();
-        ApplicationContext.setAllSeriesIdentification(studyUID);
+        ((ViewerJPanel) ApplicationContext.tabbedPane.getSelectedComponent()).setSeriesIdentification();
     }
 }

@@ -14,7 +14,7 @@
  *
  * The Initial Developer of the Original Code is
  * Raster Images
- * Portions created by the Initial Developer are Copyright (C) 2009-2010
+ * Portions created by the Initial Developer are Copyright (C) 2014
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -52,25 +52,30 @@ public class TileLayoutThread extends Thread {
     int i = -1;
     boolean isForward = true;
     boolean terminate = false;
+    int total = 0;
 
     public TileLayoutThread() {
     }
 
+//    public TileLayoutThread(int total) {
+//        this.total = total;
+//    }
     @Override
     public void run() {
         do {
             i++;
-            if (i < 0 || i > ApplicationContext.layeredCanvas.imgpanel.getTotalInstance() - 1) {
+            if (i < 0 || i > total - 1) {
                 ApplicationContext.buffer.makeMeWait1();
             } else if (!ApplicationContext.buffer.isImageExist(i)) {
-                ApplicationContext.buffer.put(i, DicomImageReader.readDicomFile(new File(ApplicationContext.layeredCanvas.imgpanel.getFileLocation(i))));
+                ApplicationContext.buffer.put(i, DicomImageReader.readDicomFile(new File(ApplicationContext.buffer.getFileLocation(i))));
             }
         } while (!terminate);
         System.out.println("tile termination");
     }
 
-    public void setUpdateFrom(int updateFrom) {
+    public void setUpdateFrom(int updateFrom, int totalInstances) {
         i = updateFrom;
+        this.total = totalInstances;
     }
 
     public void terminateThread() {

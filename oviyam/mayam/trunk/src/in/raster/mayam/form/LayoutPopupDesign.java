@@ -43,6 +43,7 @@ import in.raster.mayam.context.ApplicationContext;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.*;
+import java.util.logging.Level;
 import javax.swing.*;
 import javax.swing.border.Border;
 
@@ -64,9 +65,17 @@ public class LayoutPopupDesign {
     JLabel tileLayoutlbl = null;
     Border selectedBorder = BorderFactory.createLineBorder(Color.ORANGE);
     Border deSelectBorder = BorderFactory.createLineBorder(Color.BLACK);
+    ImageToolbar toolbar = null;
 
     public LayoutPopupDesign(JPopupMenu popupMenu) {
         this.popupMenu = popupMenu;
+        initializeTiles();
+        addPopupMenuListener();
+    }
+
+    public LayoutPopupDesign(JPopupMenu popupMenu, ImageToolbar toolbar) {
+        this.popupMenu = popupMenu;
+        this.toolbar = toolbar;
         initializeTiles();
         addPopupMenuListener();
     }
@@ -185,7 +194,7 @@ public class LayoutPopupDesign {
                         }
                     }
                 } catch (ArrayIndexOutOfBoundsException ex) {
-                    //ignore
+                    ApplicationContext.logger.log(Level.INFO, "LayoutPopupDesign", ex);
                 }
             }
         };
@@ -221,7 +230,7 @@ public class LayoutPopupDesign {
                         }
                     }
                 } catch (ArrayIndexOutOfBoundsException ex) {
-                    //ignore
+                    ApplicationContext.logger.log(Level.INFO, "LayoutPopupDesign", ex);
                 }
             }
         };
@@ -253,7 +262,8 @@ public class LayoutPopupDesign {
                 String[] name = source.getName().split(",");
                 int row = Integer.parseInt(name[0]) + 1;
                 int column = Integer.parseInt(name[1]) + 1;
-                ApplicationContext.imgView.getImageToolbar().changeTileLayout(row, column);
+//                ApplicationContext.imgView.imageToolbar.changeTileLayout(row, column);
+                toolbar.changeTileLayout(row, column);
             }
         };
         return actionListener;
@@ -267,7 +277,7 @@ public class LayoutPopupDesign {
                 String[] name = source.getName().split(",");
                 int row = Integer.parseInt(name[0]) + 1;
                 int column = Integer.parseInt(name[1]) + 1;
-                ApplicationContext.imgView.getImageToolbar().changeImageLayout(row, column);
+                toolbar.changeImageLayout(row, column);
             }
         };
         return actionListener;

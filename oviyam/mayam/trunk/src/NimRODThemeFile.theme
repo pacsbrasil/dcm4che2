@@ -1,10 +1,11 @@
 nimrodlf.p1=#000000
 nimrodlf.p2=#000000
 nimrodlf.p3=#000000
-nimrodlf.s1=#1F1F1F
-nimrodlf.s2=#292929
-nimrodlf.s3=#333333
-nimrodlf.w=#333333
-nimrodlf.b=#FF8A00
-nimrodlf.menuOpacity=73
+nimrodlf.s1=#202020
+nimrodlf.s2=#2A2A2A
+nimrodlf.s3=#343434
+nimrodlf.w=#343434
+nimrodlf.b=#EB8A00
+nimrodlf.menuOpacity=195
 nimrodlf.frameOpacity=180
+nimrodlf.font=SansSerif.bold-BOLD-13

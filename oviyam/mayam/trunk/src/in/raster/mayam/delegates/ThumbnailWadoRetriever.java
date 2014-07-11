@@ -14,7 +14,7 @@
  *
  * The Initial Developer of the Original Code is
  * Raster Images
- * Portions created by the Initial Developer are Copyright (C) 2009-2010
+ * Portions created by the Initial Developer are Copyright (C) 2014
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -53,7 +53,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -79,12 +78,15 @@ public class ThumbnailWadoRetriever implements Runnable {
         this.serverDetails = serverDetails;
     }
 
+    public ThumbnailWadoRetriever() {
+    }
+
     private void doDownload() {
         Iterator<String> iterator = instances.keySet().iterator();
         while (iterator.hasNext()) {
             Iterator<String> iterator1 = instances.get(iterator.next()).iterator();
             while (iterator1.hasNext()) {
-                String next = iterator1.next();                 
+                String next = iterator1.next();
                 retrieve(next.split(",")[0], next.split(",")[1]);
             }
         }
@@ -97,7 +99,8 @@ public class ThumbnailWadoRetriever implements Runnable {
         queryString += serverDetails.getWadoPort() != 0 ? ":" + serverDetails.getWadoPort() : ":8080";
         queryString += "/wado?requestType=WADO&studyUID=" + studyUid;
         queryString += "&seriesUID=" + seriesUid + "&objectUID=" + iuid;
-        queryString += "&rows=" + 75;        
+        queryString += "&rows=" + 75;
+        queryString += "&columns=" + 75;
         try {
             URL wadoUrl = new URL(queryString);
             httpURLConnection = (HttpURLConnection) wadoUrl.openConnection();
@@ -113,10 +116,34 @@ public class ThumbnailWadoRetriever implements Runnable {
             if (httpURLConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
                 responseSuccess(seriesUid, iuid);
             } else {
-                System.out.println("Response Error:" + httpURLConnection.getResponseMessage());
+                ApplicationContext.logger.log(Level.WARNING, "Response Error : " + httpURLConnection.getResponseMessage());
             }
         } catch (Exception ex) {
-            Logger.getLogger(ThumbnailWadoRetriever.class.getName()).log(Level.SEVERE, null, ex);
+            ApplicationContext.logger.log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public void retrieveThumbnail(String thumbnailReq, String study_UID, String ser_UID, String inst_UID) {
+        try {
+            this.studyUid = study_UID;
+            URL wadoUrl = new URL(thumbnailReq);
+            httpURLConnection = (HttpURLConnection) wadoUrl.openConnection();
+            httpURLConnection.setRequestMethod("GET");
+            httpURLConnection.setInstanceFollowRedirects(false);
+            httpURLConnection.setRequestProperty("Connection", "Keep-Alive");
+            httpURLConnection.setRequestProperty("Content-Type", "application/x-java-serialized-object");
+            try {
+                httpURLConnection.connect();
+            } catch (RuntimeException e) {
+                System.out.println("Error while querying " + e.getMessage());
+            }
+            if (httpURLConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                responseSuccess(ser_UID, inst_UID);
+            } else {
+                ApplicationContext.logger.log(Level.WARNING, "Response Error : " + httpURLConnection.getResponseMessage());
+            }
+        } catch (Exception ex) {
+            ApplicationContext.logger.log(Level.SEVERE, null, ex);
         }
     }
 
@@ -136,7 +163,7 @@ public class ThumbnailWadoRetriever implements Runnable {
         try {
             OutputStream out = null;
             in = httpURLConnection.getInputStream();
-            Calendar today = Calendar.getInstance();
+            Calendar today = Calendar.getInstance(ApplicationContext.currentLocale);
             String destinationPath = ApplicationContext.listenerDetails[2];
             File struturedDestination = new File(destinationPath + File.separator + today.get(Calendar.YEAR) + File.separator + today.get(Calendar.MONTH) + File.separator + today.get(Calendar.DATE) + File.separator + studyUid + File.separator + seriesUid + File.separator + "Thumbnails");
             String child[] = struturedDestination.list();
@@ -147,12 +174,12 @@ public class ThumbnailWadoRetriever implements Runnable {
             out = new FileOutputStream(storeLocation);
             copy(in, out);
         } catch (IOException ex) {
-            Logger.getLogger(ThumbnailWadoRetriever.class.getName()).log(Level.SEVERE, null, ex);
+            ApplicationContext.logger.log(Level.SEVERE, null, ex);
         } finally {
             try {
                 in.close();
             } catch (IOException ex) {
-                Logger.getLogger(ThumbnailWadoRetriever.class.getName()).log(Level.SEVERE, null, ex);
+                ApplicationContext.logger.log(Level.SEVERE, null, ex);
             }
         }
     }

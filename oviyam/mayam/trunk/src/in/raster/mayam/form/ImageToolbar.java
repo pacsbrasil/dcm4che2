@@ -40,23 +40,12 @@
 package in.raster.mayam.form;
 
 import in.raster.mayam.context.ApplicationContext;
-import in.raster.mayam.delegates.Buffer;
-import in.raster.mayam.delegates.CineTimer;
-import in.raster.mayam.delegates.LocalizerDelegate;
-import in.raster.mayam.dicomtags.DicomTags;
-import in.raster.mayam.dicomtags.DicomTagsReader;
-import in.raster.mayam.form.dialogs.ExportDicom;
-import in.raster.mayam.form.display.Display;
 import in.raster.mayam.models.PresetModel;
-import in.raster.mayam.param.TextOverlayParam;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
-import java.io.File;
 import java.util.ArrayList;
-import java.util.Timer;
+import java.util.logging.Level;
 import javax.swing.*;
 
 /**
@@ -67,168 +56,41 @@ import javax.swing.*;
  */
 public class ImageToolbar extends javax.swing.JPanel {
 
-    CineTimer cineTimer;
-    Timer timer;
-    ImageView imgView;
     LayoutPopupDesign layoutPopupDesign = null;
     public boolean isImageLayout = false;
     KeyEventDispatcher keyEventDispatcher = null;
+    private javax.swing.Timer presetTimer = null;
+    boolean mouseReleased = false;
+    JMenuItem[] menuItems = null;
+    private ViewerJPanel parent = null;
 
     /**
      * Creates new form ImageToolbar1
      */
-    public ImageToolbar() {
+    public ImageToolbar(ViewerJPanel parent) {
         initComponents();
-    }
-
-    public ImageToolbar(ImageView imgView) {
-        initComponents();
-        this.imgView = imgView;
+        loopSlider.setUI(new SliderUI());
+        this.parent = parent;
         layoutButton.setArrowPopupMenu(jPopupMenu1);
-        layoutPopupDesign = new LayoutPopupDesign(jPopupMenu1);
-        textOverlayContext();
-    }
-
-    public void addKeyEventDispatcher() {
-        keyEventDispatcher = new KeyEventDispatcher() {
-            @Override
-            public boolean dispatchKeyEvent(KeyEvent e) {
-                if (e.getID() == KeyEvent.KEY_PRESSED && ApplicationContext.imgView != null && ApplicationContext.imgView.isFocused() && windowing.isEnabled()) {
-                    keyEventProcessor(e);
-                }
-                boolean discardEvent = false;
-                return discardEvent;
-            }
-        };
-        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(keyEventDispatcher);
-    }
-
-    private void keyEventProcessor(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_UP || e.getKeyCode() == KeyEvent.VK_LEFT) {
-            ApplicationContext.layeredCanvas.imgpanel.doPrevious();
-        } else if (e.getKeyCode() == KeyEvent.VK_DOWN || e.getKeyCode() == KeyEvent.VK_RIGHT) {
-            ApplicationContext.layeredCanvas.imgpanel.doNext();
-        } else if (e.getKeyCode() == KeyEvent.VK_O) {
-            doScout();
-        } else if (e.getKeyCode() == KeyEvent.VK_I) {
-            doTextOverlay();
-        } else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-            doReset();
-        } else if (e.getKeyCode() == KeyEvent.VK_C) {
-            if (!loopCheckbox.isSelected()) {
-                loopCheckbox.setSelected(true);
-            } else {
-                loopCheckbox.setSelected(false);
-            }
-            doCineLoop();
-        } else if (e.getKeyCode() == KeyEvent.VK_S) {
-            doStack();
-        } else if (e.getKeyCode() == KeyEvent.VK_D) {
-            doRuler(false);
-        } else if (e.getKeyCode() == KeyEvent.VK_A) {
-            doRuler(true);
-        } else if (e.getKeyCode() == KeyEvent.VK_T) {
-            doPan();
-        } else if (e.getKeyCode() == KeyEvent.VK_DELETE) {
-            ApplicationContext.layeredCanvas.annotationPanel.deleteSelectedAnnotation();
-        }
+        layoutPopupDesign = new LayoutPopupDesign(jPopupMenu1, this);
+        applyLocale();
     }
 
     public void changeImageLayout(int row, int col) {
-        ApplicationContext.layeredCanvas.imgpanel.storeAnnotation();
-        GridLayout g = new GridLayout(1, 1);
-        ArrayList<String> tempRef = ApplicationContext.databaseRef.getSeriesInstancesLocation(ApplicationContext.layeredCanvas.imgpanel.getStudyUID());
-        JPanel panel = ((JPanel) ((JSplitPane) ApplicationContext.tabbedPane.getSelectedComponent()).getRightComponent());
-        for (int i = 0; i < panel.getComponentCount(); i++) {
-            try {
-                ((LayeredCanvas) ((JPanel) panel.getComponent(i)).getComponent(0)).imgpanel.buffer.terminateThread();
-                ((LayeredCanvas) ((JPanel) panel.getComponent(i)).getComponent(0)).imgpanel.shutDown();
-            } catch (NullPointerException ex) {
-            }
-        }
-        if (ApplicationContext.buffer != null) {
-            ApplicationContext.buffer.terminateTileLayoutThread();
-            ApplicationContext.buffer = null;
-        }
-        panel.removeAll();
-        panel = new JPanel(new GridLayout(row, col));
-        ((JSplitPane) ApplicationContext.tabbedPane.getSelectedComponent()).setRightComponent(panel);
-        for (int i = 0; i < (row * col); i++) {
-            if (i < tempRef.size()) {
-                JPanel newPanel = new JPanel(g);
-                LayeredCanvas canvas = new LayeredCanvas(new File(tempRef.get(i)), 0, false);
-                newPanel.add(canvas);
-                panel.add(newPanel);
-                canvas.canvas.setSelection(true);
-                if (synchronizeButton.isSelected()) {
-                    canvas.imgpanel.doSynchronize();
-                }
-                canvas.imgpanel.setCurrentSeriesAnnotation();
-            } else {
-                JPanel newPanel = new JPanel(g);
-                LayeredCanvas j = new LayeredCanvas();
-                j.setStudyUID(ApplicationContext.layeredCanvas.imgpanel.getStudyUID());
-                newPanel.add(j);
-                panel.add(newPanel);
-            }
-        }
-        panel.setName(ApplicationContext.layeredCanvas.imgpanel.getStudyUID());
+        ((ViewerJPanel) getParent()).changeImageLayout(row, col);
         jPopupMenu1.setVisible(false);
         isImageLayout = false;
-        ApplicationContext.setCorrespondingPreviews();
-        ApplicationContext.setAllSeriesIdentification(panel.getName());
         layoutPopupDesign.resetPopupMenu();
+        if (synchronizeButton.isSelected()) {
+            parent.doSynchronize();
+        }
     }
 
-    public void changeTileLayout(final int row, final int col) {
+    public void changeTileLayout(int row, int col) {
         jPopupMenu1.setVisible(false);
-        if (ApplicationContext.layeredCanvas.imgpanel.buffer != null) {
-            ApplicationContext.layeredCanvas.imgpanel.buffer.terminateThread();
-        } else if (ApplicationContext.buffer != null) {
-            ApplicationContext.buffer.terminateThread();
-        }
-        ApplicationContext.selectedPanel.removeAll();
-        ApplicationContext.selectedPanel.setLayout(new GridLayout(row, col));
-        LayeredCanvas canvas = new LayeredCanvas(new File(ApplicationContext.databaseRef.getFirstInstanceLocation(ApplicationContext.layeredCanvas.imgpanel.getStudyUID(), ApplicationContext.layeredCanvas.imgpanel.getSeriesUID())), 0, true);
-        ApplicationContext.selectedPanel.add(canvas);
-        ApplicationContext.selectedPanel.setName(canvas.getStudyUID());
-        ArrayList<String> instanceUidList = canvas.imgpanel.getInstanceUidList();
-        ApplicationContext.layeredCanvas = canvas;
-        ApplicationContext.buffer = new Buffer(canvas.imgpanel);
-        ApplicationContext.buffer.setBufferSize((row * col) + (row * col) + (row * col));
-        ApplicationContext.buffer.createThread(-1);
-        TextOverlayParam textOverlayParam = canvas.imgpanel.getTextOverlayParam();
-        canvas.imgpanel.setIsNormal(false);
-        for (int i = 1; i < (row * col); i++) {
-            if (i < instanceUidList.size()) {
-                canvas = new LayeredCanvas(true, canvas.imgpanel.getStudyUID(), canvas.imgpanel.getSeriesUID());
-                ApplicationContext.selectedPanel.add(canvas);
-                ApplicationContext.layeredCanvas.imgpanel.setInfo(canvas.imgpanel);
-                canvas.textOverlay.setTextOverlayParam(new TextOverlayParam(textOverlayParam.getPatientName(), textOverlayParam.getPatientID(), textOverlayParam.getSex(), textOverlayParam.getStudyDate(), textOverlayParam.getStudyDescription(), textOverlayParam.getSeriesDescription(), textOverlayParam.getBodyPartExamined(), textOverlayParam.getInstitutionName(), textOverlayParam.getWindowLevel(), textOverlayParam.getWindowWidth(), i, textOverlayParam.getTotalInstance(), textOverlayParam.isMultiframe()));
-            } else {
-                LayeredCanvas j = new LayeredCanvas();
-                j.setStudyUID(ApplicationContext.layeredCanvas.imgpanel.getStudyUID());
-                ApplicationContext.selectedPanel.add(j, i);
-            }
-        }
-        ApplicationContext.setCorrespondingPreviews();
-        ApplicationContext.setAllSeriesIdentification(ApplicationContext.selectedPanel.getName());
-        final int total = instanceUidList.size();
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                for (int i = 1; i < (row * col); i++) {
-                    if (i < total) {
-                        ((LayeredCanvas) ApplicationContext.selectedPanel.getComponent(i)).imgpanel.setImage(i);
-                        ((LayeredCanvas) ApplicationContext.selectedPanel.getComponent(i)).setSelectedThumbnails();
-                    }
-                }
-            }
-        });
+        parent.changeTileLayout(row, col);
         isImageLayout = true;
-        LocalizerDelegate.hideAllScoutLines();
         scoutButton.setSelected(false);
-        textOverlayParam = null;
         layoutPopupDesign.resetPopupMenu();
     }
 
@@ -249,7 +111,6 @@ public class ImageToolbar extends javax.swing.JPanel {
         jToolBar1 = new javax.swing.JToolBar();
         layoutButton = new in.raster.mayam.form.JComboButton();
         windowing = new javax.swing.JButton();
-        presetButton = new javax.swing.JButton();
         probeButton = new javax.swing.JButton();
         verticalFlip = new javax.swing.JButton();
         horizontalFlip = new javax.swing.JButton();
@@ -258,11 +119,7 @@ public class ImageToolbar extends javax.swing.JPanel {
         zoomButton = new javax.swing.JButton();
         panButton = new javax.swing.JButton();
         invert = new javax.swing.JButton();
-        rulerButton = new javax.swing.JButton();
-        rectangleButton = new javax.swing.JButton();
-        ellipseButton = new javax.swing.JButton();
-        arrowButton = new javax.swing.JButton();
-        clearAllMeasurement = new javax.swing.JButton();
+        annotationButton = new javax.swing.JButton();
         deleteMeasurement = new javax.swing.JButton();
         annotationVisibility = new javax.swing.JButton();
         textOverlay = new javax.swing.JButton();
@@ -289,36 +146,21 @@ public class ImageToolbar extends javax.swing.JPanel {
         layoutButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         jToolBar1.add(layoutButton);
 
-        windowing.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/windowing.png"))); // NOI18N
+        windowing.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/windowingdropdown.png"))); // NOI18N
         toolsButtonGroup.add(windowing);
-        windowing.setFocusPainted(false);
         windowing.setFocusable(false);
         windowing.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         windowing.setPreferredSize(new java.awt.Dimension(45, 45));
         windowing.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        windowing.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                windowingActionPerformed(evt);
+        windowing.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                windowingMousePressed(evt);
+            }
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                windowingMouseReleased(evt);
             }
         });
         jToolBar1.add(windowing);
-
-        presetButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/drop_down.png"))); // NOI18N
-        toolsButtonGroup.add(presetButton);
-        presetButton.setComponentPopupMenu(jPopupMenu2);
-        presetButton.setFocusable(false);
-        presetButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        presetButton.setMaximumSize(new java.awt.Dimension(12, 24));
-        presetButton.setMinimumSize(new java.awt.Dimension(12, 24));
-        presetButton.setPreferredSize(new java.awt.Dimension(45, 45));
-        presetButton.setRequestFocusEnabled(false);
-        presetButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        presetButton.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                presetButtonMouseClicked(evt);
-            }
-        });
-        jToolBar1.add(presetButton);
 
         probeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/probe.png"))); // NOI18N
         toolsButtonGroup.add(probeButton);
@@ -427,77 +269,24 @@ public class ImageToolbar extends javax.swing.JPanel {
         });
         jToolBar1.add(invert);
 
-        rulerButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/ruler.png"))); // NOI18N
-        rulerButton.setActionCommand("ruler");
-        toolsButtonGroup.add(rulerButton);
-        rulerButton.setFocusable(false);
-        rulerButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        rulerButton.setPreferredSize(new java.awt.Dimension(45, 45));
-        rulerButton.setRequestFocusEnabled(false);
-        rulerButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        rulerButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                rulerButtonActionPerformed(evt);
+        annotationButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/ruler.png"))); // NOI18N
+        annotationButton.setToolTipText(ApplicationContext.currentBundle.getString("ImageView.rulerButton.toolTipText")); // NOI18N
+        annotationButton.setActionCommand("ruler");
+        toolsButtonGroup.add(annotationButton);
+        annotationButton.setFocusable(false);
+        annotationButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        annotationButton.setPreferredSize(new java.awt.Dimension(45, 45));
+        annotationButton.setRequestFocusEnabled(false);
+        annotationButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        annotationButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                annotationMousePressed(evt);
+            }
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                annotationMouseReleased(evt);
             }
         });
-        jToolBar1.add(rulerButton);
-
-        rectangleButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/rectangle.png"))); // NOI18N
-        rectangleButton.setActionCommand("rectangle");
-        toolsButtonGroup.add(rectangleButton);
-        rectangleButton.setFocusable(false);
-        rectangleButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        rectangleButton.setPreferredSize(new java.awt.Dimension(45, 45));
-        rectangleButton.setRequestFocusEnabled(false);
-        rectangleButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        rectangleButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                rectangleButtonActionPerformed(evt);
-            }
-        });
-        jToolBar1.add(rectangleButton);
-
-        ellipseButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/ellipse.png"))); // NOI18N
-        ellipseButton.setActionCommand("ellipse");
-        toolsButtonGroup.add(ellipseButton);
-        ellipseButton.setFocusable(false);
-        ellipseButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        ellipseButton.setPreferredSize(new java.awt.Dimension(45, 45));
-        ellipseButton.setRequestFocusEnabled(false);
-        ellipseButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        ellipseButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                ellipseButtonActionPerformed(evt);
-            }
-        });
-        jToolBar1.add(ellipseButton);
-
-        arrowButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/arrow.png"))); // NOI18N
-        arrowButton.setActionCommand("arrow");
-        toolsButtonGroup.add(arrowButton);
-        arrowButton.setFocusable(false);
-        arrowButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        arrowButton.setPreferredSize(new java.awt.Dimension(45, 45));
-        arrowButton.setRequestFocusEnabled(false);
-        arrowButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        arrowButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                arrowButtonActionPerformed(evt);
-            }
-        });
-        jToolBar1.add(arrowButton);
-
-        clearAllMeasurement.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/clear_all_annotation.png"))); // NOI18N
-        clearAllMeasurement.setActionCommand("clearAll");
-        toolsButtonGroup.add(clearAllMeasurement);
-        clearAllMeasurement.setPreferredSize(new java.awt.Dimension(45, 45));
-        clearAllMeasurement.setRequestFocusEnabled(false);
-        clearAllMeasurement.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                clearAllMeasurementActionPerformed(evt);
-            }
-        });
-        jToolBar1.add(clearAllMeasurement);
+        jToolBar1.add(annotationButton);
 
         deleteMeasurement.setIcon(new javax.swing.ImageIcon(getClass().getResource("/in/raster/mayam/form/images/delete_annotation.png"))); // NOI18N
         deleteMeasurement.setActionCommand("deleteMeasurement");
@@ -625,6 +414,7 @@ public class ImageToolbar extends javax.swing.JPanel {
         });
         jToolBar1.add(synchronizeButton);
 
+        loopCheckbox.setText("Loop");
         loopCheckbox.setToolTipText("Cine Loop");
         loopCheckbox.setFocusable(false);
         loopCheckbox.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
@@ -640,18 +430,13 @@ public class ImageToolbar extends javax.swing.JPanel {
         loopSlider.setPaintTicks(true);
         loopSlider.setValue(6);
         loopSlider.setDoubleBuffered(true);
-        loopSlider.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                loopSliderStateChanged(evt);
-            }
-        });
         jToolBar1.add(loopSlider);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jToolBar1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 1540, Short.MAX_VALUE)
+            .addComponent(jToolBar1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 1177, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -659,93 +444,32 @@ public class ImageToolbar extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void windowingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_windowingActionPerformed
-        setWindowingTool();
-    }//GEN-LAST:event_windowingActionPerformed
-
-    private void presetButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_presetButtonMouseClicked
-        if (presetButton.isEnabled()) {
-            int x = evt.getX();
-            int y = evt.getY();
-            long z = evt.getWhen();
-            int mo = evt.getModifiers();
-            int cc = evt.getClickCount();
-            designPresetContext();
-            presetButton.dispatchEvent(new java.awt.event.MouseEvent(this.presetButton, MouseEvent.MOUSE_CLICKED, z, mo, x, y, cc, true));
-        }
-    }//GEN-LAST:event_presetButtonMouseClicked
-
     private void probeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_probeButtonActionPerformed
-        if (ApplicationContext.layeredCanvas.annotationPanel != null && ApplicationContext.layeredCanvas.imgpanel != null) {
-            ApplicationContext.layeredCanvas.annotationPanel.setAddLine(false);
-            ApplicationContext.layeredCanvas.annotationPanel.setAddArrow(false);
-            ApplicationContext.layeredCanvas.annotationPanel.setAddEllipse(false);
-            ApplicationContext.layeredCanvas.annotationPanel.setAddRect(false);
-            ApplicationContext.layeredCanvas.annotationPanel.stopPanning();
-            probeButton.setSelected(ApplicationContext.layeredCanvas.imgpanel.probe());
-        } else {
-            JOptionPane.showOptionDialog(this, ApplicationContext.currentBundle.getString("ImageView.invalidToolSelection.text"), ApplicationContext.currentBundle.getString("ErrorTitles.text"), JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
-        }
+        parent.disableAnnotations();
+        toolsButtonGroup.clearSelection();
+        probeButton.setSelected(parent.doProbe());
     }//GEN-LAST:event_probeButtonActionPerformed
 
     private void verticalFlipActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_verticalFlipActionPerformed
-        JPanel currentSeriesPanel = (JPanel) ApplicationContext.layeredCanvas.getParent();
-        LayeredCanvas tempCanvas;
-        for (int i = 0; i < currentSeriesPanel.getComponentCount(); i++) {
-            tempCanvas = (LayeredCanvas) currentSeriesPanel.getComponent(i);
-            if (tempCanvas != null && tempCanvas.annotationPanel != null && tempCanvas.imgpanel != null) {
-                tempCanvas.imgpanel.flipVertical();
-                tempCanvas.annotationPanel.doFlipVertical();
-                tempCanvas.imgpanel.repaint();
-                tempCanvas.textOverlay.repaint();
-            }
-        }
-        tempCanvas = null;
+        parent.doVerticalFlip();
     }//GEN-LAST:event_verticalFlipActionPerformed
 
     private void horizontalFlipActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_horizontalFlipActionPerformed
-        JPanel currentSeriesPanel = (JPanel) ApplicationContext.layeredCanvas.getParent();
-        LayeredCanvas tempCanvas;
-        for (int i = 0; i < currentSeriesPanel.getComponentCount(); i++) {
-            tempCanvas = (LayeredCanvas) currentSeriesPanel.getComponent(i);
-            if (tempCanvas != null && tempCanvas.annotationPanel != null && tempCanvas.imgpanel != null) {
-                tempCanvas.imgpanel.flipHorizontal();
-                tempCanvas.annotationPanel.doFlipHorizontal();
-                tempCanvas.imgpanel.repaint();
-                tempCanvas.textOverlay.repaint();
-            }
-        }
-        tempCanvas = null;
+        parent.doHorizontalFlip();
     }//GEN-LAST:event_horizontalFlipActionPerformed
 
     private void leftRotateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_leftRotateActionPerformed
-        JPanel currentSeriesPanel = (JPanel) ApplicationContext.layeredCanvas.getParent();
-        LayeredCanvas tempCanvas;
-        for (int i = 0; i < currentSeriesPanel.getComponentCount(); i++) {
-            tempCanvas = (LayeredCanvas) currentSeriesPanel.getComponent(i);
-            if (tempCanvas != null && tempCanvas.annotationPanel != null && tempCanvas.imgpanel != null) {
-                tempCanvas.imgpanel.rotateLeft();
-                tempCanvas.annotationPanel.doRotateLeft();
-            }
-        }
-        tempCanvas = null;
+        parent.doRotateLeft();
     }//GEN-LAST:event_leftRotateActionPerformed
 
     private void rightRotateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rightRotateActionPerformed
-        JPanel currentSeriesPanel = (JPanel) ApplicationContext.layeredCanvas.getParent();
-        LayeredCanvas tempCanvas;
-        for (int i = 0; i < currentSeriesPanel.getComponentCount(); i++) {
-            tempCanvas = (LayeredCanvas) currentSeriesPanel.getComponent(i);
-            if (tempCanvas != null && tempCanvas.annotationPanel != null && tempCanvas.imgpanel != null) {
-                tempCanvas.imgpanel.rotateRight();
-                tempCanvas.annotationPanel.doRotateRight();
-            }
-        }
-        tempCanvas = null;
+        parent.doRotateRight();
     }//GEN-LAST:event_rightRotateActionPerformed
 
     private void zoomButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_zoomButtonActionPerformed
-        doZoom();
+        parent.disableAnnotations();
+        toolsButtonGroup.clearSelection();
+        toolsButtonGroup.setSelected(zoomButton.getModel(), parent.doZoom());
     }//GEN-LAST:event_zoomButtonActionPerformed
 
     private void panButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_panButtonActionPerformed
@@ -753,69 +477,22 @@ public class ImageToolbar extends javax.swing.JPanel {
     }//GEN-LAST:event_panButtonActionPerformed
 
     private void invertActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_invertActionPerformed
-        JPanel currentSeriesPanel = (JPanel) ApplicationContext.layeredCanvas.getParent();
-        LayeredCanvas tempCanvas;
-        for (int i = 0; i < currentSeriesPanel.getComponentCount(); i++) {
-            tempCanvas = (LayeredCanvas) currentSeriesPanel.getComponent(i);
-            if (tempCanvas != null && tempCanvas.annotationPanel != null && tempCanvas.imgpanel != null) {
-                invert.setSelected(tempCanvas.imgpanel.negative());
-            }
-        }
-        tempCanvas = null;
+        toolsButtonGroup.clearSelection();
+        invert.setSelected(parent.doInvert());
     }//GEN-LAST:event_invertActionPerformed
 
-    private void rulerButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rulerButtonActionPerformed
-        doRuler(false);
-    }//GEN-LAST:event_rulerButtonActionPerformed
-
-    private void rectangleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rectangleButtonActionPerformed
-        doRectangle();
-    }//GEN-LAST:event_rectangleButtonActionPerformed
-
-    private void ellipseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ellipseButtonActionPerformed
-        doEllipse();
-    }//GEN-LAST:event_ellipseButtonActionPerformed
-
-    private void arrowButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_arrowButtonActionPerformed
-        doRuler(true);
-    }//GEN-LAST:event_arrowButtonActionPerformed
-
-    private void clearAllMeasurementActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearAllMeasurementActionPerformed
-        if (ApplicationContext.layeredCanvas.annotationPanel != null) {
-            ApplicationContext.layeredCanvas.annotationPanel.clearAllMeasurement();
-        } else {
-            JOptionPane.showOptionDialog(this, ApplicationContext.currentBundle.getString("ImageView.invalidToolSelection.text"), ApplicationContext.currentBundle.getString("ErrorTitles.text"), JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
-        }
-    }//GEN-LAST:event_clearAllMeasurementActionPerformed
-
     private void deleteMeasurementActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteMeasurementActionPerformed
+        parent.disableAnnotations();
         toolsButtonGroup.clearSelection();
-        if (ApplicationContext.layeredCanvas.annotationPanel != null) {
-            ApplicationContext.layeredCanvas.annotationPanel.doDeleteMeasurement();
-            toolsButtonGroup.setSelected(deleteMeasurement.getModel(), ApplicationContext.layeredCanvas.annotationPanel.isDeleteMeasurement());
-        } else {
-            JOptionPane.showOptionDialog(this, ApplicationContext.currentBundle.getString("ImageView.invalidToolSelection.text"), ApplicationContext.currentBundle.getString("ErrorTitles.text"), JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
-        }
+        toolsButtonGroup.setSelected(deleteMeasurement.getModel(), parent.dodeleteMeasurements());
     }//GEN-LAST:event_deleteMeasurementActionPerformed
 
     private void annotationVisibilityActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_annotationVisibilityActionPerformed
-        if (ApplicationContext.layeredCanvas.annotationPanel != null) {
-            ApplicationContext.layeredCanvas.annotationPanel.toggleAnnotation();
-            setAnnotationToolsStatus();
-        } else {
-            JOptionPane.showOptionDialog(this, ApplicationContext.currentBundle.getString("ImageView.invalidToolSelection.text"), ApplicationContext.currentBundle.getString("ErrorTitles.text"), JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
-        }
+        parent.toggleAnnotations();
     }//GEN-LAST:event_annotationVisibilityActionPerformed
 
     private void textOverlayMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_textOverlayMousePressed
-        if (textOverlay.isEnabled()) {
-            int x = evt.getX();
-            int y = evt.getY();
-            long z = evt.getWhen();
-            int mo = evt.getModifiers();
-            int cc = evt.getClickCount();
-            textOverlay.dispatchEvent(new java.awt.event.MouseEvent(this.textOverlay, MouseEvent.MOUSE_CLICKED, z, mo, x, y, cc, true));
-        }
+        parent.toggleTextOverlay();
     }//GEN-LAST:event_textOverlayMousePressed
 
     private void resetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetActionPerformed
@@ -823,20 +500,11 @@ public class ImageToolbar extends javax.swing.JPanel {
     }//GEN-LAST:event_resetActionPerformed
 
     private void exportButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportButtonActionPerformed
-        ExportDicom exporter = new ExportDicom(ApplicationContext.layeredCanvas);
-        Display.alignScreen(exporter);
-        exporter.setVisible(true);
+        parent.doExport();
     }//GEN-LAST:event_exportButtonActionPerformed
 
     private void metaDataButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_metaDataButtonActionPerformed
-        if (ApplicationContext.layeredCanvas.annotationPanel != null && ApplicationContext.layeredCanvas.imgpanel != null) {
-            ArrayList<DicomTags> dcmTags = DicomTagsReader.getTags(new File(ApplicationContext.layeredCanvas.imgpanel.getDicomFileUrl()));
-            DicomTagsViewer dicomTagsViewer = new DicomTagsViewer(dcmTags);
-            Display.alignScreen(dicomTagsViewer);
-            dicomTagsViewer.setVisible(true);
-        } else {
-            JOptionPane.showOptionDialog(this, ApplicationContext.currentBundle.getString("ImageView.invalidToolSelection.text"), ApplicationContext.currentBundle.getString("ErrorTitles.text"), JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
-        }
+        parent.showMetaData();
     }//GEN-LAST:event_metaDataButtonActionPerformed
 
     private void stackButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stackButtonActionPerformed
@@ -844,49 +512,80 @@ public class ImageToolbar extends javax.swing.JPanel {
     }//GEN-LAST:event_stackButtonActionPerformed
 
     private void scoutButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scoutButtonActionPerformed
-        doScout();
+        scoutButton.setSelected(parent.doScout());
     }//GEN-LAST:event_scoutButtonActionPerformed
 
     private void synchronizeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_synchronizeButtonActionPerformed
-        if (!synchronizeButton.isSelected()) {
-            synchronizeButton.setSelected(true);
-        } else {
-            synchronizeButton.setSelected(false);
-        }
         synchronizeButton.setSelected(!synchronizeButton.isSelected() ? true : false);
-        ApplicationContext.layeredCanvas.imgpanel.doSynchronize();
+        parent.doSynchronize();
     }//GEN-LAST:event_synchronizeButtonActionPerformed
 
     private void loopCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loopCheckboxActionPerformed
-        doCineLoop();
+        doLoop();
     }//GEN-LAST:event_loopCheckboxActionPerformed
 
-    private void loopSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_loopSliderStateChanged
-        try {
-            if (ApplicationContext.layeredCanvas.annotationPanel != null && ApplicationContext.layeredCanvas.imgpanel != null) {
-                if (loopCheckbox.isSelected()) {
-                    if (timer != null) {
-                        timer.cancel();
-                        timer = new Timer();
-                        timer.scheduleAtFixedRate(new CineTimer(), 0, (11 - loopSlider.getValue()) * 100);//
-
-                    } else {
-                        timer = new Timer();
-                        timer.scheduleAtFixedRate(new CineTimer(), 0, (11 - loopSlider.getValue()) * 100);//
+    private void windowingMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_windowingMousePressed
+        // TODO add your handling code here:        
+        if (windowing.isEnabled()) {
+            if (SwingUtilities.isRightMouseButton(evt)) {
+                jPopupMenu2.show(windowing, 10, 10);
+            } else {
+                mouseReleased = false;
+                presetTimer = new javax.swing.Timer(1000, new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        if (!mouseReleased) {
+                            jPopupMenu2.show(windowing, 25, 25);
+                        }
+                        presetTimer.stop();
+                        presetTimer = null;
                     }
-                }
+                });
+                presetTimer.setRepeats(false);
+                presetTimer.start();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
-    }//GEN-LAST:event_loopSliderStateChanged
+    }//GEN-LAST:event_windowingMousePressed
+
+    private void windowingMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_windowingMouseReleased
+        // TODO add your handling code here:
+        mouseReleased = true;
+        setWindowingTool();
+    }//GEN-LAST:event_windowingMouseReleased
+
+    private void annotationMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_annotationMousePressed
+        // TODO add your handling code here:
+        if (annotationButton.isEnabled()) {
+            if (SwingUtilities.isRightMouseButton(evt)) {
+                jPopupMenu3.show(annotationButton, 10, 10);
+            } else {
+                mouseReleased = false;
+                presetTimer = new javax.swing.Timer(1000, new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        if (!mouseReleased) {
+                            jPopupMenu3.show(annotationButton, 25, 25);
+                        }
+                        presetTimer.stop();
+                        presetTimer = null;
+                    }
+                });
+                presetTimer.setRepeats(false);
+                presetTimer.start();
+            }
+        }
+    }//GEN-LAST:event_annotationMousePressed
+
+    private void annotationMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_annotationMouseReleased
+        // TODO add your handling code here:
+        mouseReleased = true;
+        doAnnotation();
+    }//GEN-LAST:event_annotationMouseReleased
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton annotationButton;
     private javax.swing.JButton annotationVisibility;
-    private javax.swing.JButton arrowButton;
-    private javax.swing.JButton clearAllMeasurement;
     private javax.swing.JButton cube3DButton;
     private javax.swing.JButton deleteMeasurement;
-    private javax.swing.JButton ellipseButton;
     private javax.swing.JButton exportButton;
     private javax.swing.JButton horizontalFlip;
     private javax.swing.JButton invert;
@@ -901,12 +600,9 @@ public class ImageToolbar extends javax.swing.JPanel {
     private javax.swing.JSlider loopSlider;
     private javax.swing.JButton metaDataButton;
     private javax.swing.JButton panButton;
-    private javax.swing.JButton presetButton;
     private javax.swing.JButton probeButton;
-    private javax.swing.JButton rectangleButton;
     private javax.swing.JButton reset;
     private javax.swing.JButton rightRotate;
-    private javax.swing.JButton rulerButton;
     private javax.swing.JButton scoutButton;
     private javax.swing.JButton stackButton;
     private javax.swing.JButton synchronizeButton;
@@ -917,289 +613,69 @@ public class ImageToolbar extends javax.swing.JPanel {
     private javax.swing.JButton zoomButton;
     // End of variables declaration//GEN-END:variables
 
-    private void textOverlayContext() {
-        JMenuItem currentFrame = new JMenuItem("Selected");
-        JMenuItem allFrame = new JMenuItem("All");
-        jPopupMenu3.add(currentFrame);
-        jPopupMenu3.add(allFrame);
-        textOverlay.setComponentPopupMenu(jPopupMenu3);
-        allFrame.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                LayeredCanvas tempCanvas = null;
-                JPanel panel = ((JPanel) ((JSplitPane) ApplicationContext.tabbedPane.getSelectedComponent()).getRightComponent());
-                int childCount = panel.getComponentCount();
-                for (int i = 0; i < childCount; i++) {
-                    if (panel.getComponent(i) instanceof LayeredCanvas) {
-                        tempCanvas = ((LayeredCanvas) panel.getComponent(i));
-                        if (tempCanvas.textOverlay != null) {
-                            tempCanvas.textOverlay.toggleTextOverlay();
-                        }
-                    }
-                    JPanel seriesLevelPanel = (JPanel) panel.getComponent(i);
-                    for (int k = 0; k < seriesLevelPanel.getComponentCount(); k++) {
-                        if (seriesLevelPanel.getComponent(k) instanceof LayeredCanvas) {
-                            tempCanvas = (LayeredCanvas) seriesLevelPanel.getComponent(k);
-                            if (tempCanvas.textOverlay != null) {
-                                tempCanvas.textOverlay.toggleTextOverlay();
-                            }
-                        }
-                    }
-                }
-            }
-        });
-        currentFrame.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (ApplicationContext.layeredCanvas.annotationPanel != null && ApplicationContext.layeredCanvas.imgpanel != null) {
-                    ApplicationContext.layeredCanvas.textOverlay.toggleTextOverlay();
-
-                } else {
-                    JOptionPane.showOptionDialog(ImageToolbar.this, ApplicationContext.currentBundle.getString("ImageView.invalidToolSelection.text"), ApplicationContext.currentBundle.getString("ErrorTitles.text"), JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
-                }
-            }
-        });
-    }
-
     public void setWindowingTool() {
-        toolsButtonGroup.clearSelection();
-        if (ApplicationContext.layeredCanvas.annotationPanel != null && ApplicationContext.layeredCanvas.imgpanel != null) {
-            ApplicationContext.layeredCanvas.annotationPanel.disableAnnotations();
-            ApplicationContext.layeredCanvas.annotationPanel.stopPanning();
-            toolsButtonGroup.setSelected(windowing.getModel(), ApplicationContext.layeredCanvas.imgpanel.doWindowing());
-        }
-    }
-
-    private void designPresetContext() {
-        if (ApplicationContext.layeredCanvas.annotationPanel != null && ApplicationContext.layeredCanvas.imgpanel != null) {
-            ArrayList presetList = ApplicationContext.databaseRef.getPresetsForModality(ApplicationContext.layeredCanvas.imgpanel.getModality());
-            jPopupMenu2.removeAll();
-            JMenuItem menu = new JMenuItem("PRESETS") {
-                @Override
-                protected void paintComponent(Graphics grphcs) {
-                    grphcs.setFont(new Font("Arial", Font.BOLD, 12));
-                    grphcs.setColor(Color.blue);
-                    grphcs.drawString(this.getText(), 32, 14);
-                }
-            };
-            menu.setEnabled(false);
-            jPopupMenu2.add(menu);
-            jPopupMenu2.addSeparator();
-            for (int i = 0; i < presetList.size(); i++) {
-                final PresetModel presetModel = (PresetModel) presetList.get(i);
-                if (!presetModel.getPresetName().equalsIgnoreCase("PRESETNAME")) {
-                    JMenuItem menu1 = new JMenuItem(presetModel.getPresetName());
-                    jPopupMenu2.add(menu1);
-                    menu1.addActionListener(new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
-                            JPanel currentPanel = (JPanel) ApplicationContext.layeredCanvas.getParent();
-                            try {
-                                for (int i = 0; i < currentPanel.getComponentCount(); i++) {
-                                    ((LayeredCanvas) currentPanel.getComponent(i)).imgpanel.windowChanged(Integer.parseInt(presetModel.getWindowLevel()), Integer.parseInt(presetModel.getWindowWidth()));
-                                }
-                            } catch (NullPointerException npe) {
-                                //Null pointer exception occurs when there is no components in image layout
-                            }
-                        }
-                    });
-                }
-            }
-            this.setComponentPopupMenu(jPopupMenu1);
-        } else {
-            JOptionPane.showOptionDialog(this, ApplicationContext.currentBundle.getString("ImageView.invalidToolSelection.text"), ApplicationContext.currentBundle.getString("ErrorTitles.text"), JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
-        }
+        parent.disableAnnotations();
+        parent.doWindowing();
     }
 
     public void doPan() {
+        parent.disableAnnotations();
         toolsButtonGroup.clearSelection();
-        if (ApplicationContext.layeredCanvas.annotationPanel != null && ApplicationContext.layeredCanvas.imgpanel != null) {
-            ApplicationContext.layeredCanvas.annotationPanel.disableAnnotations();
-            toolsButtonGroup.setSelected(panButton.getModel(), ApplicationContext.layeredCanvas.imgpanel.doPan());
-        } else {
-            JOptionPane.showOptionDialog(this, ApplicationContext.currentBundle.getString("ImageView.invalidToolSelection.text"), ApplicationContext.currentBundle.getString("ErrorTitles.text"), JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
-        }
+        toolsButtonGroup.setSelected(panButton.getModel(), parent.doPan());
     }
 
-    public void doZoom() {
-        toolsButtonGroup.clearSelection();
-        if (ApplicationContext.layeredCanvas.annotationPanel != null && ApplicationContext.layeredCanvas.imgpanel != null) {
-            ApplicationContext.layeredCanvas.annotationPanel.disableAnnotations();
-            toolsButtonGroup.setSelected(zoomButton.getModel(), ApplicationContext.layeredCanvas.imgpanel.doZoom());
+    public void doAnnotation() {
+        if (toolsButtonGroup.isSelected(annotationButton.getModel())) {
+            toolsButtonGroup.clearSelection();
+            parent.disableAnnotations();
         } else {
-            JOptionPane.showOptionDialog(this, ApplicationContext.currentBundle.getString("ImageView.invalidToolSelection.text"), ApplicationContext.currentBundle.getString("ErrorTitles.text"), JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
+            toolsButtonGroup.clearSelection();
+            parent.doAnnotation();
+            toolsButtonGroup.setSelected(annotationButton.getModel(), true);
+            handleAnnotations(annotationButton.getToolTipText());
         }
     }
 
     public void doRuler(boolean addArrow) {
-        if (ApplicationContext.layeredCanvas.annotationPanel != null && ApplicationContext.layeredCanvas.imgpanel != null) {
-            ApplicationContext.layeredCanvas.annotationPanel.stopPanning();
-            ApplicationContext.layeredCanvas.imgpanel.setToolsToNull();
-            ApplicationContext.layeredCanvas.annotationPanel.setMouseLocX1(-1);
-            toolsButtonGroup.clearSelection();
-            if (addArrow) {
-                if (!ApplicationContext.layeredCanvas.annotationPanel.isAddArrow()) {
-                    ApplicationContext.layeredCanvas.annotationPanel.setAddArrow(true);
-                    ApplicationContext.layeredCanvas.annotationPanel.setAddLine(false);
-                    ApplicationContext.layeredCanvas.annotationPanel.setAddEllipse(false);
-                    ApplicationContext.layeredCanvas.annotationPanel.setAddRect(false);
-                } else {
-                    ApplicationContext.layeredCanvas.annotationPanel.setAddArrow(false);
-                }
-                toolsButtonGroup.setSelected(arrowButton.getModel(), true);
-            } else {
-                if (!ApplicationContext.layeredCanvas.annotationPanel.isAddLine()) {
-                    ApplicationContext.layeredCanvas.annotationPanel.setAddArrow(false);
-                    ApplicationContext.layeredCanvas.annotationPanel.setAddLine(true);
-                    ApplicationContext.layeredCanvas.annotationPanel.setAddEllipse(false);
-                    ApplicationContext.layeredCanvas.annotationPanel.setAddRect(false);
-                } else {
-                    ApplicationContext.layeredCanvas.annotationPanel.setAddLine(false);
-                }
-                toolsButtonGroup.setSelected(rulerButton.getModel(), true);
-            }
-        } else {
-            JOptionPane.showOptionDialog(this, ApplicationContext.currentBundle.getString("ImageView.invalidToolSelection.text"), ApplicationContext.currentBundle.getString("ErrorTitles.text"), JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
-        }
+        parent.doRuler(addArrow);
+        toolsButtonGroup.clearSelection();
+        toolsButtonGroup.setSelected(annotationButton.getModel(), true);
     }
 
     public void doRectangle() {
         toolsButtonGroup.clearSelection();
-        if (ApplicationContext.layeredCanvas.annotationPanel != null && ApplicationContext.layeredCanvas.imgpanel != null) {
-            ApplicationContext.layeredCanvas.annotationPanel.stopPanning();
-            ApplicationContext.layeredCanvas.imgpanel.setToolsToNull();
-            ApplicationContext.layeredCanvas.annotationPanel.setMouseLocX1(-1);
-            if (!ApplicationContext.layeredCanvas.annotationPanel.isAddRect()) {
-                ApplicationContext.layeredCanvas.annotationPanel.setAddLine(false);
-                ApplicationContext.layeredCanvas.annotationPanel.setAddArrow(false);
-                ApplicationContext.layeredCanvas.annotationPanel.setAddEllipse(false);
-                ApplicationContext.layeredCanvas.annotationPanel.setAddRect(true);
-            } else {
-                ApplicationContext.layeredCanvas.annotationPanel.setAddRect(false);
-            }
-            toolsButtonGroup.setSelected(rectangleButton.getModel(), true);
-        } else {
-            JOptionPane.showOptionDialog(this, ApplicationContext.currentBundle.getString("ImageView.invalidToolSelection.text"), ApplicationContext.currentBundle.getString("ErrorTitles.text"), JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
-        }
+        parent.doRectangle();
+        toolsButtonGroup.setSelected(annotationButton.getModel(), true);
     }
 
     public void doEllipse() {
         toolsButtonGroup.clearSelection();
-        if (ApplicationContext.layeredCanvas.annotationPanel != null && ApplicationContext.layeredCanvas.imgpanel != null) {
-            ApplicationContext.layeredCanvas.annotationPanel.stopPanning();
-            ApplicationContext.layeredCanvas.imgpanel.setToolsToNull();
-            ApplicationContext.layeredCanvas.annotationPanel.setMouseLocX1(-1);
-            if (!ApplicationContext.layeredCanvas.annotationPanel.isAddEllipse()) {
-                ApplicationContext.layeredCanvas.annotationPanel.setAddLine(false);
-                ApplicationContext.layeredCanvas.annotationPanel.setAddArrow(false);
-                ApplicationContext.layeredCanvas.annotationPanel.setAddEllipse(true);
-                ApplicationContext.layeredCanvas.annotationPanel.setAddRect(false);
-            } else {
-                ApplicationContext.layeredCanvas.annotationPanel.setAddEllipse(false);
-            }
-            toolsButtonGroup.setSelected(ellipseButton.getModel(), true);
-        } else {
-            JOptionPane.showOptionDialog(this, ApplicationContext.currentBundle.getString("ImageView.invalidToolSelection.text"), ApplicationContext.currentBundle.getString("ErrorTitles.text"), JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
-        }
-    }
-
-    public void setAnnotationToolsStatus() {
-        if (ApplicationContext.layeredCanvas.annotationPanel.isShowAnnotation()) {
-            showAnnotationTools();
-        } else {
-            hideAnnotationTools();
-        }
+        parent.doEllipse();
+        toolsButtonGroup.setSelected(annotationButton.getModel(), true);
     }
 
     public void doReset() {
         loopCheckbox.setSelected(false);
-        doCineLoop();
-        JPanel currentSeriesPanel = (JPanel) ApplicationContext.layeredCanvas.getParent();
-        for (int i = 0; i < currentSeriesPanel.getComponentCount(); i++) {
-            LayeredCanvas tempcanCanvas = (LayeredCanvas) currentSeriesPanel.getComponent(i);
-            if (tempcanCanvas != null && tempcanCanvas.annotationPanel != null && tempcanCanvas.imgpanel != null) {
-                tempcanCanvas.imgpanel.reset();
-            }
-        }
-        setWindowing();
+        doLoop();
+        parent.doReset();
     }
 
-    public void setWindowing() {
-        if (ApplicationContext.layeredCanvas.annotationPanel != null && ApplicationContext.layeredCanvas.imgpanel != null) {
-            ApplicationContext.layeredCanvas.imgpanel.setWindowingToolsAsDefault();
-            toolsButtonGroup.setSelected(windowing.getModel(), true);
-        }
+    public void doWindowing() {
+        toolsButtonGroup.clearSelection();
+    }
+
+    public void doWindowing(boolean selected) {
+        toolsButtonGroup.clearSelection();
+        toolsButtonGroup.setSelected(windowing.getModel(), selected);
     }
 
     public void doStack() {
-        toolsButtonGroup.clearSelection();
-        if (ApplicationContext.layeredCanvas.annotationPanel != null && ApplicationContext.layeredCanvas.imgpanel != null) {
-            ApplicationContext.layeredCanvas.annotationPanel.stopPanning();
-            ApplicationContext.layeredCanvas.annotationPanel.disableAnnotations();
-            ApplicationContext.layeredCanvas.imgpanel.doStack();
-            ApplicationContext.layeredCanvas.imgpanel.repaint();
-            toolsButtonGroup.setSelected(stackButton.getModel(), ApplicationContext.layeredCanvas.imgpanel.isStackSelected());
-        } else {
-            JOptionPane.showOptionDialog(this, ApplicationContext.currentBundle.getString("ImageView.invalidToolSelection.text"), ApplicationContext.currentBundle.getString("ErrorTitles.text"), JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
-        }
-    }
-
-    public void doScout() {
-        if (!ImagePanel.isDisplayScout() && ((JPanel) ((JPanel) ApplicationContext.layeredCanvas.getParent()).getParent()).getComponentCount() > 1 && ((JPanel) ApplicationContext.layeredCanvas.getParent()).getComponentCount() == 1) {
-            ImagePanel.setDisplayScout(true);
-            scoutButton.setSelected(true);
-            LocalizerDelegate localizer = new LocalizerDelegate(false);
-            localizer.start();
-        } else {
-            ImagePanel.setDisplayScout(false);
-            scoutButton.setSelected(false);
-            LocalizerDelegate.hideAllScoutLines();
-        }
-    }
-
-    public void doCineLoop() {
-        if (ApplicationContext.layeredCanvas.annotationPanel != null && ApplicationContext.layeredCanvas.imgpanel != null) {
-            if (loopCheckbox.isSelected()) {
-                cineTimer = new CineTimer();
-                try {
-                    timer = new Timer();
-                    timer.scheduleAtFixedRate(cineTimer, 0, (11 - loopSlider.getValue()) * 50);//                    timer.scheduleAtFixedRate(cineTimer, 0, (11 - loopSlider.getValue()) * 50);//                                        
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            } else {
-                if (timer != null) {
-                    timer.cancel();
-                }
-            }
-        } else {
-            loopCheckbox.setSelected(false);
-        }
-    }
-
-    public void addKeyEventToViewer() {
-        addKeyEventDispatcher();
-    }
-
-    public void doTextOverlay() {
-        if (ApplicationContext.layeredCanvas.annotationPanel != null && ApplicationContext.layeredCanvas.imgpanel != null) {
-            ApplicationContext.layeredCanvas.textOverlay.toggleTextOverlay();
-        } else {
-            JOptionPane.showOptionDialog(this, ApplicationContext.currentBundle.getString("ImageView.invalidToolSelection.text"), ApplicationContext.currentBundle.getString("ErrorTitles.text"), JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
-        }
-    }
-
-    public void refreshToolsDisplay() {
-        if (!windowing.isEnabled()) {
-            enableAllTools();
-        } else {
-            setAnnotationToolsStatus();
-        }
+        toolsButtonGroup.setSelected(stackButton.getModel(), parent.doStack());
     }
 
     private void enableAllTools() {
         layoutButton.setEnabled(true);
         windowing.setEnabled(true);
-        presetButton.setEnabled(true);
         probeButton.setEnabled(true);
         verticalFlip.setEnabled(true);
         horizontalFlip.setEnabled(true);
@@ -1208,7 +684,6 @@ public class ImageToolbar extends javax.swing.JPanel {
         zoomButton.setEnabled(true);
         panButton.setEnabled(true);
         invert.setEnabled(true);
-        annotationVisibility.setEnabled(true);
         textOverlay.setEnabled(true);
         reset.setEnabled(true);
         exportButton.setEnabled(true);
@@ -1217,14 +692,14 @@ public class ImageToolbar extends javax.swing.JPanel {
         scoutButton.setEnabled(true);
         cube3DButton.setEnabled(true);
         synchronizeButton.setEnabled(true);
-        setAnnotationToolsStatus();
+        setAnnotationToolsStatus(parent.isHideAnnotations());
         loopSlider.setEnabled(true);
+        loopCheckbox.setEnabled(true);
     }
 
     public void disableAllTools() {
         layoutButton.setEnabled(false);
         windowing.setEnabled(false);
-        presetButton.setEnabled(false);
         probeButton.setEnabled(false);
         verticalFlip.setEnabled(false);
         horizontalFlip.setEnabled(false);
@@ -1233,11 +708,7 @@ public class ImageToolbar extends javax.swing.JPanel {
         zoomButton.setEnabled(false);
         panButton.setEnabled(false);
         invert.setEnabled(false);
-        rulerButton.setEnabled(false);
-        arrowButton.setEnabled(false);
-        rectangleButton.setEnabled(false);
-        ellipseButton.setEnabled(false);
-        clearAllMeasurement.setEnabled(false);
+        annotationButton.setEnabled(false);
         deleteMeasurement.setEnabled(false);
         annotationVisibility.setEnabled(false);
         textOverlay.setEnabled(false);
@@ -1248,48 +719,26 @@ public class ImageToolbar extends javax.swing.JPanel {
         scoutButton.setEnabled(false);
         cube3DButton.setEnabled(false);
         synchronizeButton.setEnabled(false);
+        loopCheckbox.setEnabled(false);
         loopSlider.setEnabled(false);
     }
 
-    public void resetCineTimer() {
-        if (timer != null) {
-            timer.cancel();
-        }
-    }
-
     public void showAnnotationTools() {
-        arrowButton.setEnabled(true);
-        rulerButton.setEnabled(true);
-        rectangleButton.setEnabled(true);
-        ellipseButton.setEnabled(true);
-        clearAllMeasurement.setEnabled(true);
+        annotationButton.setEnabled(true);
         deleteMeasurement.setEnabled(true);
     }
 
     public void hideAnnotationTools() {
-        arrowButton.setEnabled(false);
-        rulerButton.setEnabled(false);
-        rectangleButton.setEnabled(false);
-        ellipseButton.setEnabled(false);
-        clearAllMeasurement.setEnabled(false);
+        annotationButton.setEnabled(false);
         deleteMeasurement.setEnabled(false);
-        String actionCommand = null;
+        String actionCmd = null;
         if (toolsButtonGroup != null && toolsButtonGroup.getSelection() != null) {
-            actionCommand = toolsButtonGroup.getSelection().getActionCommand();
+            actionCmd = toolsButtonGroup.getSelection().getActionCommand();
         }
-        if (ApplicationContext.layeredCanvas.annotationPanel != null && ApplicationContext.layeredCanvas.imgpanel != null) {
-            if (actionCommand != null) {
-                if (actionCommand.equalsIgnoreCase("ruler") || actionCommand.equalsIgnoreCase("arrow") || actionCommand.equalsIgnoreCase("rectangle") || actionCommand.equalsIgnoreCase("ellipse") || actionCommand.equalsIgnoreCase("deleteMeasurement") || actionCommand.equalsIgnoreCase("moveMeasurement")) {
-                    ApplicationContext.layeredCanvas.annotationPanel.setAddLine(false);
-                    ApplicationContext.layeredCanvas.annotationPanel.setAddEllipse(false);
-                    ApplicationContext.layeredCanvas.annotationPanel.setAddRect(false);
-                    ApplicationContext.layeredCanvas.annotationPanel.setAddArrow(false);
-                    ApplicationContext.layeredCanvas.annotationPanel.stopPanning();
-                    ApplicationContext.layeredCanvas.imgpanel.doWindowing();
-                    toolsButtonGroup.clearSelection();
-                    toolsButtonGroup.setSelected(windowing.getModel(), true);
-                }
-            }
+        if (actionCmd != null && (actionCmd.equalsIgnoreCase("ruler") || actionCmd.equalsIgnoreCase("arrow") || actionCmd.equalsIgnoreCase("ellipse") || actionCmd.equalsIgnoreCase("rectangle") || actionCmd.equalsIgnoreCase("deleteMeasurement") || actionCmd.equalsIgnoreCase("moveMeasurement"))) {
+            parent.stopAnnotation();
+            toolsButtonGroup.clearSelection();
+            toolsButtonGroup.setSelected(windowing.getModel(), true);
         }
     }
 
@@ -1300,7 +749,6 @@ public class ImageToolbar extends javax.swing.JPanel {
     public void applyLocale() {
         layoutButton.setToolTipText(ApplicationContext.currentBundle.getString("ImageView.imageLayout.toolTipText"));
         windowing.setToolTipText(ApplicationContext.currentBundle.getString("ImageView.windowingButton.toolTipText"));
-        presetButton.setToolTipText(ApplicationContext.currentBundle.getString("ImageView.presetButton.toolTipText"));
         probeButton.setToolTipText(ApplicationContext.currentBundle.getString("ImageView.probeButton.toolTipText"));
         verticalFlip.setToolTipText(ApplicationContext.currentBundle.getString("ImageView.verticalFlipButton.toolTipText"));
         horizontalFlip.setToolTipText(ApplicationContext.currentBundle.getString("ImageView.horizontalFlipButton.toolTipText"));
@@ -1309,12 +757,8 @@ public class ImageToolbar extends javax.swing.JPanel {
         zoomButton.setToolTipText(ApplicationContext.currentBundle.getString("ImageView.zoomInButton.toolTipText"));
         panButton.setToolTipText(ApplicationContext.currentBundle.getString("ImageView.panButton.toolTipText"));
         invert.setToolTipText(ApplicationContext.currentBundle.getString("ImageView.invertButton.toolTipText"));
-        rulerButton.setToolTipText(ApplicationContext.currentBundle.getString("ImageView.rulerButton.toolTipText"));
-        rectangleButton.setToolTipText(ApplicationContext.currentBundle.getString("ImageView.rectangleButton.toolTipText"));
-        ellipseButton.setToolTipText(ApplicationContext.currentBundle.getString("ImageView.ellipseButton.toolTipText"));
-        arrowButton.setToolTipText(ApplicationContext.currentBundle.getString("ImageView.arrowButton.toolTipText"));
+        annotationButton.setToolTipText(ApplicationContext.currentBundle.getString("ImageView.rulerButton.toolTipText"));
         deleteMeasurement.setToolTipText(ApplicationContext.currentBundle.getString("ImageView.deleteSelectedMeasurementButton.toolTipText"));
-        clearAllMeasurement.setToolTipText(ApplicationContext.currentBundle.getString("ImageView.deleteAllMeasurementButton.toolTipText"));
         annotationVisibility.setToolTipText(ApplicationContext.currentBundle.getString("ImageView.annotaionOverlayButton.toolTipText"));
         textOverlay.setToolTipText(ApplicationContext.currentBundle.getString("ImageView.textOverlayButton.toolTipText"));
         reset.setToolTipText(ApplicationContext.currentBundle.getString("ImageView.resetButton.toolTipText"));
@@ -1326,6 +770,7 @@ public class ImageToolbar extends javax.swing.JPanel {
         synchronizeButton.setToolTipText(ApplicationContext.currentBundle.getString("ImageView.synchronizeButton.toolTipText"));
         loopCheckbox.setToolTipText(ApplicationContext.currentBundle.getString("ImageView.loopChk.toolTipText"));
         layoutPopupDesign.applyLocaleChange();
+        repaint();
     }
 
     public void deselectTools() {
@@ -1333,6 +778,11 @@ public class ImageToolbar extends javax.swing.JPanel {
         synchronizeButton.setSelected(false);
         invert.setSelected(false);
         probeButton.setSelected(false);
+        stackButton.setSelected(false);
+        zoomButton.setSelected(false);
+        annotationButton.setSelected(false);
+        panButton.setSelected(false);
+        deleteMeasurement.setSelected(false);
     }
 
     public void deselectLoopChk() {
@@ -1340,13 +790,7 @@ public class ImageToolbar extends javax.swing.JPanel {
     }
 
     public boolean getAnnotationStatus() {
-        return rulerButton.isEnabled();
-    }
-
-    public void disableImageTools() {
-        if (windowing.isEnabled()) {
-            disableAllTools();
-        }
+        return annotationButton.isEnabled();
     }
 
     public void enableImageTools() {
@@ -1369,5 +813,188 @@ public class ImageToolbar extends javax.swing.JPanel {
             exportButton.setEnabled(true);
             synchronizeButton.setEnabled(true);
         }
+    }
+
+    public void designAnnotationContext() {
+        jPopupMenu3.removeAll();
+        jPopupMenu3.setOpaque(true);
+        jPopupMenu3.setBackground(Color.BLACK);
+        JMenuItem ruler = new JMenuItem(ApplicationContext.currentBundle.getString("ImageView.rulerButton.toolTipText"), new ImageIcon(getClass().getResource("/in/raster/mayam/form/images/ruler.png")));
+        ruler.addActionListener(annotationHandler);
+        jPopupMenu3.add(ruler);
+        JMenuItem rect = new JMenuItem(ApplicationContext.currentBundle.getString("ImageView.rectangleButton.toolTipText"), new ImageIcon(getClass().getResource("/in/raster/mayam/form/images/rectangle.png")));
+        rect.addActionListener(annotationHandler);
+        jPopupMenu3.add(rect);
+        JMenuItem ellipse = new JMenuItem(ApplicationContext.currentBundle.getString("ImageView.ellipseButton.toolTipText"), new ImageIcon(getClass().getResource("/in/raster/mayam/form/images/ellipse.png")));
+        ellipse.addActionListener(annotationHandler);
+        jPopupMenu3.add(ellipse);
+        JMenuItem arrow = new JMenuItem(ApplicationContext.currentBundle.getString("ImageView.arrowButton.toolTipText"), new ImageIcon(getClass().getResource("/in/raster/mayam/form/images/arrow.png")));
+        arrow.addActionListener(annotationHandler);
+        jPopupMenu3.add(arrow);
+        jPopupMenu3.addSeparator();
+        JMenuItem clearAll = new JMenuItem("Delete All Measurements", new ImageIcon(getClass().getResource("/in/raster/mayam/form/images/clear_all_annotation.png")));
+        clearAll.addActionListener(annotationHandler);
+        jPopupMenu3.add(clearAll);
+    }
+
+    public void designPresetContext() {
+        ArrayList<PresetModel> presetList = ApplicationContext.databaseRef.getPresetsForModality(parent.getModality());
+        jPopupMenu2.removeAll();
+        jPopupMenu2.setOpaque(true);
+        jPopupMenu2.setBackground(Color.BLACK);
+        jPopupMenu2.setOpaque(false);
+        menuItems = new JMenuItem[presetList.size() + 1];
+        for (int i = 0; i < presetList.size(); i++) {
+            if (!presetList.get(i).getPresetName().equalsIgnoreCase("PRESETNAME")) {
+                menuItems[i] = new JMenuItem(presetList.get(i).getPresetName());
+                menuItems[i].setName(presetList.get(i).getWindowLevel() + "," + presetList.get(i).getWindowWidth());
+                menuItems[i].addActionListener(presetHandler);
+                menuItems[i].setHorizontalTextPosition(JMenuItem.LEFT);
+                jPopupMenu2.add(menuItems[i]);
+            }
+        }
+        jPopupMenu2.addSeparator();
+        menuItems[presetList.size()] = new JMenuItem("Default", new ImageIcon(getClass().getResource("/in/raster/mayam/form/images/selected.png")));
+        menuItems[presetList.size()].setName("default");
+        menuItems[presetList.size()].addActionListener(presetHandler);
+        menuItems[presetList.size()].setHorizontalTextPosition(JMenuItem.LEFT);
+        jPopupMenu2.add(menuItems[presetList.size()]);
+    }
+    ActionListener presetHandler = new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            String presetVal[] = ((JMenuItem) e.getSource()).getName().split(",");
+            deselectMenues();
+            ((JMenuItem) e.getSource()).setIcon(new ImageIcon(getClass().getResource("/in/raster/mayam/form/images/selected.png")));
+            JPanel currentPanel = parent.getCanvasParent();
+            try {
+                for (int i = 0; i < currentPanel.getComponentCount(); i++) {
+                    try {
+                        ((LayeredCanvas) currentPanel.getComponent(i)).imgpanel.windowChanged(Integer.parseInt(presetVal[0]), Integer.parseInt(presetVal[1]));
+                    } catch (NumberFormatException ex) { //Comes here if the selected menu item is "default"
+                        ((LayeredCanvas) currentPanel.getComponent(i)).imgpanel.resetWindowing();
+                    }
+                }
+            } catch (NullPointerException npe) {
+                ApplicationContext.logger.log(Level.INFO, "Image Toolber - No compoenents in tile", npe);
+                //Null pointer exception occurs when there is no components in image layout
+            }
+            toolsButtonGroup.setSelected(windowing.getModel(), true);
+            parent.setWindowing();
+        }
+    };
+
+    public void deselectMenues() {
+        for (int i = 0; i < menuItems.length; i++) {
+            menuItems[i].setIcon(null);
+        }
+    }
+    ActionListener annotationHandler = new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            handleAnnotations(((JMenuItem) e.getSource()).getText());
+        }
+    };
+
+    public void handleAnnotations(String text) {
+        if (text.equalsIgnoreCase(ApplicationContext.currentBundle.getString("ImageView.rulerButton.toolTipText"))) {
+            annotationButton.setIcon(new ImageIcon(getClass().getResource("/in/raster/mayam/form/images/rulerdropdown.png")));
+            doRuler(false);
+        } else if (text.equalsIgnoreCase(ApplicationContext.currentBundle.getString("ImageView.rectangleButton.toolTipText"))) {
+            annotationButton.setIcon(new ImageIcon(getClass().getResource("/in/raster/mayam/form/images/rectangledropdown.png")));
+            doRectangle();
+        } else if (text.equalsIgnoreCase(ApplicationContext.currentBundle.getString("ImageView.ellipseButton.toolTipText"))) {
+            annotationButton.setIcon(new ImageIcon(getClass().getResource("/in/raster/mayam/form/images/ellipsedropdown.png")));
+            doEllipse();
+        } else if (text.equalsIgnoreCase(ApplicationContext.currentBundle.getString("ImageView.arrowButton.toolTipText"))) {
+            annotationButton.setIcon(new ImageIcon(getClass().getResource("/in/raster/mayam/form/images/arrowdropdown.png")));
+            doRuler(true);
+        } else {
+            parent.clearMeasurements();
+        }
+        annotationButton.setToolTipText(text);
+    }
+
+    public void setScoutSelected(boolean selected) {
+        scoutButton.setSelected(selected);
+    }
+
+    public void toggleLoopChk() {
+        loopCheckbox.setSelected(loopCheckbox.isSelected() ? false : true);
+        doLoop();
+    }
+
+    private void setAnnotationToolsStatus(boolean isHide) {
+        annotationButton.setEnabled(isHide);
+        annotationVisibility.setEnabled(isHide);
+        deleteMeasurement.setEnabled(isHide);
+    }
+    SwingWorker<Void, Void> worker = null;
+
+    public void doAutoPlay() {
+        loopSlider.setValue(loopSlider.getMaximum());
+        loopCheckbox.setSelected(true);
+        doLoop();
+    }
+
+    public void stopAutoPlay() {
+        if (loopCheckbox.isSelected()) {
+            loopCheckbox.setSelected(false);
+            doLoop();
+        }
+    }
+
+    public void doLoop() {
+        if (loopCheckbox.isSelected()) {
+            if (!parent.isMultiframe()) {
+                parent.setRenderingQuality(false);
+                doImageLoop();
+            } else {
+                doFrameLoop();
+            }
+        } else if (worker != null) {
+            worker.cancel(true);
+            worker = null;
+            loopCheckbox.setSelected(false);
+        }
+    }
+
+    public void doImageLoop() {
+        if (!parent.isTileLayout()) {
+            worker = new SwingWorker<Void, Void>() {
+                @Override
+                protected Void doInBackground() throws Exception {
+                    int total = parent.getTotalImages();
+                    for (int i = parent.getCurrentInstanceOrFrame(); i < total; i++) {
+                        parent.showImage(i);
+                        Thread.sleep((11 - loopSlider.getValue()) * 30);
+                        if (ApplicationContext.isLoopBack && i == total - 1) {
+                            parent.forwardLoopBack();
+                            i = -1;
+                        }
+                    }
+                    return null;
+                }
+            };
+            worker.execute();
+        }
+    }
+
+    public void doFrameLoop() {
+        worker = new SwingWorker<Void, Void>() {
+            @Override
+            protected Void doInBackground() throws Exception {
+                int totalFrames = parent.getTotalFrames();
+                for (int i = parent.getCurrentInstanceOrFrame(); i < totalFrames; i++) {
+                    parent.showFrame(i);
+                    if (ApplicationContext.isLoopBack && i == totalFrames - 1) {
+                        i = -1;
+                    }
+                    Thread.sleep((11 - loopSlider.getValue()) * 10);
+                }
+                return null;
+            }
+        };
+        worker.execute();
     }
 }

@@ -14,7 +14,7 @@
  *
  * The Initial Developer of the Original Code is
  * Raster Images
- * Portions created by the Initial Developer are Copyright (C) 2009-2010
+ * Portions created by the Initial Developer are Copyright (C) 2014
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -44,8 +44,8 @@ import in.raster.mayam.form.ImagePanel;
 import in.raster.mayam.form.LayeredCanvas;
 import in.raster.mayam.models.ScoutLineInfoModel;
 import in.raster.mayam.util.localizer.SliceLocator;
+import java.util.logging.Level;
 import javax.swing.JPanel;
-import javax.swing.JSplitPane;
 
 /**
  *
@@ -64,61 +64,86 @@ public class LocalizerDelegate extends Thread {
 
     @Override
     public void run() {
-        drawScoutLineWithBorder();
+//        drawScoutLineWithBorder();
     }
 
-    public static void hideScoutLine() {
-        JPanel panel = ((JPanel) ((JSplitPane) ApplicationContext.tabbedPane.getSelectedComponent()).getRightComponent());
-        if (ApplicationContext.layeredCanvas.imgpanel != null) {
-            if (!ApplicationContext.layeredCanvas.imgpanel.isLocalizer()) {
-                for (int j = 0; j < panel.getComponentCount(); j++) {
-                    try {
-                        LayeredCanvas temp = ((LayeredCanvas) ((JPanel) panel.getComponent(j)).getComponent(0));
-                        if (ApplicationContext.layeredCanvas.imgpanel.getReferencedSOPInstanceUID() != null && temp.imgpanel != null && ApplicationContext.layeredCanvas.imgpanel.getReferencedSOPInstanceUID().equalsIgnoreCase(temp.imgpanel.getInstanceUID())) {
-                            if (ApplicationContext.layeredCanvas.imgpanel.getFrameOfReferenceUID().equalsIgnoreCase(temp.imgpanel.getFrameOfReferenceUID())) {
-                                temp.imgpanel.repaint();
-                            }
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }
-    }
-
-    public boolean drawScoutLineWithBorder() {
+//    public static void hideScoutLine() {
+//        JPanel panel = ((JPanel) ((JSplitPane) ApplicationContext.tabbedPane.getSelectedComponent()).getRightComponent());
+//        if (ApplicationContext.layeredCanvas.imgpanel != null) {
+//            if (!ApplicationContext.layeredCanvas.imgpanel.isLocalizer()) {
+//                for (int j = 0; j < panel.getComponentCount(); j++) {
+//                    try {
+//                        LayeredCanvas temp = ((LayeredCanvas) ((JPanel) panel.getComponent(j)).getComponent(0));
+//                        if (ApplicationContext.layeredCanvas.imgpanel.getReferencedSOPInstanceUID() != null && temp.imgpanel != null && ApplicationContext.layeredCanvas.imgpanel.getReferencedSOPInstanceUID().equalsIgnoreCase(temp.imgpanel.getInstanceUID())) {
+//                            if (ApplicationContext.layeredCanvas.imgpanel.getFrameOfReferenceUID().equalsIgnoreCase(temp.imgpanel.getFrameOfReferenceUID())) {
+//                                temp.imgpanel.repaint();
+//                            }
+//                        }
+//                    } catch (Exception e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//            }
+//        }
+//    }
+//    public boolean drawScoutLineWithBorder() {
+//        boolean retVal = false;
+//        JPanel panel = ((JPanel) ((JSplitPane) ApplicationContext.tabbedPane.getSelectedComponent()).getRightComponent());
+//        if (selectedCanvas.imgpanel != null) {
+//            if (!selectedCanvas.imgpanel.isLocalizer()) {
+//                ImagePanel.setDisplayScout(true);
+//                for (int j = 0; j < panel.getComponentCount(); j++) {
+//                    try {
+//                        LayeredCanvas temp = ((LayeredCanvas) ((JPanel) panel.getComponent(j)).getComponent(0));
+//                        if (selectedCanvas.imgpanel.getReferencedSOPInstanceUID() != null && temp.imgpanel != null && ApplicationContext.layeredCanvas.imgpanel.getReferencedSOPInstanceUID().equalsIgnoreCase(temp.imgpanel.getInstanceUID())) {
+//                            projectSlice(temp);
+//                        } else {
+//                            if (temp.imgpanel != null && temp.imgpanel.isLocalizer()) {
+//                                if (selectedCanvas.imgpanel.getFrameOfReferenceUID().equalsIgnoreCase(temp.imgpanel.getFrameOfReferenceUID())) {
+//                                    projectSlice(temp);
+//                                }
+//                            }
+//                        }
+//                    } catch (Exception e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//            }
+//        }
+//        return retVal;
+//    }
+    public boolean drawScoutLineWithBorder(LayeredCanvas selectedCanvas, JPanel panel) {
         boolean retVal = false;
-        JPanel panel = ((JPanel) ((JSplitPane) ApplicationContext.tabbedPane.getSelectedComponent()).getRightComponent());
-        if (ApplicationContext.layeredCanvas.imgpanel != null) {
-            if (!ApplicationContext.layeredCanvas.imgpanel.isLocalizer()) {
-                ImagePanel.setDisplayScout(true);
-                for (int j = 0; j < panel.getComponentCount(); j++) {
-                    try {
+        if (!selectedCanvas.imgpanel.isLocalizer()) {
+            ImagePanel.setDisplayScout(true);
+            for (int j = 0; j < panel.getComponentCount(); j++) {
+                try {
+                    if (((JPanel) panel.getComponent(j)).getComponentCount() != 0) {
                         LayeredCanvas temp = ((LayeredCanvas) ((JPanel) panel.getComponent(j)).getComponent(0));
-                        if (ApplicationContext.layeredCanvas.imgpanel.getReferencedSOPInstanceUID() != null && temp.imgpanel != null && ApplicationContext.layeredCanvas.imgpanel.getReferencedSOPInstanceUID().equalsIgnoreCase(temp.imgpanel.getInstanceUID())) {
-                            projectSlice(temp);
+                        if (selectedCanvas.imgpanel.getReferencedSOPInstanceUID() != null && temp.imgpanel != null && selectedCanvas.imgpanel.getReferencedSOPInstanceUID().equalsIgnoreCase(temp.imgpanel.getInstanceUID())) {
+                            projectSlice(temp, selectedCanvas);
                         } else {
                             if (temp.imgpanel != null && temp.imgpanel.isLocalizer()) {
-                                if (ApplicationContext.layeredCanvas.imgpanel.getFrameOfReferenceUID().equalsIgnoreCase(temp.imgpanel.getFrameOfReferenceUID())) {
-                                    projectSlice(temp);
+                                if (selectedCanvas.imgpanel.getFrameOfReferenceUID().equalsIgnoreCase(temp.imgpanel.getFrameOfReferenceUID())) {
+                                    projectSlice(temp, selectedCanvas);
                                 }
                             }
                         }
-                    } catch (Exception e) {
-                        e.printStackTrace();
                     }
+                } catch (Exception e) {
+                    ApplicationContext.logger.log(Level.WARNING, null, e);
                 }
             }
         }
+//        }
         return retVal;
     }
 
-    private boolean projectSlice(LayeredCanvas temp) {
+    private boolean projectSlice(LayeredCanvas temp, LayeredCanvas selectedCanvas) {
         ScoutLineInfoModel scoutParmas = temp.imgpanel.getCurrentScoutDetails();
-        ScoutLineInfoModel scoutLineDetails = ApplicationContext.layeredCanvas.imgpanel.getCurrentScoutDetails();
+        ScoutLineInfoModel scoutLineDetails = selectedCanvas.imgpanel.getCurrentScoutDetails();
         if (!borderAlreadyPresent) {
-            ScoutLineInfoModel[] borderLineArray = ApplicationContext.layeredCanvas.imgpanel.prepareScoutBorder();
+            ScoutLineInfoModel[] borderLineArray = selectedCanvas.imgpanel.prepareScoutBorder();
             locator.projectSlice(scoutParmas.getImagePosition(), scoutParmas.getImageOrientation(), scoutParmas.getImagePixelSpacing(), scoutParmas.getImageRow(), scoutParmas.getImageColumn(), borderLineArray[0].getImagePosition(), borderLineArray[0].getImageOrientation(), borderLineArray[0].getImagePixelSpacing(), borderLineArray[0].getImageRow(), borderLineArray[0].getImageColumn());
             temp.imgpanel.setScoutBorder1Coordinates((int) locator.getBoxUlx(), (int) locator.getBoxUly(), (int) locator.getBoxLlx(), (int) locator.getBoxLly());
             temp.imgpanel.setAxis1Coordinates((int) locator.getmAxisLeftx(), (int) locator.getmAxisLefty(), (int) locator.getmAxisRightx(), (int) locator.getmAxisRighty(), (int) locator.getmAxisTopx(), (int) locator.getmAxisTopy(), (int) locator.getmAxisBottomx(), (int) locator.getmAxisBottomy());
@@ -132,21 +157,51 @@ public class LocalizerDelegate extends Thread {
         return true;
     }
 
-    public static void hideAllScoutLines() {
+//    private boolean projectSlice(LayeredCanvas temp) {
+//        ScoutLineInfoModel scoutParmas = temp.imgpanel.getCurrentScoutDetails();
+//        ScoutLineInfoModel scoutLineDetails = ApplicationContext.layeredCanvas.imgpanel.getCurrentScoutDetails();
+//        if (!borderAlreadyPresent) {
+//            ScoutLineInfoModel[] borderLineArray = ApplicationContext.layeredCanvas.imgpanel.prepareScoutBorder();
+//            locator.projectSlice(scoutParmas.getImagePosition(), scoutParmas.getImageOrientation(), scoutParmas.getImagePixelSpacing(), scoutParmas.getImageRow(), scoutParmas.getImageColumn(), borderLineArray[0].getImagePosition(), borderLineArray[0].getImageOrientation(), borderLineArray[0].getImagePixelSpacing(), borderLineArray[0].getImageRow(), borderLineArray[0].getImageColumn());
+//            temp.imgpanel.setScoutBorder1Coordinates((int) locator.getBoxUlx(), (int) locator.getBoxUly(), (int) locator.getBoxLlx(), (int) locator.getBoxLly());
+//            temp.imgpanel.setAxis1Coordinates((int) locator.getmAxisLeftx(), (int) locator.getmAxisLefty(), (int) locator.getmAxisRightx(), (int) locator.getmAxisRighty(), (int) locator.getmAxisTopx(), (int) locator.getmAxisTopy(), (int) locator.getmAxisBottomx(), (int) locator.getmAxisBottomy());
+//            locator.projectSlice(scoutParmas.getImagePosition(), scoutParmas.getImageOrientation(), scoutParmas.getImagePixelSpacing(), scoutParmas.getImageRow(), scoutParmas.getImageColumn(), borderLineArray[1].getImagePosition(), borderLineArray[1].getImageOrientation(), borderLineArray[1].getImagePixelSpacing(), borderLineArray[1].getImageRow(), borderLineArray[1].getImageColumn());
+//            temp.imgpanel.setScoutBorder2Coordinates((int) locator.getBoxUlx(), (int) locator.getBoxUly(), (int) locator.getBoxLlx(), (int) locator.getBoxLly());
+//            temp.imgpanel.setAxis2Coordinates((int) locator.getmAxisLeftx(), (int) locator.getmAxisLefty(), (int) locator.getmAxisRightx(), (int) locator.getmAxisRighty(), (int) locator.getmAxisTopx(), (int) locator.getmAxisTopy(), (int) locator.getmAxisBottomx(), (int) locator.getmAxisBottomy());
+//        }
+//        locator.projectSlice(scoutParmas.getImagePosition(), scoutParmas.getImageOrientation(), scoutParmas.getImagePixelSpacing(), scoutParmas.getImageRow(), scoutParmas.getImageColumn(), scoutLineDetails.getImagePosition(), scoutLineDetails.getImageOrientation(), scoutLineDetails.getImagePixelSpacing(), scoutLineDetails.getImageRow(), scoutLineDetails.getImageColumn());
+//        temp.imgpanel.setScoutCoordinates((int) locator.getBoxUlx(), (int) locator.getBoxUly(), (int) locator.getBoxLlx(), (int) locator.getBoxLly(), (int) locator.getBoxUrx(), (int) locator.getBoxUry(), (int) locator.getBoxLrx(), (int) locator.getBoxLry());
+//        temp.imgpanel.setAxisCoordinates((int) locator.getmAxisLeftx(), (int) locator.getmAxisLefty(), (int) locator.getmAxisRightx(), (int) locator.getmAxisRighty(), (int) locator.getmAxisTopx(), (int) locator.getmAxisTopy(), (int) locator.getmAxisBottomx(), (int) locator.getmAxisBottomy());
+//        return true;
+//    }
+//    public static void hideAllScoutLines() {
+//        ImagePanel.setDisplayScout(false);
+//        JPanel panel = ((JPanel) ((JSplitPane) ApplicationContext.tabbedPane.getSelectedComponent()).getRightComponent());
+//        if (ApplicationContext.layeredCanvas.imgpanel != null) {
+//            if (!ApplicationContext.layeredCanvas.imgpanel.isLocalizer()) {
+//                for (int j = 0; j < panel.getComponentCount(); j++) {
+//                    try {
+//                        LayeredCanvas temp = ((LayeredCanvas) ((JPanel) panel.getComponent(j)).getComponent(0));
+//                        if (temp.imgpanel != null) {
+//                            temp.imgpanel.repaint();
+//                        }
+//                    } catch (Exception e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//            }
+//        }
+//    }
+    public static void hideAllScoutLines(JPanel panel) {
         ImagePanel.setDisplayScout(false);
-        JPanel panel = ((JPanel) ((JSplitPane) ApplicationContext.tabbedPane.getSelectedComponent()).getRightComponent());
-        if (ApplicationContext.layeredCanvas.imgpanel != null) {
-            if (!ApplicationContext.layeredCanvas.imgpanel.isLocalizer()) {
-                for (int j = 0; j < panel.getComponentCount(); j++) {
-                    try {
-                        LayeredCanvas temp = ((LayeredCanvas) ((JPanel) panel.getComponent(j)).getComponent(0));
-                        if (temp.imgpanel != null) {
-                            temp.imgpanel.repaint();
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+        for (int j = 0; j < panel.getComponentCount(); j++) {
+            try {
+                if (((JPanel) panel.getComponent(j)).getComponentCount() != 0) {
+                    LayeredCanvas temp = ((LayeredCanvas) ((JPanel) panel.getComponent(j)).getComponent(0));
+                    temp.imgpanel.repaint();
                 }
+            } catch (Exception e) {
+                ApplicationContext.logger.log(Level.WARNING, null, e);
             }
         }
     }

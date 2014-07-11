@@ -14,7 +14,7 @@
  *
  * The Initial Developer of the Original Code is
  * Raster Images
- * Portions created by the Initial Developer are Copyright (C) 2009-2010
+ * Portions created by the Initial Developer are Copyright (C) 2014
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -76,26 +76,20 @@ public class StudyModel {
     public StudyModel(String patientId, String patientName, String dob, String accessionNo, String studyDate, String studyTime, String studyDescription, String modality, String numberOfSeries, String studyLevelInstances, String studyInstaceUid) {
         this.patientId = patientId;
         this.patientName = patientName;
-        this.accessionNo = accessionNo;
-        DateFormat df1 = DateFormat.getDateInstance(DateFormat.DEFAULT, ApplicationContext.currentLocale);
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-        try {
+        this.accessionNo = accessionNo;        
+        try {            
+            DateFormat df1 = DateFormat.getDateInstance(DateFormat.DEFAULT, ApplicationContext.currentLocale);
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");            
             this.studyDate = df1.format(sdf.parse(studyDate));
+            this.dob = df1.format(sdf.parse(dob));            
         } catch (ParseException ex) {
             this.studyDate = studyDate;
         }
-        try {
-            this.dob = df1.format(sdf.parse(dob));
-        } catch (ParseException ex) {
-            this.dob = dob;
-        }
-
-        try {
+        try {            
             this.studyTime = DateFormat.getTimeInstance(DateFormat.DEFAULT, ApplicationContext.currentLocale).format(new SimpleDateFormat("hh:mm:ss").parse(studyTime));
         } catch (ParseException ex) {
             this.studyTime = studyTime;
         }
-
         this.studyDescription = studyDescription;
         this.modality = modality;
         this.modalitiesInStudy = modality;
@@ -105,14 +99,10 @@ public class StudyModel {
     }
 
     public StudyModel(Dataset dataSet) {
-        SimpleDateFormat dateFormatter = new SimpleDateFormat("dd/MM/yyyy");
-        SimpleDateFormat dateParser = new SimpleDateFormat("yyyyMMdd");
-        SimpleDateFormat timeFormatter = new SimpleDateFormat("hh:mm:ss");
-        SimpleDateFormat timeParser = new SimpleDateFormat("hhmmss");
         studyUID = dataSet.getString(Tags.StudyInstanceUID);
         studyDescription = dataSet.getString(Tags.StudyDescription) != null ? dataSet.getString(Tags.StudyDescription) : "unknown";
         studyDate = dataSet.getString(Tags.StudyDate) != null ? dataSet.getString(Tags.StudyDate) : "unknown";
-        studyTime = dataSet.getString(Tags.StudyTime) != null ? dataSet.getString(Tags.StudyTime) : "unknown";
+        studyTime = dataSet.getString(Tags.StudyTime) != null ? dataSet.getString(Tags.StudyTime) : "unknown";        
         modalities = dataSet.getStrings(Tags.ModalitiesInStudy) != null ? dataSet.getStrings(Tags.ModalitiesInStudy) : null;
         if (modalities != null) {
             for (int i = 0; i < modalities.length; i++) {
@@ -126,27 +116,21 @@ public class StudyModel {
         // modalitiesInStudy = dataSet.getString(Tags.ModalitiesInStudy) != null ? dataSet.getString(Tags.ModalitiesInStudy) : "";
         patientName = dataSet.getString(Tags.PatientName) != null ? dataSet.getString(Tags.PatientName) : "unknown";
         patientId = dataSet.getString(Tags.PatientID) != null ? dataSet.getString(Tags.PatientID) : "unknown";
-        dob = dataSet.getString(Tags.PatientBirthDate) != null ? dataSet.getString(Tags.PatientBirthDate) : "unknown";
         sex = dataSet.getString(Tags.PatientSex) != null ? dataSet.getString(Tags.PatientSex) : "unknown";
         referredBy = dataSet.getString(Tags.ReferringPhysicianName) != null ? dataSet.getString(Tags.ReferringPhysicianName) : "unknown";
         retAET = dataSet.getString(Tags.RetrieveAET) != null ? dataSet.getString(Tags.RetrieveAET) : "unknown";
         accessionNo = dataSet.getString(Tags.AccessionNumber) != null ? dataSet.getString(Tags.AccessionNumber) : "unknown";
         studyLevelInstances = dataSet.getString(Tags.NumberOfStudyRelatedInstances) != null ? dataSet.getString(Tags.NumberOfStudyRelatedInstances) : "unknown";
         numberOfSeries = dataSet.getString(Tags.NumberOfStudyRelatedSeries) != null ? dataSet.getString(Tags.NumberOfStudyRelatedSeries) : "unknown";
-
+//        DateFormat df1 = DateFormat.getDateInstance(DateFormat.SHORT, new Locale("sr","RS"));
         DateFormat df1 = DateFormat.getDateInstance(DateFormat.DEFAULT, ApplicationContext.currentLocale);
         try {
             studyDate = df1.format(dataSet.getDate(Tags.StudyDate));
-        } catch (Exception ex) {
-            studyDate = "unknown";
-        }
-
-        try {
             dob = df1.format(dataSet.getDate(Tags.PatientBirthDate));
         } catch (Exception ex) {
+            studyDate = "unknown";
             dob = "unknown";
         }
-
         try {
             studyTime = DateFormat.getTimeInstance(DateFormat.DEFAULT, ApplicationContext.currentLocale).format(dataSet.getDate(Tags.StudyTime));
         } catch (Exception ex) {

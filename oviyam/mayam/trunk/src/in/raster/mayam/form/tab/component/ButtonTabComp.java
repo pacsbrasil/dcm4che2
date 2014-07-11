@@ -14,7 +14,7 @@
  *
  * The Initial Developer of the Original Code is
  * Raster Images
- * Portions created by the Initial Developer are Copyright (C) 2009-2010
+ * Portions created by the Initial Developer are Copyright (C) 2014
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -40,8 +40,7 @@
 package in.raster.mayam.form.tab.component;
 
 import in.raster.mayam.context.ApplicationContext;
-import in.raster.mayam.form.LayeredCanvas;
-import in.raster.mayam.form.VideoPanel;
+import in.raster.mayam.form.ViewerJPanel;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -71,7 +70,7 @@ public class ButtonTabComp extends JPanel {
             }
         };
 
-        label.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 14));
+        label.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
         add(label);
         //add more space between the label and the button
         label.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 2));
@@ -114,27 +113,13 @@ public class ButtonTabComp extends JPanel {
             int i = pane.indexOfTabComponent(ButtonTabComp.this);
             int x = i;
             if (i != -1) {
-                JPanel panel = ((JPanel) ((JSplitPane) ApplicationContext.tabbedPane.getComponentAt(i)).getRightComponent());
-                if (!(panel instanceof VideoPanel)) {
-                    for (int j = 0; j < panel.getComponentCount(); j++) {
-                        JPanel seriesLevelPanel = (JPanel) panel.getComponent(j);
-                        for (int k = 0; k < seriesLevelPanel.getComponentCount(); k++) {
-                            if (seriesLevelPanel.getComponent(k) instanceof LayeredCanvas) {
-                                LayeredCanvas tempCanvas = (LayeredCanvas) seriesLevelPanel.getComponent(k);
-                                try {
-                                    tempCanvas.imgpanel.storeAnnotation();
-                                    tempCanvas.imgpanel.storeMultiframeAnnotation();
-                                } catch (NullPointerException ex) {
-                                    //Null pointer exception occurs when there is no image panel
-                                }
-                            }
-                        }
-                    }
+                Component component = pane.getComponentAt(i);
+                if (!((ViewerJPanel) component).isVideoDisplay()) {
+                    ((ViewerJPanel) component).saveAnnotations();
                 }
-                ApplicationContext.imgView.writeToFile(panel.getName(), ((LayeredCanvas) ((JPanel) panel.getComponent(0)).getComponent(0)).imgpanel.getSeriesLocation());
                 pane.remove(i);
                 if (i == 0 && pane.getComponentCount() == 1) {
-                    ApplicationContext.imgView.dispose();
+                    ApplicationContext.disposeViewer();
                 }
             }
         }

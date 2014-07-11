@@ -41,18 +41,21 @@ package in.raster.mayam.form;
 
 import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.models.Series;
+import in.raster.mayam.models.ServerModel;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -62,13 +65,24 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
-import org.dcm4che2.tool.dcm2xml.Dcm2Xml;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-import uk.co.caprica.vlcj.component.EmbeddedMediaPlayerComponent;
+//
+//import org.apache.http.HttpEntity;
+//import org.apache.http.HttpResponse;
+//import org.apache.http.NameValuePair;
+//import org.apache.http.client.ClientProtocolException;
+//import org.apache.http.client.entity.UrlEncodedFormEntity;
+//import org.apache.http.client.methods.CloseableHttpResponse;
+//import org.apache.http.client.methods.HttpGet;
+//import org.apache.http.client.methods.HttpPost;
+//import org.apache.http.impl.client.CloseableHttpClient;
+//import org.apache.http.impl.client.HttpClients;
+//import org.apache.http.message.BasicNameValuePair;
+//import org.apache.http.util.EntityUtils;
 
 /**
  *
@@ -100,9 +114,9 @@ public class ViewerPreviewPanel extends javax.swing.JPanel {
         this.seriesInstanceUid = series.getSeriesInstanceUID();
         this.seriesDescription = series.getSeriesDesc();
         this.selectedButton = three;
-        isMultiframe = (instanceUid == null ? false : true);
         this.sopUid = instanceUid != null ? instanceUid.split(",")[0] : null;
         this.isVideo = series.isVideo();
+        this.isMultiframe = series.isMultiframe();
         totalImages = isVideo || isMultiframe ? 1 : series.getSeriesRelatedInstance();
         if (!isVideo) {
             if (!isMultiframe) {
@@ -116,6 +130,85 @@ public class ViewerPreviewPanel extends javax.swing.JPanel {
         } else {
             SeriesLabel.setText("Video");
         }
+        setLayout(null);
+        constructComponents();
+    }
+
+    public ViewerPreviewPanel() {
+        initComponents();
+    }
+
+    public void normalPreview(String studyUid, String seriesUID, String seriesDesc, int totalInstances) {
+        this.studyInstanceUid = studyUid;
+        this.seriesInstanceUid = seriesUID;
+        this.seriesDescription = seriesDesc;
+        this.totalImages = totalInstances;
+        isMultiframe = isVideo = false;
+        SeriesLabel.setText(seriesDescription);
+        SeriesLabel.setToolTipText(seriesDescription);
+        totalImagesLbl.setText(totalImages + " Imgs");
+        this.selectedButton = three;
+        setLayout(null);
+        constructComponents();
+    }
+
+    public void multiframePreview(String StudyUid, String seriesUID, String instanceUid) {
+        this.studyInstanceUid = StudyUid;
+        this.seriesInstanceUid = seriesUID;
+        this.seriesDescription = "Multiframe";
+        this.sopUid = instanceUid.split(",")[0];
+        this.selectedButton = all;
+        totalImages = 1;
+        SeriesLabel.setText(seriesDescription);
+        totalImagesLbl.setText(instanceUid.split(",")[1] + " Frames");
+        this.isMultiframe = true;
+        this.isVideo = false;
+        setLayout(null);
+        constructComponents();
+    }
+
+    public void videoPreview(String studyUid, String seriesUid, String instanceUid) {
+        this.studyInstanceUid = studyUid;
+        this.seriesInstanceUid = seriesUid;
+        this.seriesDescription = "Video";
+        this.sopUid = instanceUid.split(",")[0];
+        this.selectedButton = all;
+        totalImages = 1;
+        SeriesLabel.setText(seriesDescription);
+        totalImagesLbl.setText(instanceUid.split(",")[1] + " Frames");
+        this.isMultiframe = false;
+        this.isVideo = true;
+        thumbnails = new Thumbnail[]{new Thumbnail(sopUid)};
+        thumbnails[0].setVideoImage();
+        setLayout(null);
+        constructComponents();
+        loadThreePreviewImages();
+        button.setIcon(imgAll);
+        addMouseAdapter();
+    }
+
+    public ViewerPreviewPanel(String studyUid, String seriesUid, String seriesDesc, boolean isMultiframe, boolean isVideo, int totalImgsOrFrms, String sopUidIfMultiframe) {
+        initComponents();
+        this.studyInstanceUid = studyUid;
+        this.seriesInstanceUid = seriesUid;
+        this.selectedButton = three;
+        this.seriesDescription = seriesDesc;
+        this.isMultiframe = isMultiframe;
+        this.isVideo = isVideo;
+        totalImages = isVideo || isMultiframe ? 1 : totalImgsOrFrms;
+        if (!isVideo) {
+            if (!isMultiframe) {
+                SeriesLabel.setText(seriesDescription);
+                SeriesLabel.setToolTipText(seriesDescription);
+                totalImagesLbl.setText(totalImgsOrFrms + " Imgs");
+            } else {
+                SeriesLabel.setText("Multiframe");
+                totalImagesLbl.setText(totalImgsOrFrms + " Frames");
+            }
+        } else {
+            SeriesLabel.setText("Video");
+        }
+        this.sopUid = sopUidIfMultiframe;
         setLayout(null);
         constructComponents();
     }
@@ -210,33 +303,16 @@ public class ViewerPreviewPanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
     private void constructComponents() {
-        int charSize = 9, width = 230;
-        if (SeriesLabel.getText().length() * charSize + 80 < width) {
-            SeriesLabel.setBounds(0, 0, SeriesLabel.getText().length() * charSize, 20);
+        int width = 230;
+        int textWidth = SeriesLabel.getFontMetrics(SeriesLabel.getFont()).stringWidth(SeriesLabel.getText());
+        if (textWidth + 80 < width) {
+            SeriesLabel.setBounds(0, 0, textWidth, 20);
             totalImagesLbl.setBounds(SeriesLabel.getWidth() + 1, 0, width - SeriesLabel.getWidth(), 20);
         } else {
             SeriesLabel.setBounds(0, 0, 150, 20);
             totalImagesLbl.setBounds(151, 0, 80, 20);
         }
         totalHeight = 22;
-
-//        int charSize = 9, width = 230, lblWidth = SeriesLabel.getText().length() * charSize;
-//        if (lblWidth > width) {
-//            JLabel tmpLbl = new JLabel(SeriesLabel.getText().substring(width / charSize));
-//            SeriesLabel.setText(SeriesLabel.getText().substring(0, width / charSize));
-//            SeriesLabel.setBounds(0, 0, width, 20);
-//            tmpLbl.setBounds(0, 22, tmpLbl.getText().length() * charSize, 20);
-//            tmpLbl.setVisible(true);
-//            totalImagesLbl.setBounds(tmpLbl.getWidth(), 22, width - tmpLbl.getWidth() + 1, 20);
-//            totalHeight = SeriesLabel.getHeight() + 2 + tmpLbl.getHeight() + 2;
-//            add(tmpLbl);
-//        } else {
-//            SeriesLabel.setBounds(0, 0, lblWidth, 20);
-//            totalImagesLbl.setBounds(lblWidth, 0, width - SeriesLabel.getWidth(), 20);
-//            totalHeight = 22;
-//        }
-
-
         labelPanelHeight = 9;
         labelPanel.setLayout(null);
         button.setBounds(207, totalHeight + 3, 14, 14);
@@ -270,7 +346,7 @@ public class ViewerPreviewPanel extends javax.swing.JPanel {
             button.setName(one);
             selectedButton = one;
             colorLabels(selectedButton);
-            ApplicationContext.setAllSeriesIdentification(studyInstanceUid);
+            ((ViewerJPanel) ApplicationContext.tabbedPane.getSelectedComponent()).setSeriesIdentification();
             if (thumbnails.length > 1) {
                 for (int i = 1; i < thumbnails.length; i++) {
                     thumbnails[i].setVisible(false);
@@ -281,7 +357,7 @@ public class ViewerPreviewPanel extends javax.swing.JPanel {
             button.setName(all);
             selectedButton = all;
             colorLabels(selectedButton);
-            ApplicationContext.setAllSeriesIdentification(studyInstanceUid);
+            ((ViewerJPanel) ApplicationContext.tabbedPane.getSelectedComponent()).setSeriesIdentification();
             int imagePanelHeight = loadAllPreviewImages();
             alignComponents(imagePanelHeight);
         } else {
@@ -289,7 +365,7 @@ public class ViewerPreviewPanel extends javax.swing.JPanel {
             button.setName(three);
             selectedButton = three;
             colorLabels(selectedButton);
-            ApplicationContext.setAllSeriesIdentification(studyInstanceUid);
+            ((ViewerJPanel) ApplicationContext.tabbedPane.getSelectedComponent()).setSeriesIdentification();
             int imagePanelHeight = loadThreePreviewImages();
             alignComponents(imagePanelHeight);
         }
@@ -334,7 +410,8 @@ public class ViewerPreviewPanel extends javax.swing.JPanel {
             for (int i = 0; i < thumbnails.length; i++) {
                 imagePanel.add(thumbnails[i]);
                 thumbnails[i].setVisible(true);
-                thumbnails[i].setBounds(xPos, yPos, 76, 76);
+//                thumbnails[i].setBounds(xPos, yPos, 76, 76);
+                thumbnails[i].setBounds(xPos, yPos, thumbnails[i].getWidth(), thumbnails[i].getHeight());
                 xPos += 76;
             }
         } else {
@@ -345,15 +422,47 @@ public class ViewerPreviewPanel extends javax.swing.JPanel {
 
             imagePanel.add(thumbnails[thumbnails.length / 2]);
             thumbnails[thumbnails.length / 2].setVisible(true);
-            thumbnails[thumbnails.length / 2].setBounds(xPos, yPos, 76, 76);
+//            thumbnails[thumbnails.length / 2].setBounds(xPos, yPos, 76, 76);
+            thumbnails[thumbnails.length / 2].setBounds(xPos, yPos, thumbnails[thumbnails.length / 2].getWidth(), thumbnails[thumbnails.length / 2].getHeight());
             xPos += 76;
 
             imagePanel.add(thumbnails[thumbnails.length - 1]);
             thumbnails[thumbnails.length - 1].setVisible(true);
-            thumbnails[thumbnails.length - 1].setBounds(xPos, yPos, 76, 76);
+//            thumbnails[thumbnails.length - 1].setBounds(xPos, yPos, 76, 76);
+            thumbnails[thumbnails.length - 1].setBounds(xPos, yPos, thumbnails[thumbnails.length - 1].getWidth(), thumbnails[thumbnails.length - 1].getHeight());
             xPos += 76;
         }
         return hei;
+    }
+
+    public void loadThreePreviews() {
+        int xPos = 0, yPos = 0;
+        imagePanel.removeAll();
+        imagePanel.setLayout(null);
+
+        if (totalImages <= 3) {
+            for (int i = 0; i < thumbnails.length; i++) {
+                imagePanel.add(thumbnails[i]);
+                thumbnails[i].setVisible(true);
+                thumbnails[i].setBounds(xPos, yPos, thumbnails[i].getWidth(), thumbnails[i].getHeight());
+                xPos += 76;
+            }
+        } else {
+            imagePanel.add(thumbnails[0]);
+            thumbnails[0].setVisible(true);
+            thumbnails[0].setBounds(xPos, yPos, thumbnails[0].getWidth(), thumbnails[0].getHeight());
+            xPos += 76;
+
+            imagePanel.add(thumbnails[thumbnails.length / 2]);
+            thumbnails[thumbnails.length / 2].setVisible(true);
+            thumbnails[thumbnails.length / 2].setBounds(xPos, yPos, thumbnails[thumbnails.length / 2].getWidth(), thumbnails[thumbnails.length / 2].getHeight());
+            xPos += 76;
+
+            imagePanel.add(thumbnails[thumbnails.length - 1]);
+            thumbnails[thumbnails.length - 1].setVisible(true);
+            thumbnails[thumbnails.length - 1].setBounds(xPos, yPos, thumbnails[thumbnails.length - 1].getWidth(), thumbnails[thumbnails.length - 1].getHeight());
+            xPos += 76;
+        }
     }
 
     public int loadAllPreviewImages() {
@@ -364,7 +473,8 @@ public class ViewerPreviewPanel extends javax.swing.JPanel {
         for (int i = 0; i < thumbnails.length; i++) {
             imagePanel.add(thumbnails[i]);
             thumbnails[i].setVisible(true);
-            thumbnails[i].setBounds(xPos, yPos, 76, 76);
+//            thumbnails[i].setBounds(xPos, yPos, 76, 76);
+            thumbnails[i].setBounds(xPos, yPos, thumbnails[i].getWidth(), thumbnails[i].getHeight());
 
             //To position the images
             if (xPos + 76 < 220) {
@@ -417,103 +527,71 @@ public class ViewerPreviewPanel extends javax.swing.JPanel {
         mouseClickAdapter1 = new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent me) {
-                ApplicationContext.imgView.getImageToolbar().deselectLoopChk();
-                ApplicationContext.imgView.getImageToolbar().resetCineTimer();
                 String iuid = ((JLabel) me.getSource()).getName();
+                ViewerJPanel comp = (ViewerJPanel) ApplicationContext.tabbedPane.getSelectedComponent();
+                comp.stopAutoPlay();
                 if (!isVideo) {
-                    ApplicationContext.layeredCanvas.clearThumbnailSelection();
-                    ApplicationContext.imgView.getImageToolbar().enableImageTools();
-                    if (ApplicationContext.selectedPanel != null) {
-                        if (ApplicationContext.selectedPanel.getComponentCount() == 1) {
-                            if (sopUid == null) {
-                                if (ApplicationContext.layeredCanvas.imgpanel.getSeriesUID().equals(seriesInstanceUid) && !ApplicationContext.layeredCanvas.imgpanel.isMultiFrame()) {
+                    if (!comp.isVideoDisplay()) {
+                        comp.thumbnailClicked();
+                        LayeredCanvas selectedCanvas = comp.getSelectedCanvas();
+                        if (!comp.isTileLayout()) { //Either no layout or image layout
+                            if (sopUid == null && !selectedCanvas.imgpanel.isMultiFrame()) { //Not Multiframe
+                                if (selectedCanvas.imgpanel.getSeriesUID().equals(seriesInstanceUid)) { //Same series
                                     for (int i = 0; i < thumbnails.length; i++) {
                                         if (thumbnails[i].getName().equals(iuid)) {
-                                            ApplicationContext.layeredCanvas.imgpanel.selectImage(i);
+                                            selectedCanvas.imgpanel.selectImage(i);
                                             break;
                                         }
                                     }
-                                } else {
+                                } else {  //Other series
                                     for (int i = 0; i < thumbnails.length; i++) {
                                         if (thumbnails[i].getName().equals(iuid)) {
-                                            ApplicationContext.layeredCanvas.imgpanel.changeSeries(studyInstanceUid, seriesInstanceUid, iuid, i);
+                                            selectedCanvas.imgpanel.changeSeries(studyInstanceUid, seriesInstanceUid, iuid, i);
                                             break;
                                         }
                                     }
                                 }
-                            } else {
-                                ApplicationContext.layeredCanvas.imgpanel.changeSeries(studyInstanceUid, seriesInstanceUid, iuid, 0);
+                            } else { //Select Multiframe or from Multiframe change to normal images
+                                selectedCanvas.imgpanel.changeSeries(studyInstanceUid, seriesInstanceUid, iuid, 0);
                             }
-                        } else {
+                        } else { // Tile layout
                             int clickedImg = 0;
                             for (int i = 0; i < thumbnails.length; i++) {
                                 if (thumbnails[i].getName().equals(iuid)) {
                                     clickedImg = i + 1;
-                                    int x = clickedImg % ApplicationContext.selectedPanel.getComponentCount();
-                                    if (seriesInstanceUid.equals(ApplicationContext.layeredCanvas.imgpanel.getSeriesUID())) {
+                                    JPanel parent = ((JPanel) selectedCanvas.getParent());
+                                    int x = clickedImg % parent.getComponentCount();
+                                    if (seriesInstanceUid.equals(selectedCanvas.imgpanel.getSeriesUID())) {
                                         if (x > 0) {
-                                            setImageUpdatorArgs(clickedImg - x);
-                                            ApplicationContext.layeredCanvas.imgpanel.displayImages(ApplicationContext.selectedPanel, clickedImg - x, true);
+                                            setImageUpdatorArgs(clickedImg - x, parent);
+                                            selectedCanvas.imgpanel.displayImages(parent, clickedImg - x, true);
                                         } else {
-                                            setImageUpdatorArgs(clickedImg - ApplicationContext.selectedPanel.getComponentCount());
-                                            ApplicationContext.layeredCanvas.imgpanel.displayImages(ApplicationContext.selectedPanel, clickedImg - ApplicationContext.selectedPanel.getComponentCount(), true);
+                                            setImageUpdatorArgs(clickedImg - parent.getComponentCount(), parent);
+                                            selectedCanvas.imgpanel.displayImages(parent, clickedImg - parent.getComponentCount(), true);
                                         }
                                     } else {
-                                        ApplicationContext.layeredCanvas.imgpanel.changeSeries(studyInstanceUid, seriesInstanceUid, iuid, i, ApplicationContext.selectedPanel);
+                                        selectedCanvas.imgpanel.changeSeries(studyInstanceUid, seriesInstanceUid, iuid, i, parent);
                                     }
                                     break;
                                 }
                             }
                         }
-                    } else {
-                        JSplitPane splitPane = ((JSplitPane) ApplicationContext.tabbedPane.getSelectedComponent());
-                        JPanel parent = (JPanel) splitPane.getRightComponent();
-                        parent.removeAll();
-                        GridLayout g = new GridLayout(1, 1);
-                        parent = new JPanel(g);
-                        JPanel container = new JPanel(g);
-                        container.setBackground(Color.BLACK);
-                        File dicomFile = new File(ApplicationContext.databaseRef.getFileLocation(studyInstanceUid, seriesInstanceUid, iuid));
-                        for (int i = 0; i < thumbnails.length; i++) {
-                            if (thumbnails[i].getName().equals(iuid)) {
-                                LayeredCanvas canvas = new LayeredCanvas(dicomFile, i, false);
-                                container.add(canvas, 0);
-                                parent.add(container);
-                                parent.setName(studyInstanceUid);
-                                canvas.imgpanel.getTextOverlayParam().setCurrentInstance(i);
-                                container.setName(canvas.imgpanel.getTextOverlayParam().getPatientName());
+                    } else { //From video display to normal image display
+                        for (int ins_iter = 0; ins_iter < thumbnails.length; ins_iter++) {
+                            if (thumbnails[ins_iter].getName().equals(iuid)) {
+                                comp.addLayeredCanvas(new LayeredCanvas(new File(ApplicationContext.databaseRef.getFileLocation(studyInstanceUid, seriesInstanceUid, iuid)), ins_iter, false));
+                                comp.updateTextOverlay();
+                                comp.enableAllImageTools();
                                 break;
                             }
                         }
-                        ((JSplitPane) ApplicationContext.tabbedPane.getSelectedComponent()).setRightComponent(parent);
-                        ApplicationContext.layeredCanvas = ((LayeredCanvas) ((JPanel) ((JPanel) ((JSplitPane) splitPane).getRightComponent()).getComponent(0)).getComponent(0));
-                        ApplicationContext.selectedPanel = ((JPanel) ((JPanel) ((JSplitPane) splitPane).getRightComponent()).getComponent(0));
-                        ApplicationContext.imgView.getImageToolbar().setWindowing();
-                        ApplicationContext.layeredCanvas.imgpanel.repaint();
-                        ApplicationContext.layeredCanvas.imgpanel.setCurrentSeriesAnnotation();
-                        ApplicationContext.layeredCanvas.canvas.setSelectionColoring();
-                        ApplicationContext.layeredCanvas.imgpanel.invalidate();
+
                     }
-                } else {
-                    ApplicationContext.selectedPanel = null;
-                    ApplicationContext.layeredCanvas = null;
-                    JPanel panel = (JPanel) ((JSplitPane) ApplicationContext.tabbedPane.getSelectedComponent()).getRightComponent();
-                    if (panel instanceof VideoPanel) {
-                        ((VideoPanel) panel).stopTimer();
+                } else { //Change the video
+                    if (comp.isVideoDisplay()) {
+                        comp.stopVideoTimer();
                     }
-                    panel.removeAll();
-                    panel = null;
-                    VideoPanel videoPanel = new VideoPanel();
-                    ((JSplitPane) ApplicationContext.tabbedPane.getSelectedComponent()).setRightComponent(videoPanel);
-                    videoPanel.setName(studyInstanceUid);
-                    videoPanel.setBorder(BorderFactory.createLineBorder(new Color(255, 138, 0)));
-                    videoPanel.setUniqueIdentifier(iuid);
-                    EmbeddedMediaPlayerComponent mediaPlayerComponent = new EmbeddedMediaPlayerComponent();
-                    videoPanel.setMediaPlayer(mediaPlayerComponent);
-                    ApplicationContext.imgView.getImageToolbar().disableImageTools();
-                    mediaPlayerComponent.getMediaPlayer().playMedia(ApplicationContext.databaseRef.getFileLocation(studyInstanceUid, seriesInstanceUid, iuid));
-                    videoPanel.startTimer();
-                    ApplicationContext.setVideoThumbnailIdentification(studyInstanceUid);
+                    comp.createVideoCanvas(ApplicationContext.databaseRef.getFileLocation(studyInstanceUid, seriesInstanceUid, iuid), studyInstanceUid);
                 }
             }
         };
@@ -522,14 +600,10 @@ public class ViewerPreviewPanel extends javax.swing.JPanel {
         }
     }
 
-    private void setImageUpdatorArgs(int selectedImage) {
+    private void setImageUpdatorArgs(int selectedImage, JPanel parent) {
         if (totalImages > ApplicationContext.buffer.getDefaultBufferSize()) {
-            int tiles = ApplicationContext.selectedPanel.getComponentCount();
-            if (selectedImage - tiles > 0 && selectedImage + tiles < totalImages) {
-                ApplicationContext.buffer.updateFrom(selectedImage - tiles);
-            } else {
-                ApplicationContext.buffer.updateFrom(totalImages - tiles);
-            }
+            int tiles = parent.getComponentCount();
+            ApplicationContext.buffer.updateFrom(selectedImage - tiles);
             ApplicationContext.buffer.clearBuffer();
         }
     }
@@ -573,7 +647,7 @@ public class ViewerPreviewPanel extends javax.swing.JPanel {
     }
 
     public void loadThumbnails() {
-        if (!isVideo && sopUid == null) {
+        if (!(isMultiframe || isVideo)) {
             String thumbnailLocation = ApplicationContext.databaseRef.getThumbnailLocation(studyInstanceUid, seriesInstanceUid);
             if (!thumbnailLocation.contains("Thumbnails")) {
                 thumbnailLocation += File.separator + "Thumbnails";
@@ -583,8 +657,9 @@ public class ViewerPreviewPanel extends javax.swing.JPanel {
             for (int i = 0; i < instanceUidList.size(); i++) {
                 thumbnails[i] = new Thumbnail(instanceUidList.get(i));
                 try {
-                    thumbnails[i].setImage(ImageIO.read(new File(thumbnailLocation + File.separator + instanceUidList.get(i))));
+                    thumbnails[i].setImage(ImageIO.read(new FileInputStream(new File(thumbnailLocation + File.separator + instanceUidList.get(i)))));
                 } catch (IOException ex) {
+                    ApplicationContext.logger.log(Level.INFO, "ViewerPreviewPanel - Unable to load thumbnail");
                     thumbnails[i].setDefaultImage();
                 }
             }
@@ -601,6 +676,8 @@ public class ViewerPreviewPanel extends javax.swing.JPanel {
                 button.setIcon(imgAll);
             }
             addMouseAdapter();
+        } else if (isMultiframe) {
+            loadMultiframes();
         }
     }
 
@@ -642,18 +719,8 @@ public class ViewerPreviewPanel extends javax.swing.JPanel {
         thumbnails[0].setVideoImage();
 
         loadThreeThumbnails();
-        if (totalImages > 3) {
-            button.setName(three);
-            button.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    performButtonAction();
-                }
-            });
-        } else {
-            button.setIcon(imgAll);
-            colorLabels(all);
-        }
+        selectedButton = all;
+        button.setIcon(imgAll);
         addMouseAdapter();
     }
 
@@ -671,18 +738,7 @@ public class ViewerPreviewPanel extends javax.swing.JPanel {
                 thumbnails[0].setDefaultImage();
             }
             loadThreeThumbnails();
-            if (totalImages > 3) {
-                button.setName(three);
-                button.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        performButtonAction();
-                    }
-                });
-            } else {
-                button.setIcon(imgAll);
-                colorLabels(all);
-            }
+            button.setIcon(imgAll);
             addMouseAdapter();
         }
     }
@@ -712,14 +768,214 @@ public class ViewerPreviewPanel extends javax.swing.JPanel {
                 Node numberOfFrames = nl.item(0);
                 totalImagesLbl.setText((int) Math.floor((Double.parseDouble(numberOfFrames.getTextContent()) * (1000 / Double.parseDouble(frameTime.getTextContent()))) / 1000) + " Sec");
             } catch (ParserConfigurationException ex) {
-                Logger.getLogger(ViewerPreviewPanel.class.getName()).log(Level.SEVERE, null, ex);
+                ApplicationContext.logger.log(Level.INFO, "ViewerPreviewPanel", ex);
             } catch (SAXException ex) {
-                Logger.getLogger(ViewerPreviewPanel.class.getName()).log(Level.SEVERE, null, ex);
+                ApplicationContext.logger.log(Level.INFO, "ViewerPreviewPanel", ex);
             } catch (IOException ex) {
-                Logger.getLogger(ViewerPreviewPanel.class.getName()).log(Level.SEVERE, null, ex);
+                ApplicationContext.logger.log(Level.INFO, "ViewerPreviewPanel", ex);
             } catch (XPathExpressionException ex) {
-                Logger.getLogger(ViewerPreviewPanel.class.getName()).log(Level.SEVERE, null, ex);
+                ApplicationContext.logger.log(Level.INFO, "ViewerPreviewPanel", ex);
             }
         }
+    }
+
+//    public void loadThumbnails(NavigableMap<Integer, String> instance_List, ServerModel serverDetails) {
+//        thumbnails = new Thumbnail[instance_List.size()];
+//        int i = 0;
+//        Calendar today = Calendar.getInstance(ApplicationContext.currentLocale);
+//        String dest = ApplicationContext.listenerDetails[2] + File.separator + today.get(Calendar.YEAR) + File.separator + today.get(Calendar.MONTH) + File.separator + today.get(Calendar.DATE) + File.separator + studyInstanceUid + File.separator + seriesInstanceUid + File.separator + "Thumbnails" + File.separator;
+//
+//        Iterator<Integer> iterator = instance_List.navigableKeySet().iterator();
+//        while (iterator.hasNext()) {
+//            String objUID = instance_List.get(iterator.next()).split(",")[1];
+//            String wadoRequest = serverDetails.getWadoProtocol() + "://" + serverDetails.getHostName() + ":" + serverDetails.getWadoPort() + "/wado?requestType=WADO&studyUID=" + studyInstanceUid + "&seriesUID=" + seriesInstanceUid + "&objectUID=" + objUID + "&rows=75" + "&columns=75";
+//            thumbnails[i++] = new Thumbnail(wadoRequest, dest + objUID, objUID);
+//        }
+//
+//        loadThreePreviewImages();
+//        if (totalImages > 3) {
+//            button.setName(three);
+//            button.addActionListener(new ActionListener() {
+//                @Override
+//                public void actionPerformed(ActionEvent e) {
+//                    performButtonAction();
+//                }
+//            });
+//        } else {
+//            button.setIcon(imgAll);
+//        }
+//        addMouseAdapter();
+//    }
+    public void loadThumbnails(Collection<String> instance_List, ServerModel serverDetails) {
+        thumbnails = new Thumbnail[instance_List.size()];
+        int i = 0;
+        Calendar today = Calendar.getInstance(ApplicationContext.currentLocale);
+        String dest = ApplicationContext.listenerDetails[2] + File.separator + today.get(Calendar.YEAR) + File.separator + today.get(Calendar.MONTH) + File.separator + today.get(Calendar.DATE) + File.separator + studyInstanceUid + File.separator + seriesInstanceUid + File.separator + "Thumbnails" + File.separator;
+        Iterator<String> iterator = instance_List.iterator();
+        while (iterator.hasNext()) {
+            String objUID = iterator.next().split(",")[1];
+            String wadoRequest = serverDetails.getWadoProtocol() + "://" + serverDetails.getHostName() + ":" + serverDetails.getWadoPort() + "/wado?requestType=WADO&studyUID=" + studyInstanceUid + "&seriesUID=" + seriesInstanceUid + "&objectUID=" + objUID + "&rows=75" + "&columns=75";
+            thumbnails[i++] = new Thumbnail(wadoRequest, dest + objUID, objUID);
+        }
+
+        loadThreePreviews();
+        if (totalImages > 3) {
+            button.setName(three);
+            button.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    performButtonAction();
+                }
+            });
+        } else {
+            button.setIcon(imgAll);
+        }
+        addMouseAdapter();
+    }
+
+    //Direct launch from XML
+    public void loadThumbnails(ArrayList<String> instances, String wadoProtocol, String wadoContext, String hostName, int wadoPort) {
+        thumbnails = new Thumbnail[instances.size()];
+        Calendar today = Calendar.getInstance(ApplicationContext.currentLocale);
+        String dest = ApplicationContext.listenerDetails[2] + File.separator + today.get(Calendar.YEAR) + File.separator + today.get(Calendar.MONTH) + File.separator + today.get(Calendar.DATE) + File.separator + studyInstanceUid + File.separator + seriesInstanceUid + File.separator + "Thumbnails" + File.separator;
+
+        for (int i = 0; i < instances.size(); i++) {
+            String objUID = instances.get(i).split(",")[1];
+            String wadoRequest = wadoProtocol + "://" + hostName + ":" + wadoPort + "/wado?requestType=WADO&studyUID=" + studyInstanceUid + "&seriesUID=" + seriesInstanceUid + "&objectUID=" + objUID + "&rows=75" + "&columns=75";
+            thumbnails[i] = new Thumbnail(wadoRequest, dest + objUID, objUID);
+        }
+
+        loadThreePreviewImages();
+        if (totalImages > 3) {
+            button.setName(three);
+            button.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    performButtonAction();
+                }
+            });
+        } else {
+            button.setIcon(imgAll);
+        }
+        addMouseAdapter();
+    }
+
+    public void loadBackground() {
+        thumbnails = new Thumbnail[totalImages];
+        for (int i = 0; i < thumbnails.length; i++) {
+            thumbnails[i] = new Thumbnail();
+        }
+        loadThreePreviews();
+    }
+
+//    private void loadThumbnails(ArrayList<String> instanceList, ServerModel serverDetails) {
+//        thumbnails = new Thumbnail[instance_List.size()];
+//        int i = 0;
+//        Calendar today = Calendar.getInstance(ApplicationContext.currentLocale);
+//        String dest = ApplicationContext.listenerDetails[2] + File.separator + today.get(Calendar.YEAR) + File.separator + today.get(Calendar.MONTH) + File.separator + today.get(Calendar.DATE) + File.separator + studyInstanceUid + File.separator + seriesInstanceUid + File.separator + "Thumbnails" + File.separator;
+//
+//        Iterator<Integer> iterator = instance_List.navigableKeySet().iterator();
+//        while (iterator.hasNext()) {
+//            String objUID = instance_List.get(iterator.next()).split(",")[1];
+//            String wadoRequest = serverDetails.getWadoProtocol() + "://" + serverDetails.getHostName() + ":" + serverDetails.getWadoPort() + "/wado?requestType=WADO&studyUID=" + studyInstanceUid + "&seriesUID=" + seriesInstanceUid + "&objectUID=" + objUID + "&rows=75" + "&columns=75";
+//            thumbnails[i++] = new Thumbnail(wadoRequest, dest + objUID, objUID);
+//        }
+//
+//        loadThreePreviewImages();
+//        if (totalImages > 3) {
+//            button.setName(three);
+//            button.addActionListener(new ActionListener() {
+//                @Override
+//                public void actionPerformed(ActionEvent e) {
+//                    performButtonAction();
+//                }
+//            });
+//        } else {
+//            button.setIcon(imgAll);
+//        }
+//        addMouseAdapter();
+//    }
+//    private void loadThumbnails(NavigableMap<Integer, String> instance_List, ServerModel serverDetails) {TODO
+//        thumbnails = new Thumbnail[instance_List.size()];
+//        int i = 0;
+//        Calendar today = Calendar.getInstance(ApplicationContext.currentLocale);
+//        String dest = ApplicationContext.listenerDetails[2] + File.separator + today.get(Calendar.YEAR) + File.separator + today.get(Calendar.MONTH) + File.separator + today.get(Calendar.DATE) + File.separator + studyInstanceUid + File.separator + seriesInstanceUid + File.separator + "Thumbnails" + File.separator;
+//
+//        CloseableHttpClient httpclient = HttpClients.createDefault();        
+//        Iterator<Integer> iterator = instance_List.navigableKeySet().iterator();
+//        while (iterator.hasNext()) {
+//            String objUID = instance_List.get(iterator.next()).split(",")[1];
+//            String wadoRequest = serverDetails.getWadoProtocol() + "://" + serverDetails.getHostName() + ":" + serverDetails.getWadoPort() + "/wado?requestType=WADO&studyUID=" + studyInstanceUid + "&seriesUID=" + seriesInstanceUid + "&objectUID=" + objUID + "&rows=75" + "&columns=75";
+//            System.out.println(wadoRequest);
+//            //            thumbnails[i++] = new Thumbnail(wadoRequest, dest + objUID, objUID);
+//            try {
+//                HttpGet httpGet = new HttpGet(wadoRequest);
+//                CloseableHttpResponse response1 = httpclient.execute(httpGet);
+//                try {
+//                    if(response1.getStatusLine().getStatusCode()>=200 && response1.getStatusLine().getStatusCode()<300) {
+//                        HttpEntity entity1 = response1.getEntity();
+//                        OutputStream stream = new FileOutputStream(new File(dest + objUID));
+//                        entity1.writeTo(stream);
+//                        // do something useful with the response body
+//                        // and ensure it is fully consumed
+//                        EntityUtils.consume(entity1);
+//                    } else {
+//                        System.out.println("Unable to get wado object for thumbnail.");
+//                    }
+//                } finally {
+//                    response1.close();
+//                }
+//            } catch (IOException ex) {
+//                Logger.getLogger(ViewerPreviewPanel.class.getName()).log(Level.SEVERE, null, ex);
+//            }
+//        }
+////        loadThreePreviewImages();
+////        if (totalImages > 3) {
+////            button.setName(three);
+////            button.addActionListener(new ActionListener() {
+////                @Override
+////                public void actionPerformed(ActionEvent e) {
+////                    performButtonAction();
+////                }
+////            });
+////        } else {
+////            button.setIcon(imgAll);
+////        }
+////        addMouseAdapter();
+//
+//    }
+    public String load(boolean loadMultiframes) {
+        if (!(isMultiframe || isVideo)) {
+            for (int i = 0; i < thumbnails.length; i++) {
+                thumbnails[i].load();
+            }
+        } else if (loadMultiframes) {
+            displayMultiframes();
+        }
+        return seriesInstanceUid;
+    }
+
+    public void displayMultiframes() {
+        if (isMultiframe) {
+            thumbnails = new Thumbnail[]{new Thumbnail(sopUid)};
+            Calendar today = Calendar.getInstance(ApplicationContext.currentLocale);
+            String dest = ApplicationContext.listenerDetails[2] + File.separator + today.get(Calendar.YEAR) + File.separator + today.get(Calendar.MONTH) + File.separator + today.get(Calendar.DATE) + File.separator + studyInstanceUid + File.separator + seriesInstanceUid + File.separator + "Thumbnails" + File.separator + sopUid;
+            thumbnails[0].readImage(dest);
+            loadThreePreviewImages();
+            button.setIcon(imgAll);
+            addMouseAdapter();
+        }
+    }
+
+    public void multiframes(String wadoProtocol, String wadoContext, String hostName, int wadoPort) {
+        thumbnails = new Thumbnail[1];
+        Calendar today = Calendar.getInstance(ApplicationContext.currentLocale);
+        String dest = ApplicationContext.listenerDetails[2] + File.separator + today.get(Calendar.YEAR) + File.separator + today.get(Calendar.MONTH) + File.separator + today.get(Calendar.DATE) + File.separator + studyInstanceUid + File.separator + seriesInstanceUid + File.separator + "Thumbnails" + File.separator + sopUid;
+        String wadoRequest = wadoProtocol + "://" + hostName + ":" + wadoPort + "/wado?requestType=WADO&studyUID=" + studyInstanceUid + "&seriesUID=" + seriesInstanceUid + "&objectUID=" + sopUid + "&rows=75" + "&columns=75";
+        thumbnails[0] = new Thumbnail(wadoRequest, dest, sopUid);
+        thumbnails[0].load();
+        loadThreePreviewImages();
+        button.setIcon(imgAll);
+        addMouseAdapter();
     }
 }

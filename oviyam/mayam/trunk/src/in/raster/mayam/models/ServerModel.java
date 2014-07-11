@@ -14,7 +14,7 @@
  *
  * The Initial Developer of the Original Code is
  * Raster Images
- * Portions created by the Initial Developer are Copyright (C) 2009-2010
+ * Portions created by the Initial Developer are Copyright (C) 2014
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -39,6 +39,8 @@
  * ***** END LICENSE BLOCK ***** */
 package in.raster.mayam.models;
 
+import org.dcm4che2.data.TransferSyntax;
+
 /**
  *
  * @author Devishree
@@ -61,6 +63,13 @@ public class ServerModel {
     public ServerModel() {
     }
 
+    public ServerModel(String logicalName, String aet, String host, int port) {
+        this.description = logicalName;
+        this.aeTitle = aet;
+        this.hostName = host;
+        this.port = port;
+    }
+
     public ServerModel(String aet, String host, int port) {
         this.aeTitle = aet;
         this.hostName = host;
@@ -69,15 +78,19 @@ public class ServerModel {
 
     public ServerModel(String serverName, String aeTitle, String host, int port, String retrieveType, String wadoContext, int wadoPort, String wadoProtocol, String retrieveTS) {
         this.description = serverName;
-        this.hostName = host;
+        this.hostName = host != null ? host : "localhost";
         this.aeTitle = aeTitle;
         this.port = port;
         this.retrieveType = retrieveType;
         this.previewEnabled = false;
         this.wadoContextPath = wadoContext;
-        this.wadoPort = wadoPort;
+        this.wadoPort = wadoPort != 0 ? wadoPort : 8080;
         this.wadoProtocol = wadoProtocol;
-        this.retrieveTransferSyntax = retrieveTS;
+        if (retrieveTS.equals("Explicit VR Little Endian")) {
+            this.retrieveTransferSyntax = TransferSyntax.ExplicitVRLittleEndian.uid();
+        } else if (retrieveTS.equals("Implicit VR Little Endian")) {
+            this.retrieveTransferSyntax = TransferSyntax.ImplicitVRLittleEndian.uid();
+        }
     }
 
     public ServerModel(int pk, String serverName, String aeTitle, String host, int port, String retrieveType, String wadoContext, int wadoPort, String wadoProtocol, String retrieveTS, boolean isPreviewEnabled) {
@@ -92,6 +105,13 @@ public class ServerModel {
         this.wadoPort = wadoPort;
         this.wadoProtocol = wadoProtocol;
         this.retrieveTransferSyntax = retrieveTS;
+    }
+
+    public void setWadoInformation(String wadoProtocol, String wadocontext, String hostName, int wadoPort) {
+        this.wadoProtocol = wadoProtocol;
+        this.wadoContextPath = wadocontext;
+        this.hostName = hostName;
+        this.wadoPort = wadoPort;
     }
 
     public int getPk() {

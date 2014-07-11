@@ -14,7 +14,7 @@
  *
  * The Initial Developer of the Original Code is
  * Raster Images
- * Portions created by the Initial Developer are Copyright (C) 2009-2010
+ * Portions created by the Initial Developer are Copyright (C) 2014
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -44,6 +44,7 @@ import in.raster.mayam.models.treetable.TreeTable;
 import in.raster.mayam.models.treetable.TreeTableModelAdapter;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Font;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JTable;
@@ -60,8 +61,13 @@ public class IconRenderer extends DefaultTableCellRenderer {
     ImageIcon localIcon = new ImageIcon(getClass().getResource("/in/raster/mayam/form/images/local.png"));
     ImageIcon downloadingIcon = new ImageIcon(getClass().getResource("/in/raster/mayam/form/images/downloading.png"));
     private TreeTable treeTable;
-    private Color selectedColor = new Color(171, 20, 20);
+//    private Color selectedColor = new Color(176, 190, 217);
+//    private Color alternateColor = new Color(237, 243, 254);
+//    private Color odd = new Color(226, 228, 255);
+    Font font = new Font("Lucida Grande", Font.PLAIN, 13);
+    private Color whiteColor = new Color(254, 254, 254);
     private Color alternateColor = new Color(237, 243, 254);
+    private Color selectedColor = new Color(142, 104, 104);
 
     public IconRenderer(TreeTable treeTable) {
         this.treeTable = treeTable;
@@ -70,7 +76,9 @@ public class IconRenderer extends DefaultTableCellRenderer {
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
         JLabel comp = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column); // To get the default rendering
-        comp.setFont(ApplicationContext.textFont);
+        comp.setFont(font);
+        comp.setFocusable(false);
+        comp.setBorder(noFocusBorder);
         comp.setOpaque(true);
         comp.setHorizontalAlignment(SwingConstants.LEFT);
         comp.setIcon(null);
@@ -85,7 +93,7 @@ public class IconRenderer extends DefaultTableCellRenderer {
             case 1:
                 if (!ApplicationContext.isLocal && column == 1 && ((TreeTableModelAdapter) treeTable.getModel()).getValueAt(row, 10) != null) {
                     if (ApplicationContext.databaseRef.checkRecordExists("Study", "StudyInstanceUID", ((TreeTableModelAdapter) treeTable.getModel()).getValueAt(row, 10).toString())) {
-                        if (Integer.parseInt((String) ((TreeTableModelAdapter) treeTable.getModel()).getValueAt(row, 9)) == ApplicationContext.databaseRef.getTotalInstances((String) ((TreeTableModelAdapter) treeTable.getModel()).getValueAt(row, 10))) {
+                        if (ApplicationContext.databaseRef.isDownloadPending((String) ((TreeTableModelAdapter) treeTable.getModel()).getValueAt(row, 10))) {
                             comp.setIcon(localIcon);
                         } else { //The study was on download
                             comp.setIcon(downloadingIcon);
@@ -122,13 +130,26 @@ public class IconRenderer extends DefaultTableCellRenderer {
                     comp.setText(ApplicationContext.currentBundle.getString("MainScreen.imagesColumn.text"));
                     break;
             }
-            comp.setForeground(selectedColor);
+            comp.setForeground(new Color(235, 138, 0));
+            comp.setBackground(Color.BLACK);
+            comp.setFont(new Font("Lucida Grande", Font.BOLD, 12));
+            return comp;
         } else if (isSelected) {
-            if (ApplicationContext.isLocal && row == 0) {
-                comp.setForeground(Color.BLACK);
-                comp.setBackground(alternateColor);
-            }
+            comp.setForeground(Color.WHITE);
+            comp.setBackground(selectedColor);
+//            comp.setForeground(Color.BLACK);
+//            if (ApplicationContext.isLocal && row == 0) {
+//                comp.setBackground(Color.WHITE);
+//            } else {
+//                comp.setBackground(selectedColor);
+//            }            
         } else {
+            comp.setBackground((row % 2 == 0 ? alternateColor : whiteColor));
+//            if (row % 2 == 0) {
+//                comp.setBackground(Color.WHITE);
+//            } else {
+//                comp.setBackground(odd);
+//            }
             comp.setForeground(Color.BLACK);
         }
         return comp;

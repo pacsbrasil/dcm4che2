@@ -41,12 +41,12 @@ package in.raster.mayam.form;
 
 import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.models.Series;
-import java.awt.Color;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.logging.Level;
 import javax.swing.JLabel;
 
 /**
@@ -57,12 +57,12 @@ import javax.swing.JLabel;
 public class PreviewPanel extends javax.swing.JPanel {
 
     int totalImages;
-    String dest, studyInstanceUid, seriesInstanceUid;
+    String studyInstanceUid, seriesInstanceUid;
     Calendar todayInfo;
     Thumbnail[] threeThumbnails = null;
     int totalHeight = 0;
 
-    public PreviewPanel(String studyInstanceUid, String seriesInstanceUid, String seriesDescription, int totalImages, Thumbnail[] threeThumbnails, String dest) {
+    public PreviewPanel(String studyInstanceUid, String seriesInstanceUid, String seriesDescription, int totalImages, Thumbnail[] threeThumbnails) {
         this.totalImages = totalImages;
         this.studyInstanceUid = studyInstanceUid;
         this.seriesInstanceUid = seriesInstanceUid;
@@ -76,12 +76,6 @@ public class PreviewPanel extends javax.swing.JPanel {
             totalImagesLbl.setText(seriesDescription.split(":")[1]);
         }
         this.threeThumbnails = threeThumbnails;
-        if (dest == null) {
-            todayInfo = Calendar.getInstance();
-            this.dest = ApplicationContext.listenerDetails[2] + File.separator + todayInfo.get(Calendar.YEAR) + File.separator + todayInfo.get(Calendar.MONTH) + File.separator + todayInfo.get(Calendar.DATE) + File.separator + studyInstanceUid + File.separator + seriesInstanceUid + File.separator + "Thumbnails" + File.separator;
-        } else {
-            this.dest = dest;
-        }
         setLayout(null);
         createComponents();
         addListenerForThumbnails();
@@ -151,33 +145,16 @@ public class PreviewPanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
     private void createComponents() {
-        int charSize = 9, width = 220;
-        if ((seriesLabel.getText().length() * charSize) + 80 < width) {
-            seriesLabel.setBounds(0, 0, seriesLabel.getText().length() * charSize, 20);
-            totalImagesLbl.setBounds(seriesLabel.getWidth() + 1, 0, width - seriesLabel.getWidth(), 20);
+        int width = 220;
+        int textWidth = seriesLabel.getFontMetrics(seriesLabel.getFont()).stringWidth(seriesLabel.getText());
+        if (textWidth + 80 < width) {
+            seriesLabel.setBounds(0, 0, textWidth, 20);
+            totalImagesLbl.setBounds(textWidth + 1, 0, width - textWidth, 20);
         } else {
             seriesLabel.setBounds(0, 0, 150, 20);
             totalImagesLbl.setBounds(151, 0, 80, 20);
         }
         totalHeight = 22;
-
-//        int charSize = 9;
-//        int width = 230;
-//        int lblWidth = seriesLabel.getText().length() * charSize;
-//        if (lblWidth >= width) {
-//            JLabel tmpLbl = new JLabel(seriesLabel.getText().substring(width / charSize));
-//            seriesLabel.setText(seriesLabel.getText().substring(0, width / charSize));
-//            seriesLabel.setBounds(0, 0, width, 20);
-//            tmpLbl.setBounds(0, 22, tmpLbl.getText().length() * charSize, 20);
-//            tmpLbl.setVisible(true);
-//            totalImagesLbl.setBounds(tmpLbl.getWidth(), 22, width - tmpLbl.getWidth() + 1, 20);
-//            totalHeight = seriesLabel.getHeight() + 2 + tmpLbl.getHeight() + 2;
-//            add(tmpLbl);
-//        } else {
-//            seriesLabel.setBounds(0, 0, lblWidth, 20);
-//            totalImagesLbl.setBounds(lblWidth, 0, width - seriesLabel.getWidth(), 20);
-//            totalHeight = 22;
-//        }
         int imgPanelHeight = 76;
         loadThumbnails();
         totalHeight += imgPanelHeight;
@@ -188,12 +165,12 @@ public class PreviewPanel extends javax.swing.JPanel {
         imagePanel.setLayout(null);
         int xPos = 0, yPos = 0;
         for (int i = 0; i < threeThumbnails.length; i++) {
-            threeThumbnails[i].setBounds(xPos, yPos, 76, 76);
             if (!seriesLabel.getText().contains("Video")) {
-                threeThumbnails[i].readImage(dest + File.separator + threeThumbnails[i].getName());
+                threeThumbnails[i].read();
             } else {
                 threeThumbnails[i].setVideoImage();
             }
+            threeThumbnails[i].setBounds(xPos, yPos, threeThumbnails[i].getWidth(), threeThumbnails[i].getHeight());
             imagePanel.add(threeThumbnails[i]);
             xPos += 76;
         }
@@ -224,12 +201,16 @@ public class PreviewPanel extends javax.swing.JPanel {
                     String sopUid = ((JLabel) me.getSource()).getName();
                     createPreviews();
                     String filePath = ApplicationContext.databaseRef.getFileLocation(studyInstanceUid, seriesInstanceUid, sopUid);
-                    ApplicationContext.createLayeredCanvas(filePath, studyInstanceUid, instanceIdentificationNo, false);
-                    ApplicationContext.displayAllPreviews();
-                    ApplicationContext.createVideoPreviews(studyInstanceUid);
-                    ApplicationContext.setCorrespondingPreviews();
-                    ApplicationContext.setAllSeriesIdentification(studyInstanceUid);
-                    ApplicationContext.imgView.getImageToolbar().enableMultiSeriesTools();
+                    ApplicationContext.createCanvas(filePath, studyInstanceUid, instanceIdentificationNo);
+                    ((ViewerJPanel) ApplicationContext.tabbedPane.getSelectedComponent()).displayPreviews();
+                    ApplicationContext.createMultiframePreviews(studyInstanceUid);
+                    try {
+                        ((ViewerJPanel) ApplicationContext.tabbedPane.getSelectedComponent()).updateTextOverlay();
+                        ((ViewerJPanel) ApplicationContext.tabbedPane.getSelectedComponent()).setSeriesIdentification();
+                    } catch (NullPointerException ex) {
+                        ApplicationContext.logger.log(Level.INFO, "Preview panel - Video on screen", ex);
+                        //Video on screen
+                    }
                 }
             }
         });
@@ -269,10 +250,6 @@ public class PreviewPanel extends javax.swing.JPanel {
                 viewerPreviewPanel.loadVideoImage();
             }
         }
-        ApplicationContext.ImageView(viewerPreview.getPatientName(), studyInstanceUid, viewerPreview);
-    }
-
-    public void setDest(String dest) {
-        this.dest = dest;
+        ApplicationContext.openImageView(viewerPreview.getPatientName(), studyInstanceUid, viewerPreview);
     }
 }

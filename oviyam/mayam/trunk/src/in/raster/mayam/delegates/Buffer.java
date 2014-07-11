@@ -14,7 +14,7 @@
  *
  * The Initial Developer of the Original Code is
  * Raster Images
- * Portions created by the Initial Developer are Copyright (C) 2009-2010
+ * Portions created by the Initial Developer are Copyright (C) 2014
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -39,31 +39,29 @@
  * ***** END LICENSE BLOCK ***** */
 package in.raster.mayam.delegates;
 
+import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.form.ImagePanel;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.NavigableMap;
-import java.util.NoSuchElementException;
 import java.util.TreeMap;
 import java.util.logging.Level;
-import java.util.logging.Logger;
+import javax.swing.SwingWorker;
 
 /**
  *
  * @author devishree
  */
-public class Buffer {
+public class Buffer extends SwingWorker<Void, Void> {
 
     private ImagePanel imgPanelRef = null;
     private final NavigableMap<Integer, BufferedImage> map = new TreeMap<Integer, BufferedImage>();
     private int defaultBufferSize = 30;
     private boolean startBuffering = false;
-    private ImageUpdatingThread imageUpdatingThread = null;
     private boolean initialPrev = true, initialNext = false;
-    private NavigableMap<Integer, BufferedImage> tempBuffer = null;
-    private int reverseThreshold = 0;
-    private BackwardUpdator backwardUpdator = null;
     private TileLayoutThread tileLayoutThread = null;
+    private boolean isForward = true, terminate = false;
+    private int i = -1;
 
     public Buffer(ImagePanel imgPanelRef) {
         this.imgPanelRef = imgPanelRef;
@@ -76,64 +74,38 @@ public class Buffer {
 
     public void createThread(int startFrom) {
         tileLayoutThread = new TileLayoutThread();
-        tileLayoutThread.setUpdateFrom(startFrom);
+        tileLayoutThread.setUpdateFrom(startFrom, imgPanelRef.getTotalInstance());
         tileLayoutThread.start();
     }
 
     private void createUpdatingThread(int updateFrom) {
-        if (imgPanelRef.getTotalInstance() > defaultBufferSize) {
-            tempBuffer = new TreeMap<Integer, BufferedImage>();
-            reverseThreshold = imgPanelRef.getTotalInstance() - 10;
-            backwardUpdator = new BackwardUpdator();
-            imgPanelRef.createTask(backwardUpdator);
-        } else {
-            updateFrom = -1;
-        }
-        imageUpdatingThread = new ImageUpdatingThread(imgPanelRef);
-        imageUpdatingThread.setUpdateFrom(updateFrom, true);
-        imgPanelRef.createThread(imageUpdatingThread);
+        i = updateFrom;
+        execute();
     }
 
     public void put(int instanceNo, BufferedImage image) {
         if (map.size() < defaultBufferSize - 1) {
-//            System.out.println("Put : " + instanceNo);
             map.put(instanceNo, image);
         } else {
             map.put(instanceNo, image);
             synchronized (map) {
                 try {
-//                    System.out.println("Waiting : " + instanceNo);
                     map.wait();
                 } catch (InterruptedException ex) {
-                    Logger.getLogger(Buffer.class.getName()).log(Level.SEVERE, null, ex);
+                    ApplicationContext.logger.log(Level.INFO, null, ex);
                 }
             }
-        }
-        if (tempBuffer != null && instanceNo < 10) {
-            tempBuffer.put(instanceNo, image);
         }
     }
 
     public BufferedImage getForward(int instanceNo) {
-//        initialPrev = true;
-//        if (startBuffering && !map.containsKey(imgPanelRef.getTotalInstance() - 1)) {            
-//            map.remove(map.firstKey());
-//            if (initialNext) {
-//                initialNext = false;
-//                imageUpdatingThread.setUpdateFrom(map.lastKey(), true);
-//            }
-//            synchronized (map) {
-//                map.notify();
-//            }
-//        }        
-//        return map.get(instanceNo);
         initialPrev = true;
         if (startBuffering && instanceNo % 5 == 0 && !map.containsKey(imgPanelRef.getTotalInstance() - 1)) {
-//            map.remove(map.firstKey());
             map.headMap(map.firstKey() + 5).clear();
             if (initialNext) {
                 initialNext = false;
-                imageUpdatingThread.setUpdateFrom(map.lastKey(), true);
+                i = map.lastKey();
+                isForward = true;
             }
             synchronized (map) {
                 map.notify();
@@ -143,24 +115,13 @@ public class Buffer {
     }
 
     public BufferedImage getBackward(int instanceNo) {
-//        initialNext = true;
-//        if (!map.containsKey(0) && instanceNo <= reverseThreshold) {
-//            map.remove(map.lastKey());
-//            if (initialPrev) {
-//                initialPrev = false;
-//                imageUpdatingThread.setUpdateFrom(map.firstKey(), false);
-//            }
-//            synchronized (map) {
-//                map.notify();
-//            }
-//        }
-//        return map.get(instanceNo);
         initialNext = true;
-        if (!map.containsKey(0) && instanceNo % 5 == 0 && instanceNo <= reverseThreshold) {
+        if (!map.containsKey(0) && instanceNo % 5 == 0) {
             map.tailMap(instanceNo + 5).clear();
             if (initialPrev) {
                 initialPrev = false;
-                imageUpdatingThread.setUpdateFrom(map.firstKey(), false);
+                i = map.firstKey();
+                isForward = false;
             }
             synchronized (map) {
                 map.notify();
@@ -179,7 +140,7 @@ public class Buffer {
                 System.out.println("Make me wait");
                 map.wait(20);
             } catch (InterruptedException ex) {
-                Logger.getLogger(Buffer.class.getName()).log(Level.SEVERE, null, ex);
+                ApplicationContext.logger.log(Level.INFO, null, ex);
             }
         }
     }
@@ -189,61 +150,54 @@ public class Buffer {
             try {
                 map.wait();
             } catch (InterruptedException ex) {
-                Logger.getLogger(Buffer.class.getName()).log(Level.SEVERE, null, ex);
+                ApplicationContext.logger.log(Level.INFO, null, ex);
             }
         }
     }
 
     public void terminateThread() {
-        imageUpdatingThread.interrupt();
         synchronized (map) {
             map.notify();
+            terminate = true;
+            map.clear();
         }
-        imageUpdatingThread.terminateThread();
-        map.clear();
     }
 
-    public void getForwardLoopBack() {
+    public void forwardLoopBack() {
         initialPrev = true;
-        if (tempBuffer != null) {
-            startBuffering = false;
-            map.clear();
-            map.putAll(tempBuffer.headMap(10));
-            imageUpdatingThread.setUpdateFrom(11, true);
-            synchronized (map) {
-                map.notify();
-            }
+        map.clear();
+        i = -1;
+        isForward = true;
+        startBuffering = false;
+        synchronized (map) {
+            map.notify();
         }
     }
 
     public void getBackwardLoopBack() {
         initialNext = true;
-        if (tempBuffer != null) {
-            map.clear();
-            map.putAll(tempBuffer.tailMap(10));
-            imageUpdatingThread.setUpdateFrom(reverseThreshold, false);
-            synchronized (map) {
-                map.notify();
-            }
+        map.clear();
+        i = imgPanelRef.getTotalInstance() - 1;
+        isForward = false;
+        synchronized (map) {
+            map.notify();
         }
     }
 
-    private class BackwardUpdator implements Runnable {
-
-        public BackwardUpdator() {
-        }
-
-        @Override
-        public void run() {
-            for (int i = imgPanelRef.getTotalInstance() - 1; i > imgPanelRef.getTotalInstance() - 11; i--) {
-                tempBuffer.put(i, DicomImageReader.readDicomFile(new File(imgPanelRef.getFileLocation(i))));
+    @Override
+    protected Void doInBackground() throws Exception {
+        do {
+            if (isForward && i < imgPanelRef.getTotalInstance() - 1) {
+                i++;
+                put(i, DicomImageReader.readDicomFile(new File(imgPanelRef.getFileLocation(i))));
+            } else if (!isForward && i > 0) {
+                i--;
+                put(i, DicomImageReader.readDicomFile(new File(imgPanelRef.getFileLocation(i))));
+            } else if (getState().equals(Thread.State.RUNNABLE)) {
+                makeMeWait();
             }
-            if (!tempBuffer.containsKey(0)) {
-                for (int i = 0; i < 10; i++) {
-                    tempBuffer.put(i, DicomImageReader.readDicomFile(new File(imgPanelRef.getFileLocation(i))));
-                }
-            }
-        }
+        } while (!terminate);
+        return null;
     }
 
     public int getDefaultBufferSize() {
@@ -258,22 +212,20 @@ public class Buffer {
     }
 
     public void update(int instanceNo) {
-        try {
-            if (instanceNo - map.firstKey() < 5 || map.lastKey() - instanceNo < 5) {
-                map.clear();
-                startBuffering = true;
-                if (instanceNo - 10 < 0) {
-                    imageUpdatingThread.setUpdateFrom(0, true);
-                } else {
-                    imageUpdatingThread.setUpdateFrom(instanceNo - 10, true);
-                }
-                synchronized (map) {
-                    map.notify();
-                }
-                initialPrev = true;
+        if (instanceNo - map.firstKey() < 5 || map.lastKey() - instanceNo < 5) {
+            map.clear();
+            startBuffering = true;
+            if (instanceNo - 10 < 0) {
+                i = 0;
+                isForward = true;
+            } else {
+                i = instanceNo - 10;
+                isForward = true;
             }
-        } catch (NoSuchElementException ex) {
-            System.out.println("No such element exception : " + instanceNo);
+            synchronized (map) {
+                map.notify();
+            }
+            initialPrev = true;
         }
     }
 
@@ -298,7 +250,7 @@ public class Buffer {
             try {
                 wait(10);
             } catch (InterruptedException ex) {
-                Logger.getLogger(Buffer.class.getName()).log(Level.SEVERE, null, ex);
+                ApplicationContext.logger.log(Level.SEVERE, null, ex);
             }
         } while (!map.containsKey(instanceNo));
         return map.get(instanceNo);
@@ -329,12 +281,21 @@ public class Buffer {
     }
 
     public void updateFrom(int updateFrom) {
-        if (updateFrom < 0) {
-            updateFrom = -1;
-        }
-        tileLayoutThread.setUpdateFrom(updateFrom);
+        tileLayoutThread.setUpdateFrom(updateFrom < 0 ? -1 : updateFrom, imgPanelRef.getTotalInstance());
         synchronized (map) {
             map.notify();
         }
+    }
+
+    public String getFileLocation(int i) {
+        return imgPanelRef.getFileLocation(i);
+    }
+
+    public void shutDown() {
+        this.terminate = true;
+    }
+
+    public void setImgPanelRef(ImagePanel imgPanel) {
+        this.imgPanelRef = imgPanel;
     }
 }
