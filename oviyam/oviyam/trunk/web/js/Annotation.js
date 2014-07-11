@@ -16,7 +16,7 @@ function init() {
 	yPixelSpacing = pixelSpacing[1];
 }
 
-function drawRuler(begin,end,length) {	
+function drawRuler(begin,end,length) {
 	canvasCtx.fillStyle = "red";
 	canvasCtx.beginPath();
 	canvasCtx.moveTo(begin.getX(),begin.getY());
@@ -276,7 +276,10 @@ function meanOfRect(x,y,width,height) {
 	for(var i = x;i<x+width;i++) {
 		for(var j = y;j<y+height;j++) {
 			++pixelCount;
-			sum+=getPixelAt(i,j);
+			var pixel = getPixelAt(i,j);
+			if(typeof pixel!="undefined") {
+				sum+=pixel;
+			}
 		}
 	}
 	if(pixelCount==0) {
@@ -290,8 +293,10 @@ function stdDevOfRect(mean,x,y,width,height) {
 	for(var i=x;i<x+width;i++) {
 		for(var j=y;j<y+height;j++) {
 			var value = getPixelAt(i,j);
-			var deviation = value - mean;
-			sum+=deviation * deviation;
+			if(typeof value!="undefined") {
+				var deviation = value - mean;
+				sum+=deviation * deviation;
+			}
 			pixelCount++;
 		}
 	}
@@ -323,7 +328,10 @@ function meanOfOval(x,y,width,height) {
 		for(var j = y;j<y+height;j++) {
 			if(isInsideOval(x,y,width,height,i,j)) {
 				++pixelCount;
-				sum+=getPixelAt(i,j);
+				var pixel = getPixelAt(i,j);
+				if(typeof pixel != "undefined") {
+					sum+=pixel;
+				}
 			}
 		}
 	}
@@ -339,8 +347,10 @@ function stdDevOfOval(mean,x,y,width,height) {
 		for(var j=y;j<y+height;j++) {
 			if(isInsideOval(x,y,width,height,i,j)) {
 				var value = getPixelAt(i,j);
-				var deviation = value - mean;
-				sum+=deviation * deviation;
+				if(typeof value != "undefined") {
+					var deviation = value - mean;
+					sum+=deviation * deviation;
+				}
 				pixelCount++;
 			}
 		}
@@ -385,12 +395,12 @@ function keyEventHandler(e) {
 }
 
 function createNewRuler(e) {
-	var endPt = new ovm.annotation.Point(e.offsetX,e.offsetY);					
+	var endPt = new ovm.annotation.Point(e.pageX-jcanvas.offsetLeft,e.pageY-jcanvas.offsetTop);					
 	drawRuler(beginPt, endPt, (calculateLength(beginPt, endPt)/10).toFixed(3)+" cm");
 }
 
-function createNewRect(e) {
-	var endPt = new ovm.annotation.Point(e.offsetX-beginPt.getX(),e.offsetY-beginPt.getY());					
+function createNewRect(e) {		
+	var endPt = new ovm.annotation.Point((e.pageX-jcanvas.offsetLeft)-beginPt.getX(),(e.pageY-jcanvas.offsetTop)-beginPt.getY());					
 	if(beginPt.getX()<beginPt.getX()+endPt.getX() && beginPt.getY()<beginPt.getY()+endPt.getY()) {
 		drawRect(beginPt,endPt,areaOfRect(beginPt,endPt),"","");
 	} else {
@@ -405,7 +415,7 @@ function createNewRect(e) {
 }
 
 function createNewOval(e) {
-	var endPt = new ovm.annotation.Point(e.offsetX-beginPt.getX(),e.offsetY-beginPt.getY());
+	var endPt = new ovm.annotation.Point((e.pageX-jcanvas.offsetLeft)-beginPt.getX(),(e.pageY-jcanvas.offsetTop)-beginPt.getY());
 	if(beginPt.getX()<beginPt.getX()+endPt.getX() && beginPt.getY()<beginPt.getY()+endPt.getY()) {
 		drawOval(beginPt,endPt,areaOfOval(beginPt,endPt)," "," ");
 	} else {
@@ -421,13 +431,13 @@ function createNewOval(e) {
 function moveRuler(e) {
 	var dist1 = selectedShape.getEnd().getX()-selectedShape.getBegin().getX();
 	var dist2 = selectedShape.getEnd().getY()-selectedShape.getBegin().getY();
-	selectedShape.setBegin(new ovm.annotation.Point((e.offsetX)-(dist1/2),(e.offsetY)-(dist2/2)));
+	selectedShape.setBegin(new ovm.annotation.Point((e.pageX-jcanvas.offsetLeft)-(dist1/2),(e.pageY-jcanvas.offsetTop)-(dist2/2)));
 	selectedShape.setEnd(new ovm.annotation.Point(selectedShape.getBegin().getX()+dist1,selectedShape.getBegin().getY()+dist2));								
 	drawLineHandles();
 }
 
 function moveRect(e) {
-	selectedShape.setBegin(new ovm.annotation.Point(e.offsetX,e.offsetY));
+	selectedShape.setBegin(new ovm.annotation.Point(e.pageX-jcanvas.offsetLeft,e.pageY-jcanvas.offsetTop));
 	drawRect(selectedShape.getBegin(),selectedShape.getSize(),areaOfRect(selectedShape.getBegin(),selectedShape.getSize()),"","");
 	drawRectHandles();
 	selectedShape.setMean(" ");
@@ -435,7 +445,7 @@ function moveRect(e) {
 }
 
 function moveOval(e) {
-	selectedShape.setCenter(new ovm.annotation.Point(e.offsetX,e.offsetY));
+	selectedShape.setCenter(new ovm.annotation.Point(e.pageX-jcanvas.offsetLeft,e.pageY-jcanvas.offsetTop));
 	drawOval(selectedShape.getCenter(),selectedShape.getRadius(),selectedShape.getArea()," ", " ");
 	selectedShape.setMean(" ");
 	selectedShape.setStdDev(" ");
@@ -445,10 +455,10 @@ function moveOval(e) {
 function resizeRuler(e) {
 	switch(parseInt(selectedHandle)) {
 		case 0:
-			selectedShape.setBegin(new ovm.annotation.Point(e.offsetX,e.offsetY));
+			selectedShape.setBegin(new ovm.annotation.Point(e.pageX-jcanvas.offsetLeft,e.pageY-jcanvas.offsetTop));
 			break;
 		case 1:
-			selectedShape.setEnd(new ovm.annotation.Point(e.offsetX,e.offsetY));
+			selectedShape.setEnd(new ovm.annotation.Point(e.pageX-jcanvas.offsetLeft,e.pageY-jcanvas.offsetTop));
 			break;
 	}
 	selectedShape.setLength((calculateLength(selectedShape.getBegin(), selectedShape.getEnd())/10).toFixed(3)+" cm");
@@ -457,50 +467,52 @@ function resizeRuler(e) {
 
 function resizeRect(e) {
 	var oldX = selectedShape.getBegin().getX(), oldY = selectedShape.getBegin().getY();
+	var evtX = e.pageX - jcanvas.offsetLeft;
+	var evtY = e.pageY - jcanvas.offsetTop;
 	switch(parseInt(selectedHandle)) {
 		case 0:	
-			if(e.offsetX<=(oldX+selectedShape.getSize().getX()+(oldX-e.offsetX)) && e.offsetY<=(oldY+selectedShape.getSize().getY()+(oldY-e.offsetY))) {
-				selectedShape.setBegin(new ovm.annotation.Point(e.offsetX,e.offsetY));
-				selectedShape.setSize(new ovm.annotation.Point(selectedShape.getSize().getX()+oldX-e.offsetX,selectedShape.getSize().getY()+oldY-e.offsetY));
+			if(evtX<=(oldX+selectedShape.getSize().getX()+(oldX-evtX)) && evtY<=(oldY+selectedShape.getSize().getY()+(oldY-evtY))) {
+				selectedShape.setBegin(new ovm.annotation.Point(evtX,evtY));
+				selectedShape.setSize(new ovm.annotation.Point(selectedShape.getSize().getX()+oldX-evtX,selectedShape.getSize().getY()+oldY-evtY));
 			}					
 			break;								
 		case 1:
-			if(e.offsetY<=(oldY+selectedShape.getSize().getY()+(oldY-e.offsetY))) {
-				selectedShape.setBegin(new ovm.annotation.Point(selectedShape.getBegin().getX(),e.offsetY));
-				selectedShape.setSize(new ovm.annotation.Point(selectedShape.getSize().getX(),selectedShape.getSize().getY()+oldY-e.offsetY));
+			if(evtY<=(oldY+selectedShape.getSize().getY()+(oldY-evtY))) {
+				selectedShape.setBegin(new ovm.annotation.Point(selectedShape.getBegin().getX(),evtY));
+				selectedShape.setSize(new ovm.annotation.Point(selectedShape.getSize().getX(),selectedShape.getSize().getY()+oldY-evtY));
 			}
 			break;
 		case 2:
-			if(oldX<=oldX+(e.offsetX-oldX) && e.offsetY<=oldY+(selectedShape.getSize().getY()+oldY-e.offsetY)) {
-				selectedShape.setBegin(new ovm.annotation.Point(selectedShape.getBegin().getX(),e.offsetY));
-				selectedShape.setSize(new ovm.annotation.Point(e.offsetX-oldX,selectedShape.getSize().getY()+oldY-e.offsetY));
+			if(oldX<=oldX+(evtX-oldX) && evtY<=oldY+(selectedShape.getSize().getY()+oldY-evtY)) {
+				selectedShape.setBegin(new ovm.annotation.Point(selectedShape.getBegin().getX(),evtY));
+				selectedShape.setSize(new ovm.annotation.Point(evtX-oldX,selectedShape.getSize().getY()+oldY-evtY));
 			}
 			break;
 		case 3:
-			if(e.offsetX<=oldX+(selectedShape.getSize().getX()+oldX-e.offsetX)) {
-				selectedShape.setBegin(new ovm.annotation.Point(e.offsetX,selectedShape.getBegin().getY()));
-				selectedShape.setSize(new ovm.annotation.Point(selectedShape.getSize().getX()+oldX-e.offsetX,selectedShape.getSize().getY()));									
+			if(evtX<=oldX+(selectedShape.getSize().getX()+oldX-evtX)) {
+				selectedShape.setBegin(new ovm.annotation.Point(evtX,selectedShape.getBegin().getY()));
+				selectedShape.setSize(new ovm.annotation.Point(selectedShape.getSize().getX()+oldX-evtX,selectedShape.getSize().getY()));									
 			}
 			break;
 		case 4:
-			if(oldX<=oldX+(e.offsetX-oldX)) {
-				selectedShape.setSize(new ovm.annotation.Point(e.offsetX-oldX,selectedShape.getSize().getY()));	
+			if(oldX<=oldX+(evtX-oldX)) {
+				selectedShape.setSize(new ovm.annotation.Point(evtX-oldX,selectedShape.getSize().getY()));	
 			}
 			break;
 		case 5:
-			if(e.offsetX<=oldX+(selectedShape.getSize().getX()+(oldX-e.offsetX)) && oldY<=oldY+(e.offsetY-oldY)) {
-				selectedShape.setBegin(new ovm.annotation.Point(e.offsetX,selectedShape.getBegin().getY()));
-				selectedShape.setSize(new ovm.annotation.Point(selectedShape.getSize().getX()+(oldX-e.offsetX),e.offsetY-oldY));
+			if(evtX<=oldX+(selectedShape.getSize().getX()+(oldX-evtX)) && oldY<=oldY+(evtY-oldY)) {
+				selectedShape.setBegin(new ovm.annotation.Point(evtX,selectedShape.getBegin().getY()));
+				selectedShape.setSize(new ovm.annotation.Point(selectedShape.getSize().getX()+(oldX-evtX),evtY-oldY));
 			}
 			break;
 		case 6:
-			if(selectedShape.getBegin().getY()<=selectedShape.getBegin().getY()+e.offsetY-oldY) {
-				selectedShape.setSize(new ovm.annotation.Point(selectedShape.getSize().getX(),e.offsetY-oldY));
+			if(selectedShape.getBegin().getY()<=selectedShape.getBegin().getY()+evtY-oldY) {
+				selectedShape.setSize(new ovm.annotation.Point(selectedShape.getSize().getX(),evtY-oldY));
 			}
 			break;
 		case 7:
-			if(oldX<=oldX+(e.offsetX-oldX) && oldY<=oldY+(e.offsetY-oldY)) {
-				selectedShape.setSize(new ovm.annotation.Point(e.offsetX-oldX,e.offsetY-oldY));
+			if(oldX<=oldX+(evtX-oldX) && oldY<=oldY+(evtY-oldY)) {
+				selectedShape.setSize(new ovm.annotation.Point(evtX-oldX,evtY-oldY));
 			}
 			break;
 		}
@@ -511,30 +523,33 @@ function resizeRect(e) {
 }
 
 function resizeOval(e) {
+	var evtX = e.pageX - jcanvas.offsetLeft;
+	var evtY = e.pageY - jcanvas.offsetTop;
+	
 	switch(parseInt(selectedHandle)) {
 		case 0:
-			selectedShape.setRadius(new ovm.annotation.Point((selectedShape.getRadius().getX()+selectedShape.getCenter().getX()-e.offsetX)/2,(selectedShape.getRadius().getY()+selectedShape.getCenter().getY()-e.offsetY)/2));
+			selectedShape.setRadius(new ovm.annotation.Point((selectedShape.getRadius().getX()+selectedShape.getCenter().getX()-evtX)/2,(selectedShape.getRadius().getY()+selectedShape.getCenter().getY()-evtY)/2));
 			break;
 		case 1:
-			selectedShape.setRadius(new ovm.annotation.Point(selectedShape.getRadius().getX(),(selectedShape.getRadius().getY()+selectedShape.getCenter().getY()-e.offsetY)/2));
+			selectedShape.setRadius(new ovm.annotation.Point(selectedShape.getRadius().getX(),(selectedShape.getRadius().getY()+selectedShape.getCenter().getY()-evtY)/2));
 			break;
 		case 2:
-			selectedShape.setRadius(new ovm.annotation.Point((selectedShape.getRadius().getX()+e.offsetX-selectedShape.getCenter().getX())/2,(selectedShape.getRadius().getY()+selectedShape.getCenter().getY()-e.offsetY)/2));
+			selectedShape.setRadius(new ovm.annotation.Point((selectedShape.getRadius().getX()+evtX-selectedShape.getCenter().getX())/2,(selectedShape.getRadius().getY()+selectedShape.getCenter().getY()-evtY)/2));
 			break;
 		case 3:
-			selectedShape.setRadius(new ovm.annotation.Point((selectedShape.getRadius().getX()+selectedShape.getCenter().getX()-e.offsetX)/2,selectedShape.getRadius().getY()));
+			selectedShape.setRadius(new ovm.annotation.Point((selectedShape.getRadius().getX()+selectedShape.getCenter().getX()-evtX)/2,selectedShape.getRadius().getY()));
 			break;
 		case 4:
-			selectedShape.setRadius(new ovm.annotation.Point((selectedShape.getRadius().getX()+e.offsetX-selectedShape.getCenter().getX())/2,selectedShape.getRadius().getY()));
+			selectedShape.setRadius(new ovm.annotation.Point((selectedShape.getRadius().getX()+evtX-selectedShape.getCenter().getX())/2,selectedShape.getRadius().getY()));
 			break;
 		case 5:
-			selectedShape.setRadius(new ovm.annotation.Point((selectedShape.getRadius().getX()+selectedShape.getCenter().getX()-e.offsetX)/2,(selectedShape.getRadius().getY()+e.offsetY-selectedShape.getCenter().getY())/2));
+			selectedShape.setRadius(new ovm.annotation.Point((selectedShape.getRadius().getX()+selectedShape.getCenter().getX()-evtX)/2,(selectedShape.getRadius().getY()+evtY-selectedShape.getCenter().getY())/2));
 			break;
 		case 6:
-			selectedShape.setRadius(new ovm.annotation.Point(selectedShape.getRadius().getX(),(selectedShape.getRadius().getY()+e.offsetY-selectedShape.getCenter().getY())/2));
+			selectedShape.setRadius(new ovm.annotation.Point(selectedShape.getRadius().getX(),(selectedShape.getRadius().getY()+evtY-selectedShape.getCenter().getY())/2));
 			break;
 		case 7:
-			selectedShape.setRadius(new ovm.annotation.Point((selectedShape.getRadius().getX()+e.offsetX-selectedShape.getCenter().getX())/2,(selectedShape.getRadius().getY()+e.offsetY-selectedShape.getCenter().getY())/2));
+			selectedShape.setRadius(new ovm.annotation.Point((selectedShape.getRadius().getX()+evtX-selectedShape.getCenter().getX())/2,(selectedShape.getRadius().getY()+evtY-selectedShape.getCenter().getY())/2));
 			break;
 	}
 	drawOval(selectedShape.getCenter(),selectedShape.getRadius(),areaOfOval(selectedShape.getCenter(),selectedShape.getRadius())," "," ");

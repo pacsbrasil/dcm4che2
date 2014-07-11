@@ -12,7 +12,7 @@ function measureOn(){
 		doMouseWheel = false;  		
 		jQuery("#ruler").addClass('toggleOff');
 		jQuery("#lblLines").removeClass('imgOff').addClass('imgOn');
-		jQuery("#line").attr('class','selected cmenuItem');
+		jQuery("#line").attr('class','selectedshape cmenuItem');
 		
 		if(winEnabled) {
 			stopWLAdjustment();
@@ -62,10 +62,43 @@ function measureOn(){
     }        
 }
 
+function bindMeasure() {
+	var drawCanvas = jQuery(jcanvas).parent().children().get(2);
+	jQuery(drawCanvas).mousedown(function(e) {
+			canvasMouseDownEvt(e);
+		}).mousemove(function(e){
+			canvasMouseMoveEvt(e);
+		}).mouseup(function(e){
+			canvasMouseUpEvt(e);
+		}); 
+		jQuery(drawCanvas).mousemove(function(e) {
+			detectHandle(e);
+		});
+		jQuery(document).keydown(function(e) {
+			keyEventHandler(e);
+		});
+		canvasCtx = drawCanvas.getContext('2d');
+		canvasWidth = drawCanvas.width;
+		canvasHeight = drawCanvas.height;
+		measure();
+		checkInstance();
+		drawAllAnnotations();
+}
+
+function destroyMeasure() {
+	if(measureEnabled) {
+		var drawCanvas = jQuery(jcanvas).parent().children().get(2);
+		jQuery(drawCanvas).unbind('mousedown').unbind("mousemove").unbind('mouseup');
+		jQuery(drawCanvas).unbind('mousemove');
+		jQuery(document).unbind('keydown');
+		clear();
+	}
+}
+
 function setTool(toolDiv,selectedTool) {
 	this.tool = selectedTool;
-	jQuery('.selected').removeClass('selected');
-	jQuery(toolDiv).addClass('selected');
+	jQuery('.selectedshape').removeClass('selectedshape');
+	jQuery(toolDiv).addClass('selectedshape');
 	jQuery('#rulerContext').hide();
 }
 
@@ -88,7 +121,8 @@ function checkInstance() {
 function canvasMouseDownEvt(e) {
 	jQuery('.contextMenu').hide();//To hide the popup if showing		
 	drawing = true;
-	beginPt = new ovm.annotation.Point(e.offsetX,e.offsetY);
+	//beginPt = new ovm.annotation.Point(e.offsetX,e.offsetY);
+	beginPt = new ovm.annotation.Point(e.pageX-jcanvas.offsetLeft,e.pageY-jcanvas.offsetTop);
 	measurementOnMove = false;
 	e.stopPropagation();
 	e.preventDefault();
@@ -161,10 +195,10 @@ function canvasMouseUpEvt(e) {
 	if(selectedShape==null) { // New Shape
 		switch (tool) {
 		case 'ruler':
-			addNewLine(beginPt, new ovm.annotation.Point(e.offsetX,e.offsetY));
+			addNewLine(beginPt, new ovm.annotation.Point(e.pageX-jcanvas.offsetLeft,e.pageY-jcanvas.offsetTop));
 			break;
 		case 'rect':
-			var endPt = new ovm.annotation.Point(e.offsetX-beginPt.getX(),e.offsetY-beginPt.getY());
+			var endPt = new ovm.annotation.Point((e.pageX-jcanvas.offsetLeft)-beginPt.getX(),(e.pageY-jcanvas.offsetTop)-beginPt.getY());
 			if(beginPt.getX()<beginPt.getX()+endPt.getX() && beginPt.getY()<beginPt.getY()+endPt.getY()) {
 				addNewRect(beginPt,endPt);
 			} else {
@@ -178,7 +212,7 @@ function canvasMouseUpEvt(e) {
 			}			
 			break;
 		case 'oval':
-			var endPt = new ovm.annotation.Point(e.offsetX-beginPt.getX(),e.offsetY-beginPt.getY());
+			var endPt = new ovm.annotation.Point((e.pageX-jcanvas.offsetLeft)-beginPt.getX(),(e.pageY-jcanvas.offsetTop)-beginPt.getY());
 			if(beginPt.getX()<beginPt.getX()+endPt.getX() && beginPt.getY()<beginPt.getY()+endPt.getY()) {
 				addNewOval(beginPt,endPt);
 			} else {
@@ -220,7 +254,7 @@ function detectHandle(e) {
 		e.stopPropagation();
 		e.preventDefault();
 		if(!measurementOnMove) {
-			var selected = detectSelectedHandle(new ovm.annotation.Point(e.offsetX,e.offsetY));
+			var selected = detectSelectedHandle(new ovm.annotation.Point(e.pageX-jcanvas.offsetLeft,e.pageY-jcanvas.offsetTop));
 			if(selectedShape.getType()!="ruler") {
 				switch (parseInt(selected)) {
 				case 0:

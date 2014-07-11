@@ -86,6 +86,7 @@
                     var dt_crit = this["dateCrit"];
                     var tm_crit = this["timeCrit"];
                     var mod_crit = this["modality"];
+                    var studyDesc = this["studyDesc"];
                     var auto_refresh = this["autoRefresh"];
 
                     if(dt_crit != null && dt_crit != '') {
@@ -144,6 +145,7 @@
                         dt_crit,
                         tm_crit,
                         mod_crit,
+                        studyDesc,
                         autoRef
                     ]);
                 });
@@ -183,6 +185,7 @@
                         <th id="lblStudyDateFilter">Study Date Filter</th>
                         <th id="lblStudytimeFilter">Study Time Filter</th>
                         <th id="lblModalityFilter">Modality Filter</th>
+                        <th id="lblStudyDescFilter">Study Description</th>
                         <th id="lblAutoRefresh">Auto Refresh</th>
                     </tr>
                 </thead>

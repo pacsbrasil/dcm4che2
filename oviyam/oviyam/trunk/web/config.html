@@ -1,6 +1,6 @@
 <html>
     <head>
-        <title>Oviyam 2.0 Settings</title>
+        <title>Oviyam 2 Settings</title>
 
         <script type="text/javascript" src="js/lib/jquery-latest.js"></script>
         <script type="text/javascript" src="js/lib/jquery-ui-latest.js"></script>
@@ -22,7 +22,7 @@
                     } else {
                         $( "#tabs" ).tabs().tabs( "remove", 0);
                     }
-                });
+                },'text');
 
                 $.get("UserConfig.do", {'settings':'theme', 'todo':'READ'},
                 function(data){
@@ -33,7 +33,7 @@
                     if(data.trim() == 'Dark Hive') {
                         $('.ui-widget-content').css('background', 'black');
                     }
-                });
+                },'text');
 
                 $("#tabs").css("height","93%");
                 $("#tabs").css("margin-top","4%");
@@ -52,7 +52,7 @@
                 font-size: 18px;
                 font-weight: bold;
                 font-family: sans-serif;
-                color: white;
+                color: #FF8A00;
                 text-align: center;
             }
 
@@ -65,7 +65,7 @@
     </head>
 
     <body style="margin: 0px">
-        <div id="productName">Oviyam 2.0</div>
+        <div id="productName">Oviyam 2</div>
         <div class="demo">
             <div id="tabs">
                 <ul>

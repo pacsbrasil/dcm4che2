@@ -27,7 +27,7 @@ form, fieldset{
 }
 
 /* LAYOUT */
-#login, #register, #forgot{
+#login, #register, #forgot, #confirmation{
     width: 480px;
     margin: 20px auto 0;
     text-align: left;
@@ -39,7 +39,7 @@ form, fieldset{
 }
 
 /* --- EXPERIMENT --- */
-#step, #login, #register, #forgot{
+#step, #login, #register, #forgot, #confirmation{
     -webkit-box-shadow:0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
     -moz-box-shadow:0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
     box-shadow:0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
@@ -88,11 +88,11 @@ input.button{
     background: #090;
     color: #fff;
     border: 1px groove #090;
-    padding: 7px 21px;
+    /*padding: 7px 21px;*/
     font-size: 13px;
     margin-top: 10px;
-    font-weight: bold;
-    text-transform: uppercase;
+   /* font-weight: bold;*/
+   /* text-transform: uppercase;*/
     cursor: hand;
     cursor: pointer;
 

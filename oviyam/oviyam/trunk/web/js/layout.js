@@ -6,6 +6,7 @@ var currSer='';
 
 function showSeries1() {
 	getSeriesDescription();  
+	disableTools();
 }
 
 function getSeriesDescription() {

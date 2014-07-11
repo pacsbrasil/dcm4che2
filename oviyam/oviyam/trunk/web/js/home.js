@@ -12,16 +12,14 @@ $(document).ready(function() {
         $('.ui-helper-hidden-accessible').css('display', 'none');
     }
 
-    $('#westPane').addClass('ui-widget-content');
     $('#buttonContainer').addClass('ui-widget-content');
-    $('#user').addClass('ui-widget-content');
 
     $.get("UserConfig.do", {
         'settings':'userName',
         'todo':'READ'
     }, function(data){
         $('#user').html(data);
-    });
+    },'text');
 
     $(".header-footer").hover(
         function(){
@@ -64,7 +62,7 @@ $(document).ready(function() {
         success: parseJson
     });
 
-  /*  if( !location.search ) {
+    /*if( !location.search ) {
     	showAllLocalStudies();
     }*/
 
@@ -75,8 +73,7 @@ $(document).ready(function() {
        // createButton({"label":"Search"});
 
         if(!location.search) {
-        	$(json).each(function() {
-        		//createButton(displayText, date_criteria, time_criteria, modality);
+        	$(json).each(function() {        		
         		createButton(this);
         	});
         }
@@ -89,16 +86,11 @@ $(document).ready(function() {
                 loadTheme: data.trim(),
                 cookieName:'',
                 width: 160
-            });
-            if(data.trim() == 'Dark Hive') {
-                $('.ui-widget-content').css('background', 'black');
-            }
-        });
-
+            },'text');            
+        },'text');
     //addThemeSwitcher('.ui-layout-north',{ top: '13px', right: '20px' });
     }
 
-//    function createButton(txt, crit, tCrit, modality) {
     function createButton(that) {
         var txt = that['label'];
         var crit = that['dateCrit'];
@@ -196,7 +188,7 @@ $(document).ready(function() {
 
                         $(divContent).load(encodeURI(searchURL), function() {
                             clearInterval(timer);
-//                            checkLocalStudies();
+                           // checkLocalStudies();
 
                             if(parseInt(autoRef) > 0) {
                                 timer = setInterval(function() {
@@ -222,7 +214,6 @@ $(document).ready(function() {
         });
 
         $("#buttonContainer").buttonset();
-//        $('#buttonContainer').hide();
 
         if(/chrome/.test(navigator.userAgent.toLowerCase())) {
             $('.ui-helper-hidden-accessible').css('display', 'none');
@@ -232,7 +223,6 @@ $(document).ready(function() {
 
     function startTimer(searchURL) {
         //  if( searchURL.indexOf(Date.today().toString("yyyyMMdd")) >= 0) {
-        //console.log(searchURL);
         $.getJSON('RefreshStudies.do', {
             'query' : searchURL
         }, function(data) {
@@ -240,7 +230,7 @@ $(document).ready(function() {
             var oTable = $.fn.dataTableInstances[tabIndex];
 
             var selectedTabTxt = $('.ui-tabs-selected').find('span').html();
-            var searchTab = searchURL.substring(searchURL.indexOf('tabName=')+8);
+            var searchTab = searchURL.substring(searchURL.indexOf('tabName=')+8, searchURL.indexOf("tabIndex")-1);
             if(searchTab.trim() == selectedTabTxt.trim()) {
                 for(var itr=0; itr<data.length; itr++) {
                     var newRow = data[itr];
@@ -265,21 +255,21 @@ $(document).ready(function() {
     // } // if
     }
 
-//    function checkLocalStudies() {
-//        var myDB = initDB();
-//        var sql = "select StudyInstanceUID from study";
-//        myDB.transaction(function(tx) {
-//            tx.executeSql(sql, [], function(trans, results) {
-//                for(var i=0; i<results.rows.length; i++) {
-//                    var row = results.rows.item(i);
-//                    var img = document.getElementById(row['StudyInstanceUID']);
-//                    if(img != null) {
-//                        img.style.visibility = 'visible';
-//                    }
-//                }
-//            }, errorHandler);
-//        });
-//    }
+    function checkLocalStudies() {
+        var myDB = initDB();
+        var sql = "select StudyInstanceUID from study";
+        myDB.transaction(function(tx) {
+            tx.executeSql(sql, [], function(trans, results) {
+                for(var i=0; i<results.rows.length; i++) {
+                    var row = results.rows.item(i);
+                    var img = document.getElementById(row['StudyInstanceUID']);
+                    if(img != null) {
+                        img.style.visibility = 'visible';
+                    }
+                }
+            }, errorHandler);
+        });
+    }
 
     function loadTabs() {
     	var tabName = getParameterByName("serverName");
@@ -289,11 +279,13 @@ $(document).ready(function() {
         $.getJSON('DicomNodes.do', function(results) {
             var callingAET = results[results.length-1].callingAET.trim();
             for(var i=0; i<results.length-1; i++) {
-                var node = results[i];
+                var node = results[i];                
                 //var li = '<li class="ui-state-default ui-corner-top ui-tabs-selected ui-state-active"><a href="#tab_3"><span>Local</span></a></li>';
 
+				var showSearch = true;
                 if(node.logicalname == tabName || results.length == 1) {
-					tabIndex = parseInt(i+1);
+					tabIndex = parseInt(i);
+					showSearch = false;
 				}
                
                 var dcmUrl = '';
@@ -326,14 +318,14 @@ $(document).ready(function() {
                 var div = '';
                 if( !location.search ) {
                 	div = '<div id="' + node.aetitle + '" class="ui-tabs-panel ui-widget-content ui-corner-bottom ui-tabs-hide" style="padding: 0; width: 100%">';
-                	div += '<nav class="ui-state-default" onmouseover="this.className=\'ui-state-hover\'" onmouseout="this.className=\'ui-state-default\'" style="cursor: pointer">Search</nav>';
+                	//div += '<nav class="ui-state-default" onmouseover="this.className=\'ui-state-hover\'" onmouseout="this.className=\'ui-state-default\'" style="cursor: pointer">Search</nav>';
                 	div += '<div id="' + node.aetitle + '_search" style="height:13%; width:100%;"></div>';
-                	div += '<div id="' + node.aetitle + '_content" style="height:85%; width:99%;"></div></div>';
+                	div += '<div id="' + node.aetitle + '_content" style="height:85%; width:100%;"></div></div>';
                 	$('#tabContent').append(div);
-                	$('#' + node.aetitle + '_search').load('newSearch.html');
-                } else {        	
-	                div = '<div id="' + node.aetitle + '" class="ui-tabs-panel ui-widget-content ui-corner-bottom ui-tabs-hide" style="padding: 0; width: 100%">';
-                	div += '<div id="' + node.aetitle + '_content" style="width:99%;"></div></div>';
+                	$('#' + node.aetitle + '_search').load('newSearch.jsp?tabName=' + node.logicalname);
+                } else {        		              
+                	div = '<div id="' + node.aetitle + '" class="ui-tabs-panel ui-widget-content ui-corner-bottom ui-tabs-hide" style="padding: 0; width: 100%">';                	                	
+                	div += '<div id="' + node.aetitle + '_content" style="height:99%; width:100%;"></div></div>';
                 	$('#tabContent').append(div);
                 	
                 	//load studies in data table.
@@ -341,10 +333,11 @@ $(document).ready(function() {
                 		var searchURL = "queryResult.jsp?";
                 		searchURL += 'patientId=' + patId;
                 		searchURL += "&dcmURL=" + dcmUrl;
-                		searchURL += '&tabName=' + node.aetitle;                		
+                		searchURL += '&tabName=' + node.aetitle;
                 		searchURL += '&tabIndex=' + tabIndex;
                 		searchURL += '&preview=' + preview;
-                   
+                		searchURL += '&search=' + showSearch;
+                		                   
                 		var divContent = '#' + node.aetitle + '_content';
 
                 		$(divContent).html('');
@@ -352,23 +345,13 @@ $(document).ready(function() {
                     
                 		$(divContent).load(encodeURI(searchURL), function() {
                 			clearInterval(timer);
-//                			checkLocalStudies();
+                			//checkLocalStudies();
                 		});
                 	}
                 }
             }
 
             $("#tabs_div").tabs({
-            	show: function(event,ui){
-            	  	$.sleep(1, function(){
-            		  $('.modalitiesList').multiselect({
-	                	selectedList: 12,
-    	            	minWidth: 130,
-    	            	header: false,
-                        noneSelectedText: "ALL"
-                    });
-                    });
-            	  },  
             	selected: tabIndex,
                 select: function(event, ui) {
                     clearInterval(timer);
@@ -394,11 +377,15 @@ $(document).ready(function() {
                         oTable.fnClearTable();
                         //oTable.fnDestroy();
                         showAllLocalStudies(oTable);
-                    } else {
-                        $('#buttonContainer').show();
-                    }*/
+                    } else {*/
+//                        $('#buttonContainer').show();
 
-                   /* $('.modalitiesList').multiselect({
+                    /*if(typeof oTable != 'undefined') {
+                            oTable.fnClearTable();
+                        }*/
+                    //}
+
+                 /*   $('.modalitiesList').multiselect({
                 	selectedList: 12,
                 	minWidth: 130,
                 	header: false,
@@ -431,7 +418,7 @@ $(document).ready(function() {
                 });
             });
         });
-    }
+    } 
 
     $.fn.dataTableInstances.push( $('#resultTable').dataTable({
         "bJQueryUI": true,
@@ -440,8 +427,8 @@ $(document).ready(function() {
         }
     }) );
 
-    // $('#resultTable tbody tr').live("click", function() {
-    $('.display tbody tr').live("click", function() {
+
+    $('.display tbody tr').live("click", function() {    	
 		var seriesTblHr = $(this).closest('table').find('th').get(0).innerHTML;    	
     	if( seriesTblHr.indexOf('Series Number') >= 0 ) {
             return;
@@ -451,20 +438,22 @@ $(document).ready(function() {
         var oTable = $.fn.dataTableInstances[tabIndex];
 
         if($(this).hasClass('row_selected')) {
-            //$(this).removeClass('row_selected');
             return;
         } else {
             oTable.$('tr.row_selected').removeClass('row_selected');
             $(this).addClass('row_selected');
         }
+        
+        var preview = $('.ui-tabs-selected').find('a').attr('preview'); 
 
-        var selTabText = $('.ui-tabs-selected').find('span').html();
-        var iPos = oTable.fnGetData(this);
-        if( iPos == null ) {
-    		return;
-        }       
+        if(preview=='true') {
+	        var selTabText = $('.ui-tabs-selected').find('span').html();
+	        var iPos = oTable.fnGetData(this);
+	        if( iPos == null ) {
+	    		return;
+	        }       
 
-        //if(selTabText != 'Local') {
+       // if(selTabText != 'Local') {
             if(document.getElementById(iPos[9]).style.visibility == 'hidden') {
                 showWestPane(iPos);
             } else {
@@ -474,7 +463,7 @@ $(document).ready(function() {
                     showWestPane(iPos);
                 }
             }
-        /*} else {
+       /* } else {
             if(!!(window.requestFileSystem || window.webkitRequestFileSystem)) {
                 viewWPSeries(this);
             } else {
@@ -493,6 +482,7 @@ $(document).ready(function() {
 
             }
         }*/
+        }
     });
 
     //$("#resultTable tbody tr").live("dblclick", function() {
@@ -510,7 +500,7 @@ $(document).ready(function() {
             return;
         } 
        
-     /*   var ser_url = $('.ui-tabs-selected').find('a').attr('wadoUrl');
+        var ser_url = $('.ui-tabs-selected').find('a').attr('wadoUrl');
         if(typeof ser_url == 'undefined') {
             var lSql = "select DicomURL, ServerURL from study where StudyInstanceUID='" + nTrContent[9] + "'";
             var myDb = initDB();
@@ -540,7 +530,7 @@ $(document).ready(function() {
                     window.open("viewer.html", "_blank");
                 }, errorHandler);
             });
-        } else {*/
+        } else {
 
             var jsonObj = {
                 "pat_ID" : nTrContent[1],
@@ -563,10 +553,9 @@ $(document).ready(function() {
             $.cookies.set( 'patient', jsonObj );
 
             window.open("viewer.html", "_blank");
-       // }
+        }
     });
 
-    //$('#resultTable tbody td img').live('click', function() {
     $('.display tbody td img').live('click', function() {
 
         var tabIndex = $('#tabs_div').data('tabs').options.selected;
@@ -582,13 +571,13 @@ $(document).ready(function() {
             /* Open this row */
             this.src = "images/details_close.png";
             var selectedTabTxt = $('.ui-tabs-selected').find('span').html();
-          //  if(selectedTabTxt != 'Local') {
+            if(selectedTabTxt != 'Local') {
                 var urlDcm = $('.ui-tabs-selected').find('a').attr('name');
                 var tmpUrl = "seriesDetails.jsp?patient=" + nTrContent[1] + "&study=" + nTrContent[9] + "&dcmURL=" + urlDcm;
                 $.get(tmpUrl, function(series) {
                     oTable.fnOpen(nTr, series, 'details');
                 });
-           /* } else {
+            } else {
                 var sql = "select SeriesNo, SeriesDescription, Modality, BodyPartExamined, NoOfSeriesRelatedInstances from series where StudyInstanceUID='" + nTrContent[9] + "';";
                 var content = '<head><style>.dataTables_wrapper .fg-toolbar{display: none;}</style>';
                 content += '<script type="text/javascript">$(document).ready(function() {var now = new Date().getTime();';
@@ -611,7 +600,7 @@ $(document).ready(function() {
                         oTable.fnOpen(nTr, content, 'details');
                     }, errorHandler);
                 });
-            }*/
+            }
         }
 
     });
@@ -621,7 +610,7 @@ $(document).ready(function() {
         window.open('config.html', '_blank');
     });
 
-    /*$('#deleteDb').click(function() {
+    $('#deleteDb').click(function() {
     	if(confirm('All the studies stored in the local storage will be deleted. Are you sure?')) {
             resetLocalDB();
             var selTabText = $('.ui-tabs-selected').find('span').html();
@@ -629,7 +618,7 @@ $(document).ready(function() {
                 $('#westPane').html('');
             }
     	}
-    });*/
+    });
 
     $('img.menu_class').click(function () {
         $('ul.the_menu').slideToggle('medium');
@@ -709,3 +698,12 @@ function getParameterByName(name) {
         results = regex.exec(location.search);
     return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
+
+function multiselectModality() {
+	$('.modalitiesList').multiselect({
+	        	selectedList: 12,
+	        	minWidth: 130,
+	        	header: false,
+	            noneSelectedText: "ALL"
+	        });  
+	}

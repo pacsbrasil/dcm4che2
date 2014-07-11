@@ -15,19 +15,21 @@ function viewWPSeries(selectedRow) {
 }
 
 function wpSeriesHandler(transaction, results) {
-    var wcContent = '<div id="patName" style="font-size: 14px;font-weight: bold;font-family: Arial,Helvitica,Serif;">' + iPos[2] + '</div>';
+    var wcContent = '<div id="patName" style="font-size: 14px;font-weight: bold;font-family: Arial,Helvitica,Serif; color: #FF8A00;">' + iPos[2] + '</div>';
     wcContent += '<div id="patID" style="font-size: 14px;font-weight: bold; font-family: Arial,Helvitica,Serif;">ID: ' + iPos[1] + '</div>';
 
-    wcContent += '<table id="studyTable" style="font-family: Arial,Helvitica,Serif; font-size:12px; width: 100%;border: 2px outset white; "><tbody><tr>';
+    wcContent += '<table id="studyTable" style="font-family: Arial,Helvitica,Serif; font-size:12px; width: 100%;color: #FF8A00;"><tbody><tr>';
     wcContent += '<td colspan="2">' + iPos[6] + '</td></tr><tr>';
     wcContent += '<td>' + iPos[5] + '</td><td align="right">' + iPos[11] + ' Series</td></tr></tbody></table><br>';
+    
+    wcContent += '<div id="previews" style="overflow: auto; background-color: #333333; height: 92%;">';
 
     for(var i=0; i<results.rows.length; i++) {
         var row = results.rows.item(i);
 
-        wcContent += '<table style="table-layout:fixed; width: 100%; font-family: Arial,Helvitica,Serif; font-size:11px; background:#D3D6FF;border-radius:3px;">';
-        wcContent += '<tbody><tr onclick="jQuery(this).next().toggle()" style="cursor: pointer; background: #D3D6FF; font-weight:bold;"><td colspan="2">';
-        wcContent += row['SeriesDescription'] + ' - Images: ' + row['NoOfSeriesRelatedInstances'] + '</td></tr>';
+        wcContent += '<table style="table-layout:fixed; width: 100%; font-family: Arial,Helvitica,Serif; font-size:12px; border-spacing: 0px; padding-left: 2px;">';
+        wcContent += '<tbody><tr onclick="jQuery(this).next().toggle()" style="cursor: pointer; color: #FF8A00"><td>';
+        wcContent += row['SeriesDescription'] + '</td><td align="right">' + row['NoOfSeriesRelatedInstances'] + ' Imgs</td></tr>';
         wcContent += '<tr><td colspan="2"><table style="table-layout:fixed; width:100%;"><tbody>';
 
 
@@ -54,15 +56,16 @@ function wpSeriesHandler(transaction, results) {
 
         for(j=0; j<serIns; j++) {
             if(j==0 || j==Math.round(serIns/2)-1 || j==serIns-1) {
-                wcContent += '<img class="westImgs" name="' + row['SopClassUID'] + '" id="' + serUidTmp + '_' + parseInt(j+1) + '" serUid="' + row['SeriesInstanceUID'] + '_' + j + '" height="48px">';
+                wcContent += '<img class="westImgs" name="' + row['SopClassUID'] + '" id="' + serUidTmp + '_' + parseInt(j+1) + '" serUid="' + row['SeriesInstanceUID'] + '_' + j + '" height="65px" width="65px">';
             }
             /* else {
-                wcContent += '<img class="westImgs" name="' + row['SopClassUID'] + '" id="' + serUidTmp + '_' + parseInt(j+1) + '" serUid="' + row['SeriesInstanceUID'] + '_' + j + '" onclick="changeSeries(this)" height="48px" style="display:none">';
+                wcContent += '<img class="westImgs" name="' + row['SopClassUID'] + '" id="' + serUidTmp + '_' + parseInt(j+1) + '" serUid="' + row['SeriesInstanceUID'] + '_' + j + '" onclick="changeSeries(this)" height="65px" width="65px" style="display:none">';
             } */
         }
         wcContent += '</td></tr></tbody></table>';
         wcContent += '</td></tr></tbody></table><div style="height:4px"></div>'; //</td></tr>';
     }
+    wcContent += '</div>';
 
     // wcContent += '</tbody></table>';
     
@@ -73,7 +76,7 @@ function wpSeriesHandler(transaction, results) {
     	jQuery(selTabText + '_westPane').html(wcContent);
     }
 
-    var bgClr = jQuery('#westPane').css('background-color');
+ /*   var bgClr = jQuery('#westPane').css('background-color');
     bgClr = bgClr.substring(bgClr.indexOf('(')+1, bgClr.indexOf(')'));
     var bgColorArr = bgClr.split(',');
     bgClr = 'rgb(';
@@ -86,7 +89,7 @@ function wpSeriesHandler(transaction, results) {
     }
     bgClr += ')';
     jQuery('#studyTable').css('color', bgClr);
-    jQuery('#westPane').css('color', bgClr);
+    jQuery('#westPane').css('color', bgClr);*/
 
     loadSeriesImages('.westImgs');
 }
@@ -172,14 +175,14 @@ function toggleImageView(img) {
     for(j=0; j<serIns; j++) {
         if(togImgView == 'one') {
             if(j==0) { // || j==Math.round(serIns/2)-1 || j==serIns-1) {
-                tabContent += '<img class="westImgs" name="' + 'SopClassUID' + '" id="' + img.name + '_' + j + '" height="48px" width="48px">';
+                tabContent += '<img class="westImgs" name="' + 'SopClassUID' + '" id="' + img.name + '_' + j + '" height="65px" width="65px">';
             }
         } else if(togImgView == 'three') {
             if(j==0 || j==Math.round(serIns/2)-1 || j==serIns-1) {
-                tabContent += '<img class="westImgs" name="' + 'SopClassUID' + '" id="' + img.name + '_' + j + '" height="48px" width="48px">';
+                tabContent += '<img class="westImgs" name="' + 'SopClassUID' + '" id="' + img.name + '_' + j + '" height="65px" width="65px">';
             }
         } else {
-            tabContent += '<img class="westImgs" name="' + 'SopClassUID' + '" id="' + img.name + '_' + j + '" height="48px" width="48px">';
+            tabContent += '<img class="westImgs" name="' + 'SopClassUID' + '" id="' + img.name + '_' + j + '" height="65px" width="65px">';
         }
     }
     tabContent += '</td></tr></tbody>';

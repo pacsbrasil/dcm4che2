@@ -16,11 +16,12 @@
  *
  * The Initial Developer of the Original Code is
  * Raster Images
- * Portions created by the Initial Developer are Copyright (C) 2007
+ * Portions created by the Initial Developer are Copyright (C) 2014
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
  * Babu Hussain A
+ * Devishree V
  * Meer Asgar Hussain B
  * Prakash J
  * Suresh V
@@ -42,6 +43,7 @@ package in.raster.oviyam.xml.handler;
 
 import in.raster.oviyam.xml.model.Configuration;
 import in.raster.oviyam.xml.model.Listener;
+
 import org.apache.log4j.Logger;
 import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
@@ -61,9 +63,8 @@ public class ListenerHandler {
     //Constructor
     public ListenerHandler() {
         try {
-            serializer = new Persister();
-            //String fname = "oviyam2-config.xml";
-            //source = new File(tmpDir + File.separator + fname);
+            serializer = new Persister();         
+
             config = serializer.read(Configuration.class, LanguageHandler.source);
         } catch (Exception ex) {
             log.error("Unable to read XML document", ex);

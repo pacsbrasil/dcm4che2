@@ -39,9 +39,18 @@ function searchClick(searchBtn) {
             }
         }
     });  // for each
-
-    var modalities = $(searchBtn).parent().prev().find('span')[1].innerHTML.replace(/, /g, '\\');
-    if(modalities.trim() != 'ALL') {
+    
+    //var modalities = $(searchBtn).parent().prev().find('span')[1].innerHTML.replace(/, /g, '\\');
+    //var modalities = $(searchBtn).parent().prev().find('span').html().replace(/\, /g,'\\');
+    var modalities = '';
+    $(searchBtn).parent().prev().find('.gentleselect-dialog li.selected').each(function(index) {
+    	if(index>0) {
+    		modalities+='\\' + $(this).text();
+    	} else {
+    		modalities=$(this).text();
+    	}
+    });
+    if(modalities!='') {
         searchURL += '&modality=' + modalities.trim();
     }
 
@@ -55,7 +64,7 @@ function searchClick(searchBtn) {
     searchURL += '&tabIndex=' + tabIndex;
     
     searchURL += '&preview=' + $('.ui-tabs-selected').find('a').attr('preview');
-    
+
     divContent += '_content';
 
     $(divContent).html('');
@@ -63,16 +72,17 @@ function searchClick(searchBtn) {
 
     $(divContent).load(encodeURI(searchURL), function() {
         clearInterval(timer);
-//        checkLocalStudies();
+        //checkLocalStudies();
     });
    
 } // end of searchClick()
 
-function resetClick(resetBtn) {
+function resetClick(resetBtn, div) {
     var inputFields = $(resetBtn).parent().parent().parent().find('input');
     inputFields.each(function() {
         this.value = '';
     }); //for each
+	$(div).val(0).gentleSelect("update");
 }
 
 function convertToDcm4cheeDate(givenDate) {
@@ -84,18 +94,18 @@ function convertToDcm4cheeDate(givenDate) {
     return(retVal);
 }
 
-//function checkLocalStudies() {
-//    var myDB = initDB();
-//    var sql = "select StudyInstanceUID from study";
-//    myDB.transaction(function(tx) {
-//        tx.executeSql(sql, [], function(trans, results) {
-//            for(var i=0; i<results.rows.length; i++) {
-//                var row = results.rows.item(i);
-//                var img = document.getElementById(row['StudyInstanceUID']);
-//                if(img != null) {
-//                    img.style.visibility = 'visible';
-//                }
-//            }
-//        }, errorHandler);
-//    });
-//}
+function checkLocalStudies() {
+    var myDB = initDB();
+    var sql = "select StudyInstanceUID from study";
+    myDB.transaction(function(tx) {
+        tx.executeSql(sql, [], function(trans, results) {
+            for(var i=0; i<results.rows.length; i++) {
+                var row = results.rows.item(i);
+                var img = document.getElementById(row['StudyInstanceUID']);
+                if(img != null) {
+                    img.style.visibility = 'visible';
+                }
+            }
+        }, errorHandler);
+    });
+}

@@ -16,11 +16,12 @@
 *
 * The Initial Developer of the Original Code is
 * Raster Images
-* Portions created by the Initial Developer are Copyright (C) 2007
+* Portions created by the Initial Developer are Copyright (C) 2014
 * the Initial Developer. All Rights Reserved.
 *
 * Contributor(s):
 * Babu Hussain A
+* Devishree V
 * Meer Asgar Hussain B
 * Prakash J
 * Suresh V
@@ -43,6 +44,8 @@ package in.raster.oviyam.xml.handler;
 
 import in.raster.oviyam.xml.model.Configuration;
 import in.raster.oviyam.xml.model.Language;
+import in.raster.oviyam.xml.model.Server;
+
 import java.io.File;
 import java.util.List;
 import org.apache.log4j.Logger;
@@ -65,11 +68,10 @@ public class LanguageHandler {
     public LanguageHandler(String tmpDir) {
         try {
             serializer = new Persister();
-            source = new File(new XMLFileHandler().getXMLFilePath(tmpDir));
+            source = new File(new XMLFileHandler().getXMLFilePath(tmpDir));            
             config = serializer.read(Configuration.class, source);
         } catch (Exception ex) {
-            log.error("Unable to read XML document", ex);
-            return;
+				log.error("Unable to read XML document", ex);            
         }
     }
 
@@ -104,4 +106,20 @@ public class LanguageHandler {
         }
         return "";
     }
+    
+//    public void upgradePreviewConfig() {
+//    	if(upgrade) {
+//    		System.out.println("****UPGRADING******");
+//    		List<Server> serversList = config.getServersList();			
+//			for (Server serObj : serversList) {				
+//				serObj.setPreviewStatus(true);
+//			}
+//			try {
+//				serializer.write(config, source);
+//				upgrade = false;
+//			} catch (Exception e) {
+//				log.error("Unable to upgrade preview configuration", e);
+//			}
+//    	}
+//    }
 }

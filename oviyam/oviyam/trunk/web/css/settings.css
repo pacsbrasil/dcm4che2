@@ -9,17 +9,19 @@ body {
 	margin: auto;
 }
 
+#button:hover {
+	cursor: pointer;
+}
+
 ul, li {
 	margin:0;
 	padding:0;
 	list-style:none;
 }
 
-.menu_class {
-	border:1px solid #909090;
+.menu_class {	
 	-moz-border-radius: 5px;
 	border-radius: 5px;
-	background: #d6d6d6;
 }
 
 .the_menu {
@@ -35,8 +37,7 @@ ul, li {
 	background-color: #302f2f;
 }
 
-.the_menu li a {
-	color:#FFFFFF;
+.the_menu li a {	
 	text-decoration:none;
 	padding:10px;
 	display:block;

@@ -16,11 +16,12 @@
 *
 * The Initial Developer of the Original Code is
 * Raster Images
-* Portions created by the Initial Developer are Copyright (C) 2007
+* Portions created by the Initial Developer are Copyright (C) 2014
 * the Initial Developer. All Rights Reserved.
 *
 * Contributor(s):
 * Babu Hussain A
+* Devishree V
 * Meer Asgar Hussain B
 * Prakash J
 * Suresh V
@@ -79,80 +80,84 @@ public class DirectUrlLaunch extends HttpServlet {
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     	String patId = request.getParameter("patientID");
 		String studyId = request.getParameter("studyUID");
-		String serverName = request.getParameter("serverName");
+		String serverName = request.getParameter("serverName");		
 		
 		if(studyId == null || studyId.length() == 0) {
-			studyId = "";
-		}
+			studyId = "";			
+		} 
 		
 		String[] patIDs = null;		
 		if(patId == null || patId.length() == 0) {
 			patId = "";
 		} else {
-			patIDs = patId.split("\\|");
+			patIDs = patId.split("\\|");			
 		}				
 		
-		if(LanguageHandler.source == null) {
-        	File tempDir = (File) getServletContext().getAttribute("javax.servlet.context.tempdir");
-        	LanguageHandler.source = new File(new XMLFileHandler().getXMLFilePath(tempDir.getParent()));
-        }
-  
-        ServerHandler sh = new ServerHandler();
-        Server server = null;
-        if(serverName != null && !serverName.isEmpty()) {
-            server = sh.findServerByName(serverName);
-        } else {
-            server = sh.findServerByName("");
-        }
-
-        if(server != null) {
-            //Get calling aet
-            ListenerHandler lh = new ListenerHandler();
-            String callingAET = lh.getListener().getAetitle();
-            if( !(callingAET != null && callingAET.length() > 0) ) {
-                callingAET = "OVIYAM2";
-            }
-            String dcmURL = "DICOM://" + server.getAetitle() + ":" + callingAET + "@" + server.getHostname() + ":" + server.getPort();
-            String serverURL = null;
-
-            if(server.getRetrieve().equals("WADO")) {
-                serverURL = "http://" + server.getHostname() + ":" + server.getWadoport() + "/" + server.getWadocontext();
-            } else {
-                serverURL = server.getRetrieve();
-            }
-                        
-            PatientInfo patientInfo = new PatientInfo(); 
-            if(patIDs.length == 1) {
-            	patientInfo.callFindWithQuery(patId, studyId, dcmURL); 
-            	
-            } else {
-            	for(int i=0; i<patIDs.length; i++) {
-            		patientInfo.callFindWithQuery(patIDs[i], studyId, dcmURL); 
-            	}            	
-            }
-            int totalStudies = patientInfo.getStudyList().size();
-        	//System.out.println("Total Studies###################: " + totalStudies);    
-            
-			String forwardUrl = "";
-            if(totalStudies == 1) {
-           		forwardUrl = "/viewer.html?"; 
-            } else if(totalStudies > 1) {
-            	forwardUrl = "/index.html?";
-            }
-            if(patId != null && patId.length() > 0) {
-            	forwardUrl += "patientID=" + patId;
-            }
-            if(studyId != null && studyId.length() > 0) {
-            	forwardUrl += "&studyUID=" + studyId;
-            }
-            if(serverName != null && serverName.length() > 0) {
-            	forwardUrl += "&serverName=" + serverName;
-            }
-                        
-            RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(forwardUrl);
-           	dispatcher.forward(request,response);  
-            
-		}	
+		String forwardUrl = "";	
+		try {
+			if(LanguageHandler.source == null || !LanguageHandler.source.exists()) {			
+	        	File tempDir = (File) getServletContext().getAttribute("javax.servlet.context.tempdir");
+	        	LanguageHandler.source = new File(new XMLFileHandler().getXMLFilePath(tempDir.getParent()));	
+//				forwardUrl = "/confirmation.jsp?";			
+	        } else {        	
+		        ServerHandler sh = new ServerHandler();
+		        Server server = null;
+		        if(serverName != null && !serverName.isEmpty()) {
+		            server = sh.findServerByName(serverName);
+		        } else {
+		            server = sh.findServerByName("");
+		        }
+		
+		        if(server != null) {	        	
+		            //Get calling aet
+		            ListenerHandler lh = new ListenerHandler();
+		            String callingAET = lh.getListener().getAetitle();
+		            if( !(callingAET != null && callingAET.length() > 0) ) {
+		                callingAET = "OVIYAM2";
+		            }
+		            String dcmURL = "DICOM://" + server.getAetitle() + ":" + callingAET + "@" + server.getHostname() + ":" + server.getPort();
+		            String serverURL = null;
+		
+		            if(server.getRetrieve().equals("WADO")) {
+		                serverURL = "http://" + server.getHostname() + ":" + server.getWadoport() + "/" + server.getWadocontext();
+		            } else {
+		                serverURL = server.getRetrieve();
+		            }
+		                        
+		            PatientInfo patientInfo = new PatientInfo(); 
+		            if(patIDs.length == 1) {
+		            	patientInfo.callFindWithQuery(patId, studyId, dcmURL); 
+		            	
+		            } else {
+		            	for(int i=0; i<patIDs.length; i++) {
+		            		patientInfo.callFindWithQuery(patIDs[i], studyId, dcmURL); 
+		            	}            	
+		            }
+		            int totalStudies = patientInfo.getStudyList().size();	            
+					
+		            if(totalStudies == 1) {
+		           		forwardUrl = "/viewer.html?"; 
+		            } else if(totalStudies > 1) {
+		            	forwardUrl = "/index.html?";
+		            }
+		            if(patId != null && patId.length() > 0) {
+		            	forwardUrl += "patientID=" + patId;
+		            }
+		            if(studyId != null && studyId.length() > 0) {
+		            	forwardUrl += "&studyUID=" + studyId;
+		            }
+		            if(serverName != null && serverName.length() > 0) {
+		            	forwardUrl += "&serverName=" + serverName;
+		            }	            
+		        } else {
+					throw new Exception("Server Not Found");
+		        }
+	        } 
+			RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(forwardUrl);
+	       	dispatcher.forward(request,response);
+		} catch(Exception ex) {
+			ex.printStackTrace();
+		}
 	}
 
 	/**

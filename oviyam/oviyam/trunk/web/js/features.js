@@ -173,7 +173,7 @@ function doInvert() {
 }
 
 function moveCanvas(moveDiv) {
-    if(zoomEnabled) {
+	if(zoomEnabled) {
         var zDiv = jQuery('#zoomIn').get(0);
         stopZoom(zDiv);
     }
@@ -181,84 +181,19 @@ function moveCanvas(moveDiv) {
     if(winEnabled) {
         stopWLAdjustment();
     }
-
-    var canvas = jQuery(jcanvas).parent().children().get(2);
-    var tCanvas = jQuery(jcanvas).get(0);
-    var ctx=tCanvas.getContext('2d');
-    var mouse={
-        x:0,
-        y:0
+    
+    if(scrollImages) {
+    	var stackDiv = jQuery('#stackImage').get(0);
+    	doStack(stackDiv);
     }
-
-    var img=new Image();
-    img.src=tCanvas.toDataURL("image/png");
-
+    
+    if(measureEnabled) {
+    	doMeasurement(jQuery('#ruler').get(0));
+    }
+    
     if(!moveEnabled) {
         moveEnabled = true;
-
-        canvas.onmousemove=function(e){
-            mouse={
-                x:e.pageX-this.offsetLeft,
-                y:e.pageY-this.offsetTop
-            };
-        }
-        canvas.onmousemove=function(e){
-            mouse={
-                x:e.pageX-this.offsetLeft,
-                y:e.pageY-this.offsetTop
-            };
-        }
-
-        var isDown = false;
-        var startCoords = [];
-        var last = [0, 0];
-
-        canvas.onmousedown = function(e) {
-            isDown = true;
-
-            startCoords = [
-            e.offsetX - last[0],
-            e.offsetY - last[1]
-            ];
-
-            e.preventDefault();
-            e.stopPropagation();
-            e.target.style.cursor = "url(images/move.png), auto";
-        };
-
-        canvas.onmouseup = function(e) {
-            isDown = false;
-
-            last = [
-            e.offsetX - startCoords[0], // set last coordinates
-            e.offsetY - startCoords[1]
-            ];
-
-            e.target.style.cursor = "default";
-        };
-
-        canvas.onmousemove = function(e) {
-            if(!isDown) return;
-
-            var x = e.offsetX;
-            var y = e.offsetY;
-            ctx.setTransform(1, 0, 0, 1, x - startCoords[0], y - startCoords[1]);
-            render(ctx);
-        }
-
-        var render = function() {
-            ctx.beginPath();
-            ctx.save();
-            ctx.setTransform(1,0,0,1,0,0);
-            //ctx.fillRect(0,0,canvas.width,canvas.height) //fill the background. color is default black
-            ctx.clearRect(0,0,canvas.width,canvas.height);  //clear the canvas
-            ctx.restore();
-            ctx.save();
-            ctx.drawImage(img,0,0,img.width,img.height);
-            ctx.closePath();
-            ctx.restore();
-        }
-
+        startMove();
         jQuery(moveDiv).addClass('toggleOff');
         jQuery(moveDiv).children().attr('class', 'imgOn');
     } else {
@@ -267,16 +202,105 @@ function moveCanvas(moveDiv) {
 }
 
 function stopMove(moveDiv) {
-    var canvas = jQuery(jcanvas).parent().children().get(2);
-    moveEnabled = false;
+	var canvasArr = jQuery(parent.document).find('iframe');
+	for(var i=0;i<canvasArr.length;i++) {
+		var canvas = jQuery(canvasArr[i]).contents().find('#canvasLayer2').get(0);		
+		if(canvas!=undefined) {
+			canvas.onmousedown = function(e) {
+       		 if(e.preventDefault) {
+            	e.preventDefault();
+	        }
+    	}
+		}
+	}
+	moveEnabled = false;
     jQuery(moveDiv).removeClass('toggleOff');
     jQuery(moveDiv).children().attr('class', 'imgOff');
+}
 
-    //cancel the mousedown event
+function startMove() {
+	var canvasArr = jQuery(parent.document).find('iframe');
+	for(var i=0;i<canvasArr.length;i++) {
+		var canvas = jQuery(canvasArr[i]).contents().find('#canvasLayer2').get(0);
+		var imgCanvas = jQuery(canvasArr[i]).contents().find('#imageCanvas').get(0);
+		if(imgCanvas!=undefined && canvas!=undefined) {
+			bindMoveCanvas(imgCanvas,canvas);
+		}
+	}
+}
+
+function bindMoveCanvas(tCanvas,canvas) {
+	var ctx = tCanvas.getContext('2d');
+    var mouse={
+        x:0,
+        y:0
+    }
+
+    var img=new Image();
+    img.src=tCanvas.toDataURL("image/png");
+
+    moveEnabled = true;
+
+    canvas.onmousemove=function(e){
+        mouse={
+            x:e.pageX-this.offsetLeft,
+            y:e.pageY-this.offsetTop
+        };
+    }
+    canvas.onmousemove=function(e){
+        mouse={
+            x:e.pageX-this.offsetLeft,
+            y:e.pageY-this.offsetTop
+        };
+    }
+
+    var isDown = false;
+    var startCoords = [];
+    var last = [0, 0];
+
     canvas.onmousedown = function(e) {
-        if(e.preventDefault) {
-            e.preventDefault();
-        }
+        isDown = true;
+
+        startCoords = [
+        e.pageX - last[0],
+        e.pageY - last[1]
+        ];
+
+        e.preventDefault();
+        e.stopPropagation();
+        e.target.style.cursor = "url(images/move.png), auto";
+    };
+
+    canvas.onmouseup = function(e) {
+        isDown = false;
+
+        last = [
+        e.pageX - startCoords[0], // set last coordinates
+        e.pageY - startCoords[1]
+        ];
+
+        e.target.style.cursor = "default";
+    };
+
+    canvas.onmousemove = function(e) {
+        if(!isDown) return;
+        var x = e.pageX;
+        var y = e.pageY;
+        ctx.setTransform(1, 0, 0, 1, x - startCoords[0], y - startCoords[1]);
+        render(ctx);
+    }
+
+    var render = function() {
+        ctx.beginPath();
+        ctx.save();
+        ctx.setTransform(1,0,0,1,0,0);
+        //ctx.fillRect(0,0,canvas.width,canvas.height) //fill the background. color is default black
+        ctx.clearRect(0,0,canvas.width,canvas.height);  //clear the canvas
+        ctx.restore();
+        ctx.save();
+        ctx.drawImage(img,0,0,img.width,img.height);
+        ctx.closePath();
+        ctx.restore();
     }
 }
 
@@ -306,37 +330,61 @@ var zoomEnabled = false;
 function startZoom(zoomDiv) {
     // stop move if move enabled
     if(moveEnabled) {
-        var mvDiv = jQuery('#move').get(0);
-        stopMove(mvDiv);
+        stopMove(jQuery('#move').get(0));
     }
 
     if(winEnabled) {
         stopWLAdjustment();
     }
+    
+    if(scrollImages) {
+    	doStack(jQuery('#stackImage').get(0));
+    }
+    
+    if(measureEnabled) {
+    	doMeasurement(jQuery('#ruler').get(0));
+    }
 
     if(!zoomEnabled) {
+    	src = "";
         zoomEnabled = true;
         doMouseWheel = false;
         jQuery(zoomDiv).addClass('toggleOff');
         jQuery(zoomDiv).children().attr('class', 'imgOn');
-        doZoom(jcanvas);
+        //doZoom(jcanvas);
+        bindZoom(jcanvas);
     } else {
         stopZoom(zoomDiv);
     }
 }
 
 function stopZoom(zoomDiv) {
+	src = "";
     zoomEnabled = false;
     doMouseWheel = true;
     jQuery(zoomDiv).removeClass('toggleOff');
     jQuery(zoomDiv).children().attr('class', 'imgOff');
 
-    //to remove the mousedown event listener
+  /* //to remove the mousedown event listener
     var kCanvas = jQuery(jcanvas).siblings().get(1);
-    kCanvas.removeEventListener('mousedown', mouseDown, false);
+    kCanvas.removeEventListener('mousedown', mouseDown, false);*/
+    
+    var iframes = jQuery(parent.document).find('iframe');
+		for(var i=0;i<iframes.length;i++) {
+			var imgCanvas = jQuery(iframes[i]).contents().find('#imageCanvas').get(0);
+			jQuery(imgCanvas).siblings().get(1).removeEventListener('mousedown', mouseDown, false);			
+		}		
+	src = "";
     //to enable contextmenu while right click
     jQuery(jcanvas).parent().parent().parent().find('#contextmenu1').css('visibility', 'visible');
-    jQuery(jcanvas).parent().parent().parent().find('#contextmenu1').hide();
+    jQuery(jcanvas).parent().parent().parent().find('#contextmenu1').hide();    
+ }
+ 
+function unbindZoomCanvas() {
+	var canvas = jQuery(jcanvas).siblings().get(1);
+	if(zoomEnabled && canvas!=undefined) {
+		jQuery(jcanvas).siblings().get(1).removeEventListener('mousedown', mouseDown, false);
+	}
 }
 
 function tmpstartZoom() {
@@ -470,7 +518,7 @@ function getCurrCanvas() {
     } else {
         for (var i = 0; i < frames.length; i++) {
             var canvasBorder = jQuery(frames[i]).contents().find('canvas').css('border-top-color');
-            if(canvasBorder == "rgb(0, 255, 0)") {
+            if(canvasBorder == "rgb(255, 138, 0)") {
                 jcanvas = jQuery(frames[i]).contents().find('canvas').get(0);
                 break;
             }
@@ -681,7 +729,23 @@ function doStack(stackDiv) {
 
     if(!scrollImages) {
         scrollImages = true;
-
+        
+        stopWLAdjustment();
+        
+        if(moveEnabled) {
+        	var mvDiv = jQuery('#move').get(0);
+       		stopMove(mvDiv);
+   		}
+   		
+   		if(zoomEnabled) {
+        	var zDiv = jQuery('#zoomIn').get(0);
+       		stopZoom(zDiv);
+	    }
+	    
+	    if(measureEnabled) {
+    		doMeasurement(jQuery('#ruler').get(0));
+	    }
+	    
         startStack(stkCanvas);
 
         //jQuery('#containerBox .toolbarButton').unbind('mouseenter').unbind('mouseleave');
@@ -868,8 +932,26 @@ function resetActiveFrame() {
     if(winEnabled) {
         stopWLAdjustment();
     }
+    
+    clearAnnotations();
 
     scrollImages = false;
     moveEnabled = false;
+}
 
+function disableTools() {
+	if(winEnabled) {
+        stopWLAdjustment();
+    }
+    if(moveEnabled) {
+   		stopMove(jQuery('#move').get(0));
+	}
+   		
+	if(zoomEnabled) {
+   		stopZoom(jQuery('#zoomIn').get(0));
+    }
+	
+    if(measureEnabled) {
+    	doMeasurement(jQuery('#ruler').get(0));
+    }
 }

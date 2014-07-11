@@ -8,7 +8,7 @@ function syncSeries() {
     }
 
     for(var k=0; k<frames.length; k++) {
-        if(jQuery(frames[k]).contents().find('html').css('border') == '2px solid rgb(0, 255, 0)') {
+        if(jQuery(frames[k]).contents().find('html').css('border') == '1px solid rgb(255, 138, 0)') {
             mCanvas = jQuery(frames[k]).contents().find('#imageCanvas');
             selectedFrame = k;
             break;
@@ -19,6 +19,7 @@ function syncSeries() {
     var cThickLoc = jQuery(mCanvas).parent().parent().find('#thickLocationPanel').html();
 
     if(cThickLoc==null || cThickLoc.length == 0) {
+   // console.log("return");
         return;
     }
         
@@ -39,6 +40,16 @@ function syncSeries() {
                 var totalImgs = 'Images: ';
                 var thickLocPanel = jQuery(frames[i]).contents().find('#thickLocationPanel');
                 var totalImgsPanel = jQuery(frames[i]).contents().find('#totalImages');
+                jQuery(frames[i]).contents().find('#imageSize');
+                
+                var imgSize = jQuery(currCanvas).parent().parent().find('#imageSize').html().substring(11).split("x");
+			    row = parseInt(imgSize[1]);
+			    column = parseInt(imgSize[0]);
+                
+                var scaleFac = Math.min(currCanvas.width/column, currCanvas.height/row);
+                
+                var dw = (scaleFac * column);
+				var dh = (scaleFac*row); 
                 
 				var instanceData = JSON.parse(sessionStorage[serUid]);
 				for(var j=0;j<instanceData.length;j++) {
@@ -48,7 +59,7 @@ function syncSeries() {
 						var instanceNo = (instanceData[j])['InstanceNo'];
 						var img1 = jQuery('#' + serUid.replace(/\./g, '_') + '_' + instanceNo,window.parent.document).get(0);
 						var currCanvas = jQuery(jQuery(frames[i]).contents().find('#imageCanvas')).get(0);
-						currCanvas.getContext("2d").drawImage(img1,0,0,currCanvas.width,currCanvas.height);
+						currCanvas.getContext("2d").drawImage(img1,(currCanvas.width-dw)/2,(currCanvas.height-dh)/2,dw,dh);
 						showHiddenValues(jQuery(jQuery(frames[i]).contents().find('#imageCanvas')),instanceData[i]);
 						var thickLocPanel = jQuery(frames[i]).contents().find('#thickLocationPanel');
 				        var totalImgsPanel = jQuery(frames[i]).contents().find('#totalImages');

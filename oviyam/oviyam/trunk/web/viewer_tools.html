@@ -7,7 +7,7 @@
         <script type="text/javascript" src="js/lib/jquery-ui-latest.js"></script>
        
         <script type="text/javascript" src="js/LoadLanguage.js"></script>
-        <script type="text/javascript" src="js/viewer_tools.js"></script>       
+        <script type="text/javascript" src="js/viewer_tools.js"></script> 		
 
         <style type="text/css">
             .toolbarButton {
@@ -39,20 +39,18 @@
 
 
             .imgOff {
-                opacity: 0.5;
                 position: relative;
                 top: 7px;
             }
 
             .imgOn {
-                opacity: 1.0;
                 position: relative;
                 top: 7px;
             }
 
             .current {
                 background: #666;
-                color: #FFFFFF;
+				opacity: 1.0;
             }
 
             #containerBox {
@@ -76,6 +74,11 @@
                 width: 145px;
                 float: right;
                 margin-top: 15px;
+                background: rgb(175,125,105);
+            }
+            
+            .ui-slider-handle {
+            	background: rgb(100,75,75) !important;
             }
 
             #loopDiv {
@@ -102,7 +105,7 @@
                 z-index: 2;
                 color: #000;
                 font-size: 11px;
-            }
+            }		
 
             /* Metadata Tag list */
             table.tagList {
@@ -117,22 +120,19 @@
                 padding: 2px;
                 font-size: 80%;
             }
-            
-            .cmenuItem {
-            	color: #FFF !important;
-            	padding-left: 5px !important;
-            	text-align: left;
-            	font-size: 13px;            	
-            }
-            
-            .cmenuItem:hover {
-            	background: #0099FF;
-            	background-image: none !important;
-            }           
 
-        </style>
+			.cmenuItem {						
+				color: #FFF !important;
+				padding-left: 5px !important;
+				text-align: left;
+				font-size: 13px;
+			}
 
-        <style>
+			.cmenuItem:hover {
+				background: #0099FF;
+				background-image: none !important;
+			}
+
             .ui-combobox {
                 position: relative;
                 display: inline-block;
@@ -155,92 +155,103 @@
             }
         </style>
 
-	<script type="text/javascript">
+		<script type="text/javascript">
 		jQuery(document).ready(function() {
-   		jQuery("#loopSlider").slider({
-        	max:1000,
-        	value:500
-    	});
-		jQuery("#loopSlider").bind("slidechange", function(event, ui) {
-		    loopSpeed = parseInt(1000 - ui.value);
-		    doLoop(jQuery('#loopChkBox').is(':checked'));
-		});
+    	jQuery("#loopSlider").slider({
+        max:1000,
+        value:500
+    });
+    jQuery("#loopSlider").bind("slidechange", function(event, ui) {
+        loopSpeed = parseInt(1000 - ui.value);
+        doLoop(jQuery('#loopChkBox').is(':checked'));
+    });
 
-		jQuery("#preset").combobox({
-			selected: function(event, ui) {
-		        changePreset(ui.item.value);
-			}
-		});
+    jQuery('#containerBox .toolbarButton').hover(function() {
+        var selected = jQuery('#containerBox').find('.current');
+        jQuery(selected).attr('class', 'toolbarButton');
+        jQuery(selected).children().attr('class', 'imgOff');
+        jQuery(this).attr('class', 'toolbarButton current');
+        jQuery(this).children().attr('class', 'imgOn');
+        jQuery(this).css('cursor', 'pointer');
+    }, function() {
+        var selected = jQuery('#containerBox').find('.current');
+        jQuery(selected).attr('class', 'toolbarButton');
+        jQuery(selected).children().attr('class', 'imgOff');
+        jQuery(this).css('cursor', 'auto');
+    });
 
-		jQuery("#presetDiv input").attr('disabled',true);
-		jQuery("#presetDiv input").attr('size', '10');
-		jQuery("#presetDiv a").css('visibility', 'hidden');
+    showSyncSeries();
 
-		jQuery('#containerBox .toolbarButton').hover(function() {
-		    var selected = jQuery('#containerBox').find('.current');
-		    jQuery(selected).attr('class', 'toolbarButton');
-		    jQuery(selected).children().attr('class', 'imgOff');
-		    jQuery(this).attr('class', 'toolbarButton current');
-		    jQuery(this).children().attr('class', 'imgOn');
-		    jQuery(this).css('cursor', 'pointer');
-		}, function() {
-		    var selected = jQuery('#containerBox').find('.current');
-		    jQuery(selected).attr('class', 'toolbarButton');
-		    jQuery(selected).children().attr('class', 'imgOff');
-		    jQuery(this).css('cursor', 'auto');
-		});
+    var changeTooltipPosition = function(event) {
+        var tooltipX = event.pageX - 8;
+        var tooltipY = event.pageY + 8;
+        jQuery('div.tooltip').css({
+            top: tooltipY,
+            left: tooltipX
+        });
+    };
 
-	    showSyncSeries();
+    var showTooltip = function(event) {
+        jQuery('div.tooltip').remove();
+        jQuery('<div class="tooltip">3D module not installed!!!</div>').appendTo('body');
+        changeTooltipPosition(event);
+    };
 
-		var changeTooltipPosition = function(event) {
-		    var tooltipX = event.pageX - 8;
-		    var tooltipY = event.pageY + 8;
-		    jQuery('div.tooltip').css({
-		        top: tooltipY,
-		        left: tooltipX
-		    });
-		};
+    var hideTooltip = function() {
+        jQuery('div.tooltip').remove();
+    };
 
-		var showTooltip = function(event) {
-		    jQuery('div.tooltip').remove();
-		    jQuery('<div class="tooltip">3D module not installed!!!</div>').appendTo('body');
-		    changeTooltipPosition(event);
-		};
+	jQuery("#windowing").contextMenu({menu: 'winContext'});	
+	jQuery("#ruler").contextMenu({menu: 'rulerContext'});	
+	var timer = null;
+	var mouseup = false;	
+		
+	jQuery('#windowing').mousedown(function(evt) {
+		mouseup = false;		
+			if(evt.which==1) {
+				timer = setTimeout(show,1000);
+				jQuery(this).mouseup(function(e) {
+					mouseup = true;
+					clearTimeout(timer);
+					if(!jQuery('#winContext').is(":visible")) {
+						loadDicom();
+					}
+				});
+			} 			
+	});
 
-		var hideTooltip = function() {
-		    jQuery('div.tooltip').remove();
-		};
+	function show() {
+		if(!mouseup) {
+			mouseup = true;
+			jQuery('#winContext').show(":visible");
+		}
+	}
 
-    	jQuery('#containerBox').css('background-color', jQuery('#westPane').css('background-color'));
-    	
-    	jQuery("#ruler").contextMenu({menu: 'rulerContext'});
-    	var timer = null;
-    	var mouseup = false;
-    	
-    	jQuery('#ruler').mousedown(function(evt) {
-    		mouseup = false;
-    		if(evt.which==1) {
-    			timer = setTimeout(showRuler,1000);
-    			jQuery(this).mouseup(function(evt){
-    				mouseup = true;
-    				clearTimeout(timer);
-    				measureOn();
-    			});
-    		}
-    	}); 
-    	
-    	function showRuler() {
-    		if(!mouseup) {
-    			jQuery('#rulerContext').show();
-    			jQuery('#ruler').unbind('mouseup');
-    		}
-    	}
-    	
-    	jQuery(document).mousedown(function() {
-    		jQuery('.contextMenu').hide();
-    	});
+	jQuery('#ruler').mousedown(function(evt) {
+		mouseup = false;
+		if(evt.which==1) {
+			timer = setTimeout(showRuler,1000);
+			jQuery(this).mouseup(function(evt) {
+				mouseup = true;
+				clearTimeout(timer);
+				if(!jQuery('#rulerContext').is(":visible")) {
+					measureOn();
+				}
+			});
+		} 			
+	});
 
-		});  // for document.ready
+	function showRuler() {
+		if(!mouseup) {
+			jQuery('#rulerContext').show();
+			//jQuery("#ruler").unbind('mouseup');
+		}
+	}
+
+	jQuery(document).mousedown(function() {
+		jQuery('.contextMenu').hide();
+	});	
+});  // for document.ready
 	
 		</script>
 	 </head>
@@ -253,9 +264,18 @@
             <div class="toolbarButton" align="center" id="layout" onclick="changeLayout('layout.html')">
                 <img src="images/layout.png" id="lblLayout" class="imgOff" alt="Layout" title="Layout">
             </div>
-            <div class="toolbarButton" align="center" id="windowing" onclick="loadDicom()">
+            <div class="toggleButton" align="center" id="windowing">
                 <img src="images/windowing.png" id="lblWindowing" class="imgOff" alt="Windowing" title="Windowing">
-            </div>
+				<ul id="winContext" class="contextMenu" style="width:90px; position:fixed; background:#000;">
+		            <li><a href="#" class="cmenuItem" onclick="changePreset(this,2)">Abdomen</a></li>
+		            <li><a href="#" class="cmenuItem" onclick="changePreset(this,3)">Lung</a></li>
+		            <li><a href="#" class="cmenuItem" onclick="changePreset(this,4)">Brain</a></li>
+		            <li><a href="#" class="cmenuItem" onclick="changePreset(this,5)">Bone</a></li>
+		            <li><a href="#" class="cmenuItem" onclick="changePreset(this,6)">Head/Neck</a></li>
+					<li type='separator' style="height: 2px; background-color: #00CC66;"></li>
+					<li><a href="#" class="selected cmenuItem" onclick="changePreset(this,1)">Default</a></li>
+				</ul>		
+	        </div>
             <div class="toggleButton" align="center" id="zoomIn" onclick="startZoom(this)">
                 <img src="images/zoomin.png" id="lblZoom" class="imgOff" alt="Zoom In" title="Zoom">
             </div>
@@ -305,35 +325,21 @@
                 <img src="images/metadata.png" id="lblMetadata" class="imgOff" alt="View meta-data" title="View Meta-data">
             </div>
             <div class="toggleButton" align="center" id="ruler">
-                <img src="images/ruler.png" id="lblLines" class="imgOff" alt="Draw measurement lines" title="Draw Measurement Lines">
-                	<ul id="rulerContext" class="contextMenu" style="width:82px; position: fixed; background:#000;">
-                		<li><a id="line" href="#" class="selected cmenuItem" onclick="setTool(this,'ruler')">Ruler</a></li>
-                		<li><a href="#" class="cmenuItem" onclick="setTool(this,'rect')">Rectangle</a></li>
-                		<li><a href="#" class="cmenuItem" onclick="setTool(this,'oval')">Oval</a></li>
-                		<li type='separator' style="height: 2px; background-color: #00CC66;"></li>
-                		<li><a href="#" class="cmenuItem" onclick="reset()">Delete All</a></li>
-                	</ul>
-            </div>
-
-            <div id="presetDiv" align="center">
-                <div style="vertical-align: middle;display: table-cell;">
-                    <select name="preset" id="preset">
-                        <option value="1" selected>Default</option>
-                        <option value="2" >Abdomen</option>
-                        <option value="3" >Lung</option>
-                        <option value="4" >Brain</option>
-                        <option value="5" >Bone</option>
-                        <option value="6" >Head/Neck</option>
-                    </select>
-                </div>
-            </div>
+                <img src="images/ruler.png" id="lblLines" class="imgOff" alt="Draw measurement lines" title="Draw Measurement Lines"/>
+				<ul id="rulerContext" class="contextMenu" style="width:82px; position:fixed; background:#000;">
+					<li><a id="line" href="#" class=" selectedshape cmenuItem" onclick="setTool(this,'ruler')">Ruler</a></li>
+		            <li><a href="#" class="cmenuItem" onclick="setTool(this,'rect')">Rectangle</a></li>
+		            <li><a href="#" class="cmenuItem" onclick="setTool(this,'oval')">Oval</a></li>
+					<li type='separator' style="height: 2px; background-color: #00CC66;"></li>
+					<li><a href="#" class="cmenuItem" onclick="reset()">Delete All </a></li>
+				</ul>
+            </div>            
 
             <div id="loopDiv">
                 <input type="checkbox" id="loopChkBox" style="margin-top:15px" onchange="doLoop(this.checked)">
-                <span style="color: #FFF; font-weight: bold;">Loop</span>
+                <span style="color: #FF8A00; font-weight: bold;">Loop</span>
                 <div id="loopSlider"></div>
             </div>
-        </div>
-
+        </div>          
     </body>
 </html>

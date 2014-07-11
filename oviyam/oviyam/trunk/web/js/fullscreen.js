@@ -72,4 +72,3 @@ Assumes Mozilla naming conventions instead of W3C for now
     // export api
     window.fullScreenApi = fullScreenApi;
 })();
-

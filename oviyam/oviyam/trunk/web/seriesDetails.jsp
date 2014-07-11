@@ -17,11 +17,12 @@
 *
 * The Initial Developer of the Original Code is
 * Raster Images
-* Portions created by the Initial Developer are Copyright (C) 2007
+* Portions created by the Initial Developer are Copyright (C) 2014
 * the Initial Developer. All Rights Reserved.
 *
 * Contributor(s):
 * Babu Hussain A
+* Devishree V
 * Meer Asgar Hussain B
 * Prakash J
 * Suresh V
@@ -48,13 +49,13 @@
 <html>
 <head>
 
-    <style>
+   <!--  <style>
         /* To hide toolbar (top curve) */
-        .dataTables_wrapper .fg-toolbar
+       /* .dataTables_wrapper .fg-toolbar
         {
             display: none;
-        }
-    </style>
+        }*/
+    </style>-->
 
     <script type="text/javascript" src="js/lib/jquery.dataTables.min.js"></script>
 

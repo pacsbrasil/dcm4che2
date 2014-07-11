@@ -3,12 +3,21 @@
         <meta charset="utf-8">
         <script type="text/javascript" src="js/newSearch.js"></script>
         <script type="text/javascript" src="js/LoadLanguage.js"></script>
+        <script type="text/javascript" src="js/lib/jquery-gentleSelect.js"></script>
+        
         <script type="text/javascript">
             $(document).ready(function() {
                 $('button').button();
                 $('.bdate').datepicker();
                 $('.fsdate').datepicker();
                 $('.tsdate').datepicker();
+                
+                $('#<%=request.getParameter("tabName")%>_modalities').gentleSelect({
+			   		 columns: 3,
+		    		 itemWidth: 20,
+				     maxDisplay: 3,				    
+				     prompt: "ALL", 
+		   		 });	
 
 //                var lang = getCookie('language');
 //                if (lang == 'none') {
@@ -48,6 +57,8 @@
                 float: left;
                 width: 10em;
                 margin-right: 1em;
+/*                 font-weight: bold; */
+/*                 font-size: 12px; */
             }
 
         </style>
@@ -55,9 +66,11 @@
     </head>
     <body>
         <div id="newQueryParamDiv" class="ui-widget-content">
-            <table id="findTable" class="ui-widget-content" width="80%" height="90%" cell-spacing="4" style="margin-left: 10px; font-size: 100%;border: none;">
+<!--             <table id="findTable" class="ui-widget-content" width="930px" height="90%" cell-spacing="4" style="margin-left: 10px; font-size: 100%;border: none;"> -->
+<table id="findTable" class="ui-widget-content" width="80%" height="90%" cell-spacing="4" style="margin-left: 10px; font-size: 100%;border: none;">
                 <tr>
-                    <td>
+<!--                     <td style="width:50px;"> -->
+						<td>
                         <label for="patId">Patient Name</label>
                         <input type="search" id="patId" />
                     </td>
@@ -92,8 +105,8 @@
                         <input type="search" id="referPhysician"/>
                     </td>
                     <td>
-                        <label for="modalities">Modality</label>
-                        <select id="modalities" multiple="multiple" size="5" class="modalitiesList">
+                        <div style=" padding-bottom: 4px;">Modality</div>
+                        <select id="<%=request.getParameter("tabName")%>_modalities" multiple="multiple" class="modalitiesList" style="display: none;">
                             <option value="CT">CT</option>
                             <option value="CR">CR</option>
                             <option value="XA">XA</option>
@@ -104,11 +117,11 @@
                             <option value="SC">SC</option>
                             <option value="NM">NM</option>
                             <option value="RF">RF</option>
-                            <option value="OT">OT</option>
-                        </select>
+                            <option value="OT">OT</option>                            
+                        </select>    
                     </td> 
-                    <td><button id="okBtn" onclick="searchClick(this)" style="width:64px;height:27px;" class="searchBtn">Search</button>
-                        <button id="resetBtn" onclick="resetClick(this)" style="width:57px;height:27px;" class="clearBtn">Reset</button>
+                    <td><button id="okBtn" onclick="searchClick(this)" style="width:64px;height:27px; font-weight: bold; font-size: 12px;" class="searchBtn">Search</button>
+                        <button id="resetBtn" onclick="resetClick(this, <%=request.getParameter("tabName")%>_modalities);" style="width:57px;height:27px; font-weight: bold; font-size: 12px;" class="clearBtn">Reset</button>
                     </td>
                 </tr>
             </table>

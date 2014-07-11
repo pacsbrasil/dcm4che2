@@ -16,11 +16,12 @@
 *
 * The Initial Developer of the Original Code is
 * Raster Images
-* Portions created by the Initial Developer are Copyright (C) 2007
+* Portions created by the Initial Developer are Copyright (C) 2014
 * the Initial Developer. All Rights Reserved.
 *
 * Contributor(s):
 * Babu Hussain A
+* Devishree V
 * Meer Asgar Hussain B
 * Prakash J
 * Suresh V
@@ -89,12 +90,26 @@ public class UserConfiguration extends HttpServlet {
             System.out.println("User name: " + userName);*/
             
             String userName = request.getUserPrincipal().getName();
+            
+            if(actionToDo.equalsIgnoreCase("ROLE")) {
+            	String role = "";
+            	if(request.isUserInRole("WebAdmin") || request.isUserInRole("admin")) {
+            		role = "Admin";
+                } else {
+                	role = "Other";
+                }
+            	response.setContentType("text/html");
+            	out = response.getWriter();
+        		out.print(role);
+        		out.close();
+            } else {        
 
             //File tempDir = (File) getServletContext().getAttribute("javax.servlet.context.tempdir");
             UserHandler uh = new UserHandler();
             String str = null;
             out = response.getWriter();
-            User user = uh.findUserByName(userName);
+            User user = uh.findUserByName(userName);  
+            
 
             if(user == null) {
                 user = new User();
@@ -149,7 +164,7 @@ public class UserConfiguration extends HttpServlet {
                     out.println("Success");
                 }
             }
-
+            }
         } catch (Exception ex) {
             log.error("Exception occured in User Configuration servlet", ex);
             //out.println("Failure");

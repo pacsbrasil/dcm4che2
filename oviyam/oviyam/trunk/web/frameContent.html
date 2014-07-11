@@ -52,10 +52,10 @@
             <div id="seriesDesc" class="textOverlay" style="right:7px;top:50px"></div>
             <div id="PDFContent" align="center"></div>
             <div id="SRContent"></div>
-            <div style="height:100%; margin:auto;" id="canvasDiv">
+            <div style="height:100%; margin:auto;" id="canvasDiv" onclick="setBorder(jQuery(this).children().get(2));">
                 <canvas id="imageCanvas"  style="z-index:1; position:absolute; margin:auto;">Your browser doesn't support canvas.</canvas>
                 <canvas id="canvasLayer1" style="z-index:2; position:absolute; margin:auto;">Your browser doesn't support canvas.</canvas>
-                <canvas id="canvasLayer2" style="z-index:3; position:absolute; margin:auto;" onclick="setBorder(this)">Your browser doesn't support canvas.</canvas>
+                <canvas id="canvasLayer2" style="z-index:3; position:absolute; margin:auto;">Your browser doesn't support canvas.</canvas>
             </div>
             <div id="totalImages" class="textOverlay" style="left:5px; bottom:55px"></div>
             <div id="windowLevel" class="textOverlay" style="left:5px; bottom:35px"></div>
@@ -101,6 +101,7 @@
 	            		var series = seriesData[i];
 	            		if(series['seriesUID']==getParameter(queryString,'seriesUID')){
             				jQuery('#seriesDesc').html(series['seriesDesc']);
+            				jQuery("#modalityDiv").html(series['modality']);
             			}
             			cxtContent +='<li><a href="frameContent.html?serverURL=';
             			cxtContent += getParameter(queryString, 'serverURL');

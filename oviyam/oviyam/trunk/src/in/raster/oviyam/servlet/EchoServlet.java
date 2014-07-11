@@ -16,11 +16,12 @@
 *
 * The Initial Developer of the Original Code is
 * Raster Images
-* Portions created by the Initial Developer are Copyright (C) 2007
+* Portions created by the Initial Developer are Copyright (C) 2014
 * the Initial Developer. All Rights Reserved.
 *
 * Contributor(s):
 * Babu Hussain A
+* Devishree V
 * Meer Asgar Hussain B
 * Prakash J
 * Suresh V
@@ -63,7 +64,7 @@ public class EchoServlet extends HttpServlet {
      * Default constructor.
      */
     public EchoServlet() {
-        // TODO Auto-generated constructor stub
+
     }
 
 	/**

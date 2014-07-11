@@ -16,11 +16,12 @@
 *
 * The Initial Developer of the Original Code is
 * Raster Images
-* Portions created by the Initial Developer are Copyright (C) 2007
+* Portions created by the Initial Developer are Copyright (C) 2014
 * the Initial Developer. All Rights Reserved.
 *
 * Contributor(s):
 * Babu Hussain A
+* Devishree V
 * Meer Asgar Hussain B
 * Prakash J
 * Suresh V
@@ -77,6 +78,7 @@ public class QueryParams extends HttpServlet {
         String dateCrit = request.getParameter("dateCriteria");
         String timeCrit = request.getParameter("timeCriteria");
         String modality = request.getParameter("modality");
+        String studyDesc = request.getParameter("studyDesc");
         String autoRefresh = request.getParameter("autoRefresh");
         String toDo = request.getParameter("todo");
         
@@ -96,6 +98,7 @@ public class QueryParams extends HttpServlet {
             btn.setDateCrit(dateCrit);
             btn.setTimeCrit(timeCrit);
             btn.setModality(modality);
+            btn.setStudyDesc(studyDesc);
             btn.setAutoRefresh(autoRefresh);
             
             //File tempDir = (File) getServletContext().getAttribute("javax.servlet.context.tempdir");

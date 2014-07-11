@@ -297,35 +297,39 @@ function serClick(row) {
 }*/
 
 function imageHandler() {
-	var seriesData = JSON.parse(sessionStorage[parent.pat.studyUID]);
 	var data = null;
 	var qryStr = null;
 	if(jQuery("#frameSrc").html()!=null) {
-		qryStr = jQuery("#frameSrc").html();
-		data = JSON.parse(sessionStorage[getParameter(qryStr,'seriesUID')]);
+		qryStr = jQuery("#frameSrc").html();		
 	} else {
 		qryStr = jQuery(jcanvas).parent().parent().find('#frameSrc').html();
-		data = JSON.parse(sessionStorage[getParameter(qryStr,'seriesUID')]);
 	}
-	instances = new Array(data.length);
-	for(var i=0;i<data.length;i++) {
-		instances[i] = (data[i])['SopUID'];
-	}	
+	
 	imgInc = 0;
-    var instanceNo = getParameter(qryStr, 'instanceNumber');
-
-    if(instanceNo != null && instanceNo.length > 0) {
-        imgInc = parseInt(instanceNo);
-    }
-	if(parent.pat.totalIns>1) {
-		jQuery("#totalImages").html('Images: '+(imgInc+1) + '/ ' + self.instances.length);        		
-	} else {
-		jQuery("#totalImages").html('Image: '+(imgInc+1) + '/ ' + self.instances.length);     		
+	var instanceNo = getParameter(qryStr, 'instanceNumber');
+	
+	if(instanceNo!=null && instanceNo.length>0) {
+		imgInc = parseInt(instanceNo);
 	}
-    if(!jQuery('#loopChkBox').is(':checked')) {
-	    parent.sopClassUID = (data[imgInc])['SopClassUID'];		
-		windowLevelHandler(data[imgInc]);
+	
+	data = sessionStorage[getParameter(qryStr,'seriesUID')];
+	if(data!=null) {
+		data = JSON.parse(data);
+		if(instanceNo>data.length) {
+			imgInc = 0;
+		}
+		if(parent.pat.totalIns>1) {
+			jQuery("#totalImages").html('Images: '+(imgInc+1) + '/ ' + data.length);        		
+		} else {
+			jQuery("#totalImages").html('Image: '+(imgInc+1) + '/ ' + data.length);     		
+		}
+		if(!jQuery('#loopChkBox').is(':checked')) {
+			parent.sopClassUID = (data[imgInc])['SopClassUID'];					
+			windowLevelHandler(data[imgInc], data.length);
+		}
 	}
+	
+	showImage(getParameter(qryStr, 'seriesUID') + "_" + (imgInc+1), null);				
 }
 
 function imageDetailsHandler(transaction, results) {
@@ -379,23 +383,20 @@ function prevImage(iInc) {
     } else {
         imgInc = iInc-1;
         var actFrame = getActiveFrame();
-        instances = actFrame.contentWindow.instances;
 
+		var totalInstances = JSON.parse(sessionStorage[getParameter(frmSrc,'seriesUID')]).length;
         if(imgInc < 0) {
         	return;
         }
-
         if(typeof(parent.jcanvas) != "undefined") {
-            jQuery(parent.jcanvas).parent().parent().find('#totalImages').html('Images: ' + (imgInc+1) + ' / ' + self.instances.length);
+            jQuery(parent.jcanvas).parent().parent().find('#totalImages').html('Images: ' + (imgInc+1) + ' / ' + totalInstances);
         } else {
-            jQuery("#totalImages").html('Images: ' + (imgInc+1) + ' / ' + this.instances.length);
+            jQuery("#totalImages").html('Images: ' + (imgInc+1) + ' / ' + totalInstances);
         }
-        windowLevelHandler(JSON.parse(sessionStorage[getParameter(frmSrc,'seriesUID')])[imgInc]);
+        windowLevelHandler(JSON.parse(sessionStorage[getParameter(frmSrc,'seriesUID')])[imgInc], totalInstances);        
+        showImage(getParameter(frmSrc,'seriesUID') + "_" + (imgInc+1));
     }
-    parent.imgNo = imgInc;
-    if(parent.syncEnabled) {
-            syncSeries();
-     }
+    parent.imgNo = imgInc;  
 }
 
 function nextImage(iInc) {
@@ -428,23 +429,20 @@ function nextImage(iInc) {
     } else {
         imgInc = iInc + 1;
         var actFrame = getActiveFrame();
-        instances = actFrame.contentWindow.instances;
         
-        if(imgInc == instances.length) {
+        var totalInstances = JSON.parse(sessionStorage[getParameter(frmSrc,'seriesUID')]).length;
+        if(imgInc == totalInstances) {
         	return;
         }
-
         if(typeof(parent.jcanvas) != "undefined") {
-            jQuery(parent.jcanvas).parent().parent().find('#totalImages').html('Images: ' + (imgInc+1) + ' / ' + self.instances.length);
+            jQuery(parent.jcanvas).parent().parent().find('#totalImages').html('Images: ' + (imgInc+1) + ' / ' + totalInstances);
         } else {
-            jQuery("#totalImages").html('Images: ' + (imgInc+1) + ' / ' + this.instances.length);
+            jQuery("#totalImages").html('Images: ' + (imgInc+1) + ' / ' + totalInstances);
         }
-        windowLevelHandler(JSON.parse(sessionStorage[getParameter(frmSrc,'seriesUID')])[imgInc]);
+        windowLevelHandler(JSON.parse(sessionStorage[getParameter(frmSrc,'seriesUID')])[imgInc], totalInstances);
+        showImage(getParameter(frmSrc,'seriesUID') + "_" + (imgInc+1));
     }
     parent.imgNo = imgInc;
-    if(parent.syncEnabled) {
-            syncSeries();
-     }
 }
 
 function getActiveFrame() {
@@ -454,7 +452,7 @@ function getActiveFrame() {
         activeFrame = frames[0];
     } else {
         for(var k=0; k<frames.length; k++) {
-            if(jQuery(frames[k]).contents().find('html').css('border') == '2px solid rgb(0, 255, 0)') {
+            if(jQuery(frames[k]).contents().find('html').css('border') == '1px solid rgb(255, 138, 0)') {
                 activeFrame = frames[k];
             }
         }
@@ -467,12 +465,12 @@ function showNextImage(imgNo) {
     nextImage();
 }
 
-function windowLevelHandler(data) {
+function windowLevelHandler(data, totalInstances) {
 	parent.imgNp = imgInc;
 	var windowCenter = data['windowCenter'];
 	var windowWidth = data['windowWidth'];
-	nativeRows = parseInt(data['nativeRows']);
-	nativeColumns = parseInt(data['nativeColumns']);
+	//nativeRows = parseInt(data['nativeRows']);
+	//nativeColumns = parseInt(data['nativeColumns']);
 	
 	if(data['imageOrientation']!='undefined' && data['imageOrientation']!='') {
 		var imgOrient = data['imageOrientation'].split("\\");
@@ -489,26 +487,26 @@ function windowLevelHandler(data) {
             jQuery('#imgOriTop').html(getOppositeOrientation(imgOrient[1]));
         }
 	}
+
+		if(windowCenter.indexOf('|') >=0) {
+       	 	windowCenter = windowCenter.substring(0, windowCenter.indexOf('|'));
+   		}
+
+	    if(windowWidth.indexOf('|') >=0) {
+    	    windowWidth = windowWidth.substring(0, windowWidth.indexOf('|'));
+	    }
 	
-	if(windowCenter.indexOf('|') >=0) {
-        windowCenter = windowCenter.substring(0, windowCenter.indexOf('|'));
-    }
-
-    if(windowWidth.indexOf('|') >=0) {
-        windowWidth = windowWidth.substring(0, windowWidth.indexOf('|'));
-    }
-
-    if(parent.wlApplied) {
-        windowCenter = parent.wc;
+	if(parent.wlApplied) {
+		windowCenter = parent.wc;
         windowWidth = parent.ww;
-    }
-    
+	}     
+
     if(parent.scrollImages || jQuery('#loopChkBox').is(':checked')) {
         jQuery(parent.jcanvas).parent().parent().find("#windowLevel").html('WL: ' + windowCenter + ' / ' + 'WW: ' + windowWidth);
-        jQuery(parent.jcanvas).parent().parent().find("#imageSize").html('Image size: ' + nativeColumns + ' x ' + nativeRows);
+        //jQuery(parent.jcanvas).parent().parent().find("#imageSize").html('Image size: ' + nativeColumns + ' x ' + nativeRows);
     } else {
         jQuery("#windowLevel").html('WL: ' + windowCenter + ' / ' + 'WW: ' + windowWidth);
-        jQuery("#imageSize").html('Image size: ' + nativeColumns + ' x ' + nativeRows);
+        //jQuery("#imageSize").html('Image size: ' + nativeColumns + ' x ' + nativeRows);
     }
 
     if(data['numberOfFrames'] != 'undefined' && data['numberOfFrames'] != '') {
@@ -570,12 +568,12 @@ function windowLevelHandler(data) {
         canvas = jcanvas;
     }
 
-    var view = 'View size: ' + canvas.parentNode.offsetWidth + ' x ' + canvas.parentNode.offsetHeight;
+    /*var view = 'View size: ' + canvas.parentNode.offsetWidth + ' x ' + canvas.parentNode.offsetHeight;
     if(parent.scrollImages || jQuery('#loopChkBox').is(':checked')) {
         jQuery(parent.jcanvas).parent().parent().find("#viewSize").html(view);
     } else {
         jQuery("#viewSize").html(view);
-    }
+    }*/
     
     var fSrc;
     if(parent.scrollImages || jQuery('#loopChkBox').is(':checked')) {
@@ -602,9 +600,9 @@ function windowLevelHandler(data) {
 	
 	
 	if(parent.sopClassUID == '1.2.840.10008.5.1.4.1.1.104.1') {
-        fileName = instances[imgInc] + ".pdf";
+		fileName = data['SopUID'] + ".pdf";
     } else {
-        fileName = instances[imgInc] + ".jpg";
+    	fileName = data['SopUID'] + ".jpg";    	
     }
     
     var modality;
@@ -613,15 +611,6 @@ function windowLevelHandler(data) {
     } else {
         modality = jQuery('#modalityDiv').html();
     }
-    
-    var imgCon = document.getElementById(instances[0]);
-    var imgSrc;
-    if(imgCon != null) {
-        imgSrc = imgCon.src;
-        imgSrc = imgSrc.substring(0, imgSrc.lastIndexOf("object="));
-        imgSrc += "object=" + instances[imgInc];
-        showImage(imgSrc, null);
-    }else {
         var queryString = window.location.href;
         if(queryString.indexOf('seriesUID') == -1) {
             queryString = jQuery(parent.jcanvas).parent().parent().find("#frameSrc").html();
@@ -636,7 +625,7 @@ function windowLevelHandler(data) {
             serverURL = parent.pat['serverURL'];
         }
 
-       imgSrc = 'Image.do?serverURL=' + serverURL + '&study=' + studyUID + '&series=' + seriesUID + '&object=' + instances[imgInc];     
+        imgSrc = 'Image.do?serverURL=' + serverURL + '&study=' + studyUID + '&series=' + seriesUID + '&object=' + data['SopUID'];
        
 
         if(parent.sopClassUID == '1.2.840.10008.5.1.4.1.1.104.1') {
@@ -673,14 +662,13 @@ function windowLevelHandler(data) {
                 if(parent.frameNumber > parseInt(data['numberOfFrames']))
                     parent.frameNumber = 1;
                 showImage(data['SopUID'] + "_" + parseInt(parent.frameNumber), null);
-            } else {
-                showImage(seriesUID + "_" + parseInt(imgInc+1), null);
-            }
-        }
+            }            
+        }         	
+        //}
         
-        /*if(parent.syncEnabled) {
+        if(parent.syncEnabled) {
             syncSeries();
-        }*/
+        }
         
         if(parent.displayScout) {
             if(modality.indexOf("CT") >= 0) {
@@ -699,14 +687,13 @@ function windowLevelHandler(data) {
                     range: "min",
                     value: imgInc+1,
                     min: 1,
-                    max: instances.length              
+                    max: totalInstances
                 });
             }
         } else {
             jQuery('#trackbar1').slider('option', "value", parseInt(imgInc)+1);
         }
-     }
-     setSeriesIdentification();
+     //setSeriesIdentification();
 }
 
 function isCompatible() {
@@ -714,8 +701,7 @@ function isCompatible() {
 }
 
 function showImage(src, currCanvas) {
-
-    var img1 = jQuery('#' + src.replace(/\./g,'_'), window.parent.document).get(0);    
+    var img1 = jQuery('#' + src.replace(/\./g,'_'), window.parent.document).get(0);  
     var canvas = null;
     if(currCanvas == null) {
         canvas = document.getElementById('imageCanvas');
@@ -726,68 +712,74 @@ function showImage(src, currCanvas) {
         canvas = currCanvas;
     }
 
-
     var context = canvas.getContext("2d");
 
     var vWidth = canvas.parentNode.offsetWidth;
-    var vHeight = canvas.parentNode.offsetHeight;
-
-    if(nativeColumns == 0 || nativeRows == 0) {
-        var tmpImgSize = jQuery(canvas).parent().parent().find('#imageSize').html().substring(11).split("x");
-        nativeColumns = parseInt(tmpImgSize[0]);
-        nativeRows = parseInt(tmpImgSize[1]);
-    }
-
-    var wRatio = vWidth / nativeColumns * 100;
-    var hRatio = vHeight / nativeRows * 100;
-    var zoomRatio = Math.round(Math.min(wRatio, hRatio)) / 100;
-
-    var sw = parseInt(nativeColumns * zoomRatio);
-    var sh = parseInt(nativeRows * zoomRatio);
-
-    canvas.width = sw;
-    canvas.height = sh;
-    canvas.style.width = sw;
-    canvas.style.height = sh;
-
-    jQuery("#zoomPercent").html('Zoom: ' + parseInt(zoomRatio * 100) + '%');
+    var vHeight = canvas.parentNode.offsetHeight;    
 	
-	if(typeof img1==="undefined") {
-		jQuery.sleep(3, function(){	
-			img1 = jQuery('#' + src.replace(/\./g,'_'), window.parent.document).get(0);	
-			drawImage(img1, context, canvas);			
-		});
-	} else {
-		drawImage(img1, context, canvas);
-	}
-    var top = (canvas.parentNode.offsetHeight-canvas.height) / 2;
+	canvas.width = vWidth;
+    canvas.height = vHeight;
+    canvas.style.width = vWidth;
+    canvas.style.height = vHeight;      
+
+	var top = (canvas.parentNode.offsetHeight-canvas.height) / 2;
     canvas.style.marginTop = parseInt(top) + "px";
 
     var left = (canvas.parentNode.offsetWidth - canvas.width) / 2;
     canvas.style.marginLeft = parseInt(left) + "px";
 
-    for(var j=0; j<jQuery(canvas).siblings().length; j++) {
+    for(var j=0; j<jQuery(canvas).siblings().length; j++) {    	
         var tmpCanvas = jQuery(canvas).siblings().get(j);
         if(tmpCanvas != null) {
-            tmpCanvas.width = sw;
-            tmpCanvas.height = sh;
-            tmpCanvas.style.width = sw;
-            tmpCanvas.style.height = sh;
+            tmpCanvas.width = vWidth;
+            tmpCanvas.height = vHeight;
+            tmpCanvas.style.width = vWidth;
+            tmpCanvas.style.height = vHeight;
             tmpCanvas.style.marginTop = parseInt(top) + "px";
             tmpCanvas.style.marginLeft = parseInt(left) + "px";
         }
     }
+	
+	if(typeof img1==="undefined") {
+		jQuery.sleep(3, function(){	
+			img1 = jQuery('#' + src.replace(/\./g,'_'), window.parent.document).get(0);
+			drawImage(img1, canvas);
+		});
+	} else {
+		drawImage(img1, canvas);
+	}
+    
 }
 
-function drawImage(image, context, canvas) {
+function drawImage(image, context, sx, sy, dw, dh) {
 	if(image.complete) {
-		context.drawImage(image, 0, 0, canvas.width, canvas.height);
+		context.drawImage(image, sx, sy, dw, dh);
 	} else {
 		jQuery.sleep(2, function(){
-			context.drawImage(image, 0, 0, canvas.width, canvas.height);
+			context.drawImage(image, sx, sy, dw, dh);
 		});
 	}
-	//changeImgPosInSeries(imgInc, canvas);
+}
+
+function drawImage(image,canvas) {
+	if(image.complete) {
+		nativeRows = image.naturalHeight;
+		nativeColumns = image.naturalWidth;
+		var scaleFac = Math.min(canvas.width/nativeColumns,canvas.height/nativeRows);		
+		var dw = scaleFac * nativeColumns;
+		var dh = scaleFac * nativeRows;
+		var sx = (canvas.width-dw)/2;
+		var sy = (canvas.height-dh)/2;
+		canvas.getContext('2d').drawImage(image,sx,sy,dw,dh);
+		jQuery("#zoomPercent").html('Zoom: ' + parseInt(scaleFac * 100) + '%');   
+		jQuery(canvas).parent().parent().find('#viewSize').html('View size: ' + canvas.width + ' x ' + canvas.height);
+		jQuery(canvas).parent().parent().find("#imageSize").html('Image size: ' + nativeColumns + ' x ' + nativeRows);
+		var totalImages = jQuery(canvas).parent().parent().find('#totalImages').html();
+		if(totalImages=='') {
+			jQuery(canvas).parent().parent().find('#totalImages').html("Image: " + (imgInc+1) + " / " + 1);			
+		}		
+		setSeriesIdentification();
+	} 	
 }
 
 function openSingleStudy() {

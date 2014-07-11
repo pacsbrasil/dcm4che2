@@ -13,7 +13,7 @@
                     } else if(data.trim() == 'hide') {
                 	$('#sliderVisibility').val('hide');
                     }
-                });
+                },'text');
 
                 $('#saveSlider').click(function() {
                     var msg = '';
@@ -41,7 +41,7 @@
                                 type: 'error'
                             });
                         }
-                    });
+                    },'text');
                 });
             }); // for document.ready
 

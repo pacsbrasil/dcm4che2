@@ -62,8 +62,23 @@
             .heading
             {
                 font-family: Arial,Helvitica,Serif;
-                font-size: 14px;
+                font-size: 13px;
                 font-weight: bold;
+                padding-left: 3px;
+            }
+            
+            .seriesTable {
+            	table-layout: fixed;
+            	width: 100%;
+            	font-family: Arial,Helvitica,Serif;
+            	font-size: 12px;
+            	border-spacing: 0px;
+            	padding-left: 2px;
+            }
+            
+             .scale-image {
+            	width: 30%;
+            	height: 30%;            	
             }
 
         </style>
@@ -81,15 +96,16 @@
                 $('.seriesTable').find('img:last').load(function() { 
                 	//console.log("Series Loaded!!!!!!.....");
                 	if(pat.serverURL == 'C-GET' || pat.serverURL == 'C-MOVE') {
-	                	var tmpImgSrc = $(this).attr('src');
+                		var tmpImgSrc = $(this).attr('src');
     	           		$(this).parent().waitForImages(function() {
-// 							insertInstances('${param.patient}', getParameter(tmpImgSrc, 'study'), getParameter(tmpImgSrc, 'series'));
-    	           			getInstances('${param.patient}', getParameter(tmpImgSrc, 'study'), getParameter(tmpImgSrc, 'series'));
+							//insertInstances('${param.patient}', getParameter(tmpImgSrc, 'study'), getParameter(tmpImgSrc, 'series'));  
+							getInstances('${param.patient}', getParameter(tmpImgSrc, 'study'), getParameter(tmpImgSrc, 'series'));
                			});
                		}
                 	saveJpgImages();
                 });   
-
+                //var height = jQuery(window).height()-60+"px";
+    			//jQuery('#westPane').css('height',height);  
             });  //document.ready 
             
             function changeImgView(but) {
@@ -184,7 +200,17 @@
                 var actFrame = getActiveFrame();
                 actFrame.src = url;
                 doMouseWheel = true;
-            }
+				var divName = $('.toggleOff').attr('id');
+				$('.toggleOff').removeClass('toggleOff');
+				$('.imgOn').addClass('imgOff').removeClass('imgOn');
+				if(divName=='ruler') {
+					$("#measurementDiv input").attr('size', '10');
+				    $("#measurementDiv a").css('visibility', 'hidden');
+				    measureEnabled = false;		
+				}
+				clearAnnotations();
+				parent.scrollImages = false;
+           	}
 
             function storeInstanceInfo(totIns, serId) {
             	for(var i=0; i<series.length; i++) {
@@ -200,25 +226,47 @@
                     }
             	}
             }
-
-        </script>
+            
+            function toggle(divider) {
+            	var div = $(divider);
+            	if(div.attr('title')==='Close') {		        	
+		        	div.attr('title','Open');
+		        	div.parent().css('width','1%');
+		        	div.parent().next().css('width','98%');
+		        	div.css('background','url("images/showleft.png")');
+		        	$('#previews').hide();
+		        	$('.heading').hide();
+		        	$('#studyTable').hide();
+	        	} else {
+	        		div.attr('title','Close');
+		        	div.parent().css('width','18%');
+		        	div.parent().next().css('width','82%');
+		        	div.css('background','url("images/hideleft.png")');
+		        	$('#previews').show();
+		        	$('.heading').show();
+		        	$('#studyTable').show();
+	        	}
+            }
+            </script>
 
     </head>
     <body>
-        <div id="patName" class="heading"><%=patName%></div>
-        <div id="patID" class="heading">ID: ${param.patient}</div>
-        <table id="studyTable" style="font-family: Arial,Helvitica,Serif; font-size:12px; width: 100%;border: 2px outset white; " >
+    	<div title="Close" style="width: 17px; height: 17px; cursor: pointer; float: right; background: url('images/hideleft.png');" onclick="toggle(this);"></div>
+    
+        <div id="patName" class="heading" style="color: #FF8A00; padding: 2px 0 3px 3px;"><%=patName%></div>
+        <div id="patID" class="heading" style="color:#FF8A00; padding: 0 0 3px 3px;">ID: ${param.patient}</div>
+        <table id="studyTable" style="font-family: Arial,Helvitica,Serif; font-size:13px; width: 100%;color: #FF8A00; padding-bottom:3px; border: none;">
             <tbody>
                 <tr>
                     <td colspan="2"><%=studyDesc%></td>
                 </tr>
                 <tr>
                     <td>${param.studyDate}</td>
-                    <td align="right">${param.totalSeries} Series</td>
+                    <td align="right" style="padding-right: 15px;">${param.totalSeries} Series</td>
                 </tr>
             </tbody>
         </table>
-        <br />
+        <div id="previews" style="overflow: auto; height: 89%; border-top: 2px solid black;">
     <ser:Series patientId="${param.patient}" study="${param.study}" dcmURL="${param.dcmURL}">
         <c:set var="middle" value="${(numberOfImages+0.5)/2}" />
         <fmt:formatNumber var="middle" maxFractionDigits="0" value="${middle}" />
@@ -231,16 +279,17 @@
             </script>
         </c:if>
 
-        <table class="seriesTable" style="table-layout:fixed; width: 100%; font-family: Arial,Helvitica,Serif; font-size:11px; background:#808080; border-radius:3px;">
+        <table class="seriesTable" >
             <tbody>
-                <tr onclick="jQuery(this).next().toggle()" style="cursor: pointer; background: #BBB; font-weight:bold;">
-                    <td colspan="2">${seriesDesc} - Images: ${numberOfImages}</td>
+                <tr onclick="jQuery(this).next().toggle()" style="cursor: pointer; font-weight:bold; color: #FF8A00">
+                    <td> ${seriesDesc}</td>
+                    <td align="right"> ${numberOfImages} Imgs</td>
                 </tr>
                 <tr>
                     <td colspan="2">
                         <table style="table-layout:fixed; width:100%;">
                             <tr>
-                                <td id="${fn:replace(seriesId, '.','_')}" class="seriesImgsIndex" style="width: 94%">
+                                <td id="${fn:replace(seriesId, '.','_')}" class="seriesImgsIndex" style="width: 94%;">
                             <c:forEach var="i" begin="1" end="${numberOfImages}">
                                 <c:choose>
                                     <c:when test="${(i == middle) || (i==1) || (i==numberOfImages)}">
@@ -266,15 +315,15 @@
             </tr>
 
             <tr>
-                <td colspan="2">
+                <td colspan="2" style="width: 30%; height: 30%;">
             <img:Image patientId="${param.patient}" study="${param.study}" series="${seriesId}" dcmURL="${param.dcmURL}">
                 <c:choose>
                     <c:when test="${modality == 'SR'}">
-                        <img name="${instanceNumber}" id="${fn:replace(seriesId, '.','_')}_${instanceNumber}" src="images/SR_Latest.png" imgSrc="Image.do?serverURL=${param.wadoUrl}&study=${param.study}&series=${seriesId}&object=${imageId}&rows=512" onclick="changeSeries(this)" height="48px" />
+                        <img name="${instanceNumber}" id="${fn:replace(seriesId, '.','_')}_${instanceNumber}" style="max-width: 30%; max-height: 30%;" src="images/SR_Latest.png" imgSrc="Image.do?serverURL=${param.wadoUrl}&study=${param.study}&series=${seriesId}&object=${imageId}&rows=${rows}" onclick="changeSeries(this)"/>
                     </c:when>
 
                     <c:when test="${sopClassUID == '1.2.840.10008.5.1.4.1.1.104.1'}">
-                        <img name="${instanceNumber}" id="${fn:replace(seriesId, '.','_')}_${instanceNumber}" src="images/pdf.png" imgSrc="Image.do?serverURL=${param.wadoUrl}&study=${param.study}&series=${seriesId}&object=${imageId}&rows=512" onclick="changeSeries(this)" height="48px" />
+                        <img name="${instanceNumber}" id="${fn:replace(seriesId, '.','_')}_${instanceNumber}" style="max-width: 30%; max-height: 30%;" src="images/pdf.png" imgSrc="Image.do?serverURL=${param.wadoUrl}&study=${param.study}&series=${seriesId}&object=${imageId}&rows=${rows}" onclick="changeSeries(this)" />
                     </c:when>
 
                     <c:otherwise>
@@ -282,30 +331,30 @@
                             <c:when test="${param.wadoUrl == 'C-GET'}">
                                 <c:choose>
                                     <c:when test="${(instanceNumber == middle) || (instanceNumber==1) || (instanceNumber==numberOfImages)}">
-                                        <img name="${instanceNumber}" id="${fn:replace(seriesId, '.','_')}_${instanceNumber}" src="Wado.do?dicomURL=${param.dcmURL}&study=${param.study}&series=${seriesId}&object=${imageId}&retrieveType=${param.wadoUrl}&sopClassUID=${sopClassUID}" onclick="changeSeries(this)" height="48px" />
+                                        <img name="${instanceNumber}" id="${fn:replace(seriesId, '.','_')}_${instanceNumber}" style="max-width: 30%; max-height: 30%;" src="Wado.do?dicomURL=${param.dcmURL}&study=${param.study}&series=${seriesId}&object=${imageId}&retrieveType=${param.wadoUrl}&sopClassUID=${sopClassUID}" onclick="changeSeries(this)" />
                                     </c:when>
                                     <c:otherwise>
-                                        <img name="${instanceNumber}" id="${fn:replace(seriesId, '.','_')}_${instanceNumber}" src="Wado.do?dicomURL=${param.dcmURL}&study=${param.study}&series=${seriesId}&object=${imageId}&retrieveType=${param.wadoUrl}&sopClassUID=${sopClassUID}" onclick="changeSeries(this)" height="48px" style="display:none" />
+                                        <img name="${instanceNumber}" id="${fn:replace(seriesId, '.','_')}_${instanceNumber}" style="max-width: 30%; max-height: 30%; display: none;" src="Wado.do?dicomURL=${param.dcmURL}&study=${param.study}&series=${seriesId}&object=${imageId}&retrieveType=${param.wadoUrl}&sopClassUID=${sopClassUID}" onclick="changeSeries(this)" />
                                     </c:otherwise>
                                 </c:choose>
                             </c:when>
                             <c:when test="${param.wadoUrl == 'C-MOVE'}">
                                 <c:choose>
                                     <c:when test="${(instanceNumber == middle) || (instanceNumber==1) || (instanceNumber==numberOfImages)}">
-                                        <img name="${instanceNumber}" id="${fn:replace(seriesId, '.','_')}_${instanceNumber}" src="Wado.do?dicomURL=${param.dcmURL}&study=${param.study}&series=${seriesId}&object=${imageId}&retrieveType=${param.wadoUrl}" onclick="changeSeries(this)" height="48px" />
+                                        <img name="${instanceNumber}" id="${fn:replace(seriesId, '.','_')}_${instanceNumber}" style="max-width: 30%; max-height: 30%;" src="Wado.do?dicomURL=${param.dcmURL}&study=${param.study}&series=${seriesId}&object=${imageId}&retrieveType=${param.wadoUrl}" onclick="changeSeries(this)" onload="this.style.height='auto';"/>
                                     </c:when>
                                     <c:otherwise>
-                                        <img name="${instanceNumber}" id="${fn:replace(seriesId, '.','_')}_${instanceNumber}" src="Wado.do?dicomURL=${param.dcmURL}&study=${param.study}&series=${seriesId}&object=${imageId}&retrieveType=${param.wadoUrl}" onclick="changeSeries(this)" height="48px" style="display:none" />
+                                        <img name="${instanceNumber}" id="${fn:replace(seriesId, '.','_')}_${instanceNumber}" style="max-width: 30%; max-height: 30%; display: none;" src="Wado.do?dicomURL=${param.dcmURL}&study=${param.study}&series=${seriesId}&object=${imageId}&retrieveType=${param.wadoUrl}" onclick="changeSeries(this)"  />
                                     </c:otherwise>
                                 </c:choose>
                             </c:when>
                             <c:otherwise>
                                 <c:choose>
                                     <c:when test="${(instanceNumber == middle) || (instanceNumber==1) || (instanceNumber==numberOfImages)}">
-                                        <img name="${instanceNumber}" id="${fn:replace(seriesId, '.','_')}_${instanceNumber}" src="Image.do?serverURL=${param.wadoUrl}&study=${param.study}&series=${seriesId}&object=${imageId}&rows=512" onclick="changeSeries(this)" height="48px" />
+                                        <img name="${instanceNumber}" id="${fn:replace(seriesId, '.','_')}_${instanceNumber}" style="max-width: 30%; max-height: 30%;" src="Image.do?serverURL=${param.wadoUrl}&study=${param.study}&series=${seriesId}&object=${imageId}&rows=${rows}" onclick="changeSeries(this)" />
                                     </c:when>
                                     <c:otherwise>
-                                        <img name="${instanceNumber}" id="${fn:replace(seriesId, '.','_')}_${instanceNumber}" src="Image.do?serverURL=${param.wadoUrl}&study=${param.study}&series=${seriesId}&object=${imageId}&rows=512" onclick="changeSeries(this)" height="48px" style="display:none"/>
+                                        <img name="${instanceNumber}" id="${fn:replace(seriesId, '.','_')}_${instanceNumber}" style="max-width: 30%; max-height: 30%; display: none;" src="Image.do?serverURL=${param.wadoUrl}&study=${param.study}&series=${seriesId}&object=${imageId}&rows=${rows}" onclick="changeSeries(this)" />
                                     </c:otherwise>
                                 </c:choose>
                             </c:otherwise>
@@ -320,7 +369,7 @@
             <img:Image patientId="${param.patient}" study="${param.study}" series="${seriesId}" dcmURL="${param.dcmURL}">
                 <c:if test="${multiframe == 'yes'}">
                     <c:forEach var="i" begin="1" end="${numberOfFrames}">
-                        <img name="${i}" id="${fn:replace(imageId, '.','_')}_${i}" src="Image.do?serverURL=${param.wadoUrl}&study=${param.study}&series=${seriesId}&object=${imageId}&rows=512&frameNumber=${i}" height="48px" style="display:none" />
+                        <img name="${i}" id="${fn:replace(imageId, '.','_')}_${i}" style="max-width: 30%; max-height: 30%; display: none;" src="Image.do?serverURL=${param.wadoUrl}&study=${param.study}&series=${seriesId}&object=${imageId}&rows=${rows}&frameNumber=${i}"/>
                     </c:forEach>
                 </c:if>
             </img:Image>
@@ -332,10 +381,10 @@
 </tr>
 </tbody>
 </table>
-<div style="height:3px"></div>
+<!--<div style="height:3px"></div>-->
 </ser:Series>
-
-<script type="text/javascript">
+</div>
+<!--  <script type="text/javascript">
 	var bgClr = jQuery('#westPane').css('background-color');
 	bgClr = bgClr.substring(bgClr.indexOf('(')+1, bgClr.indexOf(')'));
 	var bgColorArr = bgClr.split(',');
@@ -347,9 +396,9 @@
     	}
 	}
 	bgClr += ')';
-	jQuery('#studyTable').css('color', bgClr);
+	//jQuery('#studyTable').css('color', bgClr);
 	jQuery('#westPane').css('color', bgClr);
-</script>
+</script>-->
 
 </body>
 </html>

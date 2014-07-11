@@ -3,11 +3,11 @@ var firstSeries;
 var imgLoaded = false;
 
 function loadViewerPage() {
-	myLayout = $('#optional-container').layout({
+	/*myLayout = $('#optional-container').layout({
 		west: {
 	    	size: 205
 	    }
-	});
+	});*/
 	initPage();
 
 	$("#toolbarContainer").load("viewer_tools.html");

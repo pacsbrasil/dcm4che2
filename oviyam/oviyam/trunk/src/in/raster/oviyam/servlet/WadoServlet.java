@@ -70,8 +70,6 @@ import org.dcm4che2.io.DicomInputStream;
 import org.dcm4che2.tool.dcmqr.DcmQR;
 import com.sun.image.codec.jpeg.JPEGCodec;	 
 import com.sun.image.codec.jpeg.JPEGImageEncoder;
-//import com.sun.image.codec.jpeg.JPEGCodec;	 
-//import com.sun.image.codec.jpeg.JPEGImageEncoder;
 
 /**
  *
@@ -197,14 +195,14 @@ public class WadoServlet extends HttpServlet {
 
             if(bufferImage2 != null) {
                 BufferedImage finalBufferImage = addImages(bufferImage1, bufferImage2);
-//                ImageIO.write(finalBufferImage, "jpeg", output);
+                //ImageIO.write(finalBufferImage, "jpeg", output);
                 encoder.encode(finalBufferImage);
             } else {
-//                ImageIO.write(bufferImage1, "jpeg", output);
+                //ImageIO.write(bufferImage1, "jpeg", output);
                 encoder.encode(bufferImage1);
             }
             
-//            output.close();
+            output.close();
 
             startStream(response, outputJpegFile, contentType);
 

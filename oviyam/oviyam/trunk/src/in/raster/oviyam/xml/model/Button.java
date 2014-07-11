@@ -16,11 +16,12 @@
 *
 * The Initial Developer of the Original Code is
 * Raster Images
-* Portions created by the Initial Developer are Copyright (C) 2007
+* Portions created by the Initial Developer are Copyright (C) 2014
 * the Initial Developer. All Rights Reserved.
 *
 * Contributor(s):
 * Babu Hussain A
+* Devishree V
 * Meer Asgar Hussain B
 * Prakash J
 * Suresh V
@@ -62,6 +63,9 @@ public class Button {
 
     @Element(required=false)
     private String modality;
+    
+    @Element(required=false)
+    private String studyDesc;
 
     @Element(name="auto-refresh")
     private String autoRefresh;
@@ -104,6 +108,14 @@ public class Button {
 
     public void setAutoRefresh(String autoRefresh) {
         this.autoRefresh = autoRefresh;
+    }
+    
+    public String getStudyDesc() {
+    	return studyDesc;
+    }
+    
+    public void setStudyDesc(String studyDesc) {
+    	this.studyDesc = studyDesc;
     }
 
 }

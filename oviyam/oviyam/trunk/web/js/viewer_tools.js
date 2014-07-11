@@ -1,3 +1,5 @@
+var systemDB = null;
+
 jQuery(document).keyup(function(e) {
     var curr = jQuery('#containerBox').find('.current');
 
@@ -62,5 +64,14 @@ jQuery(document).keyup(function(e) {
         }
 
     }
-
 });
+
+function onMouseHover(div) {
+	jQuery(div).children().attr('class','imgOn');
+}
+
+function onMouseOut(div) {
+	if(jQuery('.toggleOff').attr('id')!=jQuery(div).attr('id')) {
+		jQuery(div).children().attr('class','imgOff');
+	}
+}

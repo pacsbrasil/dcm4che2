@@ -126,7 +126,7 @@
 
                         $.ajax({
                             url: 'QueryParams.do',
-                            data: {'buttonLabel':$('#displayName').val(), 'dateCriteria':dateFilter, 'timeCriteria':timeFilter, 'modality':$('#modalities').val(), 'autoRefresh':autoRef, 'todo':'ADD'},
+                            data: {'buttonLabel':$('#displayName').val(), 'dateCriteria':dateFilter, 'timeCriteria':timeFilter, 'modality':$('#modalities').val(), 'autoRefresh':autoRef,'studyDesc':$('#studyDesc').val(), 'todo':'ADD'},
                             type: 'POST',
                             success: function(msg) {
                                 alert("added");
@@ -274,6 +274,10 @@
                             </tbody>
                         </table>
                     </td>
+                </tr>
+                <tr>
+                	<td> Study Description </td>
+                	<td><input type="text" id="studyDesc" /> </td>
                 </tr>
                 <tr>
                     <td><input type="checkbox" id="autoRefresh">Auto Refresh</td>

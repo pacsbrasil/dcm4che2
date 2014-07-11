@@ -16,11 +16,12 @@
 *
 * The Initial Developer of the Original Code is
 * Raster Images
-* Portions created by the Initial Developer are Copyright (C) 2007
+* Portions created by the Initial Developer are Copyright (C) 2014
 * the Initial Developer. All Rights Reserved.
 *
 * Contributor(s):
 * Babu Hussain A
+* Devishree V
 * Meer Asgar Hussain B
 * Prakash J
 * Suresh V
@@ -78,6 +79,7 @@ public class ServerConfigServlet extends HttpServlet {
         String wadoCxt = request.getParameter("wadoContext");
         String wadoport = request.getParameter("wadoPort");
         String previews = request.getParameter("previews");
+        
         String action = request.getParameter("todo");
 
         PrintWriter out = response.getWriter();

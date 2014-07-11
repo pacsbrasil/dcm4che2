@@ -89,6 +89,7 @@ images/all.png
 images/one.png
 images/layout.png
 images/windowing.png
+images/wincursor.png
 images/zoomin.png
 images/move.png
 images/scout.png
@@ -108,6 +109,9 @@ images/fullscreen0.png
 images/metadata.png
 images/ruler.png
 images/overlay_spinner.gif
+images/favicon.png
+images/hideleft.png
+images/showleft.png
 css/images/ui-bg_highlight-hard_100_f9f9f9_1x100.png
 css/images/selected.png
 
@@ -118,4 +122,3 @@ Image.do
 UserConfig.do
 Wado.do
 DcmStream.do
-

@@ -16,11 +16,12 @@
 *
 * The Initial Developer of the Original Code is
 * Raster Images
-* Portions created by the Initial Developer are Copyright (C) 2007
+* Portions created by the Initial Developer are Copyright (C) 2014
 * the Initial Developer. All Rights Reserved.
 *
 * Contributor(s):
 * Babu Hussain A
+* Devishree V
 * Meer Asgar Hussain B
 * Prakash J
 * Suresh V
@@ -102,6 +103,7 @@ public class InstanceServlet extends HttpServlet {
         if( !(!wadoURL.equals("C-MOVE") && !wadoURL.equals("C-GET")) ) {
             String dest = LanguageHandler.source.getAbsolutePath();
             //fname = ServerConfigLocator.locate().getServerHomeDir() + File.separator + "data" + File.separator + "oviyam2";
+//            fname = dest.substring(0, dest.indexOf("oviyam2-config.xml")-1) + File.separator + "oviyam2";
             fname = dest.substring(0, dest.indexOf("oviyam2-1-config.xml")-1) + File.separator + "oviyam2";
             fname += File.separator + studyUID;
         } else {
@@ -126,7 +128,7 @@ public class InstanceServlet extends HttpServlet {
 
                 String UrlTmp = null;
 
-                //System.out.println("Dicom URL: " + UrlTmp);
+//                System.out.println("Dicom URL: " + UrlTmp);
                 try {
                     //if(wadoURL.equals("C-MOVE")) {
                     if( !(!wadoURL.equals("C-MOVE") && !wadoURL.equals("C-GET")) ) {
@@ -219,7 +221,7 @@ public class InstanceServlet extends HttpServlet {
                     is.close();
                 } catch(Exception e) {
                     is.close();
-                    dis.close();
+                    dis.close();                    
                     log.error("Error while reading DICOM attributes " + e);
                     e.printStackTrace();
                 }

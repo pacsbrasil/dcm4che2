@@ -27,7 +27,7 @@ MRLocalizer.drawScoutLineWithBorder = function() {
 
    // if(imgType == 'AXIAL') {
         for(i=0; i<frames.length; i++) {
-            if(jQuery(frames[i]).contents().find('html').css('border') != '2px solid rgb(0, 255, 0)') {
+            if(jQuery(frames[i]).contents().find('html').css('border') != '1px solid rgb(255, 138, 0)') {
                 var cSopInsUid = jQuery(frames[i]).contents().find('#frameSrc').html();
                 cSopInsUid = cSopInsUid.substring(cSopInsUid.indexOf('objectUID=')+10);
                 destCanvas = jQuery(frames[i]).contents().find('#canvasLayer1');
@@ -90,6 +90,13 @@ function projectSliceMR(_imgType) {
     var zoomLabel = jQuery(currCanvas).parent().parent().find('#zoomPercent').html();
     zoomLabel = zoomLabel.substring(6, zoomLabel.indexOf("%"));
     zoomPer = parseFloat(zoomLabel / 100);
+    
+    var dw = (zoomPer * scoutColumn);
+    var dh = (zoomPer * scoutRow);
+    
+    originX = (currCanvas.width-dw)/2;
+    originY = (currCanvas.height-dh)/2;
+
 
     locator = new SliceLocator();
 
@@ -148,17 +155,17 @@ function projectSliceMR(_imgType) {
 
     if(imgPlane == "SAGITTAL") {
         locator.projectSlice(scoutPos, scoutOrientation, scoutPixelSpacing, scoutRow, scoutColumn, imgPos, imgOrientation, imgPixelSpacing, imgRow, imgColumn);
-        drawLine(parseInt(locator.getBoxUlx()*zoomPer), parseInt(locator.getBoxUly()*zoomPer), parseInt(locator.getBoxLlx()*zoomPer), parseInt(locator.getBoxLly()*zoomPer), cCanvas, "GREEN", null);
+        drawLine(parseInt(locator.getBoxUlx()*zoomPer+originX), parseInt(locator.getBoxUly()*zoomPer+originY), parseInt(locator.getBoxLlx()*zoomPer+originX), parseInt(locator.getBoxLly()*zoomPer+originY), cCanvas, "GREEN", null);
 
-        drawLine(parseInt(locator.getBoxUlx()*zoomPer), parseInt(locator.getBoxUly()*zoomPer)+thick, parseInt(locator.getBoxLlx()*zoomPer), parseInt(locator.getBoxLly()*zoomPer)+thick, cCanvas, "GREEN", null);
-        drawLine(parseInt(locator.getBoxUlx()*zoomPer), parseInt(locator.getBoxUly()*zoomPer)-thick, parseInt(locator.getBoxLlx()*zoomPer), parseInt(locator.getBoxLly()*zoomPer)-thick, cCanvas, "GREEN", null);
+        drawLine(parseInt(locator.getBoxUlx()*zoomPer+originX), parseInt(locator.getBoxUly()*zoomPer+originY)+thick, parseInt(locator.getBoxLlx()*zoomPer+originX), parseInt(locator.getBoxLly()*zoomPer+originY)+thick, cCanvas, "GREEN", null);
+        drawLine(parseInt(locator.getBoxUlx()*zoomPer+originX), parseInt(locator.getBoxUly()*zoomPer+originY)-thick, parseInt(locator.getBoxLlx()*zoomPer+originX), parseInt(locator.getBoxLly()*zoomPer+originY)-thick, cCanvas, "GREEN", null);
 
     } else {//if(imgPlane == "CORONAL") {
         locator.projectSlice(scoutPos, scoutOrientation, scoutPixelSpacing, scoutRow, scoutColumn, imgPos, imgOrientation, imgPixelSpacing, imgRow, imgColumn);
-        drawLine(parseInt(locator.getmAxisLeftx()*zoomPer), parseInt(locator.getmAxisLefty()*zoomPer), parseInt(locator.getmAxisRightx()*zoomPer), parseInt(locator.getmAxisRighty()*zoomPer), cCanvas, "GREEN", null);
+        drawLine(parseInt(locator.getmAxisLeftx()*zoomPer+originX), parseInt(locator.getmAxisLefty()*zoomPer+originY), parseInt(locator.getmAxisRightx()*zoomPer+originX), parseInt(locator.getmAxisRighty()*zoomPer+originY), cCanvas, "GREEN", null);
 
-        drawLine(parseInt(locator.getmAxisLeftx()*zoomPer), parseInt(locator.getmAxisLefty()*zoomPer)+thick, parseInt(locator.getmAxisRightx()*zoomPer), parseInt(locator.getmAxisRighty()*zoomPer)+thick, cCanvas, "GREEN", null);
-        drawLine(parseInt(locator.getmAxisLeftx()*zoomPer), parseInt(locator.getmAxisLefty()*zoomPer)-thick, parseInt(locator.getmAxisRightx()*zoomPer), parseInt(locator.getmAxisRighty()*zoomPer)-thick, cCanvas, "GREEN", null);
+        drawLine(parseInt(locator.getmAxisLeftx()*zoomPer+originX), parseInt(locator.getmAxisLefty()*zoomPer+originY)+thick, parseInt(locator.getmAxisRightx()*zoomPer+originX), parseInt(locator.getmAxisRighty()*zoomPer+originY)+thick, cCanvas, "GREEN", null);
+        drawLine(parseInt(locator.getmAxisLeftx()*zoomPer+originX), parseInt(locator.getmAxisLefty()*zoomPer+originY)-thick, parseInt(locator.getmAxisRightx()*zoomPer+originX), parseInt(locator.getmAxisRighty()*zoomPer+originY)-thick, cCanvas, "GREEN", null);
 
     } /*else {
         locator.projectSlice(scoutPos, scoutOrientation, scoutPixelSpacing, scoutRow, scoutColumn, imgPos, imgOrientation, imgPixelSpacing, imgRow, imgColumn);
@@ -225,7 +232,7 @@ function projectScoutLineMR(sliceModel) {
             }
 	}
 
-        drawLine(parseInt(locator.getmAxisLeftx()*zoomPer), parseInt(locator.getmAxisLefty()*zoomPer), parseInt(locator.getmAxisRightx()*zoomPer), parseInt(locator.getmAxisRighty()*zoomPer), currCanvas, "YELLOW", null);
+        drawLine(parseInt(locator.getmAxisLeftx()*zoomPer+originX), parseInt(locator.getmAxisLefty()*zoomPer+originY), parseInt(locator.getmAxisRightx()*zoomPer+originX), parseInt(locator.getmAxisRighty()*zoomPer)+originY, currCanvas, "YELLOW", null);
     }
 }
 

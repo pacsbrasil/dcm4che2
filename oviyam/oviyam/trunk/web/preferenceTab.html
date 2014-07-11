@@ -6,6 +6,7 @@
             }            
         </style>
         <script type="text/javascript" src="js/LoadLanguage.js"></script>
+        <script type="text/javascript" src="js/lib/themeswitchertool.js"></script>
         <script type="text/javascript">
             $(document).ready(function() {
                 $('.cssButton').button();
@@ -31,7 +32,7 @@
                     languageObject = data;
                     loadCountry();
                     countryToLanguage(selectedCountry,false);
-                });
+                },'json');
 
                 function loadCountry() {
                     var country = new Array();
@@ -90,7 +91,7 @@
                     } else if (data.trim() == 'hide') {
                         $('#sliderVisibility').val('hide');
                     }
-                });
+                },'text');
 
                 $('#saveSlider').click(function() {
                     var msg = '';
@@ -118,7 +119,7 @@
                                 type: 'error'
                             });
                         }
-                    });
+                    },'text');
                 });
 
                 //for session timeout
@@ -139,7 +140,7 @@
                             $('#timeDropdown').val('minutes');
                         }
                     }
-                });
+                },'text');
 
                 $('#timeoutEnabled').change(function() {
                     if (!$(this).is(':checked')) {
@@ -181,7 +182,7 @@
                                 type: 'error'
                             });
                         }
-                    });
+                    },'text');
                 });
 
                 //for theme
@@ -198,7 +199,7 @@
                              } */
                         }
                     });
-                });
+                },'text');
 
                 $('#saveTheme').click(function() {
                     var selTheme = $(".jquery-ui-themeswitcher-title").html();
@@ -222,7 +223,7 @@
                                     type: 'error'
                                 });
                             }
-                        });  //for get
+                        },'text');  //for get
                     } // for if
                 }); //for saveTheme click
 
@@ -243,15 +244,14 @@
                                 type: 'error'
                             });
                         }
-                    });
+                    },'text');
                 });
 
             }); //for document.ready
 
         </script>
 
-        <script type="text/javascript" src="js/lib/ui.panel.min.js"></script>
-        <script type="text/javascript" src="js/lib/themeswitchertool.js"></script>
+        <script type="text/javascript" src="js/lib/ui.panel.min.js"></script>        
         <link type="text/css" href="css/ui.panel.css" rel="stylesheet" />
 
     </head>

@@ -1,8 +1,6 @@
 var wadoURL;
-var mouseLocX1;
-var mouseLocX2;
-var mouseLocY1;
-var mouseLocY2;
+var mouseLocX;
+var mouseLocY;
 
 var wcenter;
 var wwidth;
@@ -21,6 +19,7 @@ var canvas;
 var ctx;
 var myImageData;
 var winEnabled = false;
+var tmpCanvas;
 
 String.prototype.replaceAll = function(pcFrom, pcTo){
     var i = this.indexOf(pcFrom);
@@ -35,22 +34,28 @@ String.prototype.replaceAll = function(pcFrom, pcTo){
 function mouseDownHandler(evt)
 {
     mousePressed=1;
+    jQuery('.contextMenu').hide();//To hide the popup if showing
 
     zoomPercent = jQuery(jcanvas).parent().parent().find('#zoomPercent').html();
     zoomPercent = zoomPercent.substring(zoomPercent.indexOf(":")+1, zoomPercent.indexOf("%"));
     zoomPercent = zoomPercent / 100;
+    
+    //zoomPercent = parent.scale;
 
     if(imageLoaded==1)
     {
-        mouseLocX = evt.pageX - parent.jcanvas.offsetLeft;
+       /* mouseLocX = evt.pageX - parent.jcanvas.offsetLeft;
         mouseLocX = parseInt(mouseLocX / zoomPercent);
         mouseLocY = evt.pageY - parent.jcanvas.offsetTop;
-        mouseLocY = parseInt(mouseLocY / zoomPercent);
+        mouseLocY = parseInt(mouseLocY / zoomPercent);*/
+        
+        mouseLocX = evt.pageX;
+        mouseLocY = evt.pageY;
     }
 
     evt.preventDefault();
     evt.stopPropagation();
-    evt.target.style.cursor = "url(images/windowing.png), auto";
+    evt.target.style.cursor = "url(images/wincursor.png), auto";
 }
 
 function mouseupHandler(evt)
@@ -68,40 +73,41 @@ function mousemoveHandler(evt)
     {
         if(parent.imageLoaded==1)
         {
-            mouseLocX1 = evt.pageX - jcanvas.offsetLeft;
+           /* mouseLocX1 = evt.pageX - jcanvas.offsetLeft;
             mouseLocX1 = parseInt(mouseLocX1 / zoomPercent);
             mouseLocY1 = evt.pageY - jcanvas.offsetTop;
-            mouseLocY1 = parseInt(mouseLocY1 / zoomPercent);
+            mouseLocY1 = parseInt(mouseLocY1 / zoomPercent);*/            
 
-            if(mouseLocX1>=0&&mouseLocY1>=0&&mouseLocX1<column&&mouseLocY1<row)
-            {
-                showHUvalue(mouseLocX1,mouseLocY1);
+            //if(mouseLocX1>=0&&mouseLocY1>=0&&mouseLocX1<column&&mouseLocY1<row)
+           // {
+                showHUvalue(parseInt(evt.pageX/zoomPercent),parseInt(evt.pageY/zoomPercent));
 
                 if(mousePressed==1)
-                {
-                    //imageLoaded=0;
-                    var diffX=mouseLocX1-mouseLocX;
-                    var diffY=mouseLocY-mouseLocY1;
+                {                   
+                    var diffX=parseInt((evt.pageX-mouseLocX)/zoomPercent);
+                    var diffY=parseInt((mouseLocY-evt.pageY)/zoomPercent);      
+                    
                     parent.wc=parseInt(parent.wc)+diffY;
-                    parent.ww=parseInt(parent.ww)+diffX;
+                    parent.ww=parseInt(parent.ww)+diffX;                    
 
                     if(parent.ww < 1) {
                         parent.ww = 1;
                     }
-
                     showWindowingValue(parent.wc,parent.ww);
                     lookupObj.setWindowingdata(parent.wc,parent.ww);
-                    genImage();
-                    mouseLocX=mouseLocX1
-                    mouseLocY=mouseLocY1;
-                //imageLoaded=1;
+                    //genImage();
+                    renderImage();
+                    mouseLocX=evt.pageX;
+                    mouseLocY=evt.pageY;
+                    jQuery('.selected').removeClass('selected');
 
                 }
-            }
+           // }
         }
     }
     catch(err)
     {
+    	console.log(err);
     }
 
 }
@@ -109,6 +115,16 @@ function mousemoveHandler(evt)
 function changePreset(presetValue)
 {
     if(winEnabled) {
+        //applyPreset(parseInt(document.getElementById("preset").options[document.getElementById("preset").selectedIndex].value));
+        applyPreset(parseInt(presetValue));
+    }
+}
+
+function changePreset(presetDiv,presetValue)
+{
+    if(winEnabled) {
+    	jQuery('.selected').removeClass('selected');
+		jQuery(presetDiv).addClass("selected");
         //applyPreset(parseInt(document.getElementById("preset").options[document.getElementById("preset").selectedIndex].value));
         applyPreset(parseInt(presetValue));
     }
@@ -122,45 +138,46 @@ function applyPreset(preset)
             parent.wc=wcenter;
             parent.ww=wwidth;
             lookupObj.setWindowingdata(parent.wc,parent.ww);
-            genImage();
+            renderImage();
             break;
 
         case 2:
             parent.wc=350;
             parent.ww=40;
             lookupObj.setWindowingdata(parent.wc,parent.ww);
-            genImage();
+            renderImage();
             break;
 
         case 3:
             parent.wc=-600;
             parent.ww=1500;
             lookupObj.setWindowingdata(parent.wc,parent.ww);
-            genImage();
+            renderImage();
             break;
 
         case 4:
             parent.wc=40;
             parent.ww=80;
             lookupObj.setWindowingdata(parent.wc,parent.ww);
-            genImage();
+            renderImage();
             break;
 
         case 5:
             parent.wc=480;
             parent.ww=2500;
             lookupObj.setWindowingdata(parent.wc,parent.ww);
-            genImage();
+            renderImage();
             break;
 
         case 6:
             parent.wc=90;
             parent.ww=350;
             lookupObj.setWindowingdata(parent.wc,parent.ww);
-            genImage();
+            renderImage();
             break;
     }
     showWindowingValue(parent.wc,parent.ww);
+    jQuery('#winContext').hide();	
 }
 
 function showHUvalue(x,y)
@@ -190,7 +207,17 @@ function loadDicom() {
         var mvDiv = jQuery('#move').get(0);
         stopMove(mvDiv);
     }
-
+    
+    //Stop stack navigation if enabled
+    if(scrollImages) {
+    	var mvDiv = jQuery('#stackImage').get(0);
+    	doStack(mvDiv);
+    }
+    
+    if(measureEnabled) {
+    	doMeasurement(jQuery('#ruler').get(0));
+    }
+    
     var imgSize = jQuery(jcanvas).parent().parent().find('#imageSize').html().substring(11).split("x");
     row = parseInt(imgSize[1]);
     column = parseInt(imgSize[0]);
@@ -207,6 +234,8 @@ function loadDicom() {
     var queryString = jQuery(jcanvas).parent().parent().find("#frameSrc").html();
 
     var seriesUID = getParameter(queryString, 'seriesUID');   
+    
+    var objectUID = getParameter(queryString, 'objectUID');
 
     var layerCanvas = jQuery(jcanvas).parent().children().get(2);
 
@@ -214,19 +243,31 @@ function loadDicom() {
         winEnabled = true;
         doMouseWheel = false;
         //jQuery('#preset').removeAttr('disabled');
-        jQuery("#presetDiv input").removeAttr('disabled');
-        jQuery("#presetDiv a").css('visibility', 'visible');
-        jQuery(jcanvas).parent().parent().find('#applyWLDiv').show();
+       // jQuery("#presetDiv input").removeAttr('disabled');
+        //jQuery("#presetDiv a").css('visibility', 'visible');
+        if(parent.pat.serverURL.indexOf("wado")>0) {
+        	jQuery(jcanvas).parent().parent().find('#applyWLDiv').show();
+        }
         jQuery(jcanvas).parent().parent().find('#huDisplayPanel').show();
         jQuery(jcanvas).parent().parent().find('#thickLocationPanel').hide();
-        jQuery('#containerBox .toolbarButton').unbind('mouseenter').unbind('mouseleave');
-        jQuery(curr).attr('class','toolbarButton current');        
+        //jQuery('#containerBox .toolbarButton').unbind('mouseenter').unbind('mouseleave');
+        //jQuery(curr).attr('class','toolbarButton current');   
+        jQuery('#windowing').addClass('toggleOff');
+		jQuery('#lblWindowing').removeClass('imgOff').addClass('imgOn');  		
 
-        wadoURL = parent.pat.serverURL + "/wado?requestType=WADO&contentType=application/dicom&studyUID=" + parent.pat.studyUID + "&seriesUID=" + seriesUID + "&objectUID=" + getParameter(queryString, 'objectUID');      
+		if(objectUID=='null') {
+			var instanceNo = parseInt(jQuery(jcanvas).parent().parent().find('#totalImages').html().split(':')[1].split('/')[0])-1;		
+			var instData = JSON.parse(sessionStorage[seriesUID])[instanceNo];
+			objectUID = instData['SopUID'];
+			var windowCenter = instData['windowCenter'].indexOf('|')>=0 ? instData['windowCenter'].substring(0,instData['windowCenter'].indexOf('|')) : instData['windowCenter'];
+			var windowWidth = instData['windowWidth'].indexOf('|')>=0 ? instData['windowWidth'].substring(0,instData['windowWidth'].indexOf('|')) : instData['windowWidth'];
+			jQuery(jcanvas).parent().parent().find('#windowLevel').html('WL:' + windowCenter + " / WW: " + windowWidth);
+		}  
+
+        wadoURL = parent.pat.serverURL + "/wado?requestType=WADO&contentType=application/dicom&studyUID=" + parent.pat.studyUID + "&seriesUID=" + seriesUID + "&objectUID=" + objectUID; 
 		parseAndLoadDicom();
-
-
-        jQuery(layerCanvas).mouseup(function(evt) {
+		
+       jQuery(layerCanvas).mouseup(function(evt) {
             mouseupHandler(evt);
         }).mousedown(function(evt) {
             mouseDownHandler(evt);
@@ -241,19 +282,60 @@ function loadDicom() {
 function stopWLAdjustment() {
     winEnabled = false;
     doMouseWheel = true;
-    var curr = jQuery('#containerBox').find('.current');
-    var layerCanvas = jQuery(jcanvas).parent().children().get(2);
-    //jQuery('#preset').attr('disabled', 'disabled');
-    jQuery("#presetDiv input").attr('disabled',true);
-    jQuery("#presetDiv a").css('visibility', 'hidden');
+    var layerCanvas = jQuery(jcanvas).parent().children().get(2);    
     jQuery(jcanvas).parent().parent().find('#applyWLDiv').hide();
     jQuery(jcanvas).parent().parent().find('#thickLocationPanel').show();
     jQuery(jcanvas).parent().parent().find('#huDisplayPanel').hide();
-    jQuery(curr).attr('class', 'toolbarButton');
-    jQuery(curr).children().attr('class', 'imgOff');
+    //jQuery(curr).attr('class', 'toolbarButton');
+    //jQuery(curr).children().attr('class', 'imgOff');
     jQuery(layerCanvas).unbind('mousedown').unbind('mouseup');
 
-    doContainerBoxHOver();
+    //doContainerBoxHOver();
+    jQuery('#windowing').removeClass('toggleOff');
+    jQuery('#lblWindowing').removeClass('imgOn').addClass('imgOff');
+}
+
+function unBindWindowing() {
+	if (jQuery(jcanvas).parent().parent().parent().parent().css('border') != '1px solid rgb(255, 138, 0)') {
+		jQuery(jQuery(jcanvas).parent().children().get(2)).unbind('mousedown')
+				.unbind('mouseup').unbind('mousemove');
+
+		jQuery(jcanvas).parent().parent().find('#applyWLDiv').hide();
+		jQuery(jcanvas).parent().parent().find('#thickLocationPanel').show();
+		jQuery(jcanvas).parent().parent().find('#huDisplayPanel').hide();
+	}
+}
+
+function bindWindowing() {
+	if (jQuery(jQuery(jcanvas).parent().children().get(2)).data('events') == null) {
+		var imgSize = jQuery(jcanvas).parent().parent().find('#imageSize')
+				.html().substring(11).split("x");
+		row = parseInt(imgSize[1]);
+		column = parseInt(imgSize[0]);
+		var queryString = jQuery(jcanvas).parent().parent().find("#frameSrc")
+				.html();
+		wadoURL = parent.pat.serverURL
+				+ "/wado?requestType=WADO&contentType=application/dicom&studyUID="
+				+ parent.pat.studyUID + "&seriesUID="
+				+ getParameter(queryString, 'seriesUID') + "&objectUID="
+				+ getParameter(queryString, 'objectUID');
+		parseAndLoadDicom();
+
+		if(parent.pat.serverURL.indexOf("wado")>0) {
+			jQuery(jcanvas).parent().parent().find('#applyWLDiv').show();
+		}
+		jQuery(jcanvas).parent().parent().find('#huDisplayPanel').show();
+		jQuery(jcanvas).parent().parent().find('#thickLocationPanel').hide();
+
+		jQuery(jQuery(jcanvas).parent().children().get(2)).mouseup(
+				function(evt) {
+					mouseupHandler(evt);
+				}).mousedown(function(evt) {
+			mouseDownHandler(evt);
+		}).mousemove(function(evt) {
+			mousemoveHandler(evt);
+		});
+	}
 }
 
 function getContextPath()
@@ -272,13 +354,13 @@ function parseAndLoadDicom()
     //alert(wadoURL);
     var reader=new DicomInputStreamReader();
 
-    /*if( !(!(wadoURL.indexOf('C-GET') >= 0) && !(wadoURL.indexOf('C-MOVE') >= 0))) {
+    if( !(!(wadoURL.indexOf('C-GET') >= 0) && !(wadoURL.indexOf('C-MOVE') >= 0))) {
         //var urlTmp = "DcmFile.do?study=" + getParameter(wadoURL, "studyUID") + "&object=" + getParameter(wadoURL, "objectUID");
         var urlTmp = "Wado.do?study=" + getParameter(wadoURL, "studyUID") + "&object=" + getParameter(wadoURL, "objectUID") + "&contentType=application/dicom";
     	reader.readDicom(urlTmp);
-    } else {*/
+    } else {
     	 reader.readDicom("DcmStream.do?wadourl="+wadoURL.replaceAll("&","_"));
-    //}
+    }
 
     /*var urlTmp = "Wado.do?dicomURL=DICOM://ASGARDCM:OVIYAM2@localhost:11112&study=" + getParameter(wadoURL, "studyUID") + "&series=" + getParameter(wadoURL, "seriesUID");
     urlTmp += "&object=" + getParameter(wadoURL, "objectUID");
@@ -319,7 +401,6 @@ function parseAndLoadDicom()
     lookupObj.calculateHULookup();
     huLookupTable=lookupObj.huLookup;
 
-    //canvas = document.getElementById("imageCanvas");
     ctx = jcanvas.getContext("2d");
     var iNewWidth = jcanvas.width;
     var iNewHeight = jcanvas.height;
@@ -327,8 +408,9 @@ function parseAndLoadDicom()
     jcanvas.width = column;
     jcanvas.height = row;
 
+	ctx.fillStyle="black";
     ctx.fillRect(0, 0, column, row);
-    myImageData = ctx.getImageData(0,0,column,row);
+    //myImageData = ctx.getImageData(0,0,column,row);
 
     getWindowingValue();
     lookupObj.setWindowingdata(wc,ww);
@@ -336,72 +418,90 @@ function parseAndLoadDicom()
     jcanvas.width = iNewWidth;
     jcanvas.height = iNewHeight;
 
-    genImage();
+    //genImage();
+    initialize();
     parent.imageLoaded=1;
 }
 
-function genImage()
-{
-    var tmpCanvas = document.createElement('canvas');
-
-    var sw = jcanvas.width;
-    var sh = jcanvas.height;
-
-    tmpCanvas.width = column;
+function initialize() {    
+	tmpCanvas = document.createElement('canvas');
+	var tmpCxt = tmpCanvas.getContext('2d');
+	
+	tmpCanvas.width = column;
     tmpCanvas.height = row;
 
     tmpCanvas.style.width = column;
     tmpCanvas.style.height = row;
 
-    var tmpCxt = tmpCanvas.getContext('2d');
-
-    lookupObj.calculateLookup();
-    lookupTable=lookupObj.ylookup;
-    var n=4;
-    for(var yPix=0; yPix<row; yPix++)
-    {
-        for(var xPix=0; xPix<column;xPix++)
-        {
-            var offset = (yPix * column + xPix) * 4;
-            var pxValue=lookupTable[pixelBuffer[n]];	n++;
-            myImageData.data[offset]=	parseInt(pxValue);
-            myImageData.data[offset+1]=	parseInt(pxValue);
-            myImageData.data[offset+2]=	parseInt(pxValue);
-        }
-    }
-
-    tmpCxt.putImageData(myImageData, 0,0);
-    //ctx.scale(1.5,1.5);
-    ctx.drawImage(tmpCanvas, 0, 0, column, row, 0, 0, sw, sh);
-    //ctx.drawImage(tmpCanvas, 0, 0, tmpCanvas.width , tmpCanvas.height, 0, 0, sw, sh);
+    tmpCxt.fillStyle = "white";
+    tmpCxt.fillRect(0,0,column,row);
+    
+    myImageData = tmpCxt.getImageData(0,0,column,row);
+    
+    //genImage();
+    renderImage();
 }
 
+
+function getRenderCanvas() {    
+    var canvasImageDataIndex = 3;
+     var storedPixelDataIndex = 4;
+     var numPixels = column * row;
+     
+     lookupObj.calculateLookup();
+    lookupTable=lookupObj.ylookup;
+    var localData = myImageData.data;
+    
+     while(storedPixelDataIndex<numPixels) {
+	     localData[canvasImageDataIndex] = lookupTable[pixelBuffer[storedPixelDataIndex++]];
+     	canvasImageDataIndex+=4;
+     }   
+     
+    var tmpCxt = tmpCanvas.getContext('2d'); 
+    tmpCxt.putImageData(myImageData,0,0);
+    //return tmpCanvas;
+}
+
+function renderImage() {
+	ctx.setTransform(1,0,0,1,0,0);
+	ctx.fillStyle = 'black';
+	ctx.fillRect(0,0,jcanvas.width, jcanvas.height);
+	
+	//var renderCanvas = getRenderCanvas();
+	
+	getRenderCanvas();
+	
+	var sw = jcanvas.width;
+    var sh = jcanvas.height;
+    var xScale = sw / column;
+    var yScale = sh / row;
+    
+    var scaleFac = Math.min(xScale,yScale);	
+    /*zoomPercent = jQuery(jcanvas).parent().parent().find('#zoomPercent').html();
+    zoomPercent = zoomPercent.substring(zoomPercent.indexOf(":")+1, zoomPercent.indexOf("%"));
+    zoomPercent = zoomPercent / 100;
+    
+	var dw = (zoomPercent * column);
+	var dh = (zoomPercent*row); */
+	
+	var dw = (scaleFac * column);
+	var dh = (scaleFac * row);
+	
+	/*var dw = (parent.scale * column);
+	var dh = (parent.scale * row);*/
+	
+	var sx = (sw-dw)/2;
+	var sy = (sh-dh)/2;
+	
+	//ctx.drawImage(renderCanvas, 0,0,column,row,0,0,column,row);
+	ctx.drawImage(tmpCanvas, 0, 0, column, row, sx, sy, dw, dh);
+}
 function getWindowingValue() {
     var divVal = selectedFrame.find('#windowLevel').html();
     var values = divVal.split("/");
     wc = values[0].substring(values[0].indexOf(':')+1).trim();
     ww = values[1].substring(values[1].indexOf(':')+1).trim();
 }
-
-/*function applyWindowing() {
-    //var queryString = window.top.location.search.substring(1);
-    var queryString = window.location.href;
-    var seriesUID = getParameter(queryString, 'seriesUID');
-
-    var sql = "select StudyInstanceUID, SeriesInstanceUID, SopUID from instance where SeriesInstanceUID='" + seriesUID + "';";
-    var myDb = initDB();
-
-    myDb.transaction(function(tx) {
-        tx.executeSql(sql, [], windowingHandler, errorHandler);
-    });
-}*/
-
-/*function windowingHandler(transaction, results) {
-    for(var i=0; i<results.rows.length; i++) {
-        var row = results.rows.item(i);
-    //retrieveImage1(row['StudyInstanceUID'], row['SeriesIntanceUID'], row['SopUID']);
-    }
-}*/
 
 function retrieveImage1(studyUID, seriesUID, instanceUID) {
 
@@ -460,4 +560,43 @@ function retrieveImage1(studyUID, seriesUID, instanceUID) {
         }
     };
     xhr.send();
+}
+
+function constructWadoUrl() { // Load the dicom file if wado url is null
+    //stop zoom if zoom enabled
+    if(zoomEnabled) {
+        var zDiv = jQuery('#zoomIn').get(0);
+        stopZoom(zDiv);
+    }
+
+    // stop move if move enabled
+    if(moveEnabled) {
+        var mvDiv = jQuery('#move').get(0);
+        stopMove(mvDiv);
+    }
+
+    var imgSize = jQuery(jcanvas).parent().parent().find('#imageSize').html().substring(11).split("x");
+    row = parseInt(imgSize[1]);
+    column = parseInt(imgSize[0]);
+    var queryString = jQuery(jcanvas).parent().parent().find("#frameSrc").html();
+    var seriesUID = getParameter(queryString, 'seriesUID');
+    var objectUID = getParameter(queryString, 'objectUID');
+    
+    if(objectUID=='null') {
+			var instanceNo = parseInt(jQuery(jcanvas).parent().parent().find('#totalImages').html().split(':')[1].split('/')[0])-1;		
+			var instData = JSON.parse(sessionStorage[seriesUID])[instanceNo];
+			objectUID = instData['SopUID'];
+			var windowCenter = instData['windowCenter'].indexOf('|')>=0 ? instData['windowCenter'].substring(0,instData['windowCenter'].indexOf('|')) : instData['windowCenter'];
+			var windowWidth = instData['windowWidth'].indexOf('|')>=0 ? instData['windowWidth'].substring(0,instData['windowWidth'].indexOf('|')) : instData['windowWidth'];
+			jQuery(jcanvas).parent().parent().find('#windowLevel').html('WL:' + windowCenter + " / WW: " + windowWidth);
+			jQuery(jcanvas).parent().parent().find('#pixelSpacing').html(instData['pixelSpacing']);
+		}  
+
+    wadoURL = parent.pat.serverURL + "/wado?requestType=WADO&contentType=application/dicom&studyUID=" + parent.pat.studyUID + "&seriesUID=" + seriesUID + "&objectUID=" + objectUID;      
+	parseAndLoadDicom();
+}
+
+function getPixelAt(x,y) {
+	var t = (y*column)+x;
+	return huLookupTable[pixelBuffer[t]];
 }

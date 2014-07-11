@@ -16,11 +16,12 @@
 *
 * The Initial Developer of the Original Code is
 * Raster Images
-* Portions created by the Initial Developer are Copyright (C) 2007
+* Portions created by the Initial Developer are Copyright (C) 2014
 * the Initial Developer. All Rights Reserved.
 *
 * Contributor(s):
 * Babu Hussain A
+* Devishree V
 * Meer Asgar Hussain B
 * Prakash J
 * Suresh V
@@ -49,6 +50,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
+
+import javax.imageio.ImageIO;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -139,7 +142,7 @@ public class ListenerServlet extends HttpServlet {
                     JSONObject obj = jsonArray.getJSONObject(i);
                                         
                     if(obj.getString("retrieve").equals("C-MOVE")) {
-                        receiveDelegate.start();
+                        receiveDelegate.start();                        
                         break;
                     }
                 }

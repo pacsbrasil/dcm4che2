@@ -4,6 +4,8 @@ var lastX,lastY;
 var dragStart,dragged;
 var scaleFactor;
 var zoomFlag = 0;
+var zoomPercent = 0;
+var src = "";
 
 var gkhead = new Image();
 
@@ -13,7 +15,7 @@ doZoom = function(zCanvas){
     canvas = zCanvas;
     var kCanvas = jQuery(canvas).siblings().get(1);
     ctx = canvas.getContext('2d');
-    gkhead.src = canvas.toDataURL("image/jpeg");
+   // gkhead.src = canvas.toDataURL("image/jpeg");
     trackTransforms(ctx);
     //redraw();  //remove recently
 
@@ -28,11 +30,26 @@ doZoom = function(zCanvas){
     },false);
 
     scaleFactor = 1.1;
+    zoomPercent = jQuery(canvas).parent().parent().find('#zoomPercent').html();
+    zoomPercent = zoomPercent.substring(zoomPercent.indexOf(":")+1, zoomPercent.indexOf("%"));
+    
+    //zoomPercent = zoomPercent / 100;
 
 //kCanvas.addEventListener('DOMMouseScroll',handleScroll,false);
 //kCanvas.addEventListener('mousewheel',handleScroll,false);
 
 //redraw();
+}
+
+function bindZoom(zCanvas) {
+	var tmp = getParameter(jQuery(zCanvas).parent().parent().parent().find('#frameSrc').html(),'seriesUID')+"_"+jQuery(zCanvas).parent().parent().parent().find('#totalImages').html().split(':')[1].split('/')[0].trim();
+	tmp = tmp.replace(/\./g,'_');	
+	if(src!=tmp) {
+		src = tmp;
+		gkhead.src = zCanvas.toDataURL("image/jpeg");		
+		//gkhead = jQuery('#' + src, window.parent.document).get(0);
+		doZoom(zCanvas);
+	}		
 }
 
 function mouseDown(evt) {
@@ -104,6 +121,9 @@ var zoom = function(clicks){
     ctx.scale(factor,factor);
     ctx.translate(-pt.x,-pt.y);
     redraw();
+    zoomPercent*=factor;
+    parent.scale = zoomPercent/100;
+	jQuery(canvas).parent().parent().find('#zoomPercent').html(parseInt(zoomPercent) + "%");    
 }
 
 var handleScroll = function(evt){
