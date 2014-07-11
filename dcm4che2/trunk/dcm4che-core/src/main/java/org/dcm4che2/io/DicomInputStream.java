@@ -506,11 +506,14 @@ public class DicomInputStream extends FilterInputStream implements
             }
             TransferSyntax prevTs = ts;
             if (TagUtils.hasVR(tag) && (vr == null || vr == VR.UN)) {
-                // switch to ImplicitVRLittleEndian, because Datasets in
-                // items of sequences encoded with VR=UN are itself encoded
-                // in DICOM default Transfer Syntax
-                ts = TransferSyntax.ImplicitVRLittleEndian;
-                vr = attrs.vrOf(tag);
+            	VR attrVr = attrs.vrOf(tag);
+            	if( !(vr==VR.UN && attrVr==VR.SQ && vallen>=0) ) {
+            		ts = TransferSyntax.ImplicitVRLittleEndian;
+                    // switch to ImplicitVRLittleEndian, because Datasets in
+                    // items of sequences encoded with VR=UN are itself encoded
+                    // in DICOM default Transfer Syntax
+            		vr = attrs.vrOf(tag);        		
+            	}
             }
             quit = !handler.readValue(this);
             ts = prevTs;
@@ -579,7 +582,7 @@ public class DicomInputStream extends FilterInputStream implements
             }
             break;
         default:
-            if (vallen == -1 || vr == VR.SQ) {
+            if (vallen == -1 || vr == VR.SQ ) {
                 DicomElement a = vr == VR.SQ ? attrs.putSequence(tag) : attrs
                         .putFragments(tag, vr, ts.bigEndian());
                 readItems(a, vallen);
