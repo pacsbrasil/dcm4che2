@@ -47,10 +47,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Writer;
+import java.nio.channels.FileLock;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
@@ -75,6 +80,8 @@ import org.dcm4che.net.DcmServiceException;
 import org.dcm4che.net.Dimse;
 import org.dcm4che.util.MD5Utils;
 import org.dcm4chex.cdw.common.ConfigurationException;
+
+import sun.awt.Mutex;
 
 /**
  * @author gunter.zeilinter@tiani.com
@@ -174,6 +181,8 @@ public class StoreScpService extends AbstractScpService {
 
     private ObjectName mediaCreationRequestEmulatorServiceName;
 
+    private static Lock lock = new ReentrantLock();
+    
     private final DcmService service = new DcmServiceBase() {
 
         protected void doCStore(ActiveAssociation assoc, Dimse rq,
@@ -423,22 +432,8 @@ public class StoreScpService extends AbstractScpService {
                         ds.getString(Tags.PatientSex));
                 File f = spoolDir.getEmulateRequestFile(group != null ? group
                         : sourceAET, pattern);
-                boolean firstObject;
-                if (firstObject = !f.exists()) {
-                    File dir = f.getParentFile();
-                    if (dir.mkdirs())
-                        log.info("M-WRITE " + dir);
-                }
-                FileWriter fw = new FileWriter(f, true);
-                try {
-                    if (firstObject) {
-                        fw.write(lookupMediaWriterName(a.getCalledAET()) + '\n');
-                    }
-                    fw.write(cuid + '\t' + iuid + '\n');
-                } finally {
-                    fw.close();
-                    log.info((firstObject ? "M-WRITE " : "M-UPDATE ") + f);
-                }
+                writeToEmulationFile(cuid, iuid, a, f);
+                
             }
         } catch (Throwable t) {
             log.error("Processing Failure during receive of instance[uid="
@@ -448,6 +443,37 @@ public class StoreScpService extends AbstractScpService {
             throw new DcmServiceException(Status.ProcessingFailure, t);
         } finally {
             in.close();
+        }
+    }
+
+    private void writeToEmulationFile(String cuid,
+            String iuid, Association a, File f) throws InterruptedException{
+        
+        while(true){
+            if(lock.tryLock(100,TimeUnit.MILLISECONDS)){
+        try { 
+            boolean firstObject;
+            if (firstObject = !f.exists()) {
+                File dir = f.getParentFile();
+                if (dir.mkdirs())
+                    log.info("M-WRITE " + dir);
+            }
+            FileWriter fw = new FileWriter(f, true);
+            try {
+                if (firstObject) {
+                    fw.write(lookupMediaWriterName(a.getCalledAET()) + '\n');
+                }
+                fw.write(cuid + '\t' + iuid + '\n');
+            } finally {
+                fw.close();
+                log.info((firstObject ? "M-WRITE " : "M-UPDATE ") + f);
+            }
+        }
+        finally {
+          lock.unlock(); 
+          break;
+        }
+            }
         }
     }
 
