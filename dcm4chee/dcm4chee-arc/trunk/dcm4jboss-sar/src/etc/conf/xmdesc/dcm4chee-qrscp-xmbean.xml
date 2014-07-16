@@ -1183,14 +1183,28 @@ DICOM JPEG-LS images by specified value. Only effective for WADO retrieval.
    <attribute access="read-write" 
       getMethod="getAutoUpdateAttributesBeforeDate"
       setMethod="setAutoUpdateAttributesBeforeDate">
-      <description>Configurable auto update of series db attributes before specified date.
+      <description><![CDATA[Date/time filter to prevent auto update of series that are already up to date (via AutoUpdateAttributesFromFS or received after this date)<br />
+        Only series updated before this specified date will trigger UpdateAttributes service.<br />
         Format: YYYY-MM-DD hh:mm:ss, with YYYY = Year, MM = Month, DD = Day,
         hh = Hour, mm = Minute, ss = Second.
-      </description>
+      ]]></description>
       <name>AutoUpdateAttributesBeforeDate</name>
       <type>java.lang.String</type>
       <descriptors>
          <value value="2004-01-01 00:00:00"/>
+      </descriptors>
+   </attribute>
+   <attribute access="read-write" 
+      getMethod="getAutoUpdateAttributesMaxSeriesCacheSize"
+      setMethod="setAutoUpdateAttributesMaxSeriesCacheSize">
+      <description><![CDATA[Max Cache size of auto updated series. <br />
+          Set this value &gt; 0 to activate caching of already updated series.<br />
+          This caching prevents re-updating series if <i>AutoUpdateAttributesBeforeDate</i> can not be used to exclude already updated series.<br />
+      ]]></description>
+      <name>AutoUpdateAttributesMaxSeriesCacheSize</name>
+      <type>int</type>
+      <descriptors>
+         <value value="0"/>
       </descriptors>
    </attribute>
    <attribute access="read-write"
