@@ -83,28 +83,7 @@
         </style>
 
         <script type="text/javascript">
-
-          //  $(document).ready(function() {
-              /*  var bgClr = jQuery('#westPane').css('background-color');
-                bgClr = bgClr.substring(bgClr.indexOf('(')+1, bgClr.indexOf(')'));
-                var bgColorArr = bgClr.split(',');
-                bgClr = 'rgb(';
-                for(i = 0; i<bgColorArr.length; i++) {
-                    bgClr += (255 - bgColorArr[i]);
-                    if(i != bgColorArr.length-1) {
-                        bgClr += ' , ';
-                    }
-                }
-                bgClr += ')';
-                jQuery('#studyTable').css('color', bgClr);
-                jQuery('#westPane').css('color', bgClr);
-
-                var WPSeriesColor = $('.sorting_1').css('background-color');
-                jQuery('.seriesTable').css('background-color', WPSeriesColor);
-                if(WPSeriesColor == 'rgb(211, 214, 255)')
-	                jQuery('.seriesTable').find('tr:first').css('background-color', WPSeriesColor);*/
-          //  });
-
+          
             function changeImgView(but) {
                 //var table = $(but).parent().parent().parent().parent();
                 //console.log(table.children().find('tr:nth-child(2)').children());
@@ -185,7 +164,11 @@
                 if(imgSrc.indexOf('images/SR_Latest.png') > 0) {
                 	imgSrc = jQuery(image).attr('imgSrc');
                 }
-
+				
+                parent.selectedFrame = null;//For IE 
+                
+//                 iframe.src= "javascript:'<script>window.onload=function(){document.write(\\'<script>document.domain=\\\""+document.domain+"\\\";<\\\\/script>\\');document.close();};<\/script>'";
+                
                 var url = 'frameContent.html?studyUID=' + getParameter(imgSrc, 'study');
                 url += '&seriesUID=' + getParameter(imgSrc, 'series');
                 url += '&instanceNumber=' + parseInt(image.name-1);
@@ -221,33 +204,7 @@
 
                     return null;
                 }
-            }           
-            
-           /* function hideOrShowWest(westPane) {
-            	if($('#previews').css('visibility')=='visible') {
-		        	$(westPane).css('width','20px');
-		        	$('#previews').css('visibility','hidden');
-		        	$(westPane).next().css('width','98%');
-		        	$('.heading').css('visibility','hidden');
-		        	$('#studyTable').css('visibility','hidden');
-		        	
-		        	var tabIndex = $('#tabs_div').data('tabs').options.selected;
-		        	var tableName = $(westPane).attr('id').split('_')[0]+"_"+"table";    	
-		   	
-		        	adjust(tableName, tabIndex);
-            	} else {
-            		$(westPane).css('width','18%');
-		        	$('#previews').css('visibility','visible');
-		        	$(westPane).next().css('width','81%');
-		        	$('.heading').css('visibility','visible');
-		        	$('#studyTable').css('visibility','visible');
-		        	
-		        	var tabIndex = $('#tabs_div').data('tabs').options.selected;
-		        	var tableName = $(westPane).attr('id').split('_')[0]+"_"+"table";    	
-		   	
-		        	adjust(tableName, tabIndex);
-            	}  */          	
-            //}       
+            }  
          </script>
 
     </head>
@@ -266,72 +223,71 @@
             </tbody>
         </table>
      <!--   <br /> -->
-     <div id="previews" style="overflow: auto; height: 92%; border-top: 2px solid black;">
-   		 <ser:Series patientId="${param.patient}" study="${param.study}" dcmURL="${param.dcmURL}">
-       		 <c:set var="middle" value="${numberOfImages/2}" />
-        	<fmt:formatNumber var="middle" maxFractionDigits="0" value="${middle}" />
-       		<table class="seriesTable">
-            <tbody>
-                <tr onclick="jQuery(this).next().toggle()" style="cursor: pointer;" class='ui-widget-content'>
-	                <td> ${seriesDesc}</td>
-                    <td align="right"> ${numberOfImages} Imgs</td>
-                    <!--<td colspan="2">${seriesDesc} - Images: ${numberOfImages}</td>-->
-                </tr>
-                <tr>
-                    <td colspan="2">
-                        <table style="table-layout:fixed; width:100%;">
-                           <!--  <tr>
-                                <td id="${fn:replace(seriesId, '.','_')}" class="seriesImgsIndex" style="width: 100%">
-                            <c:forEach var="i" begin="1" end="${numberOfImages}">
-                                <c:choose>
-                                    <c:when test="${(i == middle) || (i==1) || (i==numberOfImages)}">
-                                        <div style="background: #00F; width: 5px; height: 5px; float: left;margin: 0 1px 1px;"></div>
-                                    </c:when>
-                                    <c:otherwise>
-                                        <div style="background: #a6a6a6; width: 5px; height: 5px; float: left;margin: 0 1px 1px;"></div>
-                                    </c:otherwise>
-                                </c:choose>
-                            </c:forEach>
-                    </td>
-            </tr> -->
-            <tr>
-                <td colspan="2" style="height: 30%; width: 30%;">
-            <img:Image patientId="${param.patient}" study="${param.study}" series="${seriesId}" dcmURL="${param.dcmURL}">
-            	<c:choose>
-                    <c:when test="${modality == 'SR'}">
-                        <img name="${instanceNumber}" id="${fn:replace(seriesId, '.','_')}_${instanceNumber}" style="max-width: 30%; max-height: 30%;" src="images/SR_Latest.png" imgSrc="Image.do?serverURL=${param.wadoUrl}&study=${param.study}&series=${seriesId}&object=${imageId}&rows=${rows}" ondblclick="openSeriesInViewer(this)" />
-                    </c:when>
+   		<div id="previews" style="overflow: auto; border-top: 2px solid black;">
+   			 <ser:Series patientId="${param.patient}" study="${param.study}" dcmURL="${param.dcmURL}">
+       			 <c:set var="middle" value="${numberOfImages/2}" />
+        		<fmt:formatNumber var="middle" maxFractionDigits="0" value="${middle}" />
+       			<table class="seriesTable">
+        		    <tbody>
+        		        <tr onclick="jQuery(this).next().toggle()" style="cursor: pointer;" class='ui-widget-content'>
+	    		            <td> ${seriesDesc}</td>
+        		            <td align="right"> ${numberOfImages} Imgs</td>
+        		            <!--<td colspan="2">${seriesDesc} - Images: ${numberOfImages}</td>-->
+        		        </tr>
+        		        <tr>
+        		            <td colspan="2">
+        		                <table style="table-layout:fixed; width:100%;">
+                          			 <!--  <tr>
+                               			 <td id="${fn:replace(seriesId, '.','_')}" class="seriesImgsIndex" style="width: 100%">
+                          					  <c:forEach var="i" begin="1" end="${numberOfImages}">
+                             					   <c:choose>
+                                  					  <c:when test="${(i == middle) || (i==1) || (i==numberOfImages)}">
+                                        					<div style="background: #00F; width: 5px; height: 5px; float: left;margin: 0 1px 1px;"></div>
+                                    					</c:when>
+					                                    <c:otherwise>
+                    					                    <div style="background: #a6a6a6; width: 5px; height: 5px; float: left;margin: 0 1px 1px;"></div>
+                    					                </c:otherwise>
+                    					            </c:choose>
+                    					        </c:forEach>
+                    							</td>
+						            </tr> -->
+           							 <tr>
+						                <td colspan="2">
+								            <img:Image patientId="${param.patient}" study="${param.study}" series="${seriesId}" dcmURL="${param.dcmURL}">
+							            	<c:choose>
+							                    <c:when test="${modality == 'SR'}">
+							                        <img name="${instanceNumber}" id="${fn:replace(seriesId, '.','_')}_${instanceNumber}" style="height: 75px;" src="images/SR_Latest.png" imgSrc="Image.do?serverURL=${param.wadoUrl}&study=${param.study}&series=${seriesId}&object=${imageId}&rows=${rows}" ondblclick="openSeriesInViewer(this)" />
+							                    </c:when>
 
-                    <c:when test="${sopClassUID == '1.2.840.10008.5.1.4.1.1.104.1'}">
-                        <img name="${instanceNumber}" id="${fn:replace(seriesId, '.','_')}_${instanceNumber}" style="max-width: 30%; max-height: 30%;" src="images/pdf.png" imgSrc="Image.do?serverURL=${param.wadoUrl}&study=${param.study}&series=${seriesId}&object=${imageId}&rows=${rows}" ondblclick="openSeriesInViewer(this)" />
-                    </c:when>
-
-                    <c:otherwise>
-                        <c:choose>
-                            <c:when test="${param.wadoUrl == 'C-GET'}">
-                                <c:if test="${(instanceNumber == middle) || (instanceNumber==1) || (instanceNumber==numberOfImages)}">
-                                    <img name="${instanceNumber}" id="${fn:replace(seriesId, '.','_')}_${instanceNumber}" style="max-width: 30%; max-height: 30%;" src="Wado.do?dicomURL=${param.dcmURL}&study=${param.study}&series=${seriesId}&object=${imageId}&retrieveType=${param.wadoUrl}&sopClassUID=${sopClassUID}" ondblclick="openSeriesInViewer(this)" />
-                                </c:if>
-                            </c:when>
-                            <c:when test="${param.wadoUrl == 'C-MOVE'}">
-                                <c:if test="${(instanceNumber == middle) || (instanceNumber==1) || (instanceNumber==numberOfImages)}">
-                                    <img name="${instanceNumber}" id="${fn:replace(seriesId, '.','_')}_${instanceNumber}" style="max-width: 30%; max-height: 30%;" src="Wado.do?dicomURL=${param.dcmURL}&study=${param.study}&series=${seriesId}&object=${imageId}&retrieveType=${param.wadoUrl}" ondblclick="openSeriesInViewer(this)" />
-                                </c:if>
-                            </c:when>
-                            <c:otherwise>
-                                <c:if test="${(instanceNumber == middle) || (instanceNumber==1) || (instanceNumber==numberOfImages)}">
-                                    <img name="${instanceNumber}" id="${fn:replace(seriesId, '.','_')}_${instanceNumber}" style="max-width: 30%; max-height: 30%;" src="Image.do?serverURL=${param.wadoUrl}&study=${param.study}&series=${seriesId}&object=${imageId}&rows=${rows}" ondblclick="openSeriesInViewer(this)" />
-                                </c:if>
-                            </c:otherwise>
-                        </c:choose>
-                    </c:otherwise>
-                </c:choose>
-            </img:Image>
-            </td>
-            </tr>
-        </table>
-    </td>
-</tr>
+                   								<c:when test="${sopClassUID == '1.2.840.10008.5.1.4.1.1.104.1'}">
+							                        <img name="${instanceNumber}" id="${fn:replace(seriesId, '.','_')}_${instanceNumber}" style="height: 75px;" src="images/pdf.png" imgSrc="Image.do?serverURL=${param.wadoUrl}&study=${param.study}&series=${seriesId}&object=${imageId}&rows=${rows}" ondblclick="openSeriesInViewer(this)" />
+							                    </c:when>				
+                						    <c:otherwise>
+					                        <c:choose>
+                    					        <c:when test="${param.wadoUrl == 'C-GET'}">
+                    					            <c:if test="${(instanceNumber == middle) || (instanceNumber==1) || (instanceNumber==numberOfImages)}">
+                    					                <img name="${instanceNumber}" id="${fn:replace(seriesId, '.','_')}_${instanceNumber}" style="height: 75px;" src="Wado.do?dicomURL=${param.dcmURL}&study=${param.study}&series=${seriesId}&object=${imageId}&retrieveType=${param.wadoUrl}&sopClassUID=${sopClassUID}" ondblclick="openSeriesInViewer(this)" />
+                    					            </c:if>
+                    					        </c:when>
+                          						<c:when test="${param.wadoUrl == 'C-MOVE'}">
+					                                <c:if test="${(instanceNumber == middle) || (instanceNumber==1) || (instanceNumber==numberOfImages)}">
+                    					                <img name="${instanceNumber}" id="${fn:replace(seriesId, '.','_')}_${instanceNumber}" style="height: 75px;" src="Wado.do?dicomURL=${param.dcmURL}&study=${param.study}&series=${seriesId}&object=${imageId}&retrieveType=${param.wadoUrl}" ondblclick="openSeriesInViewer(this)" />
+                    					            </c:if>
+                    					        </c:when>
+                    				        <c:otherwise>
+                    				            <c:if test="${(instanceNumber == middle) || (instanceNumber==1) || (instanceNumber==numberOfImages)}">
+                    				                <img name="${instanceNumber}" id="${fn:replace(seriesId, '.','_')}_${instanceNumber}" style="height: 75px;" src="Image.do?serverURL=${param.wadoUrl}&study=${param.study}&series=${seriesId}&object=${imageId}&rows=${rows}" ondblclick="openSeriesInViewer(this);" />
+                    				            </c:if>
+                    				        </c:otherwise>
+                    				    </c:choose>
+                    				</c:otherwise>
+				                </c:choose>
+				            </img:Image>
+			            </td>
+            		</tr>
+	        </table>
+    	</td>
+	</tr>
 </tbody>
 </table>
 <div style="height:3px"></div>

@@ -87,7 +87,7 @@ public class UserConfiguration extends HttpServlet {
             List<Principal> prinList = new ArrayList<Principal>(subject.getPrincipals());
             Principal p = prinList.get(0);
             String userName = p.getName();
-            System.out.println("User name: " + userName);*/
+            System.out.println("User name: " + userName);*/ //Works in JBoss but not in Tomcat
             
             String userName = request.getUserPrincipal().getName();
             

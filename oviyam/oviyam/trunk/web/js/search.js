@@ -60,7 +60,7 @@ $(document).ready(function() {
 
         $(divContent).load(encodeURI(searchURL), function() {
             clearInterval(timer);
-            checkLocalStudies();
+//            checkLocalStudies();
         });
 
         $('#westPane').html('');

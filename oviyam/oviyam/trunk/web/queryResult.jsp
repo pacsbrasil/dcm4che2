@@ -110,12 +110,10 @@
                 if($(westPane).is(":visible")) {
                 	$(westPane).html('');
                     $(westPane).hide();
-                    $(divider).next().css('left','26px');
-                   // $(divider).css('left','2px');
                     $('#Toggler').next().css('width', '100%');
-                   $('#Toggler').css('left','0%');
+                    $('#Toggler').next().css('left', '0px');
+                    $('#Toggler').css('left','0px');
                     $(divider).attr('title', 'Show Preview');
-                    $(divider).css('left','2px');   
 					if($('#<%=tabName%>_search').is(":visible")) {
 						$(divider).css('background','url("images/showall.png")');
 						$(divider).next().css('background','url("images/hideall.png")');
@@ -126,9 +124,10 @@
                 } else {
 	                loadWest();
                     $(westPane).show();
-                    $('#Toggler').next().css('width', '82%');
+                    $('#Toggler').next().css('left','250px');
+                    $('#Toggler').next().css('width',$('body').width()-260+'px');
                     $(divider).attr('title', 'Hide Preview');
-                    $('#Toggler').css('left','19%');
+                    $('#Toggler').css('left','254px');
                     if($('#<%=tabName%>_search').is(":visible")) {
 						$(divider).css('background','url("images/hidewest.png")');
 						$(divider).next().css('background','url("images/hidesearch.png")');
@@ -148,9 +147,8 @@
             	if($(searchPane).is(":visible")) {
             		$(searchPane).hide();
             		$(tabContent).css('height','100%');
-            		//$(divider).css('top','0.5%');
-            		//$(divider).prev().css('top','0.5%');
-            		 $('#Toggler').css('top','1%');
+            		$('#Toggler').css('top','1%');
+            		$('#Toggler').next().css('top','0px');
             		$(divider).attr('title','Show Search');
 
             		if($('#<%=tabName%>_westPane').is(":visible")) {
@@ -164,9 +162,8 @@
             		$(searchPane).show();
             		$(divider).attr('title','Hide Search');
             		$(tabContent).css('height','85%');
-            		 $('#Toggler').css('top','13.5%');
-            		//$(divider).css('top','13.5%');
-            		//$(divider).prev().css('top','13.5%');
+            		$('#Toggler').css('top','13.5%');
+            		$('#Toggler').next().css('top','13%');
 
             		if($('#<%=tabName%>_westPane').is(":visible")) {
 						$(divider).css('background','url("images/hidesearch.png")');
@@ -176,26 +173,7 @@
 						$(divider).prev().css('background','url("images/showall.png")');
 					}
             	}            	            	
-            }        
-            
-            function positionDividers(westDivider) {
-            	if($('#<%=tabName%>_search').is(":visible")) {
-					$(westDivider).css('top','13.5%');
-					$(westDivider).next().css('top','13.5%');
-            	} else {
-					$(westDivider).css('top','0%');
-					$(westDivider).next().css('top','0%');
-            	}
-            	
-            	if(!showWest) {
-	            	$('#<%=tabName%>_westPane').hide();
-					$(westDivider).next().css('left','42px');
-                    $(westDivider).next().next().css('width', '100%');
-                    $(westDivider).attr('title', 'Open');
-                    $(westDivider).css('left','2px'); 
-                    dTable.fnAdjustColumnSizing();
-            	}           	
-            }
+            } 
             
             function loadWest() {
             	var selected = $(dTable.find('.row_selected'));
@@ -221,9 +199,9 @@
 	<c:choose>
 	<c:when test="${param.preview=='true'}">
 		<div id="<%=tabName%>_westPane"
-			style="width: 18%; height: 97%; visibility: visible; display: block; z-index: 0; float: left;"></div>	
+			style="width: 250px; visibility: visible; display: block; z-index: 0; float: left;"></div>	
 
-		<div id="Toggler" style="position: absolute; top: 13.5%; left: 19%; z-index: 3;">
+		<div id="Toggler" style="position: absolute; top: 13.5%; left: 254px; z-index: 3;">
 
 		<div id="westToggler" title="Hide Preview" class="ui-state-default"
 			onmouseover="this.className='ui-state-hover'"
@@ -238,11 +216,11 @@
 			onclick="this.className='ui-state-default'; toggleSearch(this);"></div>
 		</div>	
 
-		<div style="float: left; width: 82%; height: 97%; padding: 0px'">
+		<div style="float: left; height: 84%; position: absolute; top: 13%; left:250px; right: 0px; bottom: 0px; padding: 0px'">
 	</c:when>
 	
 	<c:otherwise>
-		<div style="float: left; width: 100%; height: 97%; padding: 0px'">
+		<div style="float: left; width: 100%; padding: 0px'">
 	</c:otherwise>
 	</c:choose>
 

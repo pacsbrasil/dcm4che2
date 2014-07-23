@@ -192,6 +192,8 @@
                 if(imgSrc.indexOf('images/pdf.png') > 0)  {
                     imgSrc = jQuery(image).attr('imgSrc');
                 }
+                
+                parent.selectedFrame = null;//For IE 
 
                 var url = 'frameContent.html?studyUID=' + getParameter(imgSrc, 'study');
                 url += '&seriesUID=' + getParameter(imgSrc, 'series');

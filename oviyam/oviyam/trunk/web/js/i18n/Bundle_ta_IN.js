@@ -1,9 +1,9 @@
 var languages = {
-    PageTitle: "ஓவியம் 2.0",
+    PageTitle: "ஓவியம்2",
     UserName: "பயனர் பெயர்",
     Password: "கடவுச்சொல்",
     Login: "உள்நுழைக",
-    Footer: "ஓவியம் 2.0 -க்கு தேவை google chrome / safari புதிய பதிப்பு. ",
+    Footer: "ஓவியம்2 -க்கு தேவை google chrome / safari புதிய பதிப்பு. ",
     PatientName: "நோயாளியின் பெயர்",
     PatientId: "நோயாளியின் எண்",
     BirthDate: "பிறந்த தேதி",

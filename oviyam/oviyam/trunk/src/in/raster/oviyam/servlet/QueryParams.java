@@ -85,13 +85,14 @@ public class QueryParams extends HttpServlet {
         try {
 
             //Get user details
-            InitialContext ctx = new InitialContext();
+           /* InitialContext ctx = new InitialContext();
             Subject subject = (Subject) ctx.lookup("java:comp/env/security/subject");
             
             List<Principal> prinList = new ArrayList<Principal>(subject.getPrincipals());
 
             Principal p = prinList.get(0);
-            String userName = p.getName();
+            String userName = p.getName();*/ //Works in JBoss but Not working in Tomcat
+        	String userName = request.getUserPrincipal().getName();
 
             Button btn = new Button();
             btn.setLabel(btnLabel);

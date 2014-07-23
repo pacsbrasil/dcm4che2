@@ -317,8 +317,7 @@ $(document).ready(function() {
                 
                 var div = '';
                 if( !location.search ) {
-                	div = '<div id="' + node.aetitle + '" class="ui-tabs-panel ui-widget-content ui-corner-bottom ui-tabs-hide" style="padding: 0; width: 100%">';
-                	//div += '<nav class="ui-state-default" onmouseover="this.className=\'ui-state-hover\'" onmouseout="this.className=\'ui-state-default\'" style="cursor: pointer">Search</nav>';
+                	div = '<div id="' + node.aetitle + '" class="ui-tabs-panel ui-widget-content ui-corner-bottom ui-tabs-hide" style="padding: 0; width: 100%;">';
                 	div += '<div id="' + node.aetitle + '_search" style="height:13%; width:100%;"></div>';
                 	div += '<div id="' + node.aetitle + '_content" style="height:85%; width:100%;"></div></div>';
                 	$('#tabContent').append(div);
