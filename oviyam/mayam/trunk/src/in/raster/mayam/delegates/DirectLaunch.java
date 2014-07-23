@@ -43,8 +43,6 @@ import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.form.ImagePreviewPanel;
 import in.raster.mayam.form.ViewerPreviewPanel;
 import in.raster.mayam.models.InputArgumentValues;
-import in.raster.mayam.models.Series;
-import in.raster.mayam.models.ServerModel;
 import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
@@ -52,6 +50,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -80,244 +80,12 @@ import org.w3c.dom.NodeList;
  */
 public class DirectLaunch extends SwingWorker<Void, Void> {
 
+    //Launches viewer either using XML file or query filters
     InputArgumentValues inputArgumentValues = null;
     ExecutorService executor = Executors.newFixedThreadPool(3);
 
     public DirectLaunch(InputArgumentValues inputArgumentValues) {
         this.inputArgumentValues = inputArgumentValues;
-//        run();
-    }
-
-    private void doQuery1(InputArgumentValues inputArgumentValues) {
-
-        DcmURL url = new DcmURL("dicom://" + inputArgumentValues.getAeTitle() + "@" + inputArgumentValues.getHostName() + ":" + inputArgumentValues.getPort());
-        QueryService queryService = new QueryService();
-        QuerySeriesService querySeriesService = new QuerySeriesService();
-        QueryInstanceService queryInstanceService = new QueryInstanceService();
-        ArrayList<String> sopUidList = new ArrayList<String>();
-
-        queryService.callFindWithQuery(inputArgumentValues.getPatientID(), inputArgumentValues.getPatientName(), "", inputArgumentValues.getSearchDate(), inputArgumentValues.getModality(), "", inputArgumentValues.getAccessionNumber(), "", "", inputArgumentValues.getStudyUID(), url);
-        Vector<Dataset> studyVector = queryService.getDatasetVector();
-        if (studyVector.isEmpty()) {
-            System.err.println("No Data Found.");
-            System.exit(0);
-        }
-
-        for (int study_Iter = 0; study_Iter < studyVector.size(); study_Iter++) {
-            ImagePreviewPanel imagePreviewPanel = new ImagePreviewPanel();
-            Dataset study = studyVector.get(study_Iter);
-            imagePreviewPanel.setPatientInfo(constructPatientInfo(study));
-            ApplicationContext.openImageView(study.getString(Tags.PatientName), study.getString(Tags.StudyInstanceUID), imagePreviewPanel);
-
-            querySeriesService.callFindWithQuery(study.getString(Tags.PatientID), study.getString(Tags.StudyInstanceUID), url);
-            Vector<Dataset> seriesVector = querySeriesService.getDatasetVector();
-
-            HashSet<String> multiframesAndVideos = new HashSet<String>();
-            for (int ser_Iter = 0; ser_Iter < seriesVector.size(); ser_Iter++) {
-                Dataset ser_Dataset = seriesVector.get(ser_Iter);
-//                ViewerPreviewPanel preview = new ViewerPreviewPanel();
-                int multiframeCnt = 0;
-                ArrayList<String> instances = new ArrayList<String>();
-
-                queryInstanceService.callFindWithQuery(study.getString(Tags.PatientID), study.getString(Tags.StudyInstanceUID), ser_Dataset.getString(Tags.SeriesInstanceUID), url);
-                Vector<Dataset> inst_Vector = queryInstanceService.getDatasetVector();
-
-                for (int inst_iter = 0; inst_iter < inst_Vector.size(); inst_iter++) {
-                    Dataset inst_Dataset = inst_Vector.get(inst_iter);
-                    if (!sopUidList.contains(inst_Dataset.getString(Tags.SOPInstanceUID))) {
-                        sopUidList.add(inst_Dataset.getString(Tags.SOPInstanceUID));
-                    }
-
-                    if (inst_Dataset.getString(Tags.NumberOfFrames) != null) { //Multiframe
-                        multiframeCnt++;
-                        if (inst_Dataset.getString(Tags.SOPClassUID).equals(UID.VideoEndoscopicImageStorage) || inst_Dataset.getString(Tags.SOPClassUID).equals(UID.VideoMicroscopicImageStorage) || inst_Dataset.getString(Tags.SOPClassUID).equals(UID.VideoPhotographicImageStorage)) { //Video
-                            ViewerPreviewPanel preview = new ViewerPreviewPanel();
-                            preview.videoPreview(study.getString(Tags.StudyInstanceUID), ser_Dataset.getString(Tags.SeriesInstanceUID), ser_Dataset.getString(Tags.SOPInstanceUID) + "," + ser_Dataset.getString(Tags.NumberOfFrames));
-                            setPreviewPosition(preview, ser_Iter, imagePreviewPanel);
-                        } else { //Multiframe
-                            ViewerPreviewPanel preview = new ViewerPreviewPanel();
-                            preview.multiframePreview(study.getString(Tags.StudyInstanceUID), ser_Dataset.getString(Tags.SeriesInstanceUID), ser_Dataset.getString(Tags.SOPInstanceUID) + "," + ser_Dataset.getString(Tags.NumberOfFrames));
-                            setPreviewPosition(preview, ser_Iter, imagePreviewPanel);
-                        }
-                    } else {
-                        instances.add(inst_Dataset.getString(Tags.SeriesInstanceUID) + "," + inst_Dataset.getString(Tags.SOPInstanceUID));
-                    }
-                }
-
-                if (ser_Dataset.getInteger(Tags.NumberOfSeriesRelatedInstances) > multiframeCnt) {
-                    ViewerPreviewPanel preview = new ViewerPreviewPanel();
-                    preview.normalPreview(study.getString(Tags.StudyInstanceUID), ser_Dataset.getString(Tags.SeriesInstanceUID), ser_Dataset.getString(Tags.SeriesDescription), ser_Dataset.getInteger(Tags.NumberOfSeriesRelatedInstances));
-                    setPreviewPosition(preview, ser_Iter, imagePreviewPanel);
-                    if (inputArgumentValues.getRetrieveType().equals("WADO")) {
-                        ServerModel serverModel = new ServerModel();
-                        serverModel.setWadoInformation(inputArgumentValues.getWadoProtocol(), inputArgumentValues.getWadoContext(), inputArgumentValues.getHostName(), inputArgumentValues.getWadoPort());
-                        preview.loadThumbnails(instances, serverModel);
-                    } else {
-                        preview.loadBackground();
-                    }
-                }
-            }
-        }
-
-    }
-
-    private void doQuery(InputArgumentValues inputArgumentValues) {
-        HashMap<String, HashSet<String>> instances = null;
-        HashSet<String> sopClassList = new HashSet<String>(0, 1);
-        HashSet<String> videoInstances = null;
-        ImagePreviewPanel imagePreviewPanel = new ImagePreviewPanel();
-        boolean useMoveRQ = false;
-        if (inputArgumentValues.getRetrieveType().equalsIgnoreCase("WADO")) {
-            useMoveRQ = false;
-            instances = new HashMap<String, HashSet<String>>(3, 5);
-            videoInstances = new HashSet<String>(0, 1);
-        } else if (inputArgumentValues.getRetrieveType().equalsIgnoreCase("C-MOVE")) {
-            useMoveRQ = true;
-        }
-        DcmURL url = new DcmURL("dicom://" + inputArgumentValues.getAeTitle() + "@" + inputArgumentValues.getHostName() + ":" + inputArgumentValues.getPort());
-        QueryService queryService = new QueryService();
-        QuerySeriesService querySeriesService = new QuerySeriesService();
-        QueryInstanceService queryInstanceService = new QueryInstanceService();
-        queryService.callFindWithQuery(inputArgumentValues.getPatientID(), inputArgumentValues.getPatientName(), "", inputArgumentValues.getSearchDate(), inputArgumentValues.getModality(), "", inputArgumentValues.getAccessionNumber(), "", "", inputArgumentValues.getStudyUID(), url);
-        if (queryService.getDatasetVector().isEmpty()) {
-            System.err.println("No Matching Studies Found");
-            System.exit(0);
-        }
-        Dataset studyDataset = (Dataset) queryService.getDatasetVector().get(0);
-        imagePreviewPanel.setPatientInfo(constructPatientInfo(studyDataset));
-//        ApplicationContext.ImageView(studyDataset.getString(Tags.PatientName), studyDataset.getString(Tags.StudyInstanceUID), imagePreviewPanel);
-        ApplicationContext.openImageView(studyDataset.getString(Tags.PatientName), studyDataset.getString(Tags.StudyInstanceUID), imagePreviewPanel);
-        for (int i = 0; i < queryService.getDatasetVector().size(); i++) {
-            HashSet<String> instanceList = new HashSet<String>(3, 5);
-            querySeriesService.callFindWithQuery(inputArgumentValues.getPatientID(), inputArgumentValues.getStudyUID(), url);
-            for (int cnt = 0; cnt < querySeriesService.getDatasetVector().size(); cnt++) {
-                int multiframes = 0;
-                Dataset dataset = (Dataset) querySeriesService.getDatasetVector().elementAt(cnt);
-                queryInstanceService.callFindWithQuery(studyDataset.getString(Tags.PatientID), studyDataset.getString(Tags.StudyInstanceUID), dataset.getString(Tags.SeriesInstanceUID), url);
-                for (int k = 0; k < queryInstanceService.getDatasetVector().size(); k++) {
-                    Dataset instanceSet = (Dataset) queryInstanceService.getDatasetVector().get(k);
-                    sopClassList.add(instanceSet.getString(Tags.SOPClassUID));
-                    if (instanceSet.getInteger(Tags.NumberOfFrames) != null) {
-                        if (instanceSet.getString(Tags.SOPClassUID).equals(UID.VideoEndoscopicImageStorage) || instanceSet.getString(Tags.SOPClassUID).equals(UID.VideoMicroscopicImageStorage) || instanceSet.getString(Tags.SOPClassUID).equals(UID.VideoPhotographicImageStorage)) {
-                            createMultiframeOrVideoPreview(dataset, imagePreviewPanel, multiframes, instanceSet.getString(Tags.SOPInstanceUID) + "," + instanceSet.getString(Tags.NumberOfFrames), "Video");
-                            multiframes++;
-                            videoInstances.add(instanceSet.getString(Tags.SeriesInstanceUID) + "," + instanceSet.getString(Tags.SOPInstanceUID));
-                        } else {
-                            createMultiframeOrVideoPreview(dataset, imagePreviewPanel, multiframes, instanceSet.getString(Tags.SOPInstanceUID) + "," + instanceSet.getString(Tags.NumberOfFrames), "Multiframe");
-                            multiframes++;
-                            instanceList.add(instanceSet.getString(Tags.SeriesInstanceUID) + "," + instanceSet.getString(Tags.SOPInstanceUID));
-                        }
-                    } else {
-                        instanceList.add(instanceSet.getString(Tags.SeriesInstanceUID) + "," + instanceSet.getString(Tags.SOPInstanceUID));
-                    }
-                }
-                if (instances != null) {
-                    instances.put(dataset.getString(Tags.SeriesInstanceUID), instanceList);
-                }
-                if (multiframes < dataset.getInteger(Tags.NumberOfSeriesRelatedInstances)) {
-                    createPreviews(dataset, imagePreviewPanel, cnt, dataset.getInteger(Tags.NumberOfSeriesRelatedInstances) - multiframes);
-                }
-                if (useMoveRQ) {
-                    if (cnt == 0) {
-                        executor.submit(new SeriesRetriever(new String[]{url.getProtocol() + "://" + url.getCalledAET() + "@" + url.getHost() + ":" + url.getPort(), "--dest", ApplicationContext.listenerDetails[0], "--pid", dataset.getString(Tags.PatientID), "--suid", dataset.getString(Tags.StudyInstanceUID), "--Suid", dataset.getString(Tags.SeriesInstanceUID)}, inputArgumentValues.getStudyUID(), dataset.getString(Tags.SeriesInstanceUID), studyDataset.getInteger(Tags.NumberOfStudyRelatedInstances), true, true, true));
-                    } else {
-                        executor.submit(new SeriesRetriever(new String[]{url.getProtocol() + "://" + url.getCalledAET() + "@" + url.getHost() + ":" + url.getPort(), "--dest", ApplicationContext.listenerDetails[0], "--pid", dataset.getString(Tags.PatientID), "--suid", dataset.getString(Tags.StudyInstanceUID), "--Suid", dataset.getString(Tags.SeriesInstanceUID)}, inputArgumentValues.getStudyUID(), dataset.getString(Tags.SeriesInstanceUID), studyDataset.getInteger(Tags.NumberOfStudyRelatedInstances), false, true, true));
-                    }
-                } else if (instances == null) {
-                    ArrayList<String> cgetParamList = new ArrayList<String>();
-                    cgetParamList.add(url.getCalledAET() + "@" + url.getHost() + ":" + url.getPort());
-                    cgetParamList.add("-L " + ApplicationContext.listenerDetails[0]);
-                    cgetParamList.add("-cget");
-                    cgetParamList.add("-I");
-                    cgetParamList.add("-qStudyInstanceUID=" + studyDataset.getString(Tags.StudyInstanceUID));
-                    cgetParamList.add("-qSeriesInstanceUID=" + dataset.getString(Tags.SeriesInstanceUID));
-                    Iterator<String> iterator = sopClassList.iterator();
-                    while (iterator.hasNext()) {
-                        String sopUid = iterator.next();
-                        cgetParamList.add("-cstore");
-                        cgetParamList.add(sopUid + ":" + UID.ExplicitVRLittleEndian);
-                        if (sopClassList.contains(UID.VideoEndoscopicImageStorage) || sopClassList.contains(UID.VideoMicroscopicImageStorage) || sopClassList.contains(UID.VideoPhotographicImageStorage)) {
-                            cgetParamList.add(",");
-                            cgetParamList.add(sopUid + ":" + UID.MPEG2);
-                            cgetParamList.add(",");
-                            cgetParamList.add(sopUid + ":" + UID.MPEG2MainProfileHighLevel);
-                            cgetParamList.add(",");
-                            cgetParamList.add(sopUid + ":" + UID.MPEG4AVCH264HighProfileLevel41);
-                            cgetParamList.add(",");
-                            cgetParamList.add(sopUid + ":" + UID.MPEG4AVCH264BDCompatibleHighProfileLevel41);
-                        }
-                    }
-                    cgetParamList.add("-cstoredest");
-                    cgetParamList.add(ApplicationContext.listenerDetails[2]);
-                    String[] cGetParam = cgetParamList.toArray(new String[cgetParamList.size()]);
-                    if (cnt == 0) {
-                        executor.submit(new SeriesRetriever(cGetParam, studyDataset.getString(Tags.StudyInstanceUID), dataset.getString(Tags.SeriesInstanceUID), studyDataset.getInteger(Tags.NumberOfStudyRelatedInstances), true, true, useMoveRQ));
-                    } else {
-                        executor.submit(new SeriesRetriever(cGetParam, studyDataset.getString(Tags.StudyInstanceUID), dataset.getString(Tags.SeriesInstanceUID), studyDataset.getInteger(Tags.NumberOfStudyRelatedInstances), false, true, useMoveRQ));
-                    }
-                }
-            }
-            if (instances != null) { //It should be wado
-                ServerModel serverModel = new ServerModel();
-                serverModel.setAeTitle(inputArgumentValues.getAeTitle());
-                serverModel.setHostName(inputArgumentValues.getHostName());
-                serverModel.setPort(inputArgumentValues.getPort());
-                serverModel.setWadoContextPath(inputArgumentValues.getWadoContext());
-                serverModel.setWadoPort(inputArgumentValues.getWadoPort());
-                serverModel.setWadoProtocol(inputArgumentValues.getWadoProtocol());
-                executor.submit(new ThumbnailWadoRetriever(studyDataset.getString(Tags.StudyInstanceUID), instances, serverModel));
-                if (!instances.isEmpty()) {
-                    executor.submit(new WadoRetriever(studyDataset.getString(Tags.StudyInstanceUID), instances, serverModel, true, true));
-                }
-                if (!videoInstances.isEmpty()) {
-                    HashMap<String, HashSet<String>> videos = new HashMap<String, HashSet<String>>(0, 1);
-                    videos.put(videoInstances.iterator().next().split(",")[0], videoInstances);
-                    executor.submit(new WadoRetriever(studyDataset.getString(Tags.StudyInstanceUID), videos, serverModel, false, false));
-                }
-            }
-        }
-    }
-    int position = 0, size = 0;
-
-    private void createPreviews(Dataset seriesDataset, ImagePreviewPanel imagePreviewPanel, int id, int noOfInstances) {
-        Series series = new Series(seriesDataset);
-        series.setSeriesRelatedInstance(noOfInstances);
-        ViewerPreviewPanel viewerPreviewPanel = new ViewerPreviewPanel(seriesDataset.getString(Tags.StudyInstanceUID), series, null);
-        viewerPreviewPanel.setVisible(true);
-        viewerPreviewPanel.setName(String.valueOf(id));
-        int height = viewerPreviewPanel.getTotalHeight();
-        size += height + 5;
-        viewerPreviewPanel.setBounds(0, position, 230, height);
-        imagePreviewPanel.addViewerPanel(position, height, viewerPreviewPanel, size);
-        position += (height + 5);
-    }
-
-    private void setPreviewPosition(ViewerPreviewPanel preview, int id, ImagePreviewPanel imagePreviewPanel) {
-        preview.setVisible(true);
-        preview.setName(String.valueOf(id));
-        int height = preview.getTotalHeight();
-        size += height + 5;
-        preview.setBounds(0, position, 230, height);
-        imagePreviewPanel.addViewerPanel(position, height, preview, size);
-        position += (height + 5);
-    }
-
-    private void createMultiframeOrVideoPreview(Dataset seriesDataset, ImagePreviewPanel imagePreviewPanel, int id, String iuid, String seriesDesc) {
-        Series series = new Series(seriesDataset);
-        series.setSeriesRelatedInstance(1);
-        series.setSeriesDesc(seriesDesc);
-        series.setVideoStatus(seriesDesc.equals("Video"));
-        ViewerPreviewPanel viewerPreviewPanel = new ViewerPreviewPanel(seriesDataset.getString(Tags.StudyInstanceUID), series, iuid);
-        viewerPreviewPanel.setVisible(true);
-        viewerPreviewPanel.setName(String.valueOf(id));
-        int height = viewerPreviewPanel.getTotalHeight();
-        size += height + 5;
-        viewerPreviewPanel.setBounds(0, position, 230, height);
-        imagePreviewPanel.addViewerPanel(position, height, viewerPreviewPanel, size);
-        if (series.isVideo()) {
-            viewerPreviewPanel.loadVideoImage();
-        }
-        position += (height + 5);
     }
 
     private String[] constructPatientInfo(Dataset dataset) {
@@ -365,168 +133,207 @@ public class DirectLaunch extends SwingWorker<Void, Void> {
         return patientInfo;
     }
 
-//    private void readXML() {
-//        File xmlFile = new File(inputArgumentValues.getXmlFilePath());
-//        Document xmlDoc = null;
-//        if (xmlFile.exists()) {
-//            try {
-//                xmlDoc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(xmlFile);
-//            } catch (ParserConfigurationException ex) {
-//                Logger.getLogger(DirectLaunch.class.getName()).log(Level.SEVERE, null, ex);
-//            } catch (SAXException ex) {
-//                Logger.getLogger(DirectLaunch.class.getName()).log(Level.SEVERE, null, ex);
-//            } catch (IOException ex) {
-//                Logger.getLogger(DirectLaunch.class.getName()).log(Level.SEVERE, null, ex);
-//            }
-//            Element patient = (Element) xmlDoc.getElementsByTagName("Patient").item(0);
-//            Element study = (Element) xmlDoc.getElementsByTagName("Study").item(0);
-//
-//            ImagePreviewPanel imagePreviewPanel = new ImagePreviewPanel();
-//            imagePreviewPanel.setPatientInfo(constructPatientInfo(patient, study));
-//            ApplicationContext.openImageView(patient.getAttribute("PatientName"), study.getAttribute("StudyInstanceUID"), imagePreviewPanel);
-//
-//            NodeList seriesList = xmlDoc.getElementsByTagName("Series");
-//            ThumbnailWadoRetriever thumbnail_reteriver = new ThumbnailWadoRetriever();
-//            WadoRetriever wado_reteriver = new WadoRetriever();
-//
-//            for (int ser_Iter = 0; ser_Iter < seriesList.getLength(); ser_Iter++) {
-//                Node child = seriesList.item(ser_Iter);
-//                Element ser_Item = (Element) child;
-//                String sopClassUID = ser_Item.getAttribute("SOPClassUID");
-//
-////                Calendar today = Calendar.getInstance(ApplicationContext.currentLocale);                
-////                String dest = ApplicationContext.listenerDetails[2] + File.separator + today.get(Calendar.YEAR) + File.separator + today.get(Calendar.MONTH) + File.separator + today.get(Calendar.DATE) + File.separator + study.getAttribute("StudyInstanceUID") + File.separator + ser_Item.getAttribute("SeriesInstanceUID") + File.separator + "Thumbnails" + File.separator;
-//                createPreviews(study.getAttribute("StudyInstanceUID"), ser_Item, ser_Iter, imagePreviewPanel, sopClassUID);
-//
-//                if (!ser_Item.getAttribute("SeriesDescription").equals("Multiframe")) {
-//                    NodeList instances = ser_Item.getChildNodes();
-////                    System.out.println("Len : " +instances.getLength());
-////                    Thumbnail[] thumbnails = new Thumbnail[instances.getLength()];
-//
-//                    for (int inst_Iter = 0; inst_Iter < instances.getLength(); inst_Iter++) {
-//                        Node item1 = instances.item(inst_Iter);
-//
-//                        if (item1.getNodeType() == Node.ELEMENT_NODE) {
-//                            Element inst_Item = (Element) instances.item(inst_Iter);
-//                            String thumbnailReq = inputArgumentValues.getWadoProtocol() + "://" + inputArgumentValues.getHostName() + ":" + inputArgumentValues.getWadoPort() + "/wado?requestType=WADO&studyUID=" + study.getAttribute("StudyInstanceUID") + "&seriesUID=" + ser_Item.getAttribute("SeriesInstanceUID") + "&objectUID=" + inst_Item.getAttribute("SOPInstanceUID") + "&rows=75&columns=75";
-//                            String dicom_Req = inputArgumentValues.getWadoProtocol() + "://" + inputArgumentValues.getHostName() + ":" + inputArgumentValues.getWadoPort() + "/wado?requestType=WADO&contentType=application/dicom&studyUID=" + study.getAttribute("StudyInstanceUID") + "&seriesUID=" + ser_Item.getAttribute("SeriesInstanceUID") + "&objectUID=" + inst_Item.getAttribute("SOPInstanceUID");
-////                            thumbnails[inst_Iter] = new Thumbnail(thumbnailReq, dest + inst_Item.getAttribute("SOPInstanceUID"), inst_Item.getAttribute("SOPInstanceUID"));
-//                            thumbnail_reteriver.retrieveThumbnail(thumbnailReq, study.getAttribute("StudyInstanceUID"), ser_Item.getAttribute("SeriesInstanceUID"), inst_Item.getAttribute("SOPInstanceUID"));
-//                            wado_reteriver.reterive(dicom_Req, study.getAttribute("StudyInstanceUID"), ser_Item.getAttribute("SeriesInstanceUID"), inst_Item.getAttribute("SOPInstanceUID"));
-//                        }
-//                    }
-////                    createPreview(study.getAttribute("StudyInstanceUID"), ser_Item, ser_Iter, imagePreviewPanel, thumbnails);
-//                    ApplicationContext.displayPreviewOfSeries(study.getAttribute("StudyInstanceUID"), ser_Item.getAttribute("SeriesInstanceUID"));
-//                    if (ser_Iter == 0) {
-//                        ApplicationContext.createCanvas(ApplicationContext.databaseRef.getFirstInstanceLocation(study.getAttribute("StudyInstanceUID"), ser_Item.getAttribute("SeriesInstanceUID")), study.getAttribute("StudyInstanceUID"), ser_Iter);
-//                    }
-//                } else {
-//                    String dicom_Req = inputArgumentValues.getWadoProtocol() + "://" + inputArgumentValues.getHostName() + ":" + inputArgumentValues.getWadoPort() + "/wado?requestType=WADO&contentType=application/dicom&studyUID=" + study.getAttribute("StudyInstanceUID") + "&seriesUID=" + ser_Item.getAttribute("SeriesInstanceUID") + "&objectUID=" + ser_Item.getAttribute("SOPInstanceUID");
-//                    wado_reteriver.reterive(dicom_Req, study.getAttribute("StudyInstanceUID"), ser_Item.getAttribute("SeriesInstanceUID"), ser_Item.getAttribute("SOPInstanceUID"));
-//
-//                    if (!(sopClassUID.equals(UID.VideoEndoscopicImageStorage) || sopClassUID.equals(UID.VideoMicroscopicImageStorage) || sopClassUID.equals(UID.VideoPhotographicImageStorage))) {
-//                        String thumbnailReq = inputArgumentValues.getWadoProtocol() + "://" + inputArgumentValues.getHostName() + ":" + inputArgumentValues.getWadoPort() + "/wado?requestType=WADO&studyUID=" + study.getAttribute("StudyInstanceUID") + "&seriesUID=" + ser_Item.getAttribute("SeriesInstanceUID") + "&objectUID=" + ser_Item.getAttribute("SOPInstanceUID") + "&rows=75&columns=75";
-////                        Thumbnail[] thumbnail = new Thumbnail[]{new Thumbnail(thumbnailReq, dest + ser_Item.getAttribute("SOPInstanceUID"), ser_Item.getAttribute("SOPInstanceUID"))};
-//                        thumbnail_reteriver.retrieveThumbnail(thumbnailReq, study.getAttribute("StudyInstanceUID"), ser_Item.getAttribute("SeriesInstanceUID"), ser_Item.getAttribute("SOPInstanceUID"));
-////                        createMultiframePreview(study.getAttribute("studyInstanceUID"), ser_Item, ser_Iter, imagePreviewPanel, thumbnail);
-//                    }
-////                    else {
-////                        createVideoPreview(study.getAttribute("StudyInstanceUID"), ser_Item, ser_Iter, imagePreviewPanel);
-////                    }
-//                    if (ser_Iter == 0) {
-//                        ApplicationContext.createCanvas(ApplicationContext.databaseRef.getFileLocation(ser_Item.getAttribute("SOPInstanceUID")), study.getAttribute("StudyInstanceUID"), ser_Iter);
-//                    }
-//                }
-//            }
-//            ApplicationContext.createMultiframePreviews(study.getAttribute("StudyInstanceUID"));
-//            ApplicationContext.databaseRef.updateStudy(study.getAttribute("StudyInstanceUID"));
-//        } else {
-//            System.err.println("ERROR : Unable to parse XML File.");
-//            System.exit(0);
-//        }
-//    }
     private void readXMLFile() {
-        File xmlFile = new File(inputArgumentValues.getXmlFilePath());
-        Document xmlDoc = null;
-        if (xmlFile.exists()) {
-            try {
-                xmlDoc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(xmlFile);
-            } catch (ParserConfigurationException ex) {
-                ApplicationContext.logger.log(Level.INFO, "Direct Launch", ex);
-            } catch (SAXException ex) {
-                ApplicationContext.logger.log(Level.INFO, "Direct Launch", ex);
-            } catch (IOException ex) {
-                ApplicationContext.logger.log(Level.INFO, "Direct Launch", ex);
-            }
-            Element patient = (Element) xmlDoc.getElementsByTagName("Patient").item(0);
-            Element study = (Element) xmlDoc.getElementsByTagName("Study").item(0);
+        try {
+            int size = 0, position = 0;
+            File xmlFile = new File(inputArgumentValues.getXmlFilePath());
+            Document xmlDoc = null;
+            if (xmlFile.exists()) {
+                try {
+                    xmlDoc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(xmlFile);
+                } catch (ParserConfigurationException ex) {
+                    ApplicationContext.logger.log(Level.INFO, "Direct Launch", ex);
+                } catch (SAXException ex) {
+                    ApplicationContext.logger.log(Level.INFO, "Direct Launch", ex);
+                } catch (IOException ex) {
+                    ApplicationContext.logger.log(Level.INFO, "Direct Launch", ex);
+                }
+                Element patient = (Element) xmlDoc.getElementsByTagName("Patient").item(0);
+                Element study = (Element) xmlDoc.getElementsByTagName("Study").item(0);
 
-            ImagePreviewPanel imagePreviewPanel = new ImagePreviewPanel();
-            imagePreviewPanel.setPatientInfo(constructPatientInfo(patient, study));
-            ApplicationContext.openImageView(patient.getAttribute("PatientName"), study.getAttribute("StudyInstanceUID"), imagePreviewPanel);
-            HashMap<String, Collection<String>> instancesToRetrieve = new HashMap<String, Collection<String>>();
+                ImagePreviewPanel imagePreviewPanel = new ImagePreviewPanel();
+                imagePreviewPanel.setPatientInfo(constructPatientInfo(patient, study));
+                ApplicationContext.openImageView(patient.getAttribute("PatientName"), study.getAttribute("StudyInstanceUID"), imagePreviewPanel);
+                HashMap<String, Collection<String>> instancesToRetrieve = new HashMap<String, Collection<String>>();
 
-            HashSet<String> multiframesAndVideos = new HashSet<String>();
-            NodeList seriesList = xmlDoc.getElementsByTagName("Series");
-            for (int ser_Iter = 0; ser_Iter < seriesList.getLength(); ser_Iter++) {
-                Node child = seriesList.item(ser_Iter);
-                Element ser_Item = (Element) child;
-                String sopClassUID = ser_Item.getAttribute("SOPClassUID");
+                HashSet<String> multiframesAndVideos = new HashSet<String>();
+                NodeList seriesList = xmlDoc.getElementsByTagName("Series");
+
+                for (int ser_Iter = 0; ser_Iter < seriesList.getLength(); ser_Iter++) {
+                    Node child = seriesList.item(ser_Iter);
+                    Element ser_Item = (Element) child;
+                    String sopClassUID = ser_Item.getAttribute("SOPClassUID");
 
 
-                NodeList instances = ser_Item.getChildNodes();
-                ViewerPreviewPanel preview = new ViewerPreviewPanel();
-                if (ser_Item.getAttribute("SeriesDescription").equals("Multiframe")) {
-                    if (sopClassUID.equals(UID.VideoEndoscopicImageStorage) || sopClassUID.equals(UID.VideoMicroscopicImageStorage) || sopClassUID.equals(UID.VideoPhotographicImageStorage)) {
-                        preview.videoPreview(study.getAttribute("StudyInstanceUID"), ser_Item.getAttribute("SeriesInstanceUID"), ser_Item.getAttribute("SOPInstanceUID") + "," + ser_Item.getAttribute("NumberOfFrames"));
-                    } else {
-                        preview.multiframePreview(study.getAttribute("StudyInstanceUID"), ser_Item.getAttribute("SeriesInstanceUID"), ser_Item.getAttribute("SOPInstanceUID") + "," + ser_Item.getAttribute("NumberOfFrames"));
-                        preview.multiframes(inputArgumentValues.getWadoProtocol(), inputArgumentValues.getWadoContext(), inputArgumentValues.getHostName(), inputArgumentValues.getWadoPort());
-                    }
-                    multiframesAndVideos.add(ser_Item.getAttribute("SesriesInstanceUID") + "," + ser_Item.getAttribute("SOPInstanceUID"));
-                } else {
-                    ArrayList<String> instance_List = new ArrayList<String>();
-                    for (int inst_Iter = 0; inst_Iter < instances.getLength(); inst_Iter++) {
-                        Node item = instances.item(inst_Iter);
-                        if (item.getNodeType() == Node.ELEMENT_NODE) {
-                            Element inst_Item = (Element) instances.item(inst_Iter);
-                            instance_List.add(ser_Item.getAttribute("SeriesInstanceUID") + "," + inst_Item.getAttribute("SOPInstanceUID"));
-                            preview.normalPreview(study.getAttribute("StudyInstanceUID"), ser_Item.getAttribute("SeriesInstanceUID"), ser_Item.getAttribute("SeriesDescription"), Integer.parseInt(ser_Item.getAttribute("InstanceCount")));
-                            preview.loadThumbnails(instance_List, inputArgumentValues.getWadoProtocol(), inputArgumentValues.getWadoContext(), inputArgumentValues.getHostName(), inputArgumentValues.getWadoPort());
+                    NodeList instances = ser_Item.getChildNodes();
+                    ViewerPreviewPanel preview = new ViewerPreviewPanel(ser_Iter);
+                    if (ser_Item.getAttribute("SeriesDescription").equals("Multiframe")) {
+                        if (sopClassUID.equals(UID.VideoEndoscopicImageStorage) || sopClassUID.equals(UID.VideoMicroscopicImageStorage) || sopClassUID.equals(UID.VideoPhotographicImageStorage)) {
+                            preview.videoPreview(study.getAttribute("StudyInstanceUID"), ser_Item.getAttribute("SeriesInstanceUID"), ser_Item.getAttribute("SOPInstanceUID") + "," + ser_Item.getAttribute("NumberOfFrames"));
+                        } else {
+                            preview.multiframePreview(study.getAttribute("StudyInstanceUID"), ser_Item.getAttribute("SeriesInstanceUID"), ser_Item.getAttribute("SOPInstanceUID") + "," + ser_Item.getAttribute("NumberOfFrames"));
+                            preview.multiframes(inputArgumentValues.getWadoProtocol(), inputArgumentValues.getWadoContext(), inputArgumentValues.getHostName(), inputArgumentValues.getWadoPort());
                         }
+                        multiframesAndVideos.add(ser_Item.getAttribute("SesriesInstanceUID") + "," + ser_Item.getAttribute("SOPInstanceUID"));
+                    } else {
+                        ArrayList<String> instance_List = new ArrayList<String>();
+                        for (int inst_Iter = 0; inst_Iter < instances.getLength(); inst_Iter++) {
+                            Node item = instances.item(inst_Iter);
+                            if (item.getNodeType() == Node.ELEMENT_NODE) {
+                                Element inst_Item = (Element) instances.item(inst_Iter);
+                                instance_List.add(ser_Item.getAttribute("SeriesInstanceUID") + "," + inst_Item.getAttribute("SOPInstanceUID"));
+                                preview.normalPreview(study.getAttribute("StudyInstanceUID"), ser_Item.getAttribute("SeriesInstanceUID"), ser_Item.getAttribute("SeriesDescription"), Integer.parseInt(ser_Item.getAttribute("InstanceCount")));
+                                preview.loadThumbnails(instance_List, inputArgumentValues.getWadoProtocol(), inputArgumentValues.getWadoContext(), inputArgumentValues.getHostName(), inputArgumentValues.getWadoPort());
+                            }
+                        }
+                        instancesToRetrieve.put(ser_Item.getAttribute("SeriesInstanceUID"), instance_List);
                     }
-                    instancesToRetrieve.put(ser_Item.getAttribute("SeriesInstanceUID"), instance_List);
+
+                    int height = preview.getTotalHeight();
+                    size += height + 5;
+                    preview.setBounds(0, position, 230, height);
+                    imagePreviewPanel.addViewerPanel(position, height, preview, size);
+                    position += (height + 5);
                 }
 
-                preview.setVisible(true);
-                preview.setName(String.valueOf(ser_Iter));
+                for (int i = 0; i < imagePreviewPanel.parent.getComponentCount(); i++) {
+                    String seriesUID = ((ViewerPreviewPanel) imagePreviewPanel.parent.getComponent(i)).load(false);
+                    Collection<String> instances = instancesToRetrieve.get(seriesUID);
+                    if (instances != null) {
+                        new WadoRetriever(study.getAttribute("StudyInstanceUID"), seriesUID, instances, inputArgumentValues.getWadoProtocol(), inputArgumentValues.getWadoContext(), inputArgumentValues.getHostName(), inputArgumentValues.getWadoPort(), (i == 0), instances.size()).run();
+                    }
+                }
+
+                if (!multiframesAndVideos.isEmpty()) {
+                    WadoRetriever wadoRetriever = new WadoRetriever();
+                    wadoRetriever.reteriveVideoAndMultiframes(study.getAttribute("StudyInstanceUID"), multiframesAndVideos, instancesToRetrieve.isEmpty(), inputArgumentValues.getWadoProtocol(), inputArgumentValues.getHostName(), inputArgumentValues.getWadoPort());
+                }
+
+                ApplicationContext.databaseRef.update("study", "NoOfInstances", ApplicationContext.databaseRef.getStudyLevelInstances(study.getAttribute("StudyInstanceUID")), "StudyInstanceUID", study.getAttribute("StudyInstanceUID"));
+                ApplicationContext.databaseRef.update("study", "NoOfSeries", Integer.parseInt(study.getAttribute("SeriesCount")), "StudyInstanceUID", study.getAttribute("StudyInstanceUID"));
+            } else {
+                System.err.println("ERROR : Unable to parse XML File.");
+                System.exit(0);
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    private void query(InputArgumentValues inputArgumentValues) {
+        ImagePreviewPanel imagePreviewPanel = new ImagePreviewPanel();
+
+        DcmURL url = new DcmURL("dicom://" + inputArgumentValues.getAeTitle() + "@" + inputArgumentValues.getHostName() + ":" + inputArgumentValues.getPort());
+        QueryService queryService = new QueryService();
+        QuerySeriesService querySeriesService = new QuerySeriesService();
+        QueryInstanceService queryInstanceService = new QueryInstanceService();
+        queryService.callFindWithQuery(inputArgumentValues.getPatientID(), inputArgumentValues.getPatientName(), "", inputArgumentValues.getSearchDate(), inputArgumentValues.getModality(), "", inputArgumentValues.getAccessionNumber(), "", "", inputArgumentValues.getStudyUID(), url);
+        if (queryService.getDatasetVector().isEmpty()) {
+            System.err.println("No Matching Studies Found");
+            System.exit(0);
+        }
+
+        Dataset studyDataset = (Dataset) queryService.getDatasetVector().get(0);
+        imagePreviewPanel.setPatientInfo(constructPatientInfo(studyDataset));
+
+        ApplicationContext.openImageView(studyDataset.getString(Tags.PatientName), studyDataset.getString(Tags.StudyInstanceUID), imagePreviewPanel);
+
+        HashSet<String> sopClassList = new HashSet<String>(0, 1);
+        querySeriesService.callFindWithQuery(studyDataset.getString(Tags.PatientID), studyDataset.getString(Tags.StudyInstanceUID), url);
+        Vector seriesDS = querySeriesService.getDatasetVector();
+        sortSeries(seriesDS);
+        int size = 0, position = 0, previewID = 0;
+
+        for (int ser_Iter = 0; ser_Iter < seriesDS.size(); ser_Iter++) {
+            Dataset seriesDataset = (Dataset) seriesDS.elementAt(ser_Iter);
+            int multiframes = 0;
+
+            queryInstanceService.callFindWithQuery(studyDataset.getString(Tags.PatientID), studyDataset.getString(Tags.StudyInstanceUID), seriesDataset.getString(Tags.SeriesInstanceUID), url);
+            Vector instanceDS = queryInstanceService.getDatasetVector();
+            sortInstances(instanceDS);
+            for (int inst_Iter = 0; inst_Iter < instanceDS.size(); inst_Iter++) {
+                Dataset instanceDataset = (Dataset) instanceDS.elementAt(inst_Iter);
+                sopClassList.add(instanceDataset.getString(Tags.SOPClassUID));
+
+                if (instanceDataset.getString(Tags.NumberOfFrames) != null) { //Multiframe or video                    
+                    multiframes++;
+                    WadoRetriever wadoRetriever = new WadoRetriever();
+                    wadoRetriever.setData(studyDataset.getString(Tags.StudyInstanceUID), seriesDataset.getString(Tags.SeriesInstanceUID), inputArgumentValues.getWadoProtocol(), inputArgumentValues.getHostName(), inputArgumentValues.getWadoPort(), null);
+                    if (instanceDataset.getString(Tags.SOPClassUID).equals(UID.VideoEndoscopicImageStorage) || instanceDataset.getString(Tags.SOPClassUID).equals(UID.VideoMicroscopicImageStorage) || instanceDataset.getString(Tags.SOPClassUID).equals(UID.VideoPhotographicImageStorage)) { //Video
+                        ViewerPreviewPanel videoPreview = new ViewerPreviewPanel(previewID);
+                        videoPreview.videoPreview(studyDataset.getString(Tags.StudyInstanceUID), seriesDataset.getString(Tags.SeriesInstanceUID), instanceDataset.getString(Tags.SOPInstanceUID) + "," + instanceDataset.getString(Tags.NumberOfFrames));
+                        int height = videoPreview.getTotalHeight();
+                        size += height;
+                        videoPreview.setBounds(0, position, 230, height);
+                        imagePreviewPanel.addViewerPanel(position, height, videoPreview, size);
+                        position += (height + 5);
+                        previewID++;
+                    } else { //Multiframe
+                        ViewerPreviewPanel multiframePreview = new ViewerPreviewPanel(previewID);
+                        multiframePreview.multiframePreview(studyDataset.getString(Tags.StudyInstanceUID), seriesDataset.getString(Tags.SeriesInstanceUID), instanceDataset.getString(Tags.SOPInstanceUID) + "," + instanceDataset.getString(Tags.NumberOfFrames));
+                        multiframePreview.loadThumbnail(instanceDataset, inputArgumentValues.getWadoProtocol(), inputArgumentValues.getHostName(), inputArgumentValues.getWadoPort());
+                        int height = multiframePreview.getTotalHeight();
+                        size += height;
+                        multiframePreview.setBounds(0, position, 230, height);
+                        imagePreviewPanel.addViewerPanel(position, height, multiframePreview, size);
+                        position += (height + 5);
+                        previewID++;
+                        wadoRetriever.retrieve(instanceDataset);
+                        instanceDS.remove(instanceDataset);
+                    }
+                }
+            }
+            if (multiframes < seriesDataset.getInteger(Tags.NumberOfSeriesRelatedInstances)) {
+                ViewerPreviewPanel preview = new ViewerPreviewPanel(previewID);
+                preview.normalPreview(studyDataset.getString(Tags.StudyInstanceUID), seriesDataset.getString(Tags.SeriesInstanceUID), seriesDataset.getString(Tags.SeriesDescription), seriesDataset.getInteger(Tags.NumberOfSeriesRelatedInstances) - multiframes);
                 int height = preview.getTotalHeight();
-                size += height + 5;
+                size += height;
                 preview.setBounds(0, position, 230, height);
                 imagePreviewPanel.addViewerPanel(position, height, preview, size);
                 position += (height + 5);
-            }
-
-            for (int i = 0; i < imagePreviewPanel.parent.getComponentCount(); i++) {
-                String seriesUID = ((ViewerPreviewPanel) imagePreviewPanel.parent.getComponent(i)).load(false);
-                Collection<String> instances = instancesToRetrieve.get(seriesUID);
-                if (instances != null) {
-                    new WadoRetriever(study.getAttribute("StudyInstanceUID"), seriesUID, instances, inputArgumentValues.getWadoProtocol(), inputArgumentValues.getWadoContext(), inputArgumentValues.getHostName(), inputArgumentValues.getWadoPort(), (i == 0), instances.size()).run();
+                previewID++;
+                if (inputArgumentValues.getRetrieveType().equals("WADO")) {
+                    preview.loadThumbnails(instanceDS, inputArgumentValues.getWadoProtocol(), inputArgumentValues.getHostName(), inputArgumentValues.getWadoPort());
+                    executor.submit(new WadoRetriever(studyDataset.getString(Tags.StudyInstanceUID), seriesDataset.getString(Tags.SeriesInstanceUID), instanceDS, ser_Iter == 0, inputArgumentValues.getWadoProtocol(), inputArgumentValues.getHostName(), inputArgumentValues.getWadoPort(), null, studyDataset.getInteger(Tags.NumberOfStudyRelatedInstances)));
+                    preview.load(false);
                 }
+            } else if (ser_Iter == 0) {
+                ApplicationContext.createCanvas(ApplicationContext.databaseRef.getFirstInstanceLocation(studyDataset.getString(Tags.StudyInstanceUID), seriesDataset.getString(Tags.SeriesInstanceUID)), studyDataset.getString(Tags.StudyInstanceUID), 0);
             }
 
-            if (!multiframesAndVideos.isEmpty()) {
-                WadoRetriever wadoRetriever = new WadoRetriever();
-                ServerModel server = new ServerModel();
-                server.setWadoInformation(inputArgumentValues.getWadoProtocol(), inputArgumentValues.getWadoContext(), inputArgumentValues.getHostName(), inputArgumentValues.getWadoPort());
-                wadoRetriever.reteriveVideoAndMultiframes(study.getAttribute("StudyInstanceUID"), server, multiframesAndVideos, instancesToRetrieve.isEmpty());
-            }
+            if (inputArgumentValues.getRetrieveType().equals("C-MOVE")) {
+                String[] moveArg = new String[]{url.getProtocol() + "://" + url.getCalledAET() + "@" + url.getHost() + ":" + url.getPort(), "--dest", ApplicationContext.listenerDetails[0], "--pid", studyDataset.getString(Tags.PatientID), "--suid", studyDataset.getString(Tags.StudyInstanceUID), "--Suid", seriesDataset.getString(Tags.SeriesInstanceUID)};
+                executor.submit(new SeriesRetriever(moveArg, studyDataset.getString(Tags.StudyInstanceUID), seriesDataset.getString(Tags.SeriesInstanceUID), studyDataset.getInteger(Tags.NumberOfStudyRelatedInstances), ser_Iter == 0, true, true));
+            } else if (inputArgumentValues.getRetrieveType().equals("C-GET")) {
+                ArrayList<String> cgetParamList = new ArrayList<String>();
+                cgetParamList.add(url.getCalledAET() + "@" + url.getHost() + ":" + url.getPort());
+                cgetParamList.add("-L " + ApplicationContext.listenerDetails[0]);
+                cgetParamList.add("-cget");
+                cgetParamList.add("-I");
+                cgetParamList.add("-qStudyInstanceUID=" + studyDataset.getString(Tags.StudyInstanceUID));
+                cgetParamList.add("-qSeriesInstanceUID=" + seriesDataset.getString(Tags.SeriesInstanceUID));
+                Iterator<String> iterator = sopClassList.iterator();
+                while (iterator.hasNext()) {
+                    String sopUid = iterator.next();
+                    cgetParamList.add("-cstore");
+                    cgetParamList.add(sopUid + ":" + UID.ExplicitVRLittleEndian);
+                    if (sopClassList.contains(UID.VideoEndoscopicImageStorage) || sopClassList.contains(UID.VideoMicroscopicImageStorage) || sopClassList.contains(UID.VideoPhotographicImageStorage)) {
+                        cgetParamList.add(",");
+                        cgetParamList.add(sopUid + ":" + UID.MPEG2);
+                        cgetParamList.add(",");
+                        cgetParamList.add(sopUid + ":" + UID.MPEG2MainProfileHighLevel);
+                        cgetParamList.add(",");
+                        cgetParamList.add(sopUid + ":" + UID.MPEG4AVCH264HighProfileLevel41);
+                        cgetParamList.add(",");
+                        cgetParamList.add(sopUid + ":" + UID.MPEG4AVCH264BDCompatibleHighProfileLevel41);
+                    }
+                }
+                cgetParamList.add("-cstoredest");
+                cgetParamList.add(ApplicationContext.listenerDetails[2]);
+                String[] cGetParam = cgetParamList.toArray(new String[cgetParamList.size()]);
 
-            ApplicationContext.databaseRef.update("study", "NoOfInstances", ApplicationContext.databaseRef.getStudyLevelInstances(study.getAttribute("StudyInstanceUID")), "StudyInstanceUID", study.getAttribute("StudyInstanceUID"));
-            ApplicationContext.databaseRef.update("study", "NoOfSeries", Integer.parseInt(study.getAttribute("SeriesCount")), "StudyInstanceUID", study.getAttribute("StudyInstanceUID"));
-        } else {
-            System.err.println("ERROR : Unable to parse XML File.");
-            System.exit(0);
+                executor.submit(new SeriesRetriever(cGetParam, studyDataset.getString(Tags.StudyInstanceUID), seriesDataset.getString(Tags.SeriesInstanceUID), studyDataset.getInteger(Tags.NumberOfStudyRelatedInstances), ser_Iter == 0, true, false));
+            }
         }
     }
 
@@ -534,14 +341,45 @@ public class DirectLaunch extends SwingWorker<Void, Void> {
     protected Void doInBackground() throws Exception {
         try {
             if (inputArgumentValues.getXmlFilePath() != null) {
-//                readXML();
                 readXMLFile();
             } else {
-                doQuery(inputArgumentValues);
+                query(inputArgumentValues);
             }
         } catch (Exception ex) {
             ApplicationContext.logger.log(Level.INFO, "Direct Launch - Unable to launch study", ex);
         }
         return null;
+    }
+
+    public void sortInstances(Vector<Dataset> datasets) {
+        Collections.sort(datasets, new Comparator<Dataset>() {
+            @Override
+            public int compare(Dataset o1, Dataset o2) {
+                try {
+                    final int instanceNo1 = o1.getInteger(Tags.InstanceNumber);
+                    final int instanceNo2 = o2.getInteger(Tags.InstanceNumber);
+                    return (instanceNo1 == instanceNo2 ? 0 : (instanceNo1 > instanceNo2 ? 1 : -1));
+                } catch (Exception ex) {
+                    System.err.println(ex.getMessage());
+                }
+                return 0;
+            }
+        });
+    }
+
+    public void sortSeries(Vector<Dataset> datasets) {
+        Collections.sort(datasets, new Comparator<Dataset>() {
+            @Override
+            public int compare(Dataset o1, Dataset o2) {
+                try {
+                    final int seriesNo1 = o1.getInteger(Tags.SeriesNumber);
+                    final int seriesNo2 = o2.getInteger(Tags.SeriesNumber);
+                    return (seriesNo1 == seriesNo2 ? 0 : (seriesNo1 > seriesNo2 ? 1 : -1));
+                } catch (Exception ex) {
+                    System.err.println(ex.getMessage());
+                }
+                return 0;
+            }
+        });
     }
 }

@@ -50,8 +50,8 @@ import in.raster.mayam.form.MainScreen;
 import in.raster.mayam.form.Viewer;
 import in.raster.mayam.form.ViewerJPanel;
 import in.raster.mayam.models.QueryInformation;
-import in.raster.mayam.models.Series;
-import in.raster.mayam.models.treetable.DataNode;
+import in.raster.mayam.models.treetable.SeriesNode;
+import in.raster.mayam.models.treetable.StudyNode;
 import in.raster.mayam.models.treetable.TreeTable;
 import in.raster.mayam.models.treetable.TreeTableModelAdapter;
 import in.raster.mayam.util.database.DatabaseHandler;
@@ -395,13 +395,14 @@ public class ApplicationContext {
         }
     }
 
-    public static void updateSeries(String studyUid, Series series) {
+    public static void updateSeries(String studyUid, SeriesNode series) {
         if (ApplicationContext.isLocal) {
             for (int i = 0; i < currentTreeTable.getRowCount(); i++) {
                 try {
                     if (((String) ((TreeTableModelAdapter) currentTreeTable.getModel()).getValueAt(i, 10)).equals(studyUid)) {
-                        ((ArrayList<Series>) ((TreeTableModelAdapter) currentTreeTable.getModel()).getValueAt(i, 12)).add(series);
-                        ((DataNode) ((TreeTableModelAdapter) currentTreeTable.getModel()).getValueAt(i, 15)).addChild(new DataNode("", "", "", "", "", "", "", "", "", "", series.getSeriesNumber(), series.getSeriesDesc(), series.getModality(), series.getSeriesDate(), series.getSeriesTime(), series.getBodyPartExamined(), String.valueOf(series.getSeriesRelatedInstance()), null, null, null, true, false));
+                        ((StudyNode) ((TreeTableModelAdapter) currentTreeTable.getModel()).getValueAt(i, 12)).addChild(series);
+//                        ((ArrayList<SeriesNode>) ((TreeTableModelAdapter) currentTreeTable.getModel()).getValueAt(i, 12)).add(series);
+//                        ((SeriesNode) ((TreeTableModelAdapter) currentTreeTable.getModel()).getValueAt(i, 15)).addChild(new DataNode("", "", "", "", "", "", "", "", "", "", series.getSeriesNumber(), series.getSeriesDesc(), series.getModality(), series.getSeriesDate(), series.getSeriesTime(), series.getBodyPartExamined(), String.valueOf(series.getSeriesRelatedInstance()), null, null, null, true, false));
                         currentTreeTable.revalidate();
                         currentTreeTable.repaint();
                         break;

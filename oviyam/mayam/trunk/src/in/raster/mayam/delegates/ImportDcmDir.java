@@ -76,8 +76,6 @@ public class ImportDcmDir extends SwingWorker<Void, Void> {
     File file = null;
     Calendar today = Calendar.getInstance(ApplicationContext.currentLocale);
     String dest = ApplicationContext.listenerDetails[2] + File.separator + today.get(Calendar.YEAR) + File.separator + today.get(Calendar.MONTH) + File.separator + today.get(Calendar.DATE) + File.separator;
-//    FileInputStream fileinstream;
-//    OutputStream outStream = null;
     
     //DicomDir
     File dicomdir = null;

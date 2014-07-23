@@ -776,7 +776,7 @@ public class SettingsForm extends javax.swing.JFrame {
     }//GEN-LAST:event_deleteServerBtnActionPerformed
 
     private void addServerBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addServerBtnActionPerformed
-        ServerModel serverModel = new ServerModel("Description", ApplicationContext.currentBundle.getString("Preferences.servers.aeTitleColumn.text"), "localhost", 104, "C-MOVE", "wado", 8080, "http", "");
+        ServerModel serverModel = new ServerModel("Description", ApplicationContext.currentBundle.getString("Preferences.servers.aeTitleColumn.text"), "localhost", 104, "C-MOVE", "wado", 8080, "http", "", false);
         if (!ApplicationContext.databaseRef.checkRecordExists("servers", "logicalname", "Description")) {
             ApplicationContext.databaseRef.insertServer(serverModel);
             setServerListTableModel();

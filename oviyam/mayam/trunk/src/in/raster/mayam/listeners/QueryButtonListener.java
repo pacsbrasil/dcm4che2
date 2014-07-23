@@ -107,6 +107,6 @@ public class QueryButtonListener implements ActionListener {
             }
         }
         ApplicationContext.communicationDelegate.setQueryParam(buttonDetails.getModality(), searchdate, searchtime);
-        ApplicationContext.communicationDelegate.doQuery(buttonLabel);
+        ApplicationContext.communicationDelegate.query(buttonLabel);
     }
 }

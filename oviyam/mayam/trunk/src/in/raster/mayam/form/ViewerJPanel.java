@@ -432,10 +432,6 @@ public class ViewerJPanel extends javax.swing.JPanel {
         selectedCanvas.annotationPanel.setDefaultCursor();
         selectedCanvas.imgpanel.doSynchronize();
     }
-//
-//    public void resetCineTimer() {
-//        imageToolbar.resetCineTimer();
-//    }
 
     public boolean isHideAnnotations() {
         return selectedCanvas.annotationPanel.isShowAnnotation();
@@ -572,7 +568,6 @@ public class ViewerJPanel extends javax.swing.JPanel {
             ois.close();
             fis.close();
         } catch (IOException ioe) {
-            ApplicationContext.logger.log(Level.INFO, "ViewerJPanel - No Annotations yet", ioe);
             //ignore IO Exception occurs when the study does not have any annotations yet.
         } catch (ClassNotFoundException ex) {
             ApplicationContext.logger.log(Level.INFO, "ViewerJPanel", ex);
@@ -601,7 +596,6 @@ public class ViewerJPanel extends javax.swing.JPanel {
                 Component component = seriesLevelPanel.getComponent(j);
                 if (component instanceof LayeredCanvas) {
                     ((LayeredCanvas) component).imgpanel.storeAllAnnotations();
-//                    ((LayeredCanvas) component).imgpanel.buffer.terminateThread();
                 }
             }
         }
@@ -652,7 +646,6 @@ public class ViewerJPanel extends javax.swing.JPanel {
     //For series changes
     public void thumbnailClicked() {
         imageToolbar.deselectLoopChk();
-//        imageToolbar.resetCineTimer();
         imageToolbar.enableImageTools();
     }
 

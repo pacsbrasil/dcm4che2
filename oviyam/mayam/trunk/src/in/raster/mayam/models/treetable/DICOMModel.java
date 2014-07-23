@@ -44,26 +44,25 @@ import in.raster.mayam.context.ApplicationContext;
 /**
  *
  * @author Devishree
- * @version 2.0
+ * @version 2.1
  */
-public class DataModel extends AbstractTreeTableModel {
+public class DICOMModel extends AbstractTreeTableModel {
 
     static protected String[] columnNames = {"", "", "Patient Id", "Patient Name", "DOB", "Acc no", "Study Date", "Study Desc", "Modality", "Images"};
     static protected Class<?>[] columnTypes = {TreeTableModel.class, String.class, String.class, String.class, String.class, String.class, String.class, String.class, String.class, String.class};
 
-    public DataModel(DataNode rootnode) {
+    public DICOMModel(Object rootnode) {
         super(rootnode);
-//        root = rootnode;
     }
 
     @Override
     public Object getChild(Object parent, int index) {
-        return ((DataNode) parent).getChildren().get(index);
+        return parent instanceof StudyNode ? ((StudyNode) parent).getChild(index) : null;
     }
 
     @Override
     public int getChildCount(Object parent) {
-        return ((DataNode) parent).getChildren().size();
+        return parent instanceof StudyNode ? ((StudyNode) parent).getChildCount() : 0;
     }
 
     @Override
@@ -101,61 +100,55 @@ public class DataModel extends AbstractTreeTableModel {
 
     @Override
     public Object getValueAt(Object node, int column) {
-        if (((DataNode) node).isSeries) {
+        if (node instanceof SeriesNode) {
             switch (column) {
                 case 2:
-                    return ((DataNode) node).getSeriesNumber();
+                    return ((SeriesNode) node).getSeriesNo();
                 case 3:
-                    return ((DataNode) node).getSeriesDescription();
+                    return ((SeriesNode) node).getSeriesDesc();
                 case 4:
-                    return ((DataNode) node).getSeriesDate();
+                    return ((SeriesNode) node).getSeriesDate();
                 case 5:
-                    return ((DataNode) node).getSeriesTime();
+                    return ((SeriesNode) node).getSeriesTime();
                 case 6:
-                    return ((DataNode) node).getBodyPart();
+                    return ((SeriesNode) node).getBodyPartExamined();
                 case 7:
-                    return ((DataNode) node).getModality();
+                    return ((SeriesNode) node).getModality();
                 case 8:
-                    return !((DataNode) node).getSeriesRelatedInstances().equals("0") ? ((DataNode) node).getSeriesRelatedInstances() : "";
+                    return ((SeriesNode) node).getSeriesRelatedInstance();
                 case 9:
                     return "";
                 case 13:
-                    return ((DataNode) node).getHeader();
-                case 14:
-                    return ((DataNode) node).isSeries;
+                    return ((SeriesNode) node).isHeader;
             }
         } else {
             switch (column) {
                 case 1:
                     return "";
                 case 2:
-                    return ((DataNode) node).getPatientid();
+                    return ((StudyNode) node).getPatientId();
                 case 3:
-                    return ((DataNode) node).getPatientname();
+                    return ((StudyNode) node).getPatientName();
                 case 4:
-                    return ((DataNode) node).getDob();
+                    return ((StudyNode) node).getDob();
                 case 5:
-                    return ((DataNode) node).getAccno();
+                    return ((StudyNode) node).getAccessionNo();
                 case 6:
-                    return ((DataNode) node).getStudydate();
+                    return ((StudyNode) node).getStudyDate();
                 case 7:
-                    return ((DataNode) node).getStudydesc();
+                    return ((StudyNode) node).getStudyDescription();
                 case 8:
-                    return ((DataNode) node).getModalitiesInStudy();
+                    return ((StudyNode) node).getModalitiesInStudy();
                 case 9:
-                    return !((DataNode) node).getInstances().equals("0") ? ((DataNode) node).getInstances() : "";
+                    return ((StudyNode) node).getStudyReleatedInstances();
                 case 10:
-                    return ((DataNode) node).getStudyInstanceUid();
+                    return ((StudyNode) node).getStudyUID();
                 case 11:
-                    return ((DataNode) node).getStudyDetails();
+                    return ((StudyNode) node).getStudyTime();
                 case 12:
-                    return ((DataNode) node).getSeriesList();
+                    return ((StudyNode) node);
                 case 13:
-                    return ((DataNode) node).getHeader();
-                case 14:
-                    return ((DataNode) node).isSeries;
-                case 15:
-                    return ((DataNode) node);
+                    return false;
             }
         }
         return null;
@@ -163,11 +156,19 @@ public class DataModel extends AbstractTreeTableModel {
 
     @Override
     public boolean isCellEditable(Object node, int column) {
-        if (column == 0 && !((DataNode) node).isRoot) {
-            return true; // Important to activate TreeExpandListener
-        }
-        if (((DataNode) node).isRoot && column != 0 && column != 1 && column != 9) {
-            return true;
+        if (node instanceof StudyNode) {
+            switch (((StudyNode) node).isRoot()) {
+                case 1: //Important to activate tree expand listener
+                    if (column == 0) {
+                        return true;
+                    }
+                    break;
+                case 0:
+                    if (column != 0 && column != -1 && column != 9) {
+                        return true;
+                    }
+                    break;
+            }
         }
         return false;
     }
@@ -176,28 +177,28 @@ public class DataModel extends AbstractTreeTableModel {
     public void setValueAt(Object aValue, Object node, int column) {
         switch (column) {
             case 2:
-                ((DataNode) node).setPatientid(String.valueOf(aValue));
+                ((StudyNode) node).setPatientId(String.valueOf(aValue));
                 break;
             case 3:
-                ((DataNode) node).setPatientname(String.valueOf(aValue));
+                ((StudyNode) node).setPatientName(String.valueOf(aValue));
                 break;
             case 4:
-                ((DataNode) node).setDob(String.valueOf(aValue));
+                ((StudyNode) node).setDob(String.valueOf(aValue));
                 break;
             case 5:
-                ((DataNode) node).setAccno(String.valueOf(aValue));
+                ((StudyNode) node).setAccessionNo(String.valueOf(aValue));
                 break;
             case 6:
-                ((DataNode) node).setStudydate(String.valueOf(aValue));
+                ((StudyNode) node).setStudyDate(String.valueOf(aValue));
                 break;
             case 7:
-                ((DataNode) node).setStudydesc(String.valueOf(aValue));
+                ((StudyNode) node).setStudyDescription(String.valueOf(aValue));
                 break;
             case 8:
-                ((DataNode) node).setModalitiesInStudy(String.valueOf(aValue));
+                ((StudyNode) node).setModalitiesInStudy(String.valueOf(aValue));
                 break;
             case 9:
-                ((DataNode) node).setInstances(String.valueOf(aValue));
+                ((StudyNode) node).setStudyReleatedInstances(String.valueOf(aValue));
                 break;
         }
     }

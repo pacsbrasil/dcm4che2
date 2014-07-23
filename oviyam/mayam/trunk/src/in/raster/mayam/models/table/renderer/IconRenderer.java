@@ -61,9 +61,6 @@ public class IconRenderer extends DefaultTableCellRenderer {
     ImageIcon localIcon = new ImageIcon(getClass().getResource("/in/raster/mayam/form/images/local.png"));
     ImageIcon downloadingIcon = new ImageIcon(getClass().getResource("/in/raster/mayam/form/images/downloading.png"));
     private TreeTable treeTable;
-//    private Color selectedColor = new Color(176, 190, 217);
-//    private Color alternateColor = new Color(237, 243, 254);
-//    private Color odd = new Color(226, 228, 255);
     Font font = new Font("Lucida Grande", Font.PLAIN, 13);
     private Color whiteColor = new Color(254, 254, 254);
     private Color alternateColor = new Color(237, 243, 254);
@@ -83,17 +80,13 @@ public class IconRenderer extends DefaultTableCellRenderer {
         comp.setHorizontalAlignment(SwingConstants.LEFT);
         comp.setIcon(null);
         comp.setText((String) value);
-//        if(row==0 && !ApplicationContext.isLocal) {
-//            comp.setText("");
-//            comp.setIcon(null);
-//            comp.setVisible(false);
-//            return comp;
-//        }
+
         switch (column) {
             case 1:
-                if (!ApplicationContext.isLocal && column == 1 && ((TreeTableModelAdapter) treeTable.getModel()).getValueAt(row, 10) != null) {
-                    if (ApplicationContext.databaseRef.checkRecordExists("Study", "StudyInstanceUID", ((TreeTableModelAdapter) treeTable.getModel()).getValueAt(row, 10).toString())) {
-                        if (ApplicationContext.databaseRef.isDownloadPending((String) ((TreeTableModelAdapter) treeTable.getModel()).getValueAt(row, 10))) {
+                String studyUid = (String) ((TreeTableModelAdapter) treeTable.getModel()).getValueAt(row, 10);
+                if (!ApplicationContext.isLocal && column == 1 && studyUid != null) {
+                    if (ApplicationContext.databaseRef.checkRecordExists("Study", "StudyInstanceUID", studyUid)) {
+                        if (ApplicationContext.databaseRef.isDownloadPending(studyUid)) {
                             comp.setIcon(localIcon);
                         } else { //The study was on download
                             comp.setIcon(downloadingIcon);
@@ -106,7 +99,7 @@ public class IconRenderer extends DefaultTableCellRenderer {
                 break;
         }
 
-        if (((TreeTableModelAdapter) treeTable.getModel()).getValueAt(row, 13).equals("true")) {
+        if ((Boolean) ((TreeTableModelAdapter) treeTable.getModel()).getValueAt(row, 13)) {
             switch (column) {
                 case 2:
                     comp.setText(ApplicationContext.currentBundle.getString("MainScreen.seriesNoColumn.text"));
@@ -137,19 +130,8 @@ public class IconRenderer extends DefaultTableCellRenderer {
         } else if (isSelected) {
             comp.setForeground(Color.WHITE);
             comp.setBackground(selectedColor);
-//            comp.setForeground(Color.BLACK);
-//            if (ApplicationContext.isLocal && row == 0) {
-//                comp.setBackground(Color.WHITE);
-//            } else {
-//                comp.setBackground(selectedColor);
-//            }            
         } else {
             comp.setBackground((row % 2 == 0 ? alternateColor : whiteColor));
-//            if (row % 2 == 0) {
-//                comp.setBackground(Color.WHITE);
-//            } else {
-//                comp.setBackground(odd);
-//            }
             comp.setForeground(Color.BLACK);
         }
         return comp;

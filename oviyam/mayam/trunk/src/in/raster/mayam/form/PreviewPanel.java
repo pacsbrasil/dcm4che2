@@ -40,10 +40,9 @@
 package in.raster.mayam.form;
 
 import in.raster.mayam.context.ApplicationContext;
-import in.raster.mayam.models.Series;
+import in.raster.mayam.models.treetable.SeriesNode;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.logging.Level;
@@ -220,13 +219,13 @@ public class PreviewPanel extends javax.swing.JPanel {
         ImagePreviewPanel viewerPreview = new ImagePreviewPanel();
         viewerPreview.setPatientInfo(((ImagePreviewPanel) getParent().getParent().getParent().getParent().getParent()).getLabelInfo());
         int position = 0, totalSize = 0;
-        ArrayList<Series> allSeriesOfStudy = ApplicationContext.databaseRef.getSeriesList_SepMulti(studyInstanceUid);
-        for (int i = 0; i < allSeriesOfStudy.size(); i++) {
-            Series curr = allSeriesOfStudy.get(i);
+        ArrayList<SeriesNode> allSeriesOfStudy = ApplicationContext.databaseRef.getSeriesList_SepMultiframe(studyInstanceUid);
+        for (int i = 1; i < allSeriesOfStudy.size(); i++) {
+            SeriesNode curr = allSeriesOfStudy.get(i);
             if (!curr.isVideo()) {
                 ViewerPreviewPanel viewerPreviewPanel = null;
                 if (curr.getSeriesDesc().contains("Multiframe")) {
-                    viewerPreviewPanel = new ViewerPreviewPanel(studyInstanceUid, curr, curr.getInstanceUID() + "," + curr.getSeriesRelatedInstance());
+                    viewerPreviewPanel = new ViewerPreviewPanel(studyInstanceUid, curr, curr.getInstanceUIDIfMultiframe() + "," + curr.getSeriesRelatedInstance());
                 } else {
                     viewerPreviewPanel = new ViewerPreviewPanel(studyInstanceUid, curr, null);
                 }
@@ -238,8 +237,8 @@ public class PreviewPanel extends javax.swing.JPanel {
                 viewerPreview.addViewerPanel(position, height, viewerPreviewPanel, totalSize);
                 position += (height + 5);
             } else {
-                ViewerPreviewPanel viewerPreviewPanel = new ViewerPreviewPanel(studyInstanceUid, curr, curr.getInstanceUID() + "," + curr.getSeriesRelatedInstance());
-                viewerPreviewPanel.setSopUid(curr.getInstanceUID());
+                ViewerPreviewPanel viewerPreviewPanel = new ViewerPreviewPanel(studyInstanceUid, curr, curr.getInstanceUIDIfMultiframe() + "," + curr.getSeriesRelatedInstance());
+                viewerPreviewPanel.setSopUid(curr.getInstanceUIDIfMultiframe());
                 viewerPreviewPanel.setVisible(true);
                 viewerPreviewPanel.setName(String.valueOf(i));
                 int height = viewerPreviewPanel.getTotalHeight();

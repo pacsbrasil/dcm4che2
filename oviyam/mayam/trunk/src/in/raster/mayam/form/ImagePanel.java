@@ -51,6 +51,7 @@ import in.raster.mayam.listeners.PopupMenuListener;
 import in.raster.mayam.models.*;
 import in.raster.mayam.param.TextOverlayParam;
 import in.raster.mayam.models.SeriesAnnotations;
+import in.raster.mayam.models.treetable.SeriesNode;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.*;
@@ -248,7 +249,6 @@ public class ImagePanel extends javax.swing.JPanel {
     private void readDicomFile(File selFile) {
         try {
             fileLocation = selFile.getParent();
-//            ImageIO.scanForPlugins();
             ImageInputStream iis = ImageIO.createImageInputStream(selFile);
             reader = (ImageReader) ImageIO.getImageReadersByFormatName("DICOM").next();
             reader.setInput(iis, false);
@@ -575,7 +575,6 @@ public class ImagePanel extends javax.swing.JPanel {
         Graphics2D g = (Graphics2D) gs;
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         if (setHints) {
-//            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);            
             g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
             g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         }
@@ -830,6 +829,7 @@ public class ImagePanel extends javax.swing.JPanel {
     }//GEN-LAST:event_formMouseClicked
 
     public void mouseWheelMoved(MouseWheelEvent e) {
+        setHints = true;
         if (e.getWheelRotation() < 0) {
             doPrevious();
         } else {
@@ -1094,7 +1094,8 @@ public class ImagePanel extends javax.swing.JPanel {
     }
 
     private void designContext() {
-        ArrayList<Series> seriesList = ApplicationContext.databaseRef.getSeriesList_SepMulti(dataset.getString(Tags.StudyInstanceUID));
+        //        ArrayList<Series> seriesList = ApplicationContext.databaseRef.getSeriesList_SepMulti(dataset.getString(Tags.StudyInstanceUID));
+        ArrayList<SeriesNode> seriesList = ApplicationContext.databaseRef.getSeriesList_SepMultiframe(dataset.getString(Tags.StudyInstanceUID));
         JMenu menu;
         if ((dataset.getString(Tags.StudyDescription) == null) || (dataset.getString(Tags.StudyDescription).equalsIgnoreCase(""))) {
             menu = new JMenu(dataset.getString(Tags.StudyInstanceUID));
@@ -1102,21 +1103,19 @@ public class ImagePanel extends javax.swing.JPanel {
             menu = new JMenu(dataset.getString(Tags.StudyDescription));
         }
         JMenu menu1 = new JMenu("Multiframe(s)");
-        for (final Series series : seriesList) {
+
+        seriesList.remove(0);
+        for (final SeriesNode series : seriesList) {
             JMenuItem menuitem = null;
             if (series.isMultiframe()) {
-                if (Integer.parseInt(series.getImageList().get(0).getInstance_no()) < 10) {
-                    menuitem = new JMenuItem(series.getImageList().get(0).getInstance_no() + "   - Frames  " + series.getImageList().get(0).getTotalNumFrames());
-                } else {
-                    menuitem = new JMenuItem(series.getImageList().get(0).getInstance_no() + " - Frames  " + series.getImageList().get(0).getTotalNumFrames());
-                }
+                menuitem = new JMenuItem(series.getSeriesDesc());
                 menu1.add(menuitem);
             } else if (!series.getSeriesDesc().equalsIgnoreCase("null")) {
                 menuitem = new JMenuItem(series.getSeriesDesc());
             } else if (!series.getBodyPartExamined().equalsIgnoreCase("null")) {
                 menuitem = new JMenuItem(series.getBodyPartExamined());
             } else {
-                menuitem = new JMenuItem(series.getSeriesInstanceUID());
+                menuitem = new JMenuItem(series.getSeriesUID());
             }
             if (!series.isMultiframe()) {
                 menu.add(menuitem);
@@ -1126,9 +1125,9 @@ public class ImagePanel extends javax.swing.JPanel {
             menuitem.addActionListener(new java.awt.event.ActionListener() {
                 public void actionPerformed(ActionEvent arg0) {
                     if (((JPanel) layeredCanvas.getParent()).getComponentCount() == 1) {
-                        changeSeries(series.getStudyInstanceUID(), series.getSeriesInstanceUID(), null, 0);
+                        changeSeries(series.getStudyUID(), series.getSeriesUID(), series.getInstanceUIDIfMultiframe(), 0);
                     } else {
-                        changeSeries(series.getStudyInstanceUID(), series.getSeriesInstanceUID(), null, 0, (JPanel) layeredCanvas.getParent());
+                        changeSeries(series.getStudyUID(), series.getSeriesUID(), series.getInstanceUIDIfMultiframe(), 0, (JPanel) layeredCanvas.getParent());
                     }
                 }
             });
@@ -1580,7 +1579,7 @@ public class ImagePanel extends javax.swing.JPanel {
     }
 
     public int getTotalInstance() {
-        return totalInstance;
+        return (!multiframe) ? totalInstance : 1;
     }
 
     public void setCurrentInstanceNo(int currentInstanceNo) {

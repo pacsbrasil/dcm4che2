@@ -69,7 +69,6 @@ public class MainScreen extends javax.swing.JFrame {
     public SettingsForm settingsForm = null;
     //Variables    
     private ArrayList<String> serverLabels = new ArrayList<String>();
-    private ArrayList<StudySeriesMatch> studySeriesMatchs;
     private JPopupMenu preferencesPopup;
     private JMenuItem preferencesItem, resetItem, importItem;
     //Listeners
@@ -369,18 +368,12 @@ public class MainScreen extends javax.swing.JFrame {
     }
 
     public synchronized void loadlocalStudies() {
-        DataNode root = null;
-        studySeriesMatchs = new ArrayList<StudySeriesMatch>();
-        ArrayList<StudyModel> studies = ApplicationContext.databaseRef.listAllLocalStudies();
-        if (!studies.isEmpty()) {
-            for (int i = 0; i < studies.size(); i++) {
-                ArrayList<Series> seriesList = ApplicationContext.databaseRef.getSeriesList_SepMulti(studies.get(i).getStudyUID());
-                StudySeriesMatch studySeriesMatch = new StudySeriesMatch(studies.get(i).getStudyUID(), seriesList);
-                studySeriesMatchs.add(studySeriesMatch);
-            }
-            root = ApplicationContext.communicationDelegate.constructTreeTableData(studySeriesMatchs, studies, "", "", "", "", "", "", "");
+        ArrayList<StudyNode> localStudies = ApplicationContext.databaseRef.listAllLocalStudies();
+        for (int i = 0; i < localStudies.size(); i++) {
+            ArrayList<SeriesNode> seriesList = ApplicationContext.databaseRef.getSeriesList_SepMultiframe(localStudies.get(i).getStudyUID());
+            localStudies.get(i).setChildren(seriesList);
         }
-        setTreeTableModel(root);
+        constructTreeTable(new StudyNode(localStudies));
     }
 
     public String getCurrentServer() {
@@ -410,8 +403,8 @@ public class MainScreen extends javax.swing.JFrame {
         }
     }
 
-    public void setTreeTableModel(DataNode root) {
-        AbstractTreeTableModel treeModel = new DataModel(root);
+    public void constructTreeTable(Object root) {
+        AbstractTreeTableModel treeModel = new DICOMModel(root);
         ApplicationContext.currentTreeTable.setTreeTableModel(treeModel);
         ApplicationContext.currentTreeTable.setDefaultRenderer(Object.class, new IconRenderer(ApplicationContext.currentTreeTable));
         ApplicationContext.currentTreeTable.getColumnModel().getColumn(0).setMaxWidth(20);
@@ -435,7 +428,7 @@ public class MainScreen extends javax.swing.JFrame {
         try {
             ((ImagePreviewPanel) ((JSplitPane) ((JSplitPane) serverTab.getSelectedComponent()).getRightComponent()).getLeftComponent()).resetImagePreviewPanel();
         } catch (ClassCastException cce) {
-            ApplicationContext.logger.log(Level.INFO, "MainScreen", cce);
+            ApplicationContext.logger.log(Level.INFO, "MainScreen", cce.getMessage());
         }
     }
 
@@ -509,15 +502,17 @@ public class MainScreen extends javax.swing.JFrame {
         String studyDate = String.valueOf(ApplicationContext.currentTreeTable.getValueAt(ApplicationContext.currentTreeTable.getSelectedRow(), 6)).trim();
         String studyDesc = String.valueOf(ApplicationContext.currentTreeTable.getValueAt(ApplicationContext.currentTreeTable.getSelectedRow(), 7)).trim();
         String modality = String.valueOf(ApplicationContext.currentTreeTable.getValueAt(ApplicationContext.currentTreeTable.getSelectedRow(), 8)).trim();
-        ArrayList<StudySeriesMatch> studySeriesList = new ArrayList<StudySeriesMatch>();
-        ArrayList<StudyModel> studies = ApplicationContext.databaseRef.listStudies("%" + pname.toUpperCase() + "%", "%" + pid.toUpperCase() + "%", "%" + dob + "%", "%" + accNo.toUpperCase() + "%", "%" + studyDate + "%", "%" + studyDesc.toUpperCase() + "%", "%" + modality.toUpperCase() + "%");
-        if (!studies.isEmpty()) {
-            for (int i = 0; i < studies.size(); i++) {
-                ArrayList<Series> seriesList = ApplicationContext.databaseRef.getSeriesList(studies.get(i).getStudyUID());
-                studySeriesList.add(new StudySeriesMatch(studies.get(i).getStudyUID(), seriesList));
-            }
+
+        ArrayList<StudyNode> studies = ApplicationContext.databaseRef.listStudies("%" + pname.toUpperCase() + "%", "%" + pid.toUpperCase() + "%", "%" + dob + "%", "%" + accNo.toUpperCase() + "%", "%" + studyDate + "%", "%" + studyDesc.toUpperCase() + "%", "%" + modality.toUpperCase() + "%");
+
+        for (int i = 0; i < studies.size(); i++) {
+            ArrayList<SeriesNode> seriesList = ApplicationContext.databaseRef.getSeriesList_SepMultiframe(studies.get(i).getStudyUID());
+            studies.get(i).setChildren(seriesList);
         }
-        setTreeTableModel(ApplicationContext.communicationDelegate.constructTreeTableData(studySeriesList, studies, pid, pname, dob, accNo, studyDate, studyDesc, modality));
+
+        StudyNode root = new StudyNode(pid, pname, dob, accNo, studyDate, "", studyDesc, modality, "", "", "");
+        root.setChildren(studies, 0);
+        constructTreeTable(root);
     }
 
     public void addKeyEventDispatcher() {
@@ -654,7 +649,7 @@ public class MainScreen extends javax.swing.JFrame {
                 if (isReset == 0) {
                     ApplicationContext.databaseRef.rebuild();
                     if (serverTab.getSelectedIndex() == 0) {
-                        setTreeTableModel(null);
+                        constructTreeTable(null);
                     }
                     ((ImagePreviewPanel) ((JSplitPane) serverTab.getComponentAt(0)).getLeftComponent()).resetImagePreviewPanel();
                     if (ApplicationContext.viewer != null) {
@@ -688,7 +683,7 @@ public class MainScreen extends javax.swing.JFrame {
             if (ApplicationContext.currentTreeTable.getRowCount() > 1) {
                 tree = ((TreeTableCellEditor) ApplicationContext.currentTreeTable.getCellEditor(0, 0)).getTree();
                 for (int j = 1; j < ApplicationContext.currentTreeTable.getRowCount(); j++) {
-                    if (!((Boolean) ((TreeTableModelAdapter) ApplicationContext.currentTreeTable.getModel()).getValueAt(j, 14))) {
+                    if (((TreeTableModelAdapter) ApplicationContext.currentTreeTable.getModel()).getValueAt(j, 12) instanceof StudyNode) {
                         if (tree.isExpanded(j)) {
                             expandedRows.add(j);
                         }
@@ -700,8 +695,9 @@ public class MainScreen extends javax.swing.JFrame {
             for (int j = 0; j < expandedRows.size(); j++) {
                 tree.expandRow(expandedRows.get(j));
             }
-            for (int i = 0; i < ApplicationContext.currentTreeTable.getRowCount(); i++) {
-                if (ApplicationContext.currentTreeTable.getValueAt(i, 2).equals(((ImagePreviewPanel) ((JSplitPane) serverTab.getComponentAt(0)).getLeftComponent()).getPatientId())) {
+            for (int i = 1; i < ApplicationContext.currentTreeTable.getRowCount(); i++) {
+                String[] patId = ((ImagePreviewPanel) ((JSplitPane) serverTab.getComponentAt(0)).getLeftComponent()).getPatientId().split(":");
+                if (patId.length > 1 && ApplicationContext.currentTreeTable.getValueAt(i, 2).equals(patId[1].trim())) {
                     ApplicationContext.currentTreeTable.setRowSelectionInterval(i, i);
                     break;
                 }
@@ -714,7 +710,7 @@ public class MainScreen extends javax.swing.JFrame {
     }
 
     public void removeInViewer(String studyUid) {
-        try {
+        if (ApplicationContext.tabbedPane != null) {
             for (int tab_Iter = 0; tab_Iter < ApplicationContext.tabbedPane.getTabCount(); tab_Iter++) {
                 if (ApplicationContext.tabbedPane.getComponentAt(tab_Iter).getName().equals(studyUid)) {
                     ApplicationContext.tabbedPane.removeTabAt(tab_Iter);
@@ -726,8 +722,6 @@ public class MainScreen extends javax.swing.JFrame {
                     break;
                 }
             }
-        } catch (Exception ex) {
-            ApplicationContext.logger.log(Level.INFO, "Mainscreen - Image Viewer not exist.", ex);
         }
     }
 }

@@ -430,7 +430,7 @@ public class SearchFilterForm extends javax.swing.JPanel {
     public void search() {
         ApplicationContext.mainScreenObj.removeAllPreviewsOfImagePreviewPanel();
         ApplicationContext.communicationDelegate.setQueryParameters(patientNameTxt.getText(), patientIdTxt.getText(), accNoTxt.getText(), "", modalityTxt.getText().replace(",", "\\"), setSearchDate(), studyDescriptionTxt.getText(), referringPhysicianTxt.getText());
-        ApplicationContext.communicationDelegate.doQuery("Search");
+        ApplicationContext.communicationDelegate.query("Search");
     }
 
     public void reset() {

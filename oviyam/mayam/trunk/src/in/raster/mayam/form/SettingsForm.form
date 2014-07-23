@@ -113,7 +113,7 @@
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="listenerAetTxt" min="-2" pref="177" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="listenerPortLabel" max="32767" attributes="0"/>
+                          <Component id="listenerPortLabel" pref="70" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="listenerPortTxt" min="-2" pref="196" max="-2" attributes="0"/>
                           <EmptySpace type="separate" max="-2" attributes="0"/>
@@ -378,7 +378,7 @@
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="jScrollPane2" pref="649" max="32767" attributes="0"/>
+                              <Component id="jScrollPane2" pref="666" max="32767" attributes="0"/>
                               <Group type="102" attributes="0">
                                   <Component id="addButton" min="-2" pref="105" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
@@ -399,7 +399,7 @@
                               <Component id="deleteButton" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace type="separate" max="-2" attributes="0"/>
-                          <Component id="jScrollPane2" pref="253" max="32767" attributes="0"/>
+                          <Component id="jScrollPane2" pref="254" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -542,7 +542,7 @@
                           </Group>
                           <EmptySpace type="separate" max="-2" attributes="0"/>
                           <Component id="updateLanguageButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="260" max="32767" attributes="0"/>
+                          <EmptySpace pref="261" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -656,7 +656,7 @@
                               <Component id="themeCombo" min="-2" pref="167" max="-2" attributes="0"/>
                               <Component id="saveThemeBtn" min="-2" pref="116" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace max="32767" attributes="0"/>
+                          <EmptySpace pref="29" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -741,7 +741,7 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="modalityCombo" min="-2" pref="108" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="jScrollPane3" pref="685" max="32767" attributes="0"/>
+                          <Component id="jScrollPane3" pref="702" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -758,7 +758,7 @@
                           <Component id="presetModalityLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace type="separate" max="-2" attributes="0"/>
-                      <Component id="jScrollPane3" pref="425" max="32767" attributes="0"/>
+                      <Component id="jScrollPane3" pref="426" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -885,7 +885,7 @@
                       </Group>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="dynamicJNLPRetrieveTypeChk" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="376" max="32767" attributes="0"/>
+                      <EmptySpace pref="378" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>

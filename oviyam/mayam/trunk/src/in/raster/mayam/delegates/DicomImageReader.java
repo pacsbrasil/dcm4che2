@@ -78,7 +78,7 @@ public class DicomImageReader {
         } catch (IOException ex) {
             ApplicationContext.logger.log(Level.INFO, "DicomImageReader", ex);
         } catch (Exception e) {
-            ApplicationContext.logger.log(Level.INFO, "Unable to buffer the images", e);
+            ApplicationContext.logger.log(Level.INFO, "Unable to buffer the images", e.getMessage());
         }
         return tempImage;
     }

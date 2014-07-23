@@ -41,14 +41,17 @@ package in.raster.mayam.delegates;
 
 import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.models.*;
-import in.raster.mayam.models.treetable.DataNode;
+import in.raster.mayam.models.treetable.SeriesNode;
+import in.raster.mayam.models.treetable.StudyNode;
 import in.raster.mayam.param.QueryParam;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Vector;
 import java.util.logging.Level;
 import javax.swing.JOptionPane;
 import org.dcm4che.data.Dataset;
+import org.dcm4che.dict.Tags;
 import org.dcm4che.util.DcmURL;
 
 /**
@@ -59,7 +62,6 @@ import org.dcm4che.util.DcmURL;
 public class CommunicationDelegate {
 
     QueryParam queryParam;
-    ArrayList<StudySeriesMatch> studySeriesMatchs = new ArrayList<StudySeriesMatch>();
 
     /*
      * Verifies the server was alive or not
@@ -115,15 +117,14 @@ public class CommunicationDelegate {
         queryParam.setReferringPhysicianName(referringPhysicianName);
     }
 
-    /*
-     * Queries from the server and construts tree table and stores the Query
-     * Information
-     */
-    public void doQuery(String selectedButton) {
+    public void query(String selectedButton) {
         int doQuery = 0;
         DcmURL url = constructURL(ApplicationContext.currentServer);
         int totalStudiesFound;
-        studySeriesMatchs = new ArrayList<StudySeriesMatch>();
+
+        ArrayList<StudyNode> rootNodes = new ArrayList<StudyNode>();
+        SeriesNode seriesHeader = new SeriesNode(null);
+
         boolean serverStatus = verifyServer(url);
         if (!serverStatus) {
             JOptionPane.showOptionDialog(ApplicationContext.mainScreenObj, ApplicationContext.currentBundle.getString("MainScreen.echoFailiure.text") + " '" + ApplicationContext.currentServer + "'", ApplicationContext.currentBundle.getString("ErrorTitles.text"), JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
@@ -134,20 +135,27 @@ public class CommunicationDelegate {
             if (doQuery == 0) {
                 QueryService qs = new QueryService();
                 qs.callFindWithQuery(queryParam.getPatientId(), queryParam.getPatientName(), queryParam.getBirthDate(), queryParam.getSearchDate(), queryParam.getModality(), queryParam.getSearchTime(), queryParam.getAccessionNo(), queryParam.getStudyDescription(), queryParam.getReferringPhysicianName(), null, url);
-                if (qs.getDatasetVector().isEmpty()) {
-                    ApplicationContext.mainScreenObj.setStudiesFound(ApplicationContext.currentBundle.getString("MainScreen.studiesFoundLabel.text") + ": 0");
-                }
-                totalStudiesFound = qs.getDatasetVector().size();
-                ApplicationContext.mainScreenObj.setStudiesFound(ApplicationContext.currentBundle.getString("MainScreen.studiesFoundLabel.text") + totalStudiesFound);
-                ArrayList<StudyModel> studyList = new ArrayList<StudyModel>();
-                for (int datasetcount = 0; datasetcount < totalStudiesFound; datasetcount++) {
-                    Dataset dataSet = (Dataset) qs.getDatasetVector().elementAt(datasetcount);
-                    StudyModel studyModel = new StudyModel(dataSet);
-                    ArrayList<Series> seriesList = constructSeriesList(studyModel, url);
-                    StudySeriesMatch studySeriesMatch = new StudySeriesMatch(studyModel.getStudyUID(), seriesList);
-                    studySeriesMatchs.add(studySeriesMatch);
-                    studyList.add(studyModel);
-                }
+                Vector study_DS = qs.getDatasetVector();
+
+                totalStudiesFound = study_DS.size();
+                ApplicationContext.mainScreenObj.setStudiesFound(ApplicationContext.currentBundle.getString("MainScreen.studiesFoundLabel.text") + study_DS.size());
+
+                for (int study_Iter = 0; study_Iter < study_DS.size(); study_Iter++) {
+                    Dataset study_Data = (Dataset) study_DS.elementAt(study_Iter);
+                    ArrayList<SeriesNode> seriesNodes = new ArrayList<SeriesNode>();
+                    QuerySeriesService querySeriesService = new QuerySeriesService();
+                    querySeriesService.callFindWithQuery(study_Data.getString(Tags.PatientID), study_Data.getString(Tags.StudyInstanceUID), url);
+                    Vector<Dataset> series_DS = querySeriesService.getDatasetVector();
+
+                    sortSeries(series_DS);
+                    seriesNodes.add(seriesHeader);
+                    for (int ser_Iter = 0; ser_Iter < series_DS.size(); ser_Iter++) {
+                        seriesNodes.add(new SeriesNode(series_DS.elementAt(ser_Iter)));
+                    }//end of series iteration
+                    rootNodes.add(new StudyNode(study_Data, seriesNodes));
+                }//end of study iteration
+                ApplicationContext.mainScreenObj.constructTreeTable(new StudyNode(rootNodes));
+
                 //Important to display the total studies found and to set the search button selected which used to query(When tab changes)
                 for (int i = 0; i < ApplicationContext.queryInformations.size(); i++) { //The previous information of the same server should be removed
                     if (ApplicationContext.queryInformations.get(i).getServerName().equals(ApplicationContext.currentServer)) {
@@ -156,77 +164,23 @@ public class CommunicationDelegate {
                 }
                 QueryInformation serverInfo = new QueryInformation(ApplicationContext.currentServer, selectedButton, totalStudiesFound);
                 ApplicationContext.queryInformations.add(serverInfo);
-                DataNode root = constructTreeTableData(studySeriesMatchs, studyList, "", "", "", "", "", "", "");
-                ApplicationContext.mainScreenObj.setTreeTableModel(root);
-            }
+            } //end of query
         }
     }
 
-    /*
-     * To construct the series list by querying from server
-     */
-    private ArrayList<Series> constructSeriesList(StudyModel studyModel, DcmURL dcmurl) {
-        ArrayList<Series> seriesList = new ArrayList<Series>();
-        QuerySeriesService seriesService = new QuerySeriesService();
-        seriesService.callFindWithQuery(studyModel.getPatientId(), studyModel.getStudyUID(), dcmurl);
-        
-        for (int i = 0; i < seriesService.getDatasetVector().size(); i++) {
-            Dataset dataset = (Dataset) seriesService.getDatasetVector().elementAt(i);
-            Series series = new Series(dataset);
-            seriesList.add(series);
-        }
-
-        Collections.sort(seriesList, new Comparator() {
+    public void sortSeries(Vector<Dataset> datasets) {
+        Collections.sort(datasets, new Comparator<Dataset>() {
             @Override
-            public int compare(Object t, Object t1) {
-                Series i1 = (Series) t;
-                Series i2 = (Series) t1;
-
-                if (!i1.getSeriesNumber().equals("") && !i2.getSeriesNumber().equals("")) {
-                    if (new Integer(i1.getSeriesNumber()) == null) {
-                        return (-1);
-                    } else if (new Integer(i2.getSeriesNumber()) == null) {
-                        return (1);
-                    } else {
-                        int a = new Integer(i1.getSeriesNumber());
-                        int b = new Integer(i2.getSeriesNumber());
-                        int temp = (a == b ? 0 : (a > b ? 1 : -1));
-                        return temp;
-                    }
-                } else {
-                    return 0;
+            public int compare(Dataset o1, Dataset o2) {
+                try {
+                    final int seriesNo1 = o1.getInteger(Tags.SeriesNumber);
+                    final int seriesNo2 = o2.getInteger(Tags.SeriesNumber);
+                    return (seriesNo1 == seriesNo2 ? 0 : (seriesNo1 > seriesNo2 ? 1 : -1));
+                } catch (Exception ex) {
+                    System.err.println(ex.getMessage());
                 }
+                return 0;
             }
         });
-        return seriesList;
-    }
-
-    private DataNode constructSeriesHeader() {
-        DataNode header = new DataNode("", "", "", "", "", "", "", "", "", "", ApplicationContext.currentBundle.getString("MainScreen.seriesNoColumn.text"), ApplicationContext.currentBundle.getString("MainScreen.seriesDescColumn.text"), ApplicationContext.currentBundle.getString("MainScreen.seriesDateColumn.text"), ApplicationContext.currentBundle.getString("MainScreen.seriesTimeColumn.text"), ApplicationContext.currentBundle.getString("MainScreen.bodyPartColumn.text"), ApplicationContext.currentBundle.getString("MainScreen.modalityColumn.text"), ApplicationContext.currentBundle.getString("MainScreen.imagesColumn.text"), null, null, null, true, false);
-        return header;
-    }
-
-    public DataNode constructTreeTableData(ArrayList<StudySeriesMatch> studySeriesMatches, ArrayList<StudyModel> studyList, String pid, String pName, String dob, String accNo, String studyDate, String studyDesc, String modality) {
-        ArrayList<DataNode> rootNodes = new ArrayList<DataNode>();
-        DataNode seriesHeader = constructSeriesHeader();
-        DataNode root = null;
-        for (int i = 0; i < studyList.size(); i++) {
-            for (int j = 0; j < studySeriesMatches.size(); j++) {
-                if (studyList.get(i).getStudyUID().equals(studySeriesMatches.get(j).getSuid())) {
-                    ArrayList<DataNode> seriesNodes = new ArrayList<DataNode>();
-                    seriesNodes.add(seriesHeader);
-                    ArrayList<Series> seriesList = studySeriesMatches.get(j).getSeriesList();
-                    for (int k = 0; k < seriesList.size(); k++) {
-                        seriesNodes.add(new DataNode("", "", "", "", "", "", "", "", "", "", seriesList.get(k).getSeriesNumber(), seriesList.get(k).getSeriesDesc(), seriesList.get(k).getModality(), seriesList.get(k).getSeriesDate(), seriesList.get(k).getSeriesTime(), seriesList.get(k).getBodyPartExamined(), String.valueOf(seriesList.get(k).getSeriesRelatedInstance()), null, null, null, true, false));
-                    }
-                    rootNodes.add(new DataNode("", studyList.get(i).getPatientId(), studyList.get(i).getPatientName(), studyList.get(i).getDob(), studyList.get(i).getAccessionNo(), studyList.get(i).getStudyDate(), studyList.get(i).getStudyDescription(), studyList.get(i).getModalitiesInStudy(), studyList.get(i).getStudyLevelInstances(), studyList.get(i).getStudyUID(), "", "", "", "", "", "", "", seriesNodes, ((StudyModel) studyList.get(i)), seriesList, false, false));
-                }
-            }
-        }
-        root = new DataNode("", pid, pName, dob, accNo, studyDate, studyDesc, modality, "", "", "", "", "", "", "", "", "", rootNodes, null, null, false, true);
-        if (root == null) {
-            root = new DataNode("", pid, pName, dob, accNo, studyDate, studyDesc, modality, "", "", "", "", "", "", "", "", "", rootNodes, null, null, false, true);
-        }
-        return root;
     }
 }

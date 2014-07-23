@@ -149,9 +149,9 @@ public class ApplicationFacade {
         }
         if (Platform.getCurrentPlatform().equals(Platform.LINUX) || Platform.getCurrentPlatform().equals(Platform.SOLARIS)) {
             System.setProperty("sun.java2d.pmoffscreen", "false");
-        }
-        System.setProperty("java.util.Arrays.useLegacyMergeSort", "true"); //Need to avoid the exceptions occured when using jdk 1.7                         
+        }        
         ImageIO.scanForPlugins();
+        System.setProperty("java.util.Arrays.useLegacyMergeSort", "true"); //Need to avoid the exceptions occured when using jdk 1.7                         
     }
 
     public static void exitApp(String exitString) {
@@ -159,7 +159,7 @@ public class ApplicationFacade {
             splash.setVisible(false);
         }
         ApplicationContext.logger.log(Level.SEVERE, exitString);
-        JOptionPane.showOptionDialog(null, exitString, ApplicationContext.currentBundle.getString("ApplicationFacade.applicationerror.title.text"), JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE, null, new String[]{ApplicationContext.currentBundle.getString("OkButtons.text")}, "default");
+        JOptionPane.showMessageDialog(null, exitString, "ERROR", JOptionPane.ERROR_MESSAGE);
         System.exit(0);
     }
 

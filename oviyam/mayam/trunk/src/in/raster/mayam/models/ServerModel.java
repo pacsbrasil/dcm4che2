@@ -14,7 +14,7 @@
  *
  * The Initial Developer of the Original Code is
  * Raster Images
- * Portions created by the Initial Developer are Copyright (C) 2014
+ * Portions created by the Initial Developer are Copyright (C) 2009-2010
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -63,20 +63,13 @@ public class ServerModel {
     public ServerModel() {
     }
 
-    public ServerModel(String logicalName, String aet, String host, int port) {
-        this.description = logicalName;
-        this.aeTitle = aet;
-        this.hostName = host;
-        this.port = port;
-    }
-
     public ServerModel(String aet, String host, int port) {
         this.aeTitle = aet;
         this.hostName = host;
         this.port = port;
     }
 
-    public ServerModel(String serverName, String aeTitle, String host, int port, String retrieveType, String wadoContext, int wadoPort, String wadoProtocol, String retrieveTS) {
+    public ServerModel(String serverName, String aeTitle, String host, int port, String retrieveType, String wadoContext, int wadoPort, String wadoProtocol, String retrieveTS, boolean isPreviewEnabled) {
         this.description = serverName;
         this.hostName = host != null ? host : "localhost";
         this.aeTitle = aeTitle;
@@ -91,6 +84,7 @@ public class ServerModel {
         } else if (retrieveTS.equals("Implicit VR Little Endian")) {
             this.retrieveTransferSyntax = TransferSyntax.ImplicitVRLittleEndian.uid();
         }
+        this.previewEnabled = isPreviewEnabled;
     }
 
     public ServerModel(int pk, String serverName, String aeTitle, String host, int port, String retrieveType, String wadoContext, int wadoPort, String wadoProtocol, String retrieveTS, boolean isPreviewEnabled) {

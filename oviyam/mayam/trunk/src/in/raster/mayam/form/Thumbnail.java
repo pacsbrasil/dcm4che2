@@ -65,19 +65,12 @@ import javax.swing.SwingConstants;
  * @version 2.0
  */
 public class Thumbnail extends JLabel {
-
+    
     int width = 75, height = 75;
     String wadoRequest = null;
     String dest = null;
     String src = null;
-
-    public Thumbnail() {
-        setFont(new java.awt.Font("Times", 0, 10));
-        setHorizontalAlignment(SwingConstants.CENTER);
-        setOpaque(true);
-        setBackground(new Color(42, 42, 42));
-    }
-
+    
     public Thumbnail(String iuid) {
         setFont(new java.awt.Font("Times", 0, 10));
         setHorizontalAlignment(SwingConstants.CENTER);
@@ -85,7 +78,7 @@ public class Thumbnail extends JLabel {
         setBackground(new Color(42, 42, 42));
         setName(iuid);
     }
-
+    
     public Thumbnail(String wadoRequest, String dest, String iuid) {
         this.wadoRequest = wadoRequest;
         this.dest = dest;
@@ -95,7 +88,7 @@ public class Thumbnail extends JLabel {
         setOpaque(true);
         setBackground(new Color(42, 42, 42));
     }
-
+    
     public Thumbnail(String source, String dest) {
         this.src = source.split(",")[0];
         this.dest = dest;
@@ -104,7 +97,7 @@ public class Thumbnail extends JLabel {
         setBackground(new Color(42, 42, 42));
         setHorizontalAlignment(SwingConstants.CENTER);
     }
-
+    
     public void read() {
         if (src != null) {
             try {
@@ -127,7 +120,7 @@ public class Thumbnail extends JLabel {
             load();
         }
     }
-
+    
     public void setImage(BufferedImage image) {
         try {
             width = image.getWidth();
@@ -137,7 +130,7 @@ public class Thumbnail extends JLabel {
             setDefaultImage();
         }
     }
-
+    
     public void readImage(String dest) {
         try {
             BufferedImage image = ImageIO.read(new File(dest));
@@ -147,27 +140,27 @@ public class Thumbnail extends JLabel {
         } catch (Exception ex) {
             setDefaultImage();
         }
-
+        
     }
-
+    
     public void setVideoImage() {
         setIcon(new ImageIcon(getClass().getResource("/in/raster/mayam/form/images/video.png")));
     }
-
+    
     public void setDefaultImage() {
         setIcon(new ImageIcon(getClass().getResource("/in/raster/mayam/form/images/blank.jpg")));
     }
-
+    
     @Override
     public int getWidth() {
         return this.width;
     }
-
+    
     @Override
     public int getHeight() {
         return this.height;
     }
-
+    
     public void load() {
         try {
             HttpURLConnection httpURLConnection = (HttpURLConnection) new URL(wadoRequest).openConnection();
@@ -193,7 +186,7 @@ public class Thumbnail extends JLabel {
                     }
                 }
                 setOpaque(false);
-                setIcon(new ImageIcon(buffer));
+                setIcon(new ImageIcon(dest));
                 inputStream.close();
                 outputStream.close();
             } else {
@@ -203,7 +196,7 @@ public class Thumbnail extends JLabel {
             ApplicationContext.logger.log(Level.INFO, "Thumbnail", ex);
         }
     }
-
+    
     private BufferedImage shrink(BufferedImage image) {
         int maxThumbWidth = 75;
         if (image.getWidth() > image.getHeight()) {
