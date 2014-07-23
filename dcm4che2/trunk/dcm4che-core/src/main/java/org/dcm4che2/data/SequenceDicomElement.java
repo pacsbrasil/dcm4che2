@@ -52,7 +52,7 @@ import java.util.regex.Pattern;
  * @version $Reversion$ $Date$
  * @since Sep 3, 2005
  */
-class SequenceDicomElement extends AbstractDicomElement {
+public class SequenceDicomElement extends AbstractDicomElement {
 
 	private static final long serialVersionUID = 3690757302122656054L;
 
