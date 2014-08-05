@@ -668,5 +668,93 @@ public class DatasetTest extends TestCase {
         testPutAllPrivate(CREATOR1, TAG_00090010, VALUE1,
                 CREATOR1, TAG_00090020, VALUE2);
     }
+    
+    public void testPutGroup2AttributesAllowingUnderSubDirectory(){
+        Dataset ds3 = DcmObjectFactory.getInstance().newDataset();
+        int privateSqTag = 0x60031010;
+        int group2Ts = 0x00020010;
+        String ts = "1.2.840.100008.1.2.1";
+        
+        Dataset sqItem = ds3.putSQ(privateSqTag).addNewItem();
+        sqItem.putUI(group2Ts, ts);
+        
+        DcmElement rtnSq = ds3.get(privateSqTag);        
+        assertEquals(ts, rtnSq.getItem(0).getString(group2Ts));
+    }
+    
+    public void testPutGroup2AttributesNotAllowingUnderRootDirectory(){
+        Dataset ds3 = DcmObjectFactory.getInstance().newDataset();
+        int group2Ts = 0x00020010;
+        String ts = "1.2.840.100008.1.2.1";
+        
+        ds3.putUI(group2Ts, ts);     
+        assertEquals(null, ds3.getString(group2Ts));
+    }
+    
+    public void testPutGroup1AttributesAllowingUnderSubDirectory(){
+        Dataset ds3 = DcmObjectFactory.getInstance().newDataset();
+        int privateSqTag = 0x60031010;
+        int group1Ts = 0x00010010;
+        String ts = "1.2.840.100008.1.2.1";
+        
+        Dataset sqItem = ds3.putSQ(privateSqTag).addNewItem();
+        sqItem.putUI(group1Ts, ts);
+        
+        DcmElement rtnSq = ds3.get(privateSqTag);        
+        assertEquals(ts, rtnSq.getItem(0).getString(group1Ts));
+    }
+
+    public void testPutGroup1AttributesAllowingUnderRootDirectory(){
+        Dataset ds3 = DcmObjectFactory.getInstance().newDataset();
+        int privateTag = 0x00010003;
+        String ts = "1.2.840.100008.1.2.1";
+        
+        ds3.putUI(privateTag, ts);       
+        assertEquals(ts, ds3.getString(privateTag));
+    }
+
+    public void testPutGroup3AttributesAllowingUnderSubDirectory(){
+        Dataset ds3 = DcmObjectFactory.getInstance().newDataset();
+        int privateSqTag = 0x60031010;
+        int group3Ts = 0x00030010;
+        String ts = "1.2.840.100008.1.2.1";
+        
+        Dataset sqItem = ds3.putSQ(privateSqTag).addNewItem();
+        sqItem.putUI(group3Ts, ts);
+        
+        DcmElement rtnSq = ds3.get(privateSqTag);        
+        assertEquals(ts, rtnSq.getItem(0).getString(group3Ts));
+    }
+
+    public void testPutGroup3AttributesAllowingUnderRootDirectory(){
+        Dataset ds3 = DcmObjectFactory.getInstance().newDataset();
+        int group3Tag = 0x00030010;
+        String ts = "1.2.840.100008.1.2.1";
+        
+        ds3.putUI(group3Tag, ts);     
+        assertEquals(ts, ds3.getString(group3Tag));
+    }
+    
+    public void testPutGroup0AttributesAllowingUnderSubDirectory(){
+        Dataset ds3 = DcmObjectFactory.getInstance().newDataset();
+        int privateSqTag = 0x60031010;
+        int group0Ts = 0x00000010;
+        String ts = "1.2.840.100008.1.2.1";
+        
+        Dataset sqItem = ds3.putSQ(privateSqTag).addNewItem();
+        sqItem.putUI(group0Ts, ts);
+        
+        DcmElement rtnSq = ds3.get(privateSqTag);        
+        assertEquals(ts, rtnSq.getItem(0).getString(group0Ts));
+    }
+
+    public void testPutGroup0AttributesNotAllowingUnderRootDirectory(){
+        Dataset ds3 = DcmObjectFactory.getInstance().newDataset();
+        int group3Tag = 0x00000010;
+        String ts = "1.2.840.100008.1.2.1";
+        
+        ds3.putUI(group3Tag, ts);     
+        assertEquals(null, ds3.getString(group3Tag));
+    }
 }
 

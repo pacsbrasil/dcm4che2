@@ -112,10 +112,17 @@ final class DatasetImpl extends BaseDatasetImpl
     }
 
     protected DcmElement put(DcmElement newElem) {
-        if ((newElem.tag() >>> 16) < 4) {
-            log.warn("Ignore illegal attribute " + newElem);
+        
+        // get the group number of the given tag in newElem 
+        int dcmGroupNo = (newElem.tag() >>> 16);
+                 
+        if((0 == dcmGroupNo || 2 == dcmGroupNo) && (null == this.parent)){
+            // only keep the Group 0000 & 0002 elements when they are located under sub-directory, e.g. SQ
+            // ignore all attributes in the groups of 0000 & 0002 when they are under the root 
+            log.warn("Ignore illegal attribute of DICOM Group 0000 or 0002 under the root " + newElem);
             return newElem;
-        }
+        }        
+        
         if (newElem.tag() == Tags.SpecificCharacterSet) {
             try {
                 this.charset = SpecificCharacterSet.valueOf(newElem.getStrings(null));
