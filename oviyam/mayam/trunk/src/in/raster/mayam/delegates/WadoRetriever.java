@@ -49,7 +49,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Vector;
 import java.util.logging.Level;
@@ -89,9 +88,8 @@ public class WadoRetriever implements Runnable {
         this.totalInstances = totalInstances;
     }
 
-    public WadoRetriever(String studyUid, String seriesUid, Collection<String> instanceList, String wadoProtocol, String wadoContext, String hostName, int wadoPort, boolean showImageView, int totalInstances) {
+    public WadoRetriever(String studyUid, Collection<String> instanceList, String wadoProtocol, String wadoContext, String hostName, int wadoPort, boolean showImageView) {
         this.studyUid = studyUid;
-        this.seriesUid = seriesUid;
         this.instanceList = instanceList;
         useTransferSyntax = true;
         this.firstSeries = showImageView;
@@ -104,23 +102,6 @@ public class WadoRetriever implements Runnable {
     public WadoRetriever() {
     }
 
-    public void reteriveVideoAndMultiframes(String studyUid, HashSet<String> instances, boolean showImageView, String wadoProtocol, String hostName, int wadoPort) {
-        this.useTransferSyntax = false;
-        this.wadoProtocol = wadoProtocol;
-        this.wadoPort = wadoPort;
-        this.hostName = hostName;
-        this.studyUid = studyUid;
-        Iterator<String> iterator = instances.iterator();
-        while (iterator.hasNext()) {
-            String[] next = iterator.next().split(",");
-            retrieve(next[0], next[1]);
-        }
-        if (showImageView) {
-            ApplicationContext.createCanvas(ApplicationContext.databaseRef.getFirstInstanceLocation(studyUid), studyUid, 0);
-        }
-        ApplicationContext.studyRetirivalCompleted(studyUid);
-    }
-
     private void retrieve(String seriesUid, String iuid) {
         String queryString = null;
         queryString = wadoProtocol + "://";
@@ -131,6 +112,7 @@ public class WadoRetriever implements Runnable {
         if (useTransferSyntax) {
             queryString += appendTransferSyntax();
         }
+
 //        //For MAC
 //        queryString += "&transferSyntax=" + TransferSyntax.ImplicitVRLittleEndian;        
         try {
@@ -163,12 +145,12 @@ public class WadoRetriever implements Runnable {
             in = httpURLConnection.getInputStream();
             Calendar today = Calendar.getInstance(ApplicationContext.currentLocale);
             String destinationPath = ApplicationContext.listenerDetails[2];
-            File struturedDestination = new File(destinationPath + File.separator + today.get(Calendar.YEAR) + File.separator + today.get(Calendar.MONTH) + File.separator + today.get(Calendar.DATE) + File.separator + studyUid + File.separator + seriesUid);
-            struturedDestination.mkdirs();
-            File storeLocation = new File(struturedDestination, iuid);
+            File structuredDestination = new File(destinationPath + File.separator + today.get(Calendar.YEAR) + File.separator + today.get(Calendar.MONTH) + File.separator + today.get(Calendar.DATE) + File.separator + studyUid + File.separator + seriesUid);
+            structuredDestination.mkdirs();
+            File storeLocation = new File(structuredDestination, iuid);
             out = new FileOutputStream(storeLocation);
             copy(in, out);
-            ApplicationContext.databaseRef.writeDatasetInfo(new DicomInputStream(storeLocation).readDicomObject(), storeLocation.getAbsolutePath());
+            ApplicationContext.databaseRef.writeDatasetInfo(new DicomInputStream(storeLocation).readDicomObject(), false, storeLocation.getAbsolutePath());
         } catch (IOException ex) {
             ApplicationContext.logger.log(Level.SEVERE, "Wado Retriever", ex);
         } finally {
@@ -226,20 +208,21 @@ public class WadoRetriever implements Runnable {
             for (int i = 0; i < instanceData.size(); i++) {
                 retrieve(instanceData.elementAt(i));
             }
+            if (totalInstances == ApplicationContext.databaseRef.getStudyLevelInstances(studyUid)) {
+                ApplicationContext.studyRetirivalCompleted(studyUid);
+            }
+            ApplicationContext.databaseRef.update("series", "NoOfSeriesRelatedInstances", ApplicationContext.databaseRef.getSeriesLevelInstance(studyUid, seriesUid), "SeriesInstanceUID", seriesUid);
         } else { //Direct launch
             Iterator<String> iterator = instanceList.iterator();
             while (iterator.hasNext()) {
                 String[] next = iterator.next().split(",");
+                this.seriesUid = next[0];
                 retrieve(next[0], next[1]);
             }
         }
         if (firstSeries) {
             ApplicationContext.createCanvas(ApplicationContext.databaseRef.getFirstInstanceLocation(studyUid, seriesUid), studyUid, 0);
         }
-        if (totalInstances == ApplicationContext.databaseRef.getStudyLevelInstances(studyUid)) {
-            ApplicationContext.studyRetirivalCompleted(studyUid);
-        }
-        ApplicationContext.databaseRef.update("series", "NoOfSeriesRelatedInstances", ApplicationContext.databaseRef.getSeriesLevelInstance(studyUid, seriesUid), "SeriesInstanceUID", seriesUid);
     }
 
     public void retrieve(Dataset instance) {

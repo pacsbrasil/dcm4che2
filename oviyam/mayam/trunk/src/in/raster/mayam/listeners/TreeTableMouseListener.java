@@ -116,7 +116,7 @@ public class TreeTableMouseListener extends MouseAdapter {
                                 String filePath = ApplicationContext.databaseRef.getFirstInstanceLocation(studyNode.getStudyUID(), studyNode.getFirstChild().getSeriesUID());
                                 ApplicationContext.createCanvas(filePath, studyNode.getStudyUID(), 0);
                                 ((ViewerJPanel) ApplicationContext.tabbedPane.getSelectedComponent()).displayPreviews();
-                                ApplicationContext.createMultiframePreviews(studyNode.getStudyUID());
+                                ((ViewerJPanel) ApplicationContext.tabbedPane.getSelectedComponent()).enableMultiSeriesTools();
                                 showPreviews();
                             }
                         });
@@ -432,7 +432,6 @@ public class TreeTableMouseListener extends MouseAdapter {
                         String filePath = ApplicationContext.databaseRef.getFirstInstanceLocation(studyNode.getStudyUID(), studyNode.getFirstChild().getSeriesUID());
                         ApplicationContext.createCanvas(filePath, studyNode.getStudyUID(), 0);
                         ((ViewerJPanel) ApplicationContext.tabbedPane.getSelectedComponent()).displayPreviews();
-                        ApplicationContext.createMultiframePreviews(studyNode.getStudyUID());
                     }
                 });
             }

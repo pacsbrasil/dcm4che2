@@ -202,7 +202,7 @@ public class PreviewPanel extends javax.swing.JPanel {
                     String filePath = ApplicationContext.databaseRef.getFileLocation(studyInstanceUid, seriesInstanceUid, sopUid);
                     ApplicationContext.createCanvas(filePath, studyInstanceUid, instanceIdentificationNo);
                     ((ViewerJPanel) ApplicationContext.tabbedPane.getSelectedComponent()).displayPreviews();
-                    ApplicationContext.createMultiframePreviews(studyInstanceUid);
+//                    ApplicationContext.createMultiframePreviews(studyInstanceUid);
                     try {
                         ((ViewerJPanel) ApplicationContext.tabbedPane.getSelectedComponent()).updateTextOverlay();
                         ((ViewerJPanel) ApplicationContext.tabbedPane.getSelectedComponent()).setSeriesIdentification();

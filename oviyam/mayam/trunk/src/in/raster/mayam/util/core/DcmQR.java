@@ -1355,7 +1355,7 @@ public class DcmQR {
                         dos.writeFileMetaInformation(fmi);
                         dos.writeDataset(data, tsuid);
 //                        infoUpdateDelegate.updateFileDetails(file);
-                        ApplicationContext.databaseRef.writeDatasetInfo(data, file.getAbsolutePath());
+                        ApplicationContext.databaseRef.writeDatasetInfo(data, false, file.getAbsolutePath());
                         dos.close();
                     } catch (IOException e) {
                         throw new DicomServiceException(rq, Status.ProcessingFailure, e.getMessage());

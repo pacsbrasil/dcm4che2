@@ -138,24 +138,6 @@ public class ApplicationContext {
         }
     }
 
-    /*
-     * Will creates the ImageView Form
-     */
-//    public static void createImageView() {
-//        imgView = new ImageView();
-//        GraphicsDevice[] screenDevices = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices();
-//        if (screenDevices.length > 1) {
-//            imgView.setLocation((screenDevices[0].getDisplayMode().getWidth()) + 1, 0);
-//        }
-//        imgView.setVisible(true);
-//    }
-
-    /*
-     * Returns True if the ImageView form exist
-     */
-//    public static boolean isImageViewExist() {
-//        return imgView != null;
-//    }
     public static void applyLocaleChange() {
         appNameLabel.setText(ApplicationContext.currentBundle.getString("MainScreen.appNameLabel.text"));
         if (moreButton != null) {
@@ -163,15 +145,6 @@ public class ApplicationContext {
         }
     }
 
-//    public static void setVideoThumbnailIdentification(String studyUid) {
-//        for (int i = 0; i < tabbedPane.getTabCount(); i++) {
-//            if (((JPanel) ((JSplitPane) tabbedPane.getComponentAt(i)).getRightComponent()) instanceof VideoPanel && studyUid.equals(((JPanel) ((JSplitPane) tabbedPane.getComponentAt(i)).getRightComponent()).getName())) {
-//                VideoPanel comp = ((VideoPanel) ((JSplitPane) ApplicationContext.tabbedPane.getSelectedComponent()).getRightComponent());
-//                ((ImagePreviewPanel) ((JSplitPane) ApplicationContext.tabbedPane.getSelectedComponent()).getLeftComponent()).setVideoIdentification(comp);
-//                break;
-//            }
-//        }
-//    }
     public static boolean deleteDir(File dir) {
         if (dir.isDirectory()) {
             String[] children = dir.list();
@@ -184,125 +157,7 @@ public class ApplicationContext {
         }
         return dir.delete();
     }
-
-//    public static void ImageView(String patientName, String studyUid, ImagePreviewPanel viewerPreview) {
-//        if (imgView == null) {
-//            createImageView();
-//        }
-//        if (tabbedPane != null) {
-//            for (int i = 0; i < tabbedPane.getTabCount(); i++) {
-//                if (((JPanel) ((JSplitPane) tabbedPane.getComponentAt(i)).getRightComponent()).getName().equals(studyUid)) {
-//                    tabbedPane.setSelectedIndex(i);
-//                    return;
-//                }
-//            }
-//        }
-//        JPanel container = new JPanel(new GridLayout(1, 1));
-//        container.setBackground(Color.BLACK);
-//        container.setName(studyUid);
-//        JSplitPane splitpane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, viewerPreview, container);
-//        splitpane.setName(patientName);
-//        splitpane.setOneTouchExpandable(true);
-//        splitpane.setDividerLocation(280);
-//        splitpane.setDividerSize(15);
-//        viewerPreview.setMinimumSize(new Dimension(270, splitpane.getHeight()));
-//
-//        imgView.jTabbedPane1.add(splitpane);
-//        ButtonTabComp tabComp = new ButtonTabComp(ApplicationContext.imgView.jTabbedPane1);
-//        imgView.jTabbedPane1.setTabComponentAt(ApplicationContext.imgView.jTabbedPane1.getTabCount() - 1, tabComp);
-//        imgView.jTabbedPane1.setTabLayoutPolicy(JTabbedPane.WRAP_TAB_LAYOUT);
-//        if (tabbedPane == null) {
-//            tabbedPane = (JTabbedPane) tabComp.getTabbedComponent();
-//        }
-//        tabbedPane.setSelectedIndex(ApplicationContext.tabbedPane.getTabCount() - 1);
-//        if (isJnlp) {
-//            ApplicationFacade.hideSplash();
-//        }
-//    }
-//    public static void createLayeredCanvas(String filePath, String studyInstanceUID, int instanceBufferFrom, boolean setFirstPreviewRef) {
-//        File dicomFile = new File(filePath);
-//        for (int i = 0; i < tabbedPane.getTabCount(); i++) {
-//            if (((JPanel) ((JSplitPane) tabbedPane.getComponentAt(i)).getRightComponent()).getName().equals(studyInstanceUID) && ((JPanel) ((JSplitPane) tabbedPane.getComponentAt(i)).getRightComponent()).getComponentCount() == 0) {
-//                if (!filePath.contains("_V")) {
-//                    selectedPanel = new JPanel(new GridLayout(1, 1));
-//                    layeredCanvas = new LayeredCanvas(new File(filePath), instanceBufferFrom, false);
-//                    selectedPanel.add(layeredCanvas);
-//                    ((JPanel) ((JSplitPane) tabbedPane.getComponentAt(i)).getRightComponent()).add(selectedPanel);
-//                    imgView.repaint();
-//                    layeredCanvas.canvas.setSelectionColoring();
-//                    imgView.readAnnotaionDetails(studyInstanceUID, dicomFile.getParentFile().getParentFile());
-//                    layeredCanvas.imgpanel.setCurrentSeriesAnnotation();
-//                    imgView.imageToolbar.doWindowing();
-//                    imgView.designContexts();
-//                    break;
-//                } else {
-//                    try {
-//                        VideoPanel videoPanel = new VideoPanel();
-//                        videoPanel.setName(studyInstanceUID);
-//                        EmbeddedMediaPlayerComponent mediaPlayerComp = null;
-//                        try {
-//                            mediaPlayerComp = new EmbeddedMediaListPlayerComponent();
-//                        } catch (NoClassDefFoundError ex) {
-//                            //ignore
-//                        }
-//                        videoPanel.setMediaPlayer(mediaPlayerComp);
-//                        videoPanel.setUniqueIdentifier(filePath.substring(filePath.split("_")[0].lastIndexOf(File.separator) + 1, filePath.indexOf("_")));
-//                        videoPanel.setBorder(BorderFactory.createLineBorder(new Color(255, 138, 0)));
-//                        ((JSplitPane) tabbedPane.getComponentAt(i)).setRightComponent(videoPanel);
-//                        mediaPlayerComp.getMediaPlayer().playMedia(filePath);
-//                        videoPanel.startTimer();
-//                        ApplicationContext.imgView.imageToolbar.disableImageTools();
-//                        setVideoThumbnailIdentification(studyInstanceUID);
-//                        selectedPanel = videoPanel;
-//                        break;
-//                    } catch (Exception ex) {
-//                        if (Desktop.isDesktopSupported()) {
-//                            try {
-//                                if (tabbedPane == null || tabbedPane.getTabCount() <= 1) {
-//                                    imgView.setVisible(false);
-//                                    imgView.dispose();
-//                                    imgView = null;
-//                                }
-//                                Desktop.getDesktop().open(new File(filePath));
-//                            } catch (IOException ex1) {
-//                                Logger.getLogger(ApplicationContext.class.getName()).log(Level.SEVERE, null, ex1);
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//    }
-//    public static void createVideoCanvas(String studyUid, String iuid) {
-//        for (int i = 0; i < tabbedPane.getTabCount(); i++) {
-//            if (((JPanel) ((JSplitPane) tabbedPane.getComponentAt(i)).getRightComponent()).getName().equals(studyUid) && ((JPanel) ((JSplitPane) tabbedPane.getComponentAt(i)).getRightComponent()).getComponentCount() == 0) {
-//                try {
-//                    VideoPanel videoPanel = new VideoPanel();
-//                    videoPanel.setName(studyUid);
-//                    EmbeddedMediaPlayerComponent mediaPlayerComp = null;
-//                    try {
-//                        mediaPlayerComp = new EmbeddedMediaListPlayerComponent();
-//                    } catch (NoClassDefFoundError ex) {
-//                    }
-//                    videoPanel.setMediaPlayer(mediaPlayerComp);
-//                    videoPanel.setUniqueIdentifier(iuid);
-//                    videoPanel.setBorder(BorderFactory.createLineBorder(new Color(255, 138, 0)));
-//                    ((JSplitPane) tabbedPane.getComponentAt(i)).setRightComponent(videoPanel);
-//                    ApplicationContext.imgView.imageToolbar.disableImageTools();
-//                    setVideoThumbnailIdentification(studyUid);
-//                    selectedPanel = videoPanel;
-//                    break;
-//                } catch (Exception e) {
-//                    if (tabbedPane == null || tabbedPane.getTabCount() <= 1) {
-//                        imgView.setVisible(false);
-//                        imgView.dispose();
-//                        imgView = null;
-//                        selectedPanel = null;
-//                    }
-//                }
-//            }
-//        }
-//    }
+    
     public static void displayPreview(String studyInstanceUID, String seriesInstanceUid) {
         for (int i = 0; i < tabbedPane.getTabCount(); i++) {
             if (((JPanel) ((JSplitPane) tabbedPane.getComponentAt(i)).getRightComponent()).getName().equals(studyInstanceUID)) {
@@ -320,7 +175,7 @@ public class ApplicationContext {
         for (int i = 0; i < tabbedPane.getTabCount(); i++) {
             if (((JPanel) ((JSplitPane) tabbedPane.getComponentAt(i)).getRightComponent()).getName().equals(studyUid)) {
                 ApplicationContext.databaseRef.update("study", "NoOfSeries", ((ImagePreviewPanel) ((JSplitPane) tabbedPane.getComponentAt(i)).getLeftComponent()).parent.getComponentCount(), "StudyInstanceUID", studyUid);
-                ((ImagePreviewPanel) ((JSplitPane) tabbedPane.getComponentAt(i)).getLeftComponent()).displayVideoPreviews();
+                ((ImagePreviewPanel) ((JSplitPane) tabbedPane.getComponentAt(i)).getLeftComponent()).convertVideos();
                 break;
             }
         }
@@ -401,8 +256,6 @@ public class ApplicationContext {
                 try {
                     if (((String) ((TreeTableModelAdapter) currentTreeTable.getModel()).getValueAt(i, 10)).equals(studyUid)) {
                         ((StudyNode) ((TreeTableModelAdapter) currentTreeTable.getModel()).getValueAt(i, 12)).addChild(series);
-//                        ((ArrayList<SeriesNode>) ((TreeTableModelAdapter) currentTreeTable.getModel()).getValueAt(i, 12)).add(series);
-//                        ((SeriesNode) ((TreeTableModelAdapter) currentTreeTable.getModel()).getValueAt(i, 15)).addChild(new DataNode("", "", "", "", "", "", "", "", "", "", series.getSeriesNumber(), series.getSeriesDesc(), series.getModality(), series.getSeriesDate(), series.getSeriesTime(), series.getBodyPartExamined(), String.valueOf(series.getSeriesRelatedInstance()), null, null, null, true, false));
                         currentTreeTable.revalidate();
                         currentTreeTable.repaint();
                         break;
@@ -478,21 +331,30 @@ public class ApplicationContext {
         }
     }
 
-    public static void createMultiframePreviews(String studyUid) {
+//    public static void createMultiframePreviews(String studyUid) {
+//        try {
+//            for (int i = 0; i < tabbedPane.getTabCount(); i++) {
+//                if (tabbedPane.getComponentAt(i).getName().equals(studyUid)) {
+//                    ((ViewerJPanel) tabbedPane.getComponentAt(i)).enableMultiSeriesTools();
+//                    break;
+//                }
+//            }
+//        } catch (NullPointerException ex) {
+//            logger.log(Level.INFO, "Line-465[Viewer Closed.]");
+//        }
+//    }
+
+    public static void studyRetirivalCompleted(String studyUid) {
         try {
             for (int i = 0; i < tabbedPane.getTabCount(); i++) {
                 if (tabbedPane.getComponentAt(i).getName().equals(studyUid)) {
-                    ((ViewerJPanel) tabbedPane.getComponentAt(i)).createMultiframePreviews();
+                    ((ViewerJPanel) tabbedPane.getComponentAt(i)).enableMultiSeriesTools();
                     break;
                 }
             }
         } catch (NullPointerException ex) {
             logger.log(Level.INFO, "Line-465[Viewer Closed.]");
         }
-    }
-
-    public static void studyRetirivalCompleted(String studyUid) {
-        createMultiframePreviews(studyUid);
         databaseRef.updateStudy(studyUid);
         if (mainScreenObj != null && mainScreenObj.getCurrentProgressValue() == mainScreenObj.getProgressMaximum()) {
             mainScreenObj.hideProgressBar();

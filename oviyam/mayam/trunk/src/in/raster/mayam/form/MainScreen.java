@@ -492,6 +492,10 @@ public class MainScreen extends javax.swing.JFrame {
     public int getProgressMaximum() {
         return progressBar.getMaximum();
     }
+    
+    public void addMaximum(int max) {
+        progressBar.setMaximum(progressBar.getMaximum() + max);
+    }
 
     //To filter the studies
     public void loadMatchingStudies() {

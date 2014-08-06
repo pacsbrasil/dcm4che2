@@ -41,7 +41,6 @@ package in.raster.mayam.form.dialogs;
 
 import in.raster.mayam.context.ApplicationContext;
 import in.raster.mayam.delegates.ImportDcmDir;
-import in.raster.mayam.delegates.ImportDcmDirDelegate;
 import java.io.File;
 
 /**

@@ -268,10 +268,9 @@ public class ImagePreviewPanel extends javax.swing.JPanel {
         }
     }
 
-    public void displayVideoPreviews() {
+     public void convertVideos() {
         for (int i = 0; i < parent.getComponentCount(); i++) {
             ((ViewerPreviewPanel) parent.getComponent(i)).convertVideo();
-//            ((ViewerPreviewPanel) parent.getComponent(i)).loadMultiframes();
         }
     }
 

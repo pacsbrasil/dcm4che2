@@ -315,10 +315,10 @@ public class DatabaseHandler {
         conn.createStatement().execute("insert into miscellaneous(Loopback,JNLPRetrieveType,AllowDynamicRetrieveType) values(true,'C-GET',false)");
     }
 
-    public synchronized void writeDatasetInfo(DicomObject dataset, String filePath) {
-        try {
+    public synchronized void writeDatasetInfo(DicomObject dataset, boolean saveAsLink, String filePath) {
+        try {            
             insertPatientInfo(dataset);
-            insertStudyInfo(dataset);
+            insertStudyInfo(dataset, saveAsLink);
             insertSeriesInfo(dataset);
             insertImageInfo(dataset, filePath);
             if (ApplicationContext.mainScreenObj != null) {
@@ -369,7 +369,7 @@ public class DatabaseHandler {
         }
     }
 
-    public void insertStudyInfo(DicomObject dataset) {
+    public void insertStudyInfo(DicomObject dataset, boolean saveAsLink) {
         if (!(checkRecordExists("study", "StudyInstanceUID", dataset.getString(Tags.StudyInstanceUID)))) {
             try {
                 String date = (dataset.getDate(Tags.StudyDate) != null && dataset.getString(Tags.StudyDate).length() > 0) ? dateFormat.format(dataset.getDate(Tags.StudyDate)) : "";
@@ -378,7 +378,10 @@ public class DatabaseHandler {
                 String refName = (dataset.getString(Tags.ReferringPhysicianName) != null && dataset.getString(Tags.ReferringPhysicianName).length() > 0) ? dataset.getString(Tags.ReferringPhysicianName) : "";
                 String retAe = (dataset.getString(Tags.RetrieveAET) != null && dataset.getString(Tags.RetrieveAET).length() > 0) ? dataset.getString(Tags.RetrieveAET) : "";
                 String studyDesc = (dataset.getString(Tags.StudyDescription) != null && dataset.getString(Tags.StudyDescription).length() > 0) ? dataset.getString(Tags.StudyDescription) : "";
-                conn.createStatement().execute("insert into study values('" + dataset.getString(Tags.StudyInstanceUID) + "','" + date + "','" + time + "','" + accessionNo + "','" + refName + "','" + studyDesc.replace('/', ' ') + "','" + dataset.getString(Tags.Modality) + "'," + 0 + "," + 0 + "," + 0 + "," + 0 + ",'" + retAe + "','" + "local" + "'," + "false,'" + dataset.getString(Tags.PatientID) + "')");
+                conn.createStatement().execute("insert into study values('" + dataset.getString(Tags.StudyInstanceUID) + "','" + date + "','" + time + "','" + accessionNo + "','" + refName + "','" + studyDesc.replace('/', ' ') + "','" + dataset.getString(Tags.Modality) + "'," + 0 + "," + 0 + "," + 0 + "," + 0 + ",'" + retAe + "','" + (!saveAsLink ? "local" : "link") + "'," + "false,'" + dataset.getString(Tags.PatientID) + "')");
+                if (ApplicationContext.isLocal) {
+                    SwingUtilities.invokeLater(refresher);
+                }
             } catch (SQLException ex) {
                 ApplicationContext.logger.log(Level.SEVERE, "DatabaseHandler - Unable to save patient information", ex);
             }
@@ -511,7 +514,7 @@ public class DatabaseHandler {
             }
             String[] imagePosition = dataset.getStrings(Tags.ImagePosition);
             String sliceLoc = imagePosition != null && imagePosition[2] != null ? imagePosition[2] : "0";
-            try {                
+            try {
                 conn.createStatement().executeUpdate("insert into image(SopUID,SOPClassUID,InstanceNo,multiframe,totalframe,SendStatus,ForwardDateTime,ReceivedDateTime,ReceiveStatus,FileStoreUrl,SliceLocation,EncapsulatedDocument,ThumbnailStatus,FrameOfReferenceUID,ImagePosition,ImageOrientation,ImageType,PixelSpacing,SliceThickness,NoOfRows,NoOfColumns,ReferencedSopUid,PatientId,StudyInstanceUID,SeriesInstanceUID) values('" + dataset.getString(Tags.SOPInstanceUID) + "','" + dataset.getString(Tags.SOPClassUID) + "'," + dataset.getInt(Tags.InstanceNumber) + ",'" + multiframe + "','" + totalFrame + "','" + "partial" + "','" + " " + "','" + " " + "','" + "partial" + "','" + filePath + "'," + sliceLoc + ",'" + encapsulatedPDF + "',false,'" + frameOfRefUid + "','" + imgPos + "','" + imgOrientation + "','" + image_type + "','" + pixelSpacing + "','" + sliceThickness + "'," + row + "," + columns + ",'" + referSopInsUid.trim() + "','" + patientID + "','" + studyUid + "','" + seriesUid + "')");
                 conn.commit();
             } catch (SQLException ex) {

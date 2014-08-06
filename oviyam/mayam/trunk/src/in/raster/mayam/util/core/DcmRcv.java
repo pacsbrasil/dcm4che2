@@ -1110,7 +1110,7 @@ public class DcmRcv {
                 dos.writeFileMetaInformation(fmi);
                 // dataStream.copyTo(dos);                
                 dos.writeDataset(data, tsuid);
-                ApplicationContext.databaseRef.writeDatasetInfo(data, file.getAbsolutePath());
+                ApplicationContext.databaseRef.writeDatasetInfo(data, false, file.getAbsolutePath());
             } finally {
                 CloseUtils.safeClose(dos);
             }

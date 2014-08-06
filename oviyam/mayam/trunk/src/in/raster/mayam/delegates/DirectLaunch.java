@@ -154,16 +154,14 @@ public class DirectLaunch extends SwingWorker<Void, Void> {
                 ImagePreviewPanel imagePreviewPanel = new ImagePreviewPanel();
                 imagePreviewPanel.setPatientInfo(constructPatientInfo(patient, study));
                 ApplicationContext.openImageView(patient.getAttribute("PatientName"), study.getAttribute("StudyInstanceUID"), imagePreviewPanel);
-                HashMap<String, Collection<String>> instancesToRetrieve = new HashMap<String, Collection<String>>();
 
-                HashSet<String> multiframesAndVideos = new HashSet<String>();
                 NodeList seriesList = xmlDoc.getElementsByTagName("Series");
 
                 for (int ser_Iter = 0; ser_Iter < seriesList.getLength(); ser_Iter++) {
+                    ArrayList<String> instance_List = new ArrayList<String>();
                     Node child = seriesList.item(ser_Iter);
                     Element ser_Item = (Element) child;
                     String sopClassUID = ser_Item.getAttribute("SOPClassUID");
-
 
                     NodeList instances = ser_Item.getChildNodes();
                     ViewerPreviewPanel preview = new ViewerPreviewPanel(ser_Iter);
@@ -174,19 +172,17 @@ public class DirectLaunch extends SwingWorker<Void, Void> {
                             preview.multiframePreview(study.getAttribute("StudyInstanceUID"), ser_Item.getAttribute("SeriesInstanceUID"), ser_Item.getAttribute("SOPInstanceUID") + "," + ser_Item.getAttribute("NumberOfFrames"));
                             preview.multiframes(inputArgumentValues.getWadoProtocol(), inputArgumentValues.getWadoContext(), inputArgumentValues.getHostName(), inputArgumentValues.getWadoPort());
                         }
-                        multiframesAndVideos.add(ser_Item.getAttribute("SesriesInstanceUID") + "," + ser_Item.getAttribute("SOPInstanceUID"));
+                        instance_List.add(ser_Item.getAttribute("SeriesInstanceUID") + "," + ser_Item.getAttribute("SOPInstanceUID"));
                     } else {
-                        ArrayList<String> instance_List = new ArrayList<String>();
                         for (int inst_Iter = 0; inst_Iter < instances.getLength(); inst_Iter++) {
                             Node item = instances.item(inst_Iter);
                             if (item.getNodeType() == Node.ELEMENT_NODE) {
                                 Element inst_Item = (Element) instances.item(inst_Iter);
                                 instance_List.add(ser_Item.getAttribute("SeriesInstanceUID") + "," + inst_Item.getAttribute("SOPInstanceUID"));
-                                preview.normalPreview(study.getAttribute("StudyInstanceUID"), ser_Item.getAttribute("SeriesInstanceUID"), ser_Item.getAttribute("SeriesDescription"), Integer.parseInt(ser_Item.getAttribute("InstanceCount")));
-                                preview.loadThumbnails(instance_List, inputArgumentValues.getWadoProtocol(), inputArgumentValues.getWadoContext(), inputArgumentValues.getHostName(), inputArgumentValues.getWadoPort());
                             }
                         }
-                        instancesToRetrieve.put(ser_Item.getAttribute("SeriesInstanceUID"), instance_List);
+                        preview.normalPreview(study.getAttribute("StudyInstanceUID"), ser_Item.getAttribute("SeriesInstanceUID"), ser_Item.getAttribute("SeriesDescription"), instances.getLength() / 2);
+                        preview.loadThumbnails(instance_List, inputArgumentValues.getWadoProtocol(), inputArgumentValues.getWadoContext(), inputArgumentValues.getHostName(), inputArgumentValues.getWadoPort());
                     }
 
                     int height = preview.getTotalHeight();
@@ -194,23 +190,15 @@ public class DirectLaunch extends SwingWorker<Void, Void> {
                     preview.setBounds(0, position, 230, height);
                     imagePreviewPanel.addViewerPanel(position, height, preview, size);
                     position += (height + 5);
+
+                    new WadoRetriever(study.getAttribute("StudyInstanceUID"), instance_List, inputArgumentValues.getWadoProtocol(), inputArgumentValues.getWadoContext(), inputArgumentValues.getHostName(), inputArgumentValues.getWadoPort(), true).run();
                 }
 
                 for (int i = 0; i < imagePreviewPanel.parent.getComponentCount(); i++) {
-                    String seriesUID = ((ViewerPreviewPanel) imagePreviewPanel.parent.getComponent(i)).load(false);
-                    Collection<String> instances = instancesToRetrieve.get(seriesUID);
-                    if (instances != null) {
-                        new WadoRetriever(study.getAttribute("StudyInstanceUID"), seriesUID, instances, inputArgumentValues.getWadoProtocol(), inputArgumentValues.getWadoContext(), inputArgumentValues.getHostName(), inputArgumentValues.getWadoPort(), (i == 0), instances.size()).run();
-                    }
+                    ((ViewerPreviewPanel) imagePreviewPanel.parent.getComponent(i)).load(false);
                 }
 
-                if (!multiframesAndVideos.isEmpty()) {
-                    WadoRetriever wadoRetriever = new WadoRetriever();
-                    wadoRetriever.reteriveVideoAndMultiframes(study.getAttribute("StudyInstanceUID"), multiframesAndVideos, instancesToRetrieve.isEmpty(), inputArgumentValues.getWadoProtocol(), inputArgumentValues.getHostName(), inputArgumentValues.getWadoPort());
-                }
-
-                ApplicationContext.databaseRef.update("study", "NoOfInstances", ApplicationContext.databaseRef.getStudyLevelInstances(study.getAttribute("StudyInstanceUID")), "StudyInstanceUID", study.getAttribute("StudyInstanceUID"));
-                ApplicationContext.databaseRef.update("study", "NoOfSeries", Integer.parseInt(study.getAttribute("SeriesCount")), "StudyInstanceUID", study.getAttribute("StudyInstanceUID"));
+                ApplicationContext.studyRetirivalCompleted(study.getAttribute("StudyInstanceUID"));
             } else {
                 System.err.println("ERROR : Unable to parse XML File.");
                 System.exit(0);

@@ -178,8 +178,8 @@ public class ViewerJPanel extends javax.swing.JPanel {
         imagePreviewPanel.displayPreiew(seriesInstanceUid);
     }
 
-    public void createMultiframePreviews() {
-        imagePreviewPanel.displayVideoPreviews();
+    public void enableMultiSeriesTools() {
+        imagePreviewPanel.convertVideos();
         imageToolbar.enableMultiSeriesTools();
     }
 
