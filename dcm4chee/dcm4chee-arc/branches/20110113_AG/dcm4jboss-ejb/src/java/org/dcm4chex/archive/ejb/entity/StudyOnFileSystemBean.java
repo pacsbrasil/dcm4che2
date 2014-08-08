@@ -216,7 +216,17 @@ public abstract class StudyOnFileSystemBean implements EntityBean {
                 || externalRetrieveable && study.getExternalRetrieveAET() == null
                 || storageNotCommited && study.getNumberOfCommitedInstances() != 0
                 || copyOnMedia && !study.isStudyAvailableOnMedia()) {
+        	if ( log.isDebugEnabled() ) {
+        		log.debug("Delete constraints do not match" 
+        				+ ": study.getNumberOfReceivingSeries() != 0 is " + (study.getNumberOfReceivingSeries() != 0)
+        				+ "; externalRetrieveable && study.getExternalRetrieveAET() == null is " + (externalRetrieveable && study.getExternalRetrieveAET() == null)
+        				+ "; storageNotCommited && study.getNumberOfCommitedInstances() != 0 is " + (storageNotCommited && study.getNumberOfCommitedInstances() != 0)
+        				+ "; copyOnMedia && !study.isStudyAvailableOnMedia() is " + (copyOnMedia && !study.isStudyAvailableOnMedia()));
+        	}
             return false;
+        }
+        if ( log.isDebugEnabled() ) {
+        	log.debug("Counting instances on filesystem for " + study.getStudyIuid());
         }
         int count;
         if (copyOnFSGroup != null) {
@@ -254,6 +264,12 @@ public abstract class StudyOnFileSystemBean implements EntityBean {
                     return true; // no constraint
                 }
             }
+        }
+        if ( log.isDebugEnabled() ) {
+        	log.debug("Delete constraints "
+        			+ (count == study.getNumberOfStudyRelatedInstances() ? "match" : "do not match") 
+        			+ ": count on filesystem is " + count + "; number of study related instances is " 
+        			+ study.getNumberOfStudyRelatedInstances());
         }
         return count == study.getNumberOfStudyRelatedInstances();
     }

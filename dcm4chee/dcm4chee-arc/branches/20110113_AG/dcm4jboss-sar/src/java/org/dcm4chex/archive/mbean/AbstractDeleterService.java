@@ -511,17 +511,38 @@ public abstract class AbstractDeleterService extends ServiceMBeanSupport {
             DeleteStudyOrder order;
             while (iter.hasNext() && (dontCheckMax || result[0] < maxSize )) {
                 order = iter.next();
-                if (!checkExternalRetrievable(order))
+                if ( log.isDebugEnabled() ) {
+                	log.debug("Preparing to schedule a delete order for " + order.getStudyIUID()
+                			+ ", checking if it is external retrievable");
+                }
+                if (!checkExternalRetrievable(order)) {
+                	if ( log.isDebugEnabled() ) {
+                    	log.debug("Study " + order.getStudyIUID() + " is not external retrievable, order will not be scheduled");
+                    }
                     continue;
+                }
+                else {
+                	if ( log.isDebugEnabled() ) {
+                    	log.debug("Study " + order.getStudyIUID() + " is external retrievable, now marking study_on_fs record for deletion");
+                    }
+                }
                 if (fsMgt.markStudyOnFSRecordForDeletion(order, true)) {
-                    try {
+                	if ( log.isDebugEnabled() ) {
+                    	log.debug("Study " + order.getStudyIUID() + " has been marked, now scheduling delete order");
+                    }
+                	try {
                         scheduleDeleteOrder(order);
                     } catch (Exception e) {
+                    	log.error("Exception encountered while scheduling delete order for " + order.getStudyIUID()
+                    			+ ", now clearing study_on_fs record deletion flag");
                         fsMgt.markStudyOnFSRecordForDeletion(order, false);
                         throw e;
                     }
                     result[0] += fsMgt.getStudySize(order);
                     result[1]++;
+                }
+                if ( log.isDebugEnabled() ) {
+                	log.debug("Deletion scheduling complete for " + order.getStudyIUID());
                 }
             }
         }

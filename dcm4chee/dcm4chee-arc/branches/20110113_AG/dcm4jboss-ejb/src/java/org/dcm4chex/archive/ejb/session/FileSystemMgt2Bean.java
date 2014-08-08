@@ -617,8 +617,18 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
             boolean externalRetrieveable, boolean storageNotCommited,
             boolean copyOnMedia, String copyOnFSGroup, boolean copyArchived,
             boolean copyOnReadOnlyFS) throws FinderException {
-        return createDeleteOrders(sofHome.findByFSGroupAndAccessedBetween(fsGroup,
-                new Timestamp(minAccessTime), new Timestamp(maxAccessTime), limit),
+        Timestamp minAccessTimestamp = new Timestamp(minAccessTime);
+		Timestamp maxAccessTimestamp = new Timestamp(maxAccessTime);
+		if ( log.isInfoEnabled() ) {
+    		log.info("Selecting up to " + limit + " study_on_fs records with fs_group_id = " +  fsGroup 
+    				+ ", and access time between " + minAccessTime + " and " + maxAccessTime);
+    	}
+		Collection findByFSGroupAndAccessedBetween = sofHome.findByFSGroupAndAccessedBetween(fsGroup,
+				        minAccessTimestamp, maxAccessTimestamp, limit);
+		if ( log.isInfoEnabled() ) {
+    		log.info("Selected " + findByFSGroupAndAccessedBetween.size() + " study_on_fs records");
+    	}
+		return createDeleteOrders(findByFSGroupAndAccessedBetween,
                 externalRetrieveable, storageNotCommited, copyOnMedia,
                 copyOnFSGroup, copyArchived, copyOnReadOnlyFS);
     }
@@ -648,13 +658,26 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
             boolean storageNotCommited, boolean copyOnMedia,
             String copyOnFSGroup, boolean copyArchived,
             boolean copyOnReadOnlyFS) throws FinderException {
-        if (sofs.isEmpty())
+        if (sofs.isEmpty()) {
             return null;
+        }
+        if ( log.isInfoEnabled() ) {
+        	log.info("Creating DeleteStudyOrder instances using the following criteria"
+        			+ ": externalRetrieveable is " + externalRetrieveable
+        			+ "; storageNotCommited is " + storageNotCommited
+        			+ "; copyOnMedia is " + copyOnMedia
+        			+ "; copyOnFSGroup is " + copyOnFSGroup
+        			+ "; copyArchived is " + copyArchived
+        			+ "; copyOnReadOnlyFS is " + copyOnReadOnlyFS);
+        }
         Collection<DeleteStudyOrder> orders = new ArrayList<DeleteStudyOrder>(sofs.size());
         long maxAccessTime = 0;
         for (Iterator iter = sofs.iterator(); iter.hasNext();) {
             StudyOnFileSystemLocal sof = (StudyOnFileSystemLocal) iter.next();
             maxAccessTime = sof.getAccessTime().getTime();
+            if ( log.isDebugEnabled() ) {
+            	log.debug("Examining study " + sof.getStudy().getStudyIuid() + " for deletion eligibility");
+            }
             if (sof.matchDeleteConstrains(externalRetrieveable,
                     storageNotCommited, copyOnMedia, copyOnFSGroup,
                     copyArchived, copyOnReadOnlyFS)) {
@@ -665,7 +688,18 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
                         study.getStudyIuid());
                 deleteStudyOrder.processOrderProperties(study.getStudyIuid());
                 orders.add(deleteStudyOrder);
+                if ( log.isDebugEnabled() ) {
+                	log.debug("DeleteStudyOrder created for " + study.getStudyIuid());
             }
+            }
+            else {
+            	if ( log.isDebugEnabled() ) {
+                	log.debug("Study " + sof.getStudy().getStudyIuid() + " is not eligibile for deletion");
+                }
+            }
+        }
+        if ( log.isInfoEnabled() ) {
+        	log.info("Created " + orders.size() + " DeleteStudyOrder instances");
         }
         return new DeleteStudyOrdersAndMaxAccessTime(orders, maxAccessTime);
     }
