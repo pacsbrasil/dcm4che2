@@ -903,7 +903,13 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
             StudyLocal study = studyHome.findByPrimaryKey(order.getStudyPk());
             FileSystemLocal fs = fileSystemHome.findByPrimaryKey(fsPk);
             checkConcurrentStudyStorage(study, fs);
-            FileSystemLocal fsDest = fileSystemHome.findByPrimaryKey(dtos[0][0].getFileSystemPk());
+            FileSystemLocal fsDest = null;
+            for (int i = 0 ; i < dtos.length ; i++) {
+                if (dtos[i].length > 0) {
+                    fsDest = fileSystemHome.findByPrimaryKey(dtos[i][0].getFileSystemPk());
+                    break;
+                }
+            }
             Collection<FileLocal> c = study.getFiles(fsPk);
             FileLocal[] files = c.toArray(new FileLocal[c.size()]);
             FileLocal fSrc;
