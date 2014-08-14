@@ -923,8 +923,13 @@ public class ExportManagerService extends AbstractScuService
                 Map.Entry e = (Map.Entry) iter.next();
                 String key = (String) e.getKey();
                 if (key.startsWith(prefix)) {
-                    coerceAttribute(attrs, key.substring(prefix.length()),
+                	String tagName = key.substring(prefix.length());
+                	if ( Tags.RetrieveAET == Tags.forName(tagName))
+                		coerceRetrieveAET(attrs, (String) e.getValue());
+                	else
+                		coerceAttribute(attrs, tagName,
                             (String) e.getValue());
+
                     ++count;
                 }
             }
@@ -939,6 +944,22 @@ public class ExportManagerService extends AbstractScuService
             log.info("Replace " + count + " UIDs in " + dict.toString(cuid)
                     + " with original iuid:" + iuid);
         }
+    }
+    
+    private int coerceRetrieveAET(Dataset ds, String pattern)
+            throws DcmValueException {
+        int count = 0;
+        for (Iterator iter = ds.iterator(); iter.hasNext();) {
+            DcmElement elm = (DcmElement) iter.next();
+            if (elm.tag() == Tags.RetrieveAET) {
+                coerceAttribute(ds, "RetrieveAET", pattern);
+                count++;
+            } else if (elm.vr() == VRs.SQ) {
+                for (int i = 0, n = elm.countItems(); i < n; i++)
+                    count += coerceRetrieveAET(elm.getItem(i), pattern);
+            }
+        }
+        return count;
     }
 
     private void sendManifests(ActiveAssociation a, int pcid, Dataset manifest,
