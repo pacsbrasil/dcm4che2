@@ -814,7 +814,7 @@ public abstract class PatientBean implements EntityBean {
             Dataset attrs;
             if (filter.isMerge()) {
                 attrs = getAttributes(false);
-                appendOtherPatientIds(attrs, ds, null, filter);
+                appendOtherPatientIds(attrs, ds, null, filter, false);
                 AttrUtils.updateAttributes(attrs, 
                         filter.filter(ds).exclude(OTHER_PID_SQ), null, log);
             } else {
@@ -826,7 +826,7 @@ public abstract class PatientBean implements EntityBean {
             Dataset attrs = getAttributes(false);
             boolean b = false;
             if (filter.isMerge())
-                 b = appendOtherPatientIds(attrs, ds, null, filter);
+                 b = appendOtherPatientIds(attrs, ds, null, filter, false);
             else
                 log.debug("-merge update-strategy not specified.  Not synchronizing other patient ids!");
 
@@ -849,9 +849,16 @@ public abstract class PatientBean implements EntityBean {
      * @ejb.interface-method
      */
     public boolean updateAttributes(Dataset newAttrs, Dataset modifiedAttrs) {
+        return updateAttributes(newAttrs, modifiedAttrs, false);
+    }
+    
+    /**
+     * @ejb.interface-method
+     */
+    public boolean updateAttributes(Dataset newAttrs, Dataset modifiedAttrs, boolean removeGPI) {
         Dataset oldAttrs = getAttributes(false);
         AttributeFilter filter = AttributeFilter.getPatientAttributeFilter(); 
-        boolean b = appendOtherPatientIds(oldAttrs, newAttrs, modifiedAttrs, filter);
+        boolean b = appendOtherPatientIds(oldAttrs, newAttrs, modifiedAttrs, filter, removeGPI);
         if( oldAttrs==null ) {
             setAttributes( newAttrs );
         } 
@@ -864,13 +871,13 @@ public abstract class PatientBean implements EntityBean {
     }
 
     private boolean appendOtherPatientIds(Dataset oldAttrs, Dataset newAttrs,
-                Dataset modifiedAttrs, AttributeFilter filter) {
+                Dataset modifiedAttrs, AttributeFilter filter, boolean removeGPI) {
         DcmElement nopidsq = newAttrs.get(Tags.OtherPatientIDSeq);
-        if (nopidsq == null || nopidsq.isEmpty() || nopidsq.getItem().isEmpty()) {
+        if (!removeGPI && (nopidsq == null || nopidsq.isEmpty() || nopidsq.getItem().isEmpty())) {
             return false;
         }
         DcmElement oopidsq = oldAttrs.get(Tags.OtherPatientIDSeq);
-        if( oopidsq != null && nopidsq.equals(oopidsq) ) {
+        if (!removeGPI && (oopidsq != null && nopidsq.equals(oopidsq))) {
             return false;
         }
         if (oopidsq == null) {
@@ -882,38 +889,40 @@ public abstract class PatientBean implements EntityBean {
                 sq.addItem(oopidsq.getItem(i));
             }
         }
-        boolean updated=false;
-        for (int i = 0, n = nopidsq.countItems(); i < n; i++) {
-            Dataset nItem = nopidsq.getItem(i);
-            String nopid = filter.getString(nItem, Tags.PatientID);
-            String issuer = filter.getString(nItem, Tags.IssuerOfPatientID);
-            Dataset oItem = findOtherPIDByIssuer(issuer,oopidsq);
-            if (oItem==null) {
-                oopidsq.addItem(nItem);
-                getOtherPatientIds().add(opidHome.valueOf(nopid, issuer));
-                log.info("Add additional Other Patient ID: "
-                        + nopid + "^^^"
-                        +  issuer
-                        + " to " + prompt());
-                updated=true;
-            }	
-            else {
-            	try {
-            	    String oopid = filter.getString(oItem, Tags.PatientID);
-            	    if( ! oopid.equals(nopid) ) {
-            	        oItem.putLO(Tags.PatientID, nItem.getString(Tags.PatientID));
-                        OtherPatientIDLocal oopidBean = opidHome.findByPatientIdAndIssuer(oopid, issuer);
-                        getOtherPatientIds().remove(oopidBean);
-                        if (oopidBean.getPatients().isEmpty()) {
-                            oopidBean.remove();
+        boolean updated=removeGPI;
+        if (nopidsq != null) {
+            for (int i = 0, n = nopidsq.countItems(); i < n; i++) {
+            	Dataset nItem = nopidsq.getItem(i);
+            	String nopid = filter.getString(nItem, Tags.PatientID);
+            	String issuer = filter.getString(nItem, Tags.IssuerOfPatientID);
+            	Dataset oItem = findOtherPIDByIssuer(issuer,oopidsq);
+            	if (oItem==null) {
+                    oopidsq.addItem(nItem);
+                    getOtherPatientIds().add(opidHome.valueOf(nopid, issuer));
+                    log.info("Add additional Other Patient ID: "
+                            + nopid + "^^^"
+                            +  issuer
+                            + " to " + prompt());
+                    updated=true;
+            	}	
+            	else {
+                    try {
+            	        String oopid = filter.getString(oItem, Tags.PatientID);
+            	        if( ! oopid.equals(nopid) ) {
+            	            oItem.putLO(Tags.PatientID, nItem.getString(Tags.PatientID));
+                            OtherPatientIDLocal oopidBean = opidHome.findByPatientIdAndIssuer(oopid, issuer);
+                            getOtherPatientIds().remove(oopidBean);
+                            if (oopidBean.getPatients().isEmpty()) {
+                                oopidBean.remove();
+                            }
+                            getOtherPatientIds().add(opidHome.valueOf(nopid, issuer));
+                            log.info("Other Patient ID of " + oopid + "^^^" + issuer
+                                  + " is replaced by" + nopid + "^^^" + issuer + " to " + prompt());
+                            updated=true;
                         }
-                        getOtherPatientIds().add(opidHome.valueOf(nopid, issuer));
-                        log.info("Other Patient ID of " + oopid + "^^^" + issuer
-                              + " is replaced by" + nopid + "^^^" + issuer + " to " + prompt());
-                        updated=true;
-                    }
-            	} catch (Exception onfe) {}
-            }	
+                    } catch (Exception onfe) {}
+            	}	
+            }
         }
         return updated;
     }

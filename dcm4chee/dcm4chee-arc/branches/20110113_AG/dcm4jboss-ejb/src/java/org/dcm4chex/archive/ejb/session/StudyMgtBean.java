@@ -238,6 +238,14 @@ public abstract class StudyMgtBean implements SessionBean {
      */
     public void updatePatientOnly(String iuid, Dataset ds, Dataset modAttrs)
             throws DcmServiceException{
+        updatePatientOnly(iuid, ds, modAttrs, false);
+    }
+
+    /**
+     * @ejb.interface-method
+     */
+    public void updatePatientOnly(String iuid, Dataset ds, Dataset modAttrs, boolean removeGPI)
+            throws DcmServiceException{
         try {
             PatientLocal patient = getStudy(iuid).getPatient();
             Dataset origModAttrs = (modAttrs == null) ? null : DcmObjectFactory.getInstance().newDataset();
@@ -263,7 +271,7 @@ public abstract class StudyMgtBean implements SessionBean {
                 DcmElement el = modAttrs.putSQ(Tags.OriginalAttributesSeq);
                 Dataset item = el.addNewItem();
                             
-                if(patient.updateAttributes(ds, origModAttrs)) {                
+                if(patient.updateAttributes(ds, origModAttrs, removeGPI)) {                
                 	item.putAll(origModAttrs);                
                     AttrUtils.fetchModifiedAttributes(ds, origModAttrs, modAttrs, AttributeFilter.getPatientAttributeFilter());
                 }        		
