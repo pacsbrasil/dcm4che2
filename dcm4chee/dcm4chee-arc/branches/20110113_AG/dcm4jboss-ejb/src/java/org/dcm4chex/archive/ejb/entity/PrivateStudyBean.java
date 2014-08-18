@@ -71,6 +71,9 @@ import org.dcm4chex.archive.ejb.interfaces.PrivateSeriesLocal;
  * @ejb.finder signature="java.util.Collection findByStudyIuid(int privateType, java.lang.String uid)"
  *             query="SELECT OBJECT(a) FROM PrivateStudy AS a WHERE a.privateType = ?1 AND a.studyIuid = ?2"
  *             transaction-type="Supports"
+ * @ejb.finder signature="java.util.Collection findByStudyIuid(java.lang.String uid)"
+ *             query="SELECT OBJECT(a) FROM PrivateStudy AS a WHERE a.studyIuid = ?1"
+ *             transaction-type="Supports"
  * @jboss.query signature="int ejbSelectNumberOfStudyRelatedInstances(java.lang.Long pk)"
  *              query="SELECT COUNT(i) FROM PrivateInstance i WHERE i.series.study.pk = ?1"
  */
@@ -128,7 +131,7 @@ public abstract class PrivateStudyBean implements EntityBean {
      */
     public abstract String getAccessionNumber();
     public abstract void setAccessionNumber(String acc_no);
-    
+  
     /**
      * @ejb.interface-method
      */
