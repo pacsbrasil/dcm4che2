@@ -491,6 +491,9 @@ public class TCKeywordACRInput extends AbstractTCKeywordInput {
             		if ( pathologyKeyword!=null ) {
             			setNodeSelected( tree, pathologyRoot.findNode( pathologyKeyword ) );
             		}
+            		else {
+            			setNodeSelected( tree, null );
+            		}
             		setPathologyTreeVisible( tree );
             	}
             	else {
