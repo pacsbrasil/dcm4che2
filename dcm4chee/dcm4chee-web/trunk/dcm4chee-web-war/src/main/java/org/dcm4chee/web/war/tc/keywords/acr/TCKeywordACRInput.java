@@ -485,11 +485,14 @@ public class TCKeywordACRInput extends AbstractTCKeywordInput {
             if (anatomyKeyword != null) {
                 setNodeSelected(anatomyTree, anatomyRoot.findNode(anatomyKeyword));
             }
-
+            
             for (Tree tree : pathologyTrees.values()) {
-            	if (tree.getModelObject().getRoot().equals( pathologyRoot ) ) {
+            	if ( tree.getModelObject().getRoot().equals( pathologyRoot ) ) {
             		if ( pathologyKeyword!=null ) {
             			setNodeSelected( tree, pathologyRoot.findNode( pathologyKeyword ) );
+            		}
+            		else {
+            			setNodeSelected( tree, null );
             		}
             		setPathologyTreeVisible( tree );
             	}
