@@ -319,12 +319,12 @@ $(document).ready(function() {
                 if( !location.search ) {
                 	div = '<div id="' + node.aetitle + '" class="ui-tabs-panel ui-widget-content ui-corner-bottom ui-tabs-hide" style="padding: 0; width: 100%;">';
                 	div += '<div id="' + node.aetitle + '_search" style="height:13%; width:100%;"></div>';
-                	div += '<div id="' + node.aetitle + '_content" style="height:85%; width:100%;"></div></div>';
-                	$('#tabContent').append(div);
-                	$('#' + node.aetitle + '_search').load('newSearch.jsp?tabName=' + node.logicalname);
+                	div += '<div id="' + node.aetitle + '_content" style="height:85%; width:100%; cursor: pointer;"></div></div>';
+                	$('#tabContent').append(div);                	
+                	$('#' + node.aetitle + '_search').load('newSearch.jsp?tabName=' + node.aetitle);
                 } else {        		              
                 	div = '<div id="' + node.aetitle + '" class="ui-tabs-panel ui-widget-content ui-corner-bottom ui-tabs-hide" style="padding: 0; width: 100%">';                	                	
-                	div += '<div id="' + node.aetitle + '_content" style="height:99%; width:100%;"></div></div>';
+                	div += '<div id="' + node.aetitle + '_content" style="height:99%; width:100%; cursor: pointer;"></div></div>';
                 	$('#tabContent').append(div);
                 	
                 	//load studies in data table.

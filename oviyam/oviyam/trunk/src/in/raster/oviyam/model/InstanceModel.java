@@ -55,8 +55,8 @@ public class InstanceModel {
 	private String sopIUID;
 	private String instanceNumber;
 	private String sopClassUID;
-	private String numberOfFrames;
-	private String rows;
+	private String numberOfFrames;	
+	private String thumbSize;
 
 	/**
 	 * Constructor User to create a instance of InstanceModel. The properties of
@@ -70,7 +70,14 @@ public class InstanceModel {
 		instanceNumber = ds.getString(Tags.InstanceNumber);
 		sopClassUID = ds.getString(Tags.SOPClassUID);
 		numberOfFrames = ds.getString(Tags.NumberOfFrames);
-		rows = ds.getString(Tags.Rows);
+		int rows = ds.getInteger(Tags.Rows);
+		int columns = ds.getInteger(Tags.Columns);	
+		
+		if(columns>rows) {			
+			thumbSize = "width: 70px;";
+		} else {			
+			thumbSize = "height: 70px;";
+		}
 	}
 
 	/**
@@ -108,13 +115,13 @@ public class InstanceModel {
 	public String getNumberOfFrames() {
 		return numberOfFrames;
 	}
-
+	
 	/**
-	 * Getter for property rows.
+	 * Getter for property thumbSize.
 	 * 
-	 * @return Value of property rows.
+	 * @return Value of property thumbSize.
 	 */
-	public String getRows() {
-		return rows;
+	public String getThumbSize() {
+		return thumbSize;
 	}
 }

@@ -161,7 +161,7 @@ public class ImageHandler extends SimpleTagSupport {
 					getJspContext().setAttribute("multiframe", "no");
 				}
 				
-				getJspContext().setAttribute("rows", instance.getRows());				
+				getJspContext().setAttribute("thumbSize", instance.getThumbSize());
 
 				/*
 				 * Process the body of the tag and print it to the response. The
