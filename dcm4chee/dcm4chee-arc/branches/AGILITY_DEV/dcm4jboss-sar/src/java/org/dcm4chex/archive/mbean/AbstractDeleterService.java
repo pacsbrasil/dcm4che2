@@ -67,6 +67,7 @@ import org.dcm4chex.archive.ejb.interfaces.FileSystemMgt2Home;
 import org.dcm4chex.archive.util.EJBHomeFactory;
 import org.dcm4chex.archive.util.FileSystemUtils;
 import org.dcm4chex.archive.util.FileUtils;
+import org.dcm4chex.archive.common.Availability; 
 import org.jboss.system.ServiceMBeanSupport;
 
 /**
@@ -213,8 +214,8 @@ public abstract class AbstractDeleterService extends ServiceMBeanSupport {
         long free = 0L;
         for (FileSystemDTO fsDTO : fsDTOs) {
             int status = fsDTO.getStatus();
-            if (status == FileSystemStatus.RW
-                    || status == FileSystemStatus.DEF_RW) {
+            boolean isAvailable = (fsDTO.getAvailability() != Availability.UNAVAILABLE);
+            if (isAvailable && (status == FileSystemStatus.RW || status == FileSystemStatus.DEF_RW)) {
                 File dir = FileUtils.toFile(fsDTO.getDirectoryPath());
                 if (dir.isDirectory()) {
                     free += FileSystemUtils.freeSpace(dir.getPath());
@@ -244,7 +245,8 @@ public abstract class AbstractDeleterService extends ServiceMBeanSupport {
         long free = 0L;
         for (FileSystemDTO fsDTO : fsDTOs) {
             int status = fsDTO.getStatus();
-            if (status == FileSystemStatus.RW || status == FileSystemStatus.DEF_RW) {
+            boolean isAvailable = (fsDTO.getAvailability() != Availability.UNAVAILABLE);
+            if (isAvailable && (status == FileSystemStatus.RW || status == FileSystemStatus.DEF_RW)) {
                 File dir = FileUtils.toFile(fsDTO.getDirectoryPath());
                 if (dir.isDirectory()) {
                     free += Math.max(0, FileSystemUtils.freeSpace(dir.getPath()) - minFree);
