@@ -6,6 +6,8 @@ var wcenter;
 var wwidth;
 var rescale_Slope;
 var rescale_Intercept;
+var photometric_Interpretation;
+var bits_Stored;
 var lookupTable;
 var huLookupTable;
 var pixelBuffer = new Array();
@@ -38,17 +40,11 @@ function mouseDownHandler(evt)
 
     zoomPercent = jQuery(jcanvas).parent().parent().find('#zoomPercent').html();
     zoomPercent = zoomPercent.substring(zoomPercent.indexOf(":")+1, zoomPercent.indexOf("%"));
-    zoomPercent = zoomPercent / 100;
-    
-    //zoomPercent = parent.scale;
+    zoomPercent = zoomPercent / 100;    
+
 
     if(imageLoaded==1)
-    {
-       /* mouseLocX = evt.pageX - parent.jcanvas.offsetLeft;
-        mouseLocX = parseInt(mouseLocX / zoomPercent);
-        mouseLocY = evt.pageY - parent.jcanvas.offsetTop;
-        mouseLocY = parseInt(mouseLocY / zoomPercent);*/
-        
+    {   
         mouseLocX = evt.pageX;
         mouseLocY = evt.pageY;
     }
@@ -63,7 +59,6 @@ function mouseupHandler(evt)
     mousePressed=0;
     evt.target.style.cursor = "default";
     wlApplied = false;
-//applyWindowing();
 }
 
 function mousemoveHandler(evt)
@@ -73,14 +68,7 @@ function mousemoveHandler(evt)
     {
         if(parent.imageLoaded==1)
         {
-           /* mouseLocX1 = evt.pageX - jcanvas.offsetLeft;
-            mouseLocX1 = parseInt(mouseLocX1 / zoomPercent);
-            mouseLocY1 = evt.pageY - jcanvas.offsetTop;
-            mouseLocY1 = parseInt(mouseLocY1 / zoomPercent);*/            
-
-            //if(mouseLocX1>=0&&mouseLocY1>=0&&mouseLocX1<column&&mouseLocY1<row)
-           // {
-                showHUvalue(parseInt(evt.pageX/zoomPercent),parseInt(evt.pageY/zoomPercent));
+            showHUvalue(parseInt(evt.pageX/zoomPercent),parseInt(evt.pageY/zoomPercent));
 
                 if(mousePressed==1)
                 {                   
@@ -101,8 +89,7 @@ function mousemoveHandler(evt)
                     mouseLocY=evt.pageY;
                     jQuery('.selected').removeClass('selected');
 
-                }
-           // }
+                }          
         }
     }
     catch(err)
@@ -115,7 +102,6 @@ function mousemoveHandler(evt)
 function changePreset(presetValue)
 {
     if(winEnabled) {
-        //applyPreset(parseInt(document.getElementById("preset").options[document.getElementById("preset").selectedIndex].value));
         applyPreset(parseInt(presetValue));
     }
 }
@@ -125,7 +111,6 @@ function changePreset(presetDiv,presetValue)
     if(winEnabled) {
     	jQuery('.selected').removeClass('selected');
 		jQuery(presetDiv).addClass("selected");
-        //applyPreset(parseInt(document.getElementById("preset").options[document.getElementById("preset").selectedIndex].value));
         applyPreset(parseInt(presetValue));
     }
 }
@@ -182,9 +167,7 @@ function applyPreset(preset)
 
 function showHUvalue(x,y)
 {
-    var t=(y*column)+x;
-    //var hupanel=document.getElementById("huDisplayPanel");
-    //hupanel.innerHTML="X :"+x+" Y :"+y+" HU :"+huLookupTable[pixelBuffer[t]];
+    var t=(y*column)+x;    
     var huValue = "X :"+x+" Y :"+y+" HU :"+huLookupTable[pixelBuffer[t]];
     selectedFrame.find('#huDisplayPanel').html(huValue);
 }
@@ -222,13 +205,6 @@ function loadDicom() {
     row = parseInt(imgSize[1]);
     column = parseInt(imgSize[0]);
 
-    //var viewSize = jQuery(jcanvas).parent().parent().find('#viewSize').html().substring(10).split("x");
-    /*if(parseInt(imgSize[0]) > parseInt(viewSize[0])) {
-        return;
-    } else if(parseInt(imgSize[1]) > parseInt(viewSize[1])) {
-        return;
-    } */
-
     var curr = jQuery('#containerBox').find('.current');
 
     var queryString = jQuery(jcanvas).parent().parent().find("#frameSrc").html();
@@ -241,17 +217,13 @@ function loadDicom() {
 
     if(!winEnabled) {
         winEnabled = true;
-        doMouseWheel = false;
-        //jQuery('#preset').removeAttr('disabled');
-       // jQuery("#presetDiv input").removeAttr('disabled');
-        //jQuery("#presetDiv a").css('visibility', 'visible');
+        doMouseWheel = false;        
         if(parent.pat.serverURL.indexOf("wado")>0) {
         	jQuery(jcanvas).parent().parent().find('#applyWLDiv').show();
         }
         jQuery(jcanvas).parent().parent().find('#huDisplayPanel').show();
         jQuery(jcanvas).parent().parent().find('#thickLocationPanel').hide();
-        //jQuery('#containerBox .toolbarButton').unbind('mouseenter').unbind('mouseleave');
-        //jQuery(curr).attr('class','toolbarButton current');   
+           
         jQuery('#windowing').addClass('toggleOff');
 		jQuery('#lblWindowing').removeClass('imgOff').addClass('imgOn');  		
 
@@ -285,12 +257,9 @@ function stopWLAdjustment() {
     var layerCanvas = jQuery(jcanvas).parent().children().get(2);    
     jQuery(jcanvas).parent().parent().find('#applyWLDiv').hide();
     jQuery(jcanvas).parent().parent().find('#thickLocationPanel').show();
-    jQuery(jcanvas).parent().parent().find('#huDisplayPanel').hide();
-    //jQuery(curr).attr('class', 'toolbarButton');
-    //jQuery(curr).children().attr('class', 'imgOff');
+    jQuery(jcanvas).parent().parent().find('#huDisplayPanel').hide();    
     jQuery(layerCanvas).unbind('mousedown').unbind('mouseup');
 
-    //doContainerBoxHOver();
     jQuery('#windowing').removeClass('toggleOff');
     jQuery('#lblWindowing').removeClass('imgOn').addClass('imgOff');
 }
@@ -380,11 +349,11 @@ function parseAndLoadDicom()
         var dicomElement=dicomParser.dicomElement[elementindex];
         if(dicomElement.name=="windowWidth")
         {
-            wwidth=ww=dicomElement.value[0];
+            wwidth=ww=parseFloat(dicomElement.value[0]);
         }
         else if(dicomElement.name=="windowCenter")
         {
-            wcenter=wc=dicomElement.value[0];
+            wcenter=wc=parseFloat(dicomElement.value[0]);
         }
         else if(dicomElement.name=="rescaleIntercept")
         {
@@ -393,11 +362,21 @@ function parseAndLoadDicom()
         else if(dicomElement.name=="rescaleSlope")
         {
             rescale_Slope=parseInt(dicomElement.value);
-        }
+        } else if(dicomElement.name=="BitsStored") 
+        {
+        	bits_Stored = parseInt(dicomElement.value);
+        } else if(dicomElement.name=="photometricInterpretation")
+	    {
+	    	photometric_Interpretation = dicomElement.value;
+	        if($.trim(photometric_Interpretation) == "MONOCHROME1")
+	      	{
+	        	invert = true;
+	       	}
+	    }
     }
     pixelBuffer=dicomParser.pixelBuffer;
     lookupObj=new LookupTable();
-    lookupObj.setData(wc,ww,rescale_Slope,rescale_Intercept);
+    lookupObj.setData(wc,ww,rescale_Slope,rescale_Intercept, bits_Stored,invert);
     lookupObj.calculateHULookup();
     huLookupTable=lookupObj.huLookup;
 
@@ -410,7 +389,6 @@ function parseAndLoadDicom()
 
 	ctx.fillStyle="black";
     ctx.fillRect(0, 0, column, row);
-    //myImageData = ctx.getImageData(0,0,column,row);
 
     getWindowingValue();
     lookupObj.setWindowingdata(wc,ww);
@@ -418,7 +396,6 @@ function parseAndLoadDicom()
     jcanvas.width = iNewWidth;
     jcanvas.height = iNewHeight;
 
-    //genImage();
     initialize();
     parent.imageLoaded=1;
 }
@@ -436,9 +413,8 @@ function initialize() {
     tmpCxt.fillStyle = "white";
     tmpCxt.fillRect(0,0,column,row);
     
-    myImageData = tmpCxt.getImageData(0,0,column,row);
-    
-    //genImage();
+    myImageData = tmpCxt.getImageData(0,0,column,row);    
+
     renderImage();
 }
 
@@ -459,15 +435,12 @@ function getRenderCanvas() {
      
     var tmpCxt = tmpCanvas.getContext('2d'); 
     tmpCxt.putImageData(myImageData,0,0);
-    //return tmpCanvas;
 }
 
 function renderImage() {
 	ctx.setTransform(1,0,0,1,0,0);
 	ctx.fillStyle = 'black';
-	ctx.fillRect(0,0,jcanvas.width, jcanvas.height);
-	
-	//var renderCanvas = getRenderCanvas();
+	ctx.fillRect(0,0,jcanvas.width, jcanvas.height);	
 	
 	getRenderCanvas();
 	
@@ -476,24 +449,14 @@ function renderImage() {
     var xScale = sw / column;
     var yScale = sh / row;
     
-    var scaleFac = Math.min(xScale,yScale);	
-    /*zoomPercent = jQuery(jcanvas).parent().parent().find('#zoomPercent').html();
-    zoomPercent = zoomPercent.substring(zoomPercent.indexOf(":")+1, zoomPercent.indexOf("%"));
-    zoomPercent = zoomPercent / 100;
-    
-	var dw = (zoomPercent * column);
-	var dh = (zoomPercent*row); */
+    var scaleFac = Math.min(xScale,yScale);    
 	
 	var dw = (scaleFac * column);
 	var dh = (scaleFac * row);
 	
-	/*var dw = (parent.scale * column);
-	var dh = (parent.scale * row);*/
-	
 	var sx = (sw-dw)/2;
-	var sy = (sh-dh)/2;
-	
-	//ctx.drawImage(renderCanvas, 0,0,column,row,0,0,column,row);
+	var sy = (sh-dh)/2;	
+
 	ctx.drawImage(tmpCanvas, 0, 0, column, row, sx, sy, dw, dh);
 }
 function getWindowingValue() {
