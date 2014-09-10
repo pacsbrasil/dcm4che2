@@ -482,9 +482,9 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
             prev.setNextFileSystem(fs);
             fs.setNextFileSystem(next);
         }
-        return fs.toDTO();
+         return fs.toDTO();
     }
-
+    
     /**
      * @ejb.interface-method
      */
@@ -630,7 +630,7 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
         return new DeleteStudyOrdersAndMaxAccessTime(orders, maxAccessTime);
     }
 
-    /**
+    /**    
      * @ejb.interface-method
      */
     public Dataset createIANforStudy(Long studyPk)
@@ -813,8 +813,8 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
         } catch (ObjectNotFoundException onfe) {
         }
     }
-
     
+   
     /**    
      * @ejb.interface-method
      */
@@ -850,7 +850,10 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
             StudyLocal study = studyHome.findByPrimaryKey(order.getStudyPk());
             FileSystemLocal fs = fileSystemHome.findByPrimaryKey(fsPk);
             checkConcurrentStudyStorage(study, fs);
-            FileSystemLocal fsDest = fileSystemHome.findByPrimaryKey(dtos[0].getFileSystemPk());
+            FileSystemLocal fsDest = null;
+            if (dtos.length > 0) {
+                fsDest = fileSystemHome.findByPrimaryKey(dtos[0].getFileSystemPk());            
+            }
             Collection<FileLocal> c = study.getFiles(fsPk);
             FileLocal[] files = c.toArray(new FileLocal[c.size()]);
             FileLocal fSrc;
@@ -994,7 +997,7 @@ public abstract class FileSystemMgt2Bean implements SessionBean {
             throw new EJBException(e);
         }
     }
-
+    
     private void deletePatientWithoutObjects(PatientLocal patient)
             throws RemoveException {
         if ( patient.getStudies().isEmpty() &&
